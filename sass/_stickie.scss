@@ -1,0 +1,90 @@
+.stickie {
+    font-size: 150%;
+    width: 240px;
+    background: $color-stickie;
+    position: relative;
+    float: left;
+    padding: 1.2em;
+    margin: 1em 10px;
+    -moz-border-radius: 4px;
+         border-radius: 4px;
+    /* Enabling this kills performance
+    -webkit-box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
+       -moz-box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
+    */
+    &:before, &:after {
+        content: "";
+        position: absolute;
+        z-index: -2;
+        bottom: 15px;
+        left: 10px;
+        width: 50%;
+        height: 20%;
+        max-width: 300px;
+        -webkit-box-shadow: 0 15px 10px $color-shadow;
+           -moz-box-shadow: 0 15px 10px $color-shadow;
+                box-shadow: 0 15px 10px $color-shadow;
+        -webkit-transform: rotate(-3deg);
+           -moz-transform: rotate(-3deg);
+            -ms-transform: rotate(-3deg);
+             -o-transform: rotate(-3deg);
+                transform: rotate(-3deg);
+
+    }
+    &:after {
+        right: 10px;
+        left: auto;
+        -webkit-transform: rotate(3deg);
+           -moz-transform: rotate(3deg);
+            -ms-transform: rotate(3deg);
+             -o-transform: rotate(3deg);
+                transform: rotate(3deg);
+    }
+    a, a:hover, a:active, a:visited, a:focus {
+        /* Make stickies clickable */
+        text-decoration: none;
+        color: black;
+        color: inherit;
+        display: block;
+        width: 100%;
+        height: 100%;
+        margin: -1em;
+        padding: 1em;
+        border: 0;
+    }
+    header & {
+        width: 120px;
+        margin: 10px;
+        font-family: $font-header-stickie;
+    }
+    .date {
+        font-size: 80%;
+        color: $color-stickie-date;
+        float: right;
+        margin-top: -1.3em;
+        margin-right: -1.1em;
+    }
+}
+
+/* Make stickies wrap */
+@media all and (min-width: 960px) {
+    .container .stickie:nth-child(4n+1) {
+    	clear: left;
+    }
+}
+@media all and (min-width: 60.01em) and (max-width: 75em) {
+    .container .stickie:nth-child(3n+1) {
+    	clear: left;
+    }
+}
+@media all and (min-width: 45.51em) and (max-width: 60em) {
+    .container .stickie:nth-child(2n+1) {
+    	clear: left;
+    }
+}
+@media all and (max-width: 380px) {
+    .container .stickie {
+    	float: none;
+    }
+}

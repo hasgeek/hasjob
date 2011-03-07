@@ -1,0 +1,33 @@
+{% extends "inc/layout.html" %}
+{% block titletags -%}
+  <title>{{ config['SITE_TITLE'] }}</title>
+  <meta name="DC.title" content="{{ config['SITE_TITLE'] }}"/>
+{%- endblock %}
+
+{% block header %}
+<p>
+  Job listings made here are broadcast to the entire network. <a href="{{ url_for('newjob') }}">Post a job</a>
+</p>
+{% endblock %}
+
+{% block content %}
+  <!-- Dummy stickies for testing. Change this to ul>li>a tags -->
+  <div class="stickie">
+    <a href="/detail/1">
+      <span class="date">Mar 6</span>
+      <span class="headline">Marketing guru at HasGeek Media LLP</span>
+    </a>
+  </div>
+  <div class="stickie">
+    <a href="/detail/2">
+      <span class="date">Feb 28</span>
+      <span class="headline">Logistics coordinator at HasGeek</span>
+    </a>
+  </div>
+  <div class="stickie">
+    <a href="/detail/3">
+      <span class="date">Oct 9</span>
+      <span class="headline highlighted">Senior Project Manager at DotAhead</span>
+    </a>
+  </div>
+{% endblock %}

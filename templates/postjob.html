@@ -1,0 +1,42 @@
+{% extends "inc/layout.html" %}
+{% block title %}Post a job{% endblock %}
+{% block content %}
+<div id="sheet">
+  <h2>
+    Post a job
+  </h2>
+  <p>
+    Posting a job here is a good idea.
+  </p>
+  <form id="newjob" action="{{ url_for('newjob') }}" method="POST">
+    <input type="hidden" name="_charset_"/>
+    <input type="hidden" name="form.id" value="newjob"/>
+    <dl class="form">
+      {% for field in form %}
+        {% if field.widget.input_type == 'hidden' %}
+          {# FIXME: DT or DD tag required. INPUT cannot directly be within a DL #}
+          {{ field()|safe }}
+        {% else %}
+          {% if field.widget.input_type == 'checkbox' %}
+            <dt class="checkbox">{{ field()|safe }} <label for="{{ field.name }}">{{ field.label }}</label></dt>
+            <dd class="checkbox">
+              {% if field.errors %}
+                {% for error in field.errors %}<p class="error">{{ error }}</p>{% endfor %}
+              {% endif %}
+            </dd>
+          {% else %}
+            <dt class="input"><label for="{{ field.name }}">{{ field.label }}</label></dt>
+            <dd class="input">
+              <div>{{ field()|safe }}</div>
+              {% if field.errors %}
+                <div>{% for error in field.errors %}<p class="error">{{ error }}</p>{% endfor %}</div>
+              {% endif %}
+            </dd>
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+    </dl>
+    <input type="submit" value="Preview job posting"/>
+  </form>
+</div>
+{% endblock %}
