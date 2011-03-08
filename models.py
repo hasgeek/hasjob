@@ -35,9 +35,9 @@ class JobPost(db.Model):
     how_to_apply = db.Column(db.Unicode, nullable=False)
 
     # Company details
-    company_name = db.Column(db.Unicode(80), nullable=False)
+    company_name = db.Column(db.Unicode(80), nullable=False, default='')
     company_logo = db.Column(db.LargeBinary, nullable=True) # TODO: Images in the db?
-    company_url = db.Column(db.Unicode(255), nullable=False)
+    company_url = db.Column(db.Unicode(255), nullable=False, default='')
     email = db.Column(db.Unicode(80), nullable=False)
 
     # Payment, audit and workflow fields

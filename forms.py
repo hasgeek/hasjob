@@ -15,7 +15,7 @@ class PostingForm(Form):
     job_how_to_apply = TextAreaField("How to apply", validators=[Required()])
     company_name = TextField("Company name")
     company_logo = FileField("Logo")
-    company_url = TextField("URL", validators=[Required(), URL()])
+    company_url = TextField("URL", validators=[URL()])
     poster_email = TextField("Email", validators=[Required(), Email()])
 
 class ConfirmForm(Form):

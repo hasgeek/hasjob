@@ -26,7 +26,7 @@ def jobdetail(hashid):
     if post is None:
         abort(404)
     if post.status == POSTSTATUS.DRAFT:
-        if 'userid' not in session or session['userid'] != post.email:
+        if 'userkey' not in session or session['userkey'] != post.email_verify_key:
             abort(403)
     if post.status == POSTSTATUS.REJECTED:
         abort(403) # TODO: Present an error message
@@ -62,7 +62,7 @@ def editjob(hashid, key, form=None, post=None):
         post.email = form.poster_email.data
 
         db.session.commit()
-        session['userid'] = post.email
+        session['userkey'] = post.email_verify_key
         return redirect(url_for('jobdetail', hashid=post.hashid), code=303)
 
     elif request.method == 'GET':
