@@ -1,0 +1,30 @@
+{% extends "inc/layout.html" %}
+{% block title %}{{ post.headline|e }}{% endblock %}
+{% block content %}
+<div id="sheet">
+  <h2>{{ post.headline }}</h2>
+  <p class="caption">Posted {{ post.datetime.strftime('%B %d, %Y') }}
+  {% if post.company_name -%}
+    <h2>
+      {%- if post.company_url %}<a href="{{ post.company_url }}" rel="nofollow">{{ post.company_name }}</a>
+      {%- else %}{{ post.company_name }}{% endif -%}
+    </h2>
+  {%- elif post.company_url -%} {# Why would anyone provide a URL but no name? #}
+    <p>
+      <a href="{{ post.company_url }}" rel="nofollow">{{ post.company_url }}</a>
+    </p>
+  {%- endif %}
+  {{ post.description|safe }}
+  {% if post.perks %}
+    <h2>Job Perks</h2>
+    {{ post.perks|safe }}
+  {% endif %}
+  <h2>How to apply</h2>
+  {{ post.how_to_apply }}
+  {% if post.status == 0 %}
+    <div id="confirmbox">
+      This is a preview. You may <a href="{{ url_for('editjob', hashid=post.hashid, key=post.email_verify_key) }}">edit again</a> or confirm this posting.
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

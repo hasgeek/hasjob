@@ -5,12 +5,26 @@
 {%- endblock %}
 
 {% block header %}
-<p>
-  Job listings made here are broadcast to the entire network. <a href="{{ url_for('newjob') }}">Post a job</a>
-</p>
+  <p>
+    Job listings made here are broadcast to the entire network. <a href="{{ url_for('newjob') }}">Post a job</a>
+  </p>
 {% endblock %}
 
 {% block content %}
+  {% for post in posts %}
+    <div class="stickie">
+      <a href="{{ url_for('jobdetail', hashid=post.hashid) }}">
+        <span class="date">{{ post.datetime.strftime('%b %d') }}</span>
+        <span class="headline">{{ post.headline }}</span>
+      </a>
+    </div>
+  {% else %}
+    <div class="stickie error">
+      <a href="{{ url_for('newjob') }}">
+        There are no job posts. Why not post one?
+      </a>
+    </div>
+  {% endfor %}
   <!-- Dummy stickies for testing. Change this to ul>li>a tags -->
   <div class="stickie">
     <a href="/detail/1">

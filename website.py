@@ -12,6 +12,8 @@ except ImportError:
     print >> sys.stderr, "Please create a settings.py with the necessary settings. See settings-sample.py."
     print >> sys.stderr, "You may use the site without these settings, but some features may not work."
 
+# Create database table
+models.db.create_all()
 
 if __name__ == '__main__':
     app.run(debug=True)
