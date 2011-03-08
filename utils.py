@@ -43,10 +43,7 @@ def random_hash_key():
     ...     if len(random_hash_key()) != 5:
     ...         print "Length is not 5!"
     """
-    base = base36encode(randint(0, 60466175)) # 60466175 is 'zzzzz'
-    if len(base) < 5:
-        base = '0'*(5-len(base))+base
-    return base
+    return ('0000' + base36encode(randint(0, 60466175)))[-5:] # 60466175 is 'zzzzz'
 
 if __name__ == '__main__':
     import doctest
