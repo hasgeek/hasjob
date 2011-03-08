@@ -1,3 +1,5 @@
+@import url('http://fonts.googleapis.com/css?family=Walter+Turncoat');
+@import url('http://fonts.googleapis.com/css?family=Permanent+Marker');
 /* Define all colours here */
 /*  HTML5 ✰ Boilerplate  */
 html, body, div, span, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre,
@@ -215,7 +217,6 @@ button {
 .clearfix {
   zoom: 1; }
 
-@import url('http://fonts.googleapis.com/css?family=Walter+Turncoat');
 body {
   background: url(../img/cardboard.jpg);
   overflow-x: hidden; }
@@ -326,12 +327,15 @@ header {
     width: 120px;
     margin: 10px;
     font-family: "Walter Turncoat", sans-serif; }
+  .stickie .headline {
+    font-family: "Permanent Marker", sans-serif; }
   .stickie .date {
     font-size: 80%;
     color: gray;
     float: right;
     margin-top: -1.3em;
-    margin-right: -1.1em; }
+    margin-right: -1.1em;
+    font-family: "Walter Turncoat", sans-serif; }
 
 /* Make stickies wrap */
 @media all and (min-width: 960px) {

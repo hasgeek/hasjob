@@ -14,7 +14,7 @@
   {% for post in posts %}
     <div class="stickie">
       <a href="{{ url_for('jobdetail', hashid=post.hashid) }}">
-        <span class="date">{{ post.datetime.strftime('%b %d') }}</span>
+        <span class="date">{{ post.datetime.strftime('%b %e') }}</span>
         <span class="headline">{{ post.headline }}</span>
       </a>
     </div>

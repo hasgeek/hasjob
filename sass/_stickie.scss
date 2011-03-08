@@ -56,7 +56,10 @@
     header & {
         width: 120px;
         margin: 10px;
-        font-family: $font-header-stickie;
+        font-family: $font-stickie-header;
+    }
+    .headline {
+        font-family: $font-stickie-headline;
     }
     .date {
         font-size: 80%;
@@ -64,6 +67,7 @@
         float: right;
         margin-top: -1.3em;
         margin-right: -1.1em;
+        font-family: $font-stickie-date;
     }
 }
 
