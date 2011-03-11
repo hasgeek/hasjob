@@ -5,43 +5,122 @@
 {%- endblock %}
 
 {% block header %}
-  <p>
-    Job listings made here are broadcast to the entire network. <a href="{{ url_for('newjob') }}">Post a job</a>
+  <p id="pitch">
+    HasGeek reaches out to thousands of developers via events, blogs and discussion groups.
+    Job postings made here reach the entire network. <a href="{{ url_for('newjob') }}">Post a job &rarr;</a>
   </p>
 {% endblock %}
 
 {% block content %}
-  {% for post in posts %}
-    <div class="stickie">
-      <a href="{{ url_for('jobdetail', hashid=post.hashid) }}">
-        <span class="date">{{ post.datetime.strftime('%b %e') }}</span>
-        <span class="headline">{{ post.headline }}</span>
+  {# {% include "inc/logo.html" %} #}
+  <div id="stickie-area">
+    <div id="newpost" class="stickie">
+      <form action="{{ url_for('newjob') }}" method="POST">
+        <input type="hidden" name="_charset_"/>
+        <input type="hidden" name="form.id" value="newheadline"/>
+        <label id="newpost_title" for="newpost_headline">Post a job:</label>
+        <textarea id="newpost_headline" name="job_headline" class="expand">Awesome Coder wanted at Awesome Company</textarea>
+        <div id="newpost_details"><button type="submit">Add details &rarr;</button></div>
+      </form>
+    </div>
+    {% for post in posts %}
+      <div class="stickie fulltime">
+        <a href="{{ url_for('jobdetail', hashid=post.hashid) }}">
+          <span class="location">{{ post.location }}</span>
+          <span class="date">{{ post.datetime|shortdate }}</span>
+          <span class="headline">{{ post.headline }}</span>
+          {% if now - post.datetime < newlimit %}<span class="new">New!</span>{% endif %}
+        </a>
+      </div>
+    {% endfor %}
+    <!-- Dummy stickies for testing. Change this to ul>li>a tags -->
+    <div class="stickie fulltime">
+      <a href="/detail/1">
+        <span class="location">Bangalore</span>
+        <span class="date">Mar 6</span>
+        <span class="headline">Marketing guru at HasGeek Media LLP. We really love our marketing gurus. Come aboard today!</span>
+        <span class="new">New!</span>
       </a>
     </div>
-  {% else %}
-    <div class="stickie error">
-      <a href="{{ url_for('newjob') }}">
-        There are no job posts. Why not post one?
+    <div class="stickie parttime">
+      <a href="/detail/2">
+        <span class="location">Bangalore</span>
+        <span class="date">Feb 28</span>
+        <span class="headline">Logistics coordinator at HasGeek</span>
       </a>
     </div>
-  {% endfor %}
-  <!-- Dummy stickies for testing. Change this to ul>li>a tags -->
-  <div class="stickie">
-    <a href="/detail/1">
-      <span class="date">Mar 6</span>
-      <span class="headline">Marketing guru at HasGeek Media LLP</span>
-    </a>
+    <div class="stickie fulltime">
+      <a href="/detail/3">
+        <span class="location">Goa</span>
+        <span class="date">Oct 9</span>
+        <span class="headline highlighted">Senior Project Manager at DotAhead</span>
+      </a>
+    </div>
+    <div class="stickie volunteer">
+      <a href="/detail/1">
+        <span class="location">Bangalore</span>
+        <span class="date">Mar 6</span>
+        <span class="headline">Marketing guru at HasGeek Media LLP. We really love our marketing gurus. Come aboard</span>
+      </a>
+    </div>
+    <div class="stickie volunteer">
+      <a href="/detail/2">
+        <span class="location">Bangalore</span>
+        <span class="date">Feb 28</span>
+        <span class="headline">Logistics coordinator at HasGeek</span>
+      </a>
+    </div>
+    <div class="stickie fulltime">
+      <a href="/detail/3">
+        <span class="location">Goa</span>
+        <span class="date">Oct 9</span>
+        <span class="headline highlighted">Senior Project Manager at DotAhead</span>
+      </a>
+    </div>
+    <div class="stickie parttime">
+      <a href="/detail/1">
+        <span class="location">Bangalore</span>
+        <span class="date">Mar 6</span>
+        <span class="headline">Marketing guru at HasGeek Media LLP. We really love our marketing gurus. Come aboard</span>
+      </a>
+    </div>
+    <div class="stickie parttime">
+      <a href="/detail/2">
+        <span class="location">Bangalore</span>
+        <span class="date">Feb 28</span>
+        <span class="headline">Logistics coordinator at HasGeek</span>
+      </a>
+    </div>
+    <div class="stickie fulltime">
+      <a href="/detail/3">
+        <span class="location">Goa</span>
+        <span class="date">Oct 9</span>
+        <span class="headline highlighted">Senior Project Manager at DotAhead</span>
+      </a>
+    </div>
+    <div class="stickie fulltime">
+      <a href="/detail/1">
+        <span class="location">Bangalore</span>
+        <span class="date">Mar 6</span>
+        <span class="headline">Marketing guru at HasGeek Media LLP. We really love our marketing gurus. Come aboard</span>
+      </a>
+    </div>
+    <div class="stickie volunteer">
+      <a href="/detail/2">
+        <span class="location">Bangalore</span>
+        <span class="date">Feb 28</span>
+        <span class="headline">Logistics coordinator at HasGeek</span>
+      </a>
+    </div>
   </div>
-  <div class="stickie">
-    <a href="/detail/2">
-      <span class="date">Feb 28</span>
-      <span class="headline">Logistics coordinator at HasGeek</span>
-    </a>
-  </div>
-  <div class="stickie">
-    <a href="/detail/3">
-      <span class="date">Oct 9</span>
-      <span class="headline highlighted">Senior Project Manager at DotAhead</span>
-    </a>
-  </div>
+{% endblock %}
+{% block footerscripts %}
+<script type="text/javascript">
+  $(function() {
+    $("#newpost_details").hide();
+    $("#newpost_headline").focus(function() {
+      $("#newpost_details").slideDown();
+    });
+  });
+</script>
 {% endblock %}

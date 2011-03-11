@@ -42,7 +42,6 @@ class JobPost(db.Model):
 
     # Payment, audit and workflow fields
     promocode = db.Column(db.Text(40), nullable=True)
-    terms_accepted = db.Column(db.Boolean, nullable=False, default=False)
     status = db.Column(db.Integer, nullable=False, default=POSTSTATUS.DRAFT)
     ipaddr = db.Column(db.Text(45), nullable=False)
     useragent = db.Column(db.Unicode(250), nullable=True)

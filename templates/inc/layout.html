@@ -19,7 +19,17 @@
   <link rel="icon" href="{{ url_for('static', filename='img/favicon.ico') }}"/>
   <link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.ico') }}"/>
   <link rel="apple-touch-icon" href="{{ url_for('static', filename='img/logo-star.png') }}"/>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=2"/>
+  <!-- Fonts -->
+  <link href='http://fonts.googleapis.com/css?family=Walter+Turncoat' rel='stylesheet' type='text/css'>
+  <link href='http://fonts.googleapis.com/css?family=Permanent+Marker' rel='stylesheet' type='text/css'>
+  <link href='http://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+
+  <!-- Stylesheets -->
+  <link href="{{ url_for('static', filename='css/screen.css') }}" media="screen, projection" rel="stylesheet" type="text/css" />
+  <link href="{{ url_for('static', filename='css/print.css') }}" media="print" rel="stylesheet" type="text/css" />
+  <!--[if IE]>
+      <link href="{{ url_for('static', filename='css/ie.css') }}?v=2" media="screen, projection" rel="stylesheet" type="text/css" />
+  <![endif]-->
   <script src="{{ url_for('static', filename='js/libs/modernizr-1.6.min.js') }}"></script>
 
   {%- if config['TYPEKIT_CODE'] %}
@@ -29,35 +39,39 @@
   {% block pageheaders %}{% endblock %}
 </head>
 <body>
-  <div id="container">
-    <header class="clearfix">
-      {% include "inc/logo.html" %}
+  <div id="container" class="container">
+    <header>
+      <div id="site-title"><a href="{{ url_for('index') }}"><span class="has">Has</span><span class="geek">Geek</span> <span class="jobs">Job Board</span></a></div>
       <form id="search" action="{{ url_for('search') }}">
-        <input type="search" placeholder="Find a job..." name="q"/>
-        <input type="submit" value="Find"/>
+        <input class="search" placeholder="Find a job..." name="q"/>
+        <button class="search" type="submit">Find</button>
       </form>
       {% block header %}{% endblock %}
     </header>
-    <div id="flash-messages" class="clearfix">
+    <div id="flash-messages">
       {%- for category, msg in get_flashed_messages(with_categories=true) %}
         <div class="flash flash-{{ category }}">{{ msg }}</div>
       {%- endfor %}
     </div>
-    <div id="main" class="clearfix">
+    <div id="main">
       {% block content %}{% endblock %}
     </div>
-    <footer class="clearfix">
-      {% block footer %}{% endblock %}
-    </footer>
+    <div id="main_footer"></div>
   </div> <!-- end of #container -->
+  <footer>
+    {% block footer %}
+    <p>
+      The HasGeek Job Board is a service of <a href="http://hasgeek.in/">HasGeek</a>.
+      Subscribe to <a href="/feed">the feed</a> or follow
+      <a href="http://twitter.com/hasgeek">@hasjob on Twitter</a>
+      to find out when new jobs are posted.
+    </p>
+    {% endblock %}
+  </footer>
 
-  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.js"></script>
-  <script>!window.jQuery && document.write(unescape('%3Cscript src="{{ url_for("static", filename="js/libs/jquery-1.4.2.min.js") }}"%3E%3C/script%3E'))</script>
-
-  <!-- scripts concatenated and minified via ant build script-->
-  <script src="{{ url_for('static', filename='js/libs/plugins.min.js') }}"></script>
-  <script src="{{ url_for('static', filename='js/script.min.js') }}"></script>
-  <!-- end concatenated and minified scripts-->
+  {% assets "js_all" -%}
+    <script type="text/javascript" src="{{ ASSET_URL }}"></script>
+  {% endassets -%}
 
   <!--[if lt IE 7 ]>
     <script src="{{ url_for('static', filename='js/libs/dd_belatedpng.js') }}"></script>

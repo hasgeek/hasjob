@@ -1,0 +1,19 @@
+{% extends "inc/layout.html" %}
+{% block title %}410 Gone{% endblock %}
+{% block pageheaders %}
+{% endblock %}
+{%block content %}
+  <div id="main-40x">
+    <div class="stickie" id="stickie-40x">
+      <a href="{{ url_for('index') }}">
+        <div id="i40x">
+          <span class="i4">4</span><span class="i0">1</span><span class="i4">0</span>
+        </div>
+        <div id="i40x-message">
+          That page was there but is gone now.<br/>
+          Removed for being inappropriate.
+        </div>
+      </a>
+    </div>
+  </div>
+{% endblock %}

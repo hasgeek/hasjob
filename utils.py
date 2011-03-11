@@ -1,4 +1,5 @@
 from random import randint
+from BeautifulSoup import BeautifulSoup, Comment
 
 #: This code adapted from http://en.wikipedia.org/wiki/Base_36#Python%5FConversion%5FCode
 def base36encode(number, alphabet='0123456789abcdefghijklmnopqrstuvwxyz'):
@@ -31,6 +32,7 @@ def base36encode(number, alphabet='0123456789abcdefghijklmnopqrstuvwxyz'):
 def base36decode(number):
     return int(number, 36)
 
+
 def random_long_key():
     return base36encode(randint(1000000000000000,
                                 10000000000000000))
@@ -38,12 +40,47 @@ def random_long_key():
 def random_hash_key():
     """
     Returns a random key that is exactly five letters long.
-    
+
     >>> for attempt in range(1000):
     ...     if len(random_hash_key()) != 5:
     ...         print "Length is not 5!"
     """
     return ('0000' + base36encode(randint(0, 60466175)))[-5:] # 60466175 is 'zzzzz'
+
+
+VALID_TAGS = {'strong': [],
+              'em': [],
+              'p': [],
+              'ol': [],
+              'ul': [],
+              'li': [],
+              'br': [],
+              'a': ['href', 'title']
+              }
+
+def sanitize_html(value, valid_tags=VALID_TAGS):
+    """
+    Strips unwanted markup out of HTML.
+    """
+    soup = BeautifulSoup(value)
+    comments = soup.findAll(text=lambda text:isinstance(text, Comment))
+    [comment.extract() for comment in comments]
+    # Some markup can be crafted to slip through BeautifulSoup's parser, so
+    # we run this repeatedly until it generates the same output twice.
+    newoutput = soup.renderContents()
+    while 1:
+        oldoutput = newoutput
+        soup = BeautifulSoup(newoutput)
+        for tag in soup.findAll(True):
+            if tag.name not in valid_tags:
+                tag.hidden = True
+            else:
+                tag.attrs = [(attr, value) for attr, value in tag.attrs if attr in valid_tags[tag.name]]
+        newoutput = soup.renderContents()
+        if oldoutput == newoutput:
+            break
+    return unicode(newoutput, 'utf-8')
+
 
 if __name__ == '__main__':
     import doctest

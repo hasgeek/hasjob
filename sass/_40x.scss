@@ -1,0 +1,39 @@
+#main-40x {
+  text-align: center;
+}
+#stickie-40x {
+  background-color: $color-stickie-fulltime;
+  float: none;
+  display: inline-block;
+  text-align: center;
+  width: auto;
+  margin-top: 2em;
+}
+#i40x {
+  font-size: 150px;
+  font-weight: bold;
+  letter-spacing: -0.2em;
+  margin-left: -0.2em; // This must match letter-spacing
+}
+#i40x:after {
+  display: block;
+  color: $color-title-jobs;
+  content: "︵";
+  margin-top: -0.75em;
+}
+.i4 {
+  color: $color-title-has;
+  position: relative;
+}
+.i0 {
+  color: #f0a40c;
+  z-index: -1;
+}
+.i5 {
+    color: $color-title-geek;
+    position: relative;
+}
+#i40x-message {
+  font-family: 'Walter Turncoat', sans-serif;
+  color: #816894;
+}

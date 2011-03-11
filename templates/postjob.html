@@ -8,7 +8,7 @@
   <p>
     Posting a job here is a good idea.
   </p>
-  <form id="newjob" method="POST">
+  <form id="newjob" enctype="multipart/form-data" method="POST">
     <input type="hidden" name="_charset_"/>
     <input type="hidden" name="form.id" value="newjob"/>
     <dl class="form">
@@ -36,7 +36,7 @@
         {% endif %}
       {% endfor %}
     </dl>
-    <input type="submit" value="Preview job posting"/>
+    <button type="submit">Preview job posting</button>
   </form>
 </div>
 {% endblock %}

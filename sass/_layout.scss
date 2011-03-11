@@ -1,29 +1,22 @@
+/* Background textures by Rüdiger Appel from http://www.3quarks.com/en/BackgroundPattern/ */
+
 body {
-    // Prevent header's box-shadow from overflowing in Firefox
-    background: url(../img/cardboard.jpg);
-    overflow-x: hidden;
-}
-
-p, ul, ol, blockquote, dt, dd,
-h1, h2, h3, h4, h5, h6 {
-    margin: 1em 0;
-}
-
-#main {
+    font-family: sans-serif;
+    background: image_url("canvas.jpg");
 }
 
 /* Header area */
 
 header {
-    padding: 1em;
-    background-color: $color-header;
+    @include pie-clearfix;
+    padding: 10px 20px;
+    background: image_url("paper.jpg");
     border-bottom: 1px solid $color-sheet-border;
-    -webkit-box-shadow: 0 2px 5px $color-shadow;
-       -moz-box-shadow: 0 2px 5px $color-shadow;
-            box-shadow: 0 2px 5px $color-shadow;
+    @include box-shadow($color-shadow, -5px, 1px, 5px);
 
     form#search {
         float: right;
+        padding-left: 1.2em;
     }
     #sections {
         li {
@@ -35,17 +28,17 @@ header {
             padding: 0.5em;
         }
     }
+    #pitch {
+        max-width: 60em;
+    }
 }
 
 #logo {
-    width: 170px;
-    height: 170px;
-    background: url(../img/logo-star.png) no-repeat;
+    @include replace-text-with-dimensions("logo-star.png", 0, 0);
     float: left;
-    padding: 0;
 }
 
-#logo h1, #logo a, #logo a:hover, #logo a:active, #logo a:visited {
+#logo a, #logo a:hover, #logo a:active, #logo a:visited {
     margin: 0;
     padding: 0;
     border: 0;
@@ -55,9 +48,55 @@ header {
     height: 100%;
 }
 
+#site-title {
+    font-family: $font-site-title;
+    float: left;
+    padding-right: 0.5em;
+    font-size: 30px;
+    font-weight: bold;
+    .has {
+        color: $color-title-has;
+    }
+    .geek {
+        color: $color-title-geek;
+    }
+    .jobs {
+        color: $color-title-jobs;
+    }
+    a, a:hover, a:focus, a:active, a:visited {
+        text-decoration: none;
+        border-bottom: 5px solid transparent;
+        @include transition-property(border-bottom);
+        @include transition-duration(1s);        
+    }
+    a:hover, a:focus, a:active {
+        border-bottom: 5px solid $color-title-jobs;
+        @include transition-property(border-bottom);
+        @include transition-duration(1s);        
+    }
+}
+
+#main {
+    @include clearfix;
+}
+
+@include sticky-footer(40px, "#container", "#main_footer", "footer");
+footer {
+    background: image_url("paper.jpg");
+    @include box-shadow($color-shadow, -5px, -1px, 5px);
+    font-size: 100%;
+    background-color: white;
+    text-align: center;
+    .bp & p, p {
+        border-top: 1px solid $color-sheet-border;
+        padding: 10px 20px;
+        margin: 0;
+    }
+}
+
 #sheet {
     background: $color-sheet;
-    max-width: 960px;
+    max-width: 860px;
     margin: {
         left: auto;
         right: auto;
@@ -66,7 +105,82 @@ header {
     }
     padding: 1em 2em;
     border: 1px solid $color-sheet-border;
-    -webkit-box-shadow: 0 2px 5px $color-shadow;
-       -moz-box-shadow: 0 2px 5px $color-shadow;
-            box-shadow: 0 2px 5px $color-shadow;
+    @include box-shadow($color-shadow, 0, 2px, 10px);
+    #company-info {
+        margin: 1em -2em 0;
+        border-bottom: 1px solid $color-outline-thin;
+        padding: 0 2em 2em;
+        span {
+            font-size: 120%;
+        }
+    }
+    #detail-area {
+        @include pie-clearfix;
+        margin: 0 -2em 1em;
+        padding-left: 2em;
+    }
+    #detailed-info {
+        margin-top: 1em;
+        float: left;
+        max-width: 670px;
+        font-size: 120%;
+        line-height: 1.5;
+        //font-family: "MetaPlus", sans-serif;
+        padding-right: 1em;
+    }
+    #detail-sidebar {
+        float: right;
+        width: 200px;
+        ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            li {
+                border-bottom: 1px solid $color-outline-thin;
+                a, a:link, a:hover, a:focus, a:active, a:visited {
+                    display: block;
+                    padding: 1em 2em 1em 1em;
+                    text-decoration: none;
+                }
+            }
+        }
+    }
+    p, blockquote, ul, ol {
+        margin-top: 1em;
+        margin-bottom: 1em;
+    }
+    p.post-date {
+        margin-top: 0;
+        color: $color-post-date;
+    }
+    .post-company-name {
+        font-weight: bold;
+    }
+}
+
+input[type=search], input.search {
+    @include border-radius(100px);
+    background: white image_url('search.png') 4px center no-repeat;
+    padding: 0.1em 0 0.1em 20px;
+    vertical-align: baseline;
+    font-family: $font-input;
+    width: 15em;
+    border: 1px solid $color-outline;
+    &:focus {
+        outline: none;
+        border: 1px solid $color-title-geek;
+    }
+}
+
+button {
+    @include fancy-button;
+    @include fancy-button-colors-matte(#dddddd);
+    font-size: 100%;
+    font-weight: bold;
+    font-family: $font-button;
+}
+
+h1 {
+    font-size: 300%;
+    //color: $color-title-geek;
 }

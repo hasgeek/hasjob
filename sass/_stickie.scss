@@ -1,3 +1,7 @@
+#stickie-area {
+    @include pie-clearfix;
+    padding: 10px;
+}
 .stickie {
     font-size: 150%;
     width: 240px;
@@ -5,9 +9,8 @@
     position: relative;
     float: left;
     padding: 1.2em;
-    margin: 1em 10px;
-    -moz-border-radius: 4px;
-         border-radius: 4px;
+    margin: 10px 10px;
+    @include border-radius(4px);
     /* Enabling this kills performance
     -webkit-box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
        -moz-box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
@@ -22,36 +25,25 @@
         width: 50%;
         height: 20%;
         max-width: 300px;
-        -webkit-box-shadow: 0 15px 10px $color-shadow;
-           -moz-box-shadow: 0 15px 10px $color-shadow;
-                box-shadow: 0 15px 10px $color-shadow;
-        -webkit-transform: rotate(-3deg);
-           -moz-transform: rotate(-3deg);
-            -ms-transform: rotate(-3deg);
-             -o-transform: rotate(-3deg);
-                transform: rotate(-3deg);
-
+        @include box-shadow($color-shadow, 0, 15px, 10px);
+        @include rotate(-3deg);
     }
     &:after {
         right: 10px;
         left: auto;
-        -webkit-transform: rotate(3deg);
-           -moz-transform: rotate(3deg);
-            -ms-transform: rotate(3deg);
-             -o-transform: rotate(3deg);
-                transform: rotate(3deg);
+        @include rotate(3deg);
     }
     a, a:hover, a:active, a:visited, a:focus {
         /* Make stickies clickable */
-        text-decoration: none;
-        color: black;
-        color: inherit;
+        text-decoration: none !important;
+        color: black !important;
+        color: inherit !important;
         display: block;
         width: 100%;
         height: 100%;
         margin: -1em;
         padding: 1em;
-        border: 0;
+        border-bottom: 0;
     }
     header & {
         width: 120px;
@@ -64,31 +56,109 @@
     .date {
         font-size: 80%;
         color: $color-stickie-date;
-        float: right;
-        margin-top: -1.3em;
-        margin-right: -1.1em;
         font-family: $font-stickie-date;
+        position: absolute;
+        top: 0.25em;
+        right: 0.5em;
     }
+    .location {
+        font-size: 80%;
+        color: transparent;
+        font-family: $font-stickie-location;
+        position: absolute;
+        top: 0.25em;
+        left: 0.5em;
+        //padding-left: 12px;
+        @include transition-property(color);
+        @include transition-duration(0.5s);
+    }
+    &:hover .location {
+        //background: transparent url(../img/location1.png) no-repeat 2px 4px;
+        color: $color-stickie-location;
+        @include transition-property(color);
+        @include transition-duration(0.5s);
+    }
+    .new {
+        font-size: 80%;
+        color: $color-stickie-new;
+        font-family: $font-stickie-new;
+        text-transform: lowercase;
+        position: absolute;
+        right: 0.5em;
+        bottom: 0.25em;
+    }
+}
+
+#newpost {
+    font-family: $font-stickie-info;
+    background-color: $color-stickie-info;
+    @include transition-property(background-color);
+    @include transition-duration(0.5s);
+    textarea {
+        font-family: $font-stickie-headline;
+        width: 100%;
+        border: 0;
+        background-color: $color-stickie-info;
+        resize: none;
+        @include transition-property(background-color);
+        @include transition-duration(0.5s);
+    }
+    #newpost_details {
+        margin-top: 0.5em;
+        text-align: right;
+    }
+    button {
+        font-size: 66%;
+    }
+    &:focus, &:hover {
+        background-color: $color-stickie-fulltime;
+        @include transition-property(background-color);
+        @include transition-duration(0.5s);
+        textarea {
+            background-color: $color-stickie-fulltime;
+            @include transition-property(background-color);
+            @include transition-duration(0.5s);
+        }
+    }
+}
+
+
+
+.info {
+    font-family: $font-stickie-info;
+    background-color: $color-stickie-info;
+}
+
+.fulltime {
+    background-color: $color-stickie-fulltime;
+}
+
+.parttime {
+    background-color: $color-stickie-parttime;
+}
+
+.volunteer {
+    background-color: $color-stickie-volunteer;
 }
 
 /* Make stickies wrap */
 @media all and (min-width: 960px) {
-    .container .stickie:nth-child(4n+1) {
+    #main .stickie:nth-child(4n+1) {
     	clear: left;
     }
 }
 @media all and (min-width: 60.01em) and (max-width: 75em) {
-    .container .stickie:nth-child(3n+1) {
+    #main .stickie:nth-child(3n+1) {
     	clear: left;
     }
 }
 @media all and (min-width: 45.51em) and (max-width: 60em) {
-    .container .stickie:nth-child(2n+1) {
+    #main .stickie:nth-child(2n+1) {
     	clear: left;
     }
 }
 @media all and (max-width: 380px) {
-    .container .stickie {
+    #main .stickie {
     	float: none;
     }
 }

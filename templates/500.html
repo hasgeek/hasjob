@@ -1,0 +1,19 @@
+{% extends "inc/layout.html" %}
+{% block title %}500 Internal Server Error{% endblock %}
+{% block pageheaders %}
+{% endblock %}
+{%block content %}
+  <div id="main-40x">
+    <div class="stickie" id="stickie-40x">
+      <a href="{{ url_for('index') }}">
+        <div id="i40x">
+          <span class="i5">5</span><span class="i0">0</span><span class="i4">0</span>
+        </div>
+        <div id="i40x-message">
+          Ouch! Something broke inside.<br/>
+          Maybe the server is overloaded.
+        </div>
+      </a>
+    </div>
+  </div>
+{% endblock %}

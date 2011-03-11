@@ -1,0 +1,11 @@
+@mixin search-input($font-size: 11px) {
+  font-size: $font-size;
+  @include border-radius(100px);
+  border: 1px solid #cccccc;
+  border-top-color: #999999;
+  border-left-color: #b0b0b0;
+  border-right-color: #bbbbbb;
+  background: white image-url("search.png") 4px center no-repeat;
+  @include box-shadow(rgba(black, 0.2), 0, 1px, 0, inset);
+  width: 180px;
+  padding: 2px 8px 2px 20px; }
