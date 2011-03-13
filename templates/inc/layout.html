@@ -20,9 +20,9 @@
   <link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.ico') }}"/>
   <link rel="apple-touch-icon" href="{{ url_for('static', filename='img/logo-star.png') }}"/>
   <!-- Fonts -->
-  <link href='http://fonts.googleapis.com/css?family=Walter+Turncoat' rel='stylesheet' type='text/css'>
-  <link href='http://fonts.googleapis.com/css?family=Permanent+Marker' rel='stylesheet' type='text/css'>
-  <link href='http://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+  <link href="http://fonts.googleapis.com/css?family=Walter+Turncoat" rel="stylesheet" type="text/css">
+  <link href="http://fonts.googleapis.com/css?family=Permanent+Marker" rel="stylesheet" type="text/css">
+  <link href="http://fonts.googleapis.com/css?family=Architects+Daughter" rel="stylesheet" type="text/css">
 
   <!-- Stylesheets -->
   <link href="{{ url_for('static', filename='css/screen.css') }}" media="screen, projection" rel="stylesheet" type="text/css" />
@@ -43,17 +43,17 @@
     <header>
       <div id="site-title"><a href="{{ url_for('index') }}"><span class="has">Has</span><span class="geek">Geek</span> <span class="jobs">Job Board</span></a></div>
       <form id="search" action="{{ url_for('search') }}">
-        <input class="search" placeholder="Find a job..." name="q"/>
-        <button class="search" type="submit">Find</button>
+        <input type="text" placeholder="Find a job..." name="q"/>
+        <input type="submit" value="Go"/>
       </form>
       {% block header %}{% endblock %}
     </header>
-    <div id="flash-messages">
-      {%- for category, msg in get_flashed_messages(with_categories=true) %}
-        <div class="flash flash-{{ category }}">{{ msg }}</div>
-      {%- endfor %}
-    </div>
     <div id="main">
+      <div id="flash-messages">
+        {%- for category, msg in get_flashed_messages(with_categories=true) %}
+          <div class="flash flash-{{ category }}"><div class="flashmessage">{{ msg }}</div></div>
+        {%- endfor %}
+      </div>
       {% block content %}{% endblock %}
     </div>
     <div id="main_footer"></div>
@@ -62,8 +62,8 @@
     {% block footer %}
     <p>
       The HasGeek Job Board is a service of <a href="http://hasgeek.in/">HasGeek</a>.
-      Subscribe to <a href="/feed">the feed</a> or follow
-      <a href="http://twitter.com/hasgeek">@hasjob on Twitter</a>
+      Subscribe to <a href="{{ url_for('feed') }}">the feed</a> or follow
+      <a href="http://twitter.com/hasjob">@hasjob on Twitter</a>
       to find out when new jobs are posted.
     </p>
     {% endblock %}

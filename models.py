@@ -4,7 +4,7 @@ from datetime import datetime
 from flaskext.sqlalchemy import SQLAlchemy
 
 from app import app
-from utils import random_long_key, random_hash_key
+from utils import random_long_key, random_hash_key, newid
 
 db = SQLAlchemy(app)
 
@@ -17,6 +17,47 @@ class POSTSTATUS:
     WITHDRAWN = 5 # Withdrawn by owner
 
 
+class USERLEVEL:
+    USER          = 0 # Just a user
+    REVIEWER      = 1 # Reviewer. Allowed to edit
+    ADMINISTRATOR = 2 # Admin. Allowed to change job types and categories
+
+
+class JobType(db.Model):
+    __tablename__ = 'jobtype'
+
+    id = db.Column(db.Integer, primary_key=True)
+    slug = db.Column(db.Text(250), nullable=False, unique=True)
+    title = db.Column(db.Unicode(250), nullable=False)
+    seq = db.Column(db.Integer, nullable=False, default=0)
+    public = db.Column(db.Boolean, nullable=False, default=True)
+
+    def __call__(self):
+        return self.title
+
+
+class JobCategory(db.Model):
+    __tablename__ = 'jobcategory'
+
+    id = db.Column(db.Integer, primary_key=True)
+    slug = db.Column(db.Text(250), nullable=False, unique=True)
+    title = db.Column(db.Unicode(250), nullable=False)
+    seq = db.Column(db.Integer, nullable=False, default=0)
+    public = db.Column(db.Boolean, nullable=False, default=True)
+
+    def __call__(self):
+        return self.title
+
+
+class User(db.Model):
+    __tablename__ = 'user'
+
+    id = db.Column(db.Integer, primary_key=True)
+    #: userid should match the userid in lastuser
+    userid = db.Column(db.Text(22), nullable=False, unique=True, default=newid)
+    email = db.Column(db.Unicode(250), nullable=False, unique=True)
+
+
 class JobPost(db.Model):
     __tablename__ = 'jobpost'
 
@@ -27,7 +68,10 @@ class JobPost(db.Model):
 
     # Job description
     headline = db.Column(db.Unicode(100), nullable=False)
-    category = db.Column(db.Unicode(50), nullable=False)
+    type_id = db.Column(db.Integer, db.ForeignKey('jobtype.id'), nullable=False)
+    type = db.relation(JobType, primaryjoin=type_id == JobType.id)
+    category_id = db.Column(db.Integer, db.ForeignKey('jobcategory.id'), nullable=False)
+    category = db.relation(JobCategory, primaryjoin=category_id == JobCategory.id)
     location = db.Column(db.Unicode(80), nullable=False)
     relocation_assist = db.Column(db.Boolean, default=False, nullable=False)
     description = db.Column(db.Unicode, nullable=False)
@@ -35,8 +79,8 @@ class JobPost(db.Model):
     how_to_apply = db.Column(db.Unicode, nullable=False)
 
     # Company details
-    company_name = db.Column(db.Unicode(80), nullable=False, default='')
-    company_logo = db.Column(db.LargeBinary, nullable=True) # TODO: Images in the db?
+    company_name = db.Column(db.Unicode(80), nullable=False)
+    company_logo = db.Column(db.Unicode(255), nullable=True)
     company_url = db.Column(db.Unicode(255), nullable=False, default='')
     email = db.Column(db.Unicode(80), nullable=False)
 
@@ -45,13 +89,18 @@ class JobPost(db.Model):
     status = db.Column(db.Integer, nullable=False, default=POSTSTATUS.DRAFT)
     ipaddr = db.Column(db.Text(45), nullable=False)
     useragent = db.Column(db.Unicode(250), nullable=True)
+    edit_key = db.Column(db.String(40), nullable=False, default=random_long_key)
     email_verify_key = db.Column(db.String(40), nullable=False, default=random_long_key)
+    email_sent = db.Column(db.Boolean, nullable=False, default=False)
     email_verified = db.Column(db.Boolean, nullable=False, default=False)
     payment_value = db.Column(db.Integer, nullable=False, default=0)
     payment_received = db.Column(db.Boolean, nullable=False, default=False)
-    reviewer = db.Column(db.Integer, nullable=True)
+    reviewer = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     review_datetime = db.Column(db.DateTime, nullable=True)
+    review_comments = db.Column(db.Unicode(250), nullable=True)
 
+    def is_draft(self):
+        return self.status == POSTSTATUS.DRAFT
 
 def unique_hash(model=JobPost):
     """

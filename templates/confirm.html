@@ -1,0 +1,39 @@
+{% extends "inc/layout.html" %}
+{% from "inc/forms.html" import renderfield %}
+{% block title %}{{ post.headline|e }}{% endblock %}
+{% block content %}
+{% if post.is_draft %}
+<div id="sheet">
+  <div class="section first">
+    <h1>Confirm your listing</h1>
+    <h2>Terms of service</h2>
+    <p>
+      I understand that my listing may be removed if it
+    </p>
+    <ul>
+      <li>Is for a position that involves adult content,</li>
+      <li>Is an illegitimate work opportunity,</li>
+      <li>Is an incorrect job type (full time when it should be contract, etc), or</li>
+      <li>Includes multiple jobs in one listing (four positions available, etc).</li>
+    </ul>
+    <p>
+      HasGeek may change the nature of the job board service or discontinue the service without prior notice at any time.
+      If your listing is removed, a refund will be issued. <em>Listings are free during the initial testing period.</em>
+    </p>
+    <form method="POST">
+      <input type="hidden" name="_charset_"/>
+      <input type="hidden" name="form.id" value="confirmjob"/>
+      {{ form.csrf() }}
+      {{ renderfield(form.terms_accepted, "check", True) }}
+      <input type="submit" value="Accept terms and publish"/>
+    </form>
+  </div>
+</div>
+{% else %}
+<div class="flash">
+  <div class="flashmessage">
+    Nothing to confirm. <a href="{{ url_for('detail', post.hashid) }}">See the listing</a>?
+  </div>
+</div>
+{% endif %}
+{% endblock %}

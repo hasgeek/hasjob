@@ -1,0 +1,16 @@
+{% extends "inc/layout.html" %}
+{% from "inc/forms.html" import renderfield %}
+{% block title %}{{ post.headline|e }}{% endblock %}
+{% block content %}
+<div id="sheet">
+  <div class="section first">
+    <h1>One last step&hellip;</h1>
+    <p>
+      We sent you an email to confirm your email address.
+      Please click on the link within and your job will
+      be published. The email also contains information
+      on how you may edit or withdraw the job listing.
+    </p>
+  </div>
+</div>
+{% endblock %}

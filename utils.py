@@ -1,4 +1,6 @@
 from random import randint
+from uuid import uuid4
+from base64 import b64encode
 from BeautifulSoup import BeautifulSoup, Comment
 
 #: This code adapted from http://en.wikipedia.org/wiki/Base_36#Python%5FConversion%5FCode
@@ -46,6 +48,12 @@ def random_hash_key():
     ...         print "Length is not 5!"
     """
     return ('0000' + base36encode(randint(0, 60466175)))[-5:] # 60466175 is 'zzzzz'
+
+def newid():
+    """
+    Return a new random id that is exactly 22 characters long.
+    """
+    return b64encode(uuid4().bytes, altchars=',-').replace('=', '')
 
 
 VALID_TAGS = {'strong': [],

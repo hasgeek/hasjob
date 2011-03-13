@@ -7,36 +7,54 @@
 {% block header %}
   <p id="pitch">
     HasGeek reaches out to thousands of developers via events, blogs and discussion groups.
-    Job postings made here reach the entire network. <a href="{{ url_for('newjob') }}">Post a job &rarr;</a>
+    Job listings made here reach the entire network. <a href="{{ url_for('newjob') }}">Post a job &rarr;</a>
   </p>
 {% endblock %}
 
 {% block content %}
   {# {% include "inc/logo.html" %} #}
   <div id="stickie-area">
-    <div id="newpost" class="stickie">
-      <form action="{{ url_for('newjob') }}" method="POST">
-        <input type="hidden" name="_charset_"/>
-        <input type="hidden" name="form.id" value="newheadline"/>
-        <label id="newpost_title" for="newpost_headline">Post a job:</label>
-        <textarea id="newpost_headline" name="job_headline" class="expand">Awesome Coder wanted at Awesome Company</textarea>
-        <div id="newpost_details"><button type="submit">Add details &rarr;</button></div>
-      </form>
-    </div>
+    {% if jobtype or jobcategory %}
+      <div id="filtered" class="stickie">
+        <a href="{{ url_for('index') }}">
+          <span class="filtered">
+            You are seeing
+            {% if jobtype %}{{ jobtype.title.lower() }}{% endif %}
+            {% if jobcategory %}{{ jobcategory.title.lower() }}{% endif %}
+            jobs. See all jobs?
+          </span>
+        </a>
+      </div>
+    {% else %}
+      <div id="newpost" class="stickie">
+        <form action="{{ url_for('newjob') }}" method="POST">
+          <input type="hidden" name="_charset_"/>
+          <input type="hidden" name="form.id" value="newheadline"/>
+          <label id="newpost_title" for="newpost_headline">Post a job:</label>
+          <textarea id="newpost_headline" name="job_headline" class="expand">Awesome Coder wanted at Awesome Company</textarea>
+          <div id="newpost_details"><input type="submit" value="Add details &rarr;"/></div>
+        </form>
+      </div>
+    {% endif %}
     {% for post in posts %}
       <div class="stickie fulltime">
-        <a href="{{ url_for('jobdetail', hashid=post.hashid) }}">
+        <a href="{{ url_for('jobdetail', hashid=post.hashid) }}" rel="bookmark">
           <span class="location">{{ post.location }}</span>
           <span class="date">{{ post.datetime|shortdate }}</span>
           <span class="headline">{{ post.headline }}</span>
           {% if now - post.datetime < newlimit %}<span class="new">New!</span>{% endif %}
         </a>
       </div>
+    {% else %}
+      <div class="stickie" id="nojobs">
+        Sorry, no jobs listed.
+      </div>
     {% endfor %}
     <!-- Dummy stickies for testing. Change this to ul>li>a tags -->
+    <!--
     <div class="stickie fulltime">
       <a href="/detail/1">
-        <span class="location">Bangalore</span>
+        <span class="location">Bangalore or anywhere else really</span>
         <span class="date">Mar 6</span>
         <span class="headline">Marketing guru at HasGeek Media LLP. We really love our marketing gurus. Come aboard today!</span>
         <span class="new">New!</span>
@@ -111,7 +129,7 @@
         <span class="date">Feb 28</span>
         <span class="headline">Logistics coordinator at HasGeek</span>
       </a>
-    </div>
+    </div> -->
   </div>
 {% endblock %}
 {% block footerscripts %}
