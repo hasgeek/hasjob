@@ -1,13 +1,13 @@
-{% macro renderfield(field, css_class="", autofocus=False) -%}
+{% macro renderfield(field, css_class="", widget_css_class=None, autofocus=False) -%}
 {% if field.errors -%}
   {% for error in field.errors %}<div class="error">{{ error }}</div>{% endfor %}
 {% endif %}
 <div class="field{% if css_class %} {{ css_class}}{% endif %}" id="field-{{ field.id }}">
   {% if field.widget.input_type == 'checkbox' %}
-    <div class="label">&nbsp;</div><div class="control checkbox">{{ field }} {{ field.label }}</div>
+    <div class="label">&nbsp;</div><div class="control checkbox">{% if widget_css_class %}{{ field(class=widget_css_class) }}{% else %}{{ field }}{% endif %} {{ field.label }}</div>
   {% else %}
     <div class="label">{{ field.label }}</div>
-    <div class="control">{% if autofocus %}{{ field(autofocus="autofocus") }}{% else %}{{ field }}{% endif %}<br/>
+    <div class="control">{% if autofocus %}{% if widget_css_class %}{{ field(autofocus="autofocus", class=widget_css_class) }}{% else %}{{ field(autofocus="autofocus") }}{% endif %}{% else %}{% if widget_css_class %}{{ field(class=widget_css_class) }}{% else %}{{ field }}{% endif %}{% endif %}<br/>
       <span class="description">{{ field.description }}</span></div>
   {% endif %}
 </div>

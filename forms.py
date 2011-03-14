@@ -30,7 +30,9 @@ class ListingForm(Form):
         description=u'“Bangalore”, “Chennai”, “Pune”, or “Anywhere”',
         validators=[Required(u"If this job doesn’t have a fixed location, use “Anywhere”")])
     job_relocation_assist = BooleanField("Relocation assistance available")
-    job_description = TextAreaField("Description", validators=[Required("A description of the job is required")])
+    job_description = TextAreaField("Description",
+        description=u"Our apologies for the ugly font you see here. We’re working on it.",
+        validators=[Required("A description of the job is required")])
     job_perks = BooleanField("Job perks are available")
     job_perks_description = TextAreaField("Describe job perks",
         description=u"Stock options, free lunch, free conference passes, etc")

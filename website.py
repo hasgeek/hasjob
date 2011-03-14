@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import logging
+from flaskext.assets import Environment, Bundle
+
 from app import app
 import models, forms, views, assets, uploads
 from models import db
-from flaskext.assets import Environment, Bundle
 
 app.config.from_object(__name__)
 try:
@@ -17,11 +19,20 @@ except ImportError:
 uploads.configure()
 views.mail.init_app(app)
 
+file_handler = logging.FileHandler(app.config['LOGFILE'])
+file_handler.setLevel(logging.WARNING)
+app.logger.addHandler(file_handler)
+if app.config['ADMINS']:
+    mail_handler = logging.handlers.SMTPHandler(app.config['MAIL_SERVER'],
+        app.config['DEFAULT_MAIL_SENDER'][1],
+        app.config['ADMINS'],
+        'hasgeek-jobs failure',
+        credentials = (app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD']))
+    mail_handler.setLevel(logging.ERROR)
+    app.logger.addHandler(mail_handler)
+
+
 if __name__ == '__main__':
-    #import logging
-    #file_handler = logging.FileHandler('error.log')
-    #file_handler.setLevel(logging.WARNING)
-    #app.logger.addHandler(file_handler)
     # Create database table
     db.create_all()
     # Seed with sample data

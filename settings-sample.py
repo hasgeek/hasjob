@@ -24,3 +24,7 @@ UPLOADED_LOGOS_DEST='/tmp/uploads'
 MAIL_FAIL_SILENTLY = False
 MAIL_SERVER = 'localhost'
 DEFAULT_MAIL_SENDER = ('Job Board', 'test@example.com')
+#: Logging: recipients of error emails
+ADMINS=[]
+#: Log file
+LOGFILE='error.log'

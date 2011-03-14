@@ -164,7 +164,10 @@ def editjob(hashid, key, form=None, post=None):
         post.category_id = form.job_category.data
         post.location = form.job_location.data
         post.relocation_assist = form.job_relocation_assist.data
+        print form.job_description.data
         post.description = sanitize_html(form.job_description.data)
+        print "-----"
+        print post.description
         post.perks = sanitize_html(form.job_perks_description.data) if form.job_perks.data else ''
         post.how_to_apply = form.job_how_to_apply.data
         post.company_name = form.company_name.data
