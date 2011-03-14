@@ -27,7 +27,7 @@ class JobType(db.Model):
     __tablename__ = 'jobtype'
 
     id = db.Column(db.Integer, primary_key=True)
-    slug = db.Column(db.Text(250), nullable=False, unique=True)
+    slug = db.Column(db.String(250), nullable=False, unique=True)
     title = db.Column(db.Unicode(250), nullable=False)
     seq = db.Column(db.Integer, nullable=False, default=0)
     public = db.Column(db.Boolean, nullable=False, default=True)
@@ -40,7 +40,7 @@ class JobCategory(db.Model):
     __tablename__ = 'jobcategory'
 
     id = db.Column(db.Integer, primary_key=True)
-    slug = db.Column(db.Text(250), nullable=False, unique=True)
+    slug = db.Column(db.String(250), nullable=False, unique=True)
     title = db.Column(db.Unicode(250), nullable=False)
     seq = db.Column(db.Integer, nullable=False, default=0)
     public = db.Column(db.Boolean, nullable=False, default=True)
@@ -54,7 +54,7 @@ class User(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     #: userid should match the userid in lastuser
-    userid = db.Column(db.Text(22), nullable=False, unique=True, default=newid)
+    userid = db.Column(db.String(22), nullable=False, unique=True, default=newid)
     email = db.Column(db.Unicode(250), nullable=False, unique=True)
 
 
@@ -63,7 +63,7 @@ class JobPost(db.Model):
 
     # Metadata
     id = db.Column(db.Integer, primary_key=True)
-    hashid = db.Column(db.Text(5), nullable=False, unique=True)
+    hashid = db.Column(db.String(5), nullable=False, unique=True)
     datetime = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
 
     # Job description
@@ -74,9 +74,9 @@ class JobPost(db.Model):
     category = db.relation(JobCategory, primaryjoin=category_id == JobCategory.id)
     location = db.Column(db.Unicode(80), nullable=False)
     relocation_assist = db.Column(db.Boolean, default=False, nullable=False)
-    description = db.Column(db.Unicode, nullable=False)
-    perks = db.Column(db.Unicode, nullable=False)
-    how_to_apply = db.Column(db.Unicode, nullable=False)
+    description = db.Column(db.UnicodeText, nullable=False)
+    perks = db.Column(db.UnicodeText, nullable=False)
+    how_to_apply = db.Column(db.UnicodeText, nullable=False)
 
     # Company details
     company_name = db.Column(db.Unicode(80), nullable=False)
@@ -85,9 +85,9 @@ class JobPost(db.Model):
     email = db.Column(db.Unicode(80), nullable=False)
 
     # Payment, audit and workflow fields
-    promocode = db.Column(db.Text(40), nullable=True)
+    promocode = db.Column(db.String(40), nullable=True)
     status = db.Column(db.Integer, nullable=False, default=POSTSTATUS.DRAFT)
-    ipaddr = db.Column(db.Text(45), nullable=False)
+    ipaddr = db.Column(db.String(45), nullable=False)
     useragent = db.Column(db.Unicode(250), nullable=True)
     edit_key = db.Column(db.String(40), nullable=False, default=random_long_key)
     email_verify_key = db.Column(db.String(40), nullable=False, default=random_long_key)
