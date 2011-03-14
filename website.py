@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from flaskext.assets import Environment, Bundle
 
 from app import app
 import models, forms, views, assets, uploads
