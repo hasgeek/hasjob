@@ -64,7 +64,10 @@ class JobPost(db.Model):
     # Metadata
     id = db.Column(db.Integer, primary_key=True)
     hashid = db.Column(db.String(5), nullable=False, unique=True)
-    datetime = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    created_datetime = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    datetime = db.Column(db.DateTime, default=datetime.utcnow, nullable=False) # Published
+    closed_datetime = db.Column(db.DateTime, nullable=True) # If withdrawn or rejected
+    #modified_datetime = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
     # Job description
     headline = db.Column(db.Unicode(100), nullable=False)

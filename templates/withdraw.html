@@ -1,0 +1,23 @@
+{% extends "inc/layout.html" %}
+{% from "inc/forms.html" import renderfield %}
+{% block title %}{{ post.headline|e }}{% endblock %}
+{% block content %}
+<div id="sheet">
+  <div class="section first">
+    <h1>Withdraw job listing?</h1>
+    <h2>{{ post.headline }}</h2>
+    <p>
+      Please confirm that you wish to withdraw this job listing.
+      Your listing will be permanently withdrawn and cannot be made
+      available again.
+    </p>
+    <form method="POST">
+      <input type="hidden" name="_charset_"/>
+      <input type="hidden" name="form.id" value="withdrawjob"/>
+      {{ form.csrf() }}
+      {{ renderfield(form.really_withdraw, "check") }}
+      <input type="submit" value="Withdraw job listing"/>
+    </form>
+  </div>
+</div>
+{% endblock %}

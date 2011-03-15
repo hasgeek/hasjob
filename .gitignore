@@ -7,3 +7,4 @@ test.db
 .pydevproject
 .settings
 .sass-cache
+error.log

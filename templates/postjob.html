@@ -9,7 +9,7 @@
     </h1>
     <p class="caption">
       HasGeek reaches out to thousands of developers via events, blogs and discussion groups.
-      Job listings made here will be shown across the network.
+      Job listings made here will be shown across the network. Listings are valid for 30 days.
     </p>
   </div>
   <form id="newjob" enctype="multipart/form-data" method="POST">
@@ -77,8 +77,12 @@
       theme_advanced_statusbar_location : "bottom",
       theme_advanced_resizing : true,
       theme_advanced_path : false,
-      valid_elements : "p,br,strong/b,em/i,ul,ol,li,a[href|title]",
 
+      valid_elements : "p,br,strong/b,em/i,ul,ol,li,a[!href|title]",
+      width: "730",
+      height: "400",
+
+      {# // This totally breaks Firefox
     	{%- if config['TYPEKIT_CODE'] %}
 
       oninit: function() {
@@ -104,7 +108,7 @@
         });
       },
 
-      {% endif %}
+      {% endif %} #}
   		// Content CSS
       content_css : "{{ url_for('static', filename='css/editor.css') }}"
       

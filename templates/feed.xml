@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>{{ title|e }} – {{ config['SITE_TITLE']|e }}</title>
+  <link href="{{ url_for('index', _external=True) }}"/>
+  <link rel="self" href="{{ request.base_url }}"/>
+  <updated>{{ updated }}</updated>
+  <id>{{ url_for('index', _external=True) }}</id>
+  <icon>{{ url_for('static', filename='img/logo.png') }}</icon>
+  <author><name>{{ config['SITE_TITLE']|e }}</name></author>
+
+  {% for post in posts -%}
+  <entry>
+    <title type="text">{{ post.headline|e }}</title>
+    <id>{{ url_for('jobdetail', hashid=post.hashid, _external=True) }}</id>
+    <link href="{{ url_for('jobdetail', hashid=post.hashid, _external=True) }}"/>
+    <updated>{{ post.datetime.isoformat() }}Z</updated>
+    <published>{{ post.datetime.isoformat() }}Z</published>
+    <content type="html">
+      {{ post.description|e }}
+      {% if post.perks -%}
+      &lt;h2&gt;Job Perks&lt;/h2&gt;
+      {{ post.perks|e }}
+      {%- endif %}
+    </content>
+  </entry>
+  {% endfor %}
+</feed>

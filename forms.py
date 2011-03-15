@@ -14,6 +14,8 @@ def optional_url(form, field):
     if not field.data:
         return
     else:
+        if ':' not in field.data:
+            field.data = 'http://' + field.data
         validator = URL(message="Invalid URL. URLs must begin with http:// or https://")
         return validator(form, field)
 
@@ -72,3 +74,7 @@ class ConfirmForm(Form):
     terms_accepted = BooleanField("I accept the terms of service",
         validators=[Required("You must accept the terms of service to publish this listing")])
     #promocode = TextField("Promo code")
+
+class WithdrawForm(Form):
+    really_withdraw = BooleanField("Yes, I really want to withdraw the job listing",
+        validators=[Required(u"If you don’t want to withdraw the listing, just close this page")])

@@ -3,7 +3,7 @@
 from datetime import datetime, timedelta
 from urllib import quote, quote_plus
 from pytz import utc, timezone
-from flask import render_template, redirect, url_for, request, session, abort, flash, g
+from flask import render_template, redirect, url_for, request, session, abort, flash, g, Response
 from flaskext.mail import Mail, Message
 from markdown import markdown
 
@@ -15,15 +15,19 @@ from utils import sanitize_html
 
 mail = Mail()
 
+def getposts(basequery=None):
+    if basequery is None:
+        basequery = JobPost.query
+    return basequery.filter(
+        JobPost.status.in_([POSTSTATUS.CONFIRMED, POSTSTATUS.REVIEWED])).filter(
+        JobPost.datetime > datetime.now() - timedelta(days=30)).order_by(db.desc(JobPost.datetime))
+
+
 @app.route('/')
 def index(basequery=None, type=None, category=None):
     now = datetime.utcnow()
     newlimit = timedelta(days=3)
-    if basequery is None:
-        basequery = JobPost.query
-    posts = basequery.filter(
-        JobPost.status.in_([POSTSTATUS.CONFIRMED, POSTSTATUS.REVIEWED])).filter(
-        JobPost.datetime > datetime.now() - timedelta(days=30)).order_by(db.desc(JobPost.datetime))
+    posts = getposts(basequery)
     return render_template('index.html', posts=posts, now=now, newlimit=newlimit,
                            jobtype=type, jobcategory=category)
 
@@ -50,6 +54,47 @@ def browse_by_category(slug):
     return index(basequery=basequery, category=ob)
 
 
+@app.route('/feed')
+def feed():
+    posts = list(getposts())
+    updated = posts[0].datetime.isoformat()+'Z'
+    return Response(render_template('feed.xml', posts=posts, updated=updated, title="All jobs"),
+                           content_type = 'application/atom+xml; charset=utf-8')
+
+
+@app.route('/robots.txt')
+def robots():
+    return Response("Disallow: /edit/*\n"
+                    "Disallow: /confirm/*\n"
+                    "Disallow: /withdraw/*\n"
+                    "",
+                    content_type = 'text/plain; charset=utf-8')
+
+
+@app.route('/sitemap.xml')
+def sitemap():
+    sitemapxml = '<?xml version="1.0" encoding="UTF-8"?>\n'\
+                 '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+    # Add job type pages to sitemap
+    for item in JobType.query.all():
+        sitemapxml += '  <url>\n'\
+                      '    <loc>%s</loc>\n' % url_for('browse_by_type', slug=item.slug, _external=True) + \
+                      '  </url>\n'
+    # Add job category pages to sitemap
+    for item in JobCategory.query.all():
+      sitemapxml += '  <url>\n'\
+                    '    <loc>%s</loc>\n' % url_for('browse_by_category', slug=item.slug, _external=True) + \
+                    '  </url>\n'
+    # Add live posts to sitemap
+    for post in getposts():
+        sitemapxml += '  <url>\n'\
+                      '    <loc>%s</loc>\n' % url_for('jobdetail', hashid=post.hashid, _external=True) + \
+                      '    <lastmod>%s</lastmod>\n' % (post.datetime.isoformat()+'Z') + \
+                      '    <changefreq>monthly</changefreq>\n'\
+                      '  </url>\n'
+    sitemapxml += '</urlset>'
+    return Response(sitemapxml, content_type = 'text/xml; charset=utf-8')
+
 
 @app.route('/favicon.ico')
 def favicon():
@@ -75,7 +120,7 @@ def jobdetail(hashid):
     if post.status == POSTSTATUS.DRAFT:
         if post.edit_key not in session.get('userkeys', []):
             abort(403)
-    if post.status == POSTSTATUS.REJECTED:
+    if post.status in [POSTSTATUS.REJECTED, POSTSTATUS.WITHDRAWN]:
         abort(410)
     return render_template('detail.html', post=post)
 
@@ -143,11 +188,29 @@ def confirm_email(hashid, key):
 @app.route('/withdraw/<hashid>/<key>', methods=('GET', 'POST'))
 def withdraw(hashid, key):
     # TODO: Support for withdrawing job posts
-    abort(404)
+    post = JobPost.query.filter_by(hashid=hashid).first()
+    form = forms.WithdrawForm()
+    if post is None:
+        abort(404)
+    if key != post.edit_key:
+        abort(403)
+    if post.status == POSTSTATUS.WITHDRAWN:
+        flash("Your job listing has already been withdrawn", "info")
+        return redirect(url_for('index'), code=303)
+    if post.status not in [POSTSTATUS.CONFIRMED, POSTSTATUS.REVIEWED]:
+        flash("Your post cannot be withdrawn because it is not public", "info")
+        return redirect(url_for('index'), code=303)
+    if form.validate_on_submit():
+        post.status = POSTSTATUS.WITHDRAWN
+        post.closed_datetime = datetime.utcnow()
+        db.session.commit()
+        flash("Your job listing has been withdrawn and is no longer available", "info")
+        return redirect(url_for('index'), code=303)
+    return render_template("withdraw.html", post=post, form=form)
 
 
 @app.route('/edit/<hashid>/<key>', methods=('GET', 'POST'))
-def editjob(hashid, key, form=None, post=None):
+def editjob(hashid, key, form=None, post=None, validated=False):
     if form is None:
         form = forms.ListingForm(request.form)
         form.job_type.choices = [(ob.id, ob.title) for ob in JobType.query.filter_by(public=True).order_by('seq')]
@@ -158,7 +221,7 @@ def editjob(hashid, key, form=None, post=None):
             abort(404)
     if key != post.edit_key:
         abort(403)
-    if request.method == 'POST' and form.validate():
+    if request.method == 'POST' and (validated or form.validate()):
         post.headline = form.job_headline.data
         post.type_id = form.job_type.data
         post.category_id = form.job_category.data
@@ -215,28 +278,29 @@ def newjob():
     form.job_type.choices = [(ob.id, ob.title) for ob in JobType.query.filter_by(public=True).order_by('seq')]
     form.job_category.choices = [(ob.id, ob.title) for ob in JobCategory.query.filter_by(public=True).order_by('seq')]
     if request.method == 'POST' and request.form.get('form.id') == 'newheadline':
+        # POST request from the main page's Post a Job box.
         form.csrf.data = form.reset_csrf()
     if request.method == 'POST' and request.form.get('form.id') != 'newheadline' and form.validate():
-        # Make a model, set cookie for email id, and redirect to detail page
-        # Since it's still a draft, cookie must match job post's email id
+        # POST request from new job page, with successful validation
+        # Move it to the editjob page for handling here forward
         post = JobPost(hashid = unique_hash(JobPost),
                        ipaddr = request.environ['REMOTE_ADDR'],
                        useragent = request.user_agent.string)
         db.session.add(post)
-        return editjob(post.hashid, post.edit_key, form, post)
+        return editjob(post.hashid, post.edit_key, form, post, validated=True)
     elif request.method == 'POST' and request.form.get('form.id') != 'newheadline':
+        # POST request from new job page, with errors
         flash("Please correct the indicated errors", category='interactive')
 
+    # Render page. Execution reaches here under three conditions:
+    # 1. GET request, page loaded for the first time
+    # 2. POST request from main page's Post a Job box
+    # 3. POST request from this page, with errors
     return render_template('postjob.html', form=form)
 
 
 @app.route('/search')
 def search():
-    abort(404)
-
-
-@app.route('/feed')
-def feed():
     abort(404)
 
 
