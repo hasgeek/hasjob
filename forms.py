@@ -44,8 +44,8 @@ class ListingForm(Form):
                     #u"We’ll secure it",
         validators=[Required("HasGeek does not offer screening services. Please specify how candidates may apply")])
     company_name = TextField("Name",
-        description=u"Enter your organization’s name",
-        validators=[Required(u"If you don’t wish to reveal your organization’s name, use a pseudonym")])
+        description=u"The name of the organization where the position is. No intermediaries, please",
+        validators=[Required(u"This is required. Posting any name other than that of the actual company is a violation of the ToS")])
     company_logo = FileField("Logo",
         description=u"Optional — Your company logo will appear at the top of your listing. "
                     u"170px wide is optimal. We’ll resize automatically if it’s wider",
