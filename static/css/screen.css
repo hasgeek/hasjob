@@ -675,7 +675,7 @@ footer {
 /* line 210, ../../sass/_layout.scss */
 #sheet #detail-sidebar ul {
   list-style: none;
-  margin: 0;
+  margin: 0 0 -1px 0;
   padding: 0;
 }
 /* line 214, ../../sass/_layout.scss */
