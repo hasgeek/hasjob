@@ -6,6 +6,7 @@ from flaskext.wtf import Required, Email, Length, URL, ValidationError
 from flaskext.wtf.html5 import URLField, EmailField
 
 from uploads import process_image
+from utils import simplify_text
 
 def optional_url(form, field):
     """
@@ -69,6 +70,9 @@ class ListingForm(Form):
         except KeyError, e:
             raise ValidationError("Unknown file format")
 
+    def validate_job_headline(form, field):
+        if simplify_text(field.data) == 'awesome coder wanted at awesome company':
+            raise ValidationError(u"Come on, write your own headline. You aren’t just another run-of-the-mill company, right?")
 
 class ConfirmForm(Form):
     terms_accepted = BooleanField("I accept the terms of service",

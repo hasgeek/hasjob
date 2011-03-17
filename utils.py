@@ -1,3 +1,4 @@
+import string
 from random import randint
 from uuid import uuid4
 from base64 import b64encode
@@ -88,6 +89,24 @@ def sanitize_html(value, valid_tags=VALID_TAGS):
         if oldoutput == newoutput:
             break
     return unicode(newoutput, 'utf-8')
+
+
+def simplify_text(text):
+    """
+    Simplify text to allow comparison.
+    
+    >>> simplify_text("Awesome Coder wanted at Awesome Company")
+    'awesome coder wanted at awesome company'
+    >>> simplify_text("Awesome Coder, wanted  at Awesome Company! ")
+    'awesome coder wanted at awesome company'
+    >>> simplify_text(u"Awesome Coder, wanted  at Awesome Company! ")
+    u'awesome coder wanted at awesome company'
+    """
+    if isinstance(text, unicode):
+        text = unicode(text.encode('utf-8').translate(string.maketrans("",""), string.punctuation).lower(), 'utf-8')
+    else:
+        text = text.translate(string.maketrans("",""), string.punctuation).lower()
+    return " ".join(text.split())
 
 
 if __name__ == '__main__':

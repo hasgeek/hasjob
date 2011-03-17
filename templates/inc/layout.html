@@ -41,7 +41,7 @@
 <body>
   <div id="container" class="container">
     <header>
-      <div id="site-title"><a href="{{ url_for('index') }}"><span class="has">Has</span><span class="geek">Geek</span> <span class="jobs">Job Board</span></a></div>
+      <div id="site-title"><a href="{{ url_for('index') }}"><span class="has">Has</span><span class="geek">Geek</span> <span class="jobs">Job Board <small class="has">β</small></span></a></div>
       <form id="search" action="{{ url_for('search') }}">
         <input type="text" placeholder="Find a job..." name="q"/>
         <input type="submit" value="Go"/>

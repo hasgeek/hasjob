@@ -26,7 +26,7 @@ def getposts(basequery=None):
 @app.route('/')
 def index(basequery=None, type=None, category=None):
     now = datetime.utcnow()
-    newlimit = timedelta(days=3)
+    newlimit = timedelta(days=1)
     posts = getposts(basequery)
     return render_template('index.html', posts=posts, now=now, newlimit=newlimit,
                            jobtype=type, jobcategory=category)
@@ -301,8 +301,11 @@ def newjob():
 
 @app.route('/search')
 def search():
-    abort(404)
+    return render_template('notimplemented.html')
 
+@app.route('/tos')
+def terms_of_service():
+    return render_template('tos.html')
 
 @app.route('/type/')
 @app.route('/category/')
