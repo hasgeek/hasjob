@@ -25,12 +25,15 @@
   <link href="http://fonts.googleapis.com/css?family=Architects+Daughter" rel="stylesheet" type="text/css">
 
   <!-- Stylesheets -->
-  <link href="{{ url_for('static', filename='css/screen.css') }}" media="screen, projection" rel="stylesheet" type="text/css" />
-  <link href="{{ url_for('static', filename='css/print.css') }}" media="print" rel="stylesheet" type="text/css" />
+  <link href="{{ url_for('static', filename='css/screen.css') }}?v=2" media="screen, projection" rel="stylesheet" type="text/css" />
+  <link href="{{ url_for('static', filename='css/print.css') }}?v=1" media="print" rel="stylesheet" type="text/css" />
   <!--[if IE]>
       <link href="{{ url_for('static', filename='css/ie.css') }}?v=2" media="screen, projection" rel="stylesheet" type="text/css" />
   <![endif]-->
   <script src="{{ url_for('static', filename='js/libs/modernizr-1.6.min.js') }}"></script>
+
+  <!-- Feeds -->
+  <link rel="alternate" type="application/atom+xml"  title="All jobs – {{ config['SITE_TITLE']|e }}" href="{{ url_for('feed') }}" />
 
   {%- if config['TYPEKIT_CODE'] %}
     <script type="text/javascript" src="http://use.typekit.com/{{ config['TYPEKIT_CODE'] }}.js"></script>
