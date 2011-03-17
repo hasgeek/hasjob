@@ -1,11 +1,11 @@
 {% extends "inc/layout.html" %}
 {% from "inc/forms.html" import renderfield %}
-{% block title %}Post a job{% endblock %}
+{% block title %}List a job{% endblock %}
 {% block content %}
 <div id="sheet">
   <div class="section first">
     <h1>
-      Post a job listing
+      {{ self.title()|e }}
     </h1>
     <p class="caption">
       HasGeek reaches out to thousands of developers via events, blogs and discussion groups.

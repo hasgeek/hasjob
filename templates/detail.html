@@ -17,8 +17,8 @@
 
 <div id="sheet">
   <div class="section first">
-    {% if post.company_logo %}<img align="right" alt="Logo" src="{{ url_for('logoimage', hashid=post.hashid) }}"/>{% endif %}
     <h1>{{ post.headline }}</h1>
+    {% if post.company_logo %}<img class="post-company-logo" alt="Logo" src="{{ url_for('logoimage', hashid=post.hashid) }}"/>{% endif %}
     <p class="post-date">Posted {{ post.datetime|longdate }}</p>
     <p id="company-info">
       <span class="post-company-name">{{ post.company_name }}</span><br/>
