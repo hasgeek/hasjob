@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import os.path
+import re
 from datetime import datetime, timedelta
 from urllib import quote, quote_plus
 from pytz import utc, timezone
-from flask import render_template, redirect, url_for, request, session, abort, flash, g, Response
+from flask import (render_template, redirect, url_for, request, session, abort,
+    flash, g, Response, Markup, escape)
 from flaskext.mail import Mail, Message
 from markdown import markdown
 
@@ -388,9 +390,13 @@ def urlquote(data):
     else:
         return quote_plus(data)
 
+
+EMAIL_RE = re.compile(r'\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}\b', re.I)
+
 @app.template_filter('scrubemail')
 def scrubemail(data):
-    # TODO: return Markup() with email scrubbed
+    # TODO: ROT-13 encode email address and decode with JS
+    data = Markup(EMAIL_RE.sub('<a href="mailto:\\g<0>">\\g<0></a>', unicode(escape(data))))
     return data
 
 @app.template_filter('usessl')
