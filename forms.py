@@ -34,7 +34,7 @@ class ListingForm(Form):
         validators=[Required(u"If this job doesn’t have a fixed location, use “Anywhere”")])
     job_relocation_assist = BooleanField("Relocation assistance available")
     job_description = TextAreaField("Description",
-        description=u"Our apologies for the ugly font you see here. We’re working on it.",
+        description=u"Our apologies for the mismatched font you see here. We’re working on it.",
         validators=[Required("A description of the job is required")])
     job_perks = BooleanField("Job perks are available")
     job_perks_description = TextAreaField("Describe job perks",
@@ -45,8 +45,9 @@ class ListingForm(Form):
                     #u"We’ll secure it",
         validators=[Required("HasGeek does not offer screening services. Please specify how candidates may apply")])
     company_name = TextField("Name",
-        description=u"The name of the organization where the position is. No intermediaries, please",
-        validators=[Required(u"This is required. Posting any name other than that of the actual company is a violation of the ToS")])
+        description=u"The name of the organization where the position is. "
+                    u"No intermediaries or unnamed stealth startups. Use your own real name if the company isn’t named yet",
+        validators=[Required(u"This is required. Posting any name other than that of the actual organization is a violation of the ToS")])
     company_logo = FileField("Logo",
         description=u"Optional — Your company logo will appear at the top of your listing. "
                     u"170px wide is optimal. We’ll resize automatically if it’s wider",
@@ -82,3 +83,6 @@ class ConfirmForm(Form):
 class WithdrawForm(Form):
     really_withdraw = BooleanField("Yes, I really want to withdraw the job listing",
         validators=[Required(u"If you don’t want to withdraw the listing, just close this page")])
+
+class ReportForm(Form):
+    report_code = RadioField("Code", coerce=int, validators=[Required(u"Pick one")])

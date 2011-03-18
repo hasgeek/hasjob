@@ -25,7 +25,7 @@
   <link href="http://fonts.googleapis.com/css?family=Architects+Daughter" rel="stylesheet" type="text/css">
 
   <!-- Stylesheets -->
-  <link href="{{ url_for('static', filename='css/screen.css') }}?v=2" media="screen, projection" rel="stylesheet" type="text/css" />
+  <link href="{{ url_for('static', filename='css/screen.css') }}?v=4" media="screen, projection" rel="stylesheet" type="text/css" />
   <link href="{{ url_for('static', filename='css/print.css') }}?v=1" media="print" rel="stylesheet" type="text/css" />
   <!--[if IE]>
       <link href="{{ url_for('static', filename='css/ie.css') }}?v=2" media="screen, projection" rel="stylesheet" type="text/css" />
@@ -44,7 +44,7 @@
 <body>
   <div id="container" class="container">
     <header>
-      <div id="site-title"><a href="{{ url_for('index') }}"><span class="has">Has</span><span class="geek">Geek</span> <span class="jobs">Job Board <small class="has">β</small></span></a></div>
+      <div id="site-title"><a href="{{ url_for('index') }}"><span class="has">Has</span><span class="geek">Geek</span> <span class="jobs">Job Board</span> <small class="has">β</small></a></div>
       <form id="search" action="{{ url_for('search') }}">
         <input type="text" placeholder="Find a job..." name="q"/>
         <input type="submit" value="Go"/>

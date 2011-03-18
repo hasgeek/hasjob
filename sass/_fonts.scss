@@ -1,5 +1,5 @@
-$font-default: ff-meta-web-pro-1, ff-meta-web-pro-2, sans-serif;
-$font-site-title: ff-meta-web-pro-1, ff-meta-web-pro-2, sans-serif;
+$font-default: ff-meta-web-pro-1, ff-meta-web-pro-2, georgia, sans-serif;
+$font-site-title: ff-meta-web-pro-1, ff-meta-web-pro-2, georgia, sans-serif;
 $font-stickie-header: 'Walter Turncoat', sans-serif;
 $font-stickie-date: 'Architects Daughter', sans-serif;
 $font-stickie-location: 'Walter Turncoat', sans-serif;
@@ -7,5 +7,5 @@ $font-stickie-new: 'Walter Turncoat', sans-serif;
 $font-stickie-info: 'Walter Turncoat', sans-serif;
 $font-stickie-headline: 'Architects Daughter', sans-serif;
 $font-post-date: 'Walter Turncoat', sans-serif;
-$font-button: ff-meta-web-pro-1, ff-meta-web-pro-2, sans-serif;
-$font-input: ff-meta-web-pro-1, ff-meta-web-pro-2, sans-serif;
+$font-button: $font-default;
+$font-input: $font-default;

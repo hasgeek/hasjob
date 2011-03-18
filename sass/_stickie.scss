@@ -67,6 +67,10 @@
         top: 0.25em;
         left: 0.5em;
         //padding-left: 12px;
+        // Don't let location get too long
+        height: 1.2em;
+        width: 75%;
+        overflow: hidden;
         @include transition-property(color);
         @include transition-duration(0.5s);
     }

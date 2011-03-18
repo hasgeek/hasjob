@@ -28,3 +28,5 @@ DEFAULT_MAIL_SENDER = ('Job Board', 'test@example.com')
 ADMINS=[]
 #: Log file
 LOGFILE='error.log'
+#: Use SSL for some URLs
+USE_SSL=False

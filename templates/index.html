@@ -7,7 +7,7 @@
 {% block header %}
   <p id="pitch">
     HasGeek reaches out to thousands of developers via events, blogs and discussion groups.
-    Job listings made here reach the entire network. <a href="{{ url_for('newjob') }}">Post a job &rarr;</a>
+    Job listings made here reach the entire network. <a href="{{ url_for('newjob')|usessl }}">Post a job &rarr;</a>
   </p>
 {% endblock %}
 
@@ -27,7 +27,7 @@
       </div>
     {% else %}
       <div id="newpost" class="stickie">
-        <form action="{{ url_for('newjob') }}" method="POST">
+        <form action="{{ url_for('newjob')|usessl }}" method="POST">
           <input type="hidden" name="_charset_"/>
           <input type="hidden" name="form.id" value="newheadline"/>
           <label id="newpost_title" for="newpost_headline">Post a job:</label>

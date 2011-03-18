@@ -1,7 +1,7 @@
 /* Background textures by Rüdiger Appel from http://www.3quarks.com/en/BackgroundPattern/ */
 
 body {
-    font-family: sans-serif;
+    font-family: $font-default;
     background: image_url("canvas.jpg");
 }
 
@@ -212,6 +212,7 @@ footer {
             margin: 0 0 -1px 0;
             padding: 0;
             li {
+                position: relative;
                 border-bottom: 1px solid $color-outline-thin;
                 a, a:link, a:hover, a:focus, a:active, a:visited {
                     display: block;
@@ -235,6 +236,82 @@ footer {
                     padding-left: 40px;
                 }
             }
+        }
+        .popup-box {
+            background: $color-sheet;
+            border: 1px solid $color-sheet-border;
+            @include border-radius(4px);
+            position: absolute;
+            width: 20em;
+            left: -(20em+3em);
+            top: -3em;
+            margin: 0;
+            padding: 1em;
+            @include box-shadow($color-shadow, 0, 2px, 10px);
+            .close-popup {
+                display: none;
+            }
+            .no-js & .close-popup {
+                display: inline;
+                position: absolute;
+                top: 2px;
+                right: 4px;
+                margin: 0;
+                padding: 0;
+            }
+            h2 {
+                margin-top: 0;
+            }
+            form {
+                margin-bottom: 0;
+                div.field {
+                    margin: 0.5em 0;
+                }
+                ul {
+                    margin: 0;
+                    li {
+                        padding: 0.25em 0.5em;
+                        border-bottom: 0;
+                        @include border-radius(3px);
+                        label {
+                            padding-left: 0.25em;
+                        }
+                    }
+                    li.selected {
+                        background-color: $color-radio-selected;
+                    }
+                }
+            }
+            &:before {
+                content: "";
+                display: block; /* reduce the damage in FF3.0 */
+                position: absolute;
+                right: -21px;
+                top: 4em;
+                width: 0;
+                height: 0;
+                border: 10px solid transparent;
+                border-left-color: $color-sheet-border;
+            }
+
+            /* creates the smaller  triangle */
+            &:after {
+                content: "";
+                display: block; /* reduce the damage in FF3.0 */
+                position: absolute;
+                right: -20px;
+                top: 4em;
+                width: 0;
+                height: 0;
+                border: 10px solid transparent;
+                border-left-color: $color-sheet;
+            }        
+        }
+        #report {
+            display: none;
+        }
+        #report:target {
+            display: block;
         }
     }
     p, blockquote, ul, ol {
@@ -273,7 +350,7 @@ footer {
                     }
                 }
                 li.selected {
-                    background-color: $color-title-jobs;
+                    background-color: $color-radio-selected;
                 }
             }
         }

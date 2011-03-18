@@ -1,0 +1,9 @@
+{% from "inc/forms.html" import renderfield, ajaxform %}
+<form id="reportform" method="POST">
+  <input type="hidden" name="_charset_"/>
+  <input type="hidden" name="form.id" value="reportform"/>
+  {{ reportform.csrf() }}
+  {{ renderfield(reportform.report_code, nolabeldesc=True) }}
+  <input type="submit" value="Report this"/>
+</form>
+{% if ajaxreg %}{{ ajaxform("reportform") }}{% endif %}

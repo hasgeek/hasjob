@@ -49,6 +49,16 @@ class JobCategory(db.Model):
         return self.title
 
 
+class ReportCode(db.Model):
+    __tablename__ = 'reportcode'
+
+    id = db.Column(db.Integer, primary_key=True)
+    slug = db.Column(db.String(250), nullable=False, unique=True)
+    title = db.Column(db.Unicode(250), nullable=False)
+    seq = db.Column(db.Integer, nullable=False, default=0)
+    public = db.Column(db.Boolean, nullable=False, default=True)
+
+
 class User(db.Model):
     __tablename__ = 'user'
 
@@ -104,6 +114,21 @@ class JobPost(db.Model):
 
     def is_draft(self):
         return self.status == POSTSTATUS.DRAFT
+
+
+class JobPostReport(db.Model):
+    __tablename__ = 'jobpostreport'
+
+    id = db.Column(db.Integer, primary_key=True)
+    datetime = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    post_id = db.Column(db.Integer, db.ForeignKey('jobpost.id'), nullable=False)
+    post = db.relation(JobPost, primaryjoin=post_id == JobPost.id)
+    reportcode_id = db.Column(db.Integer, db.ForeignKey('reportcode.id'), nullable=False)
+    reportcode = db.relation(ReportCode, primaryjoin=reportcode_id == ReportCode.id)
+
+    ipaddr = db.Column(db.String(45), nullable=False)
+    useragent = db.Column(db.Unicode(250), nullable=True)
+
 
 def unique_hash(model=JobPost):
     """

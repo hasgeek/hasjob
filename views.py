@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import os.path
 from datetime import datetime, timedelta
 from urllib import quote, quote_plus
 from pytz import utc, timezone
@@ -8,7 +9,7 @@ from flaskext.mail import Mail, Message
 from markdown import markdown
 
 from app import app
-from models import db, POSTSTATUS, JobPost, JobType, JobCategory, unique_hash
+from models import db, POSTSTATUS, JobPost, JobType, JobCategory, JobPostReport, ReportCode, unique_hash
 import forms
 from uploads import uploaded_logos, process_image
 from utils import sanitize_html
@@ -112,7 +113,7 @@ def logoimage(hashid):
     return redirect(uploaded_logos.url(post.company_logo))
 
 
-@app.route('/view/<hashid>')
+@app.route('/view/<hashid>', methods=('GET', 'POST'))
 def jobdetail(hashid):
     post = JobPost.query.filter_by(hashid=hashid).first()
     if post is None:
@@ -122,7 +123,21 @@ def jobdetail(hashid):
             abort(403)
     if post.status in [POSTSTATUS.REJECTED, POSTSTATUS.WITHDRAWN]:
         abort(410)
-    return render_template('detail.html', post=post)
+    reportform = forms.ReportForm()
+    reportform.report_code.choices = [(ob.id, ob.title) for ob in ReportCode.query.filter_by(public=True).order_by('seq')]
+    if reportform.validate_on_submit():
+        report = JobPostReport(post=post, reportcode_id = reportform.report_code.data)
+        report.ipaddr = request.environ['REMOTE_ADDR']
+        report.useragent = request.user_agent.string
+        db.session.add(report)
+        db.session.commit()
+        if request.is_xhr:
+            return "<p>Thanks! This job listing has been flagged for review.</p>" #Ugh!
+        else:
+            flash("Thanks! This job listing has been flagged for review.", "interactive")
+    elif request.method == 'POST' and request.is_xhr:
+        return render_template('inc/reportform.html', reportform=reportform, ajaxreg=True)
+    return render_template('detail.html', post=post, reportform=reportform)
 
 
 @app.route('/confirm/<hashid>', methods=('GET', 'POST'))
@@ -377,3 +392,16 @@ def urlquote(data):
 def scrubemail(data):
     # TODO: return Markup() with email scrubbed
     return data
+
+@app.template_filter('usessl')
+def usessl(url):
+    """
+    Convert a URL to https:// if SSL is enabled in site config
+    """
+    if not app.config.get('USE_SSL'):
+        return url
+    if url.startswith('/'):
+        url = os.path.join(request.base_url, url[1:])
+    if url.startswith('http:'):
+        url = 'https:' + url[5:]
+    return url

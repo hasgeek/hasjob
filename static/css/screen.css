@@ -348,7 +348,7 @@ button {
 /* Background textures by Rüdiger Appel from http://www.3quarks.com/en/BackgroundPattern/ */
 /* line 3, ../../sass/_layout.scss */
 body {
-  font-family: sans-serif;
+  font-family: ff-meta-web-pro-1, ff-meta-web-pro-2, georgia, sans-serif;
   background: url('/static/img/canvas.jpg?881083570');
 }
 
@@ -418,7 +418,7 @@ header #pitch {
 
 /* line 51, ../../sass/_layout.scss */
 #site-title {
-  font-family: ff-meta-web-pro-1, ff-meta-web-pro-2, sans-serif;
+  font-family: ff-meta-web-pro-1, ff-meta-web-pro-2, georgia, sans-serif;
   float: left;
   padding-right: 0.5em;
   font-size: 30px;
@@ -680,40 +680,145 @@ footer {
 }
 /* line 214, ../../sass/_layout.scss */
 #sheet #detail-sidebar ul li {
+  position: relative;
   border-bottom: 1px solid #e8e8e8;
 }
-/* line 216, ../../sass/_layout.scss */
+/* line 217, ../../sass/_layout.scss */
 #sheet #detail-sidebar ul li a, #sheet #detail-sidebar ul li a:link, #sheet #detail-sidebar ul li a:hover, #sheet #detail-sidebar ul li a:focus, #sheet #detail-sidebar ul li a:active, #sheet #detail-sidebar ul li a:visited {
   display: block;
   padding: 1em 2em 1em 1em;
   text-decoration: none;
 }
-/* line 221, ../../sass/_layout.scss */
+/* line 222, ../../sass/_layout.scss */
 #sheet #detail-sidebar ul li #sidebar-email {
   background: transparent url('/static/img/email.png?1299843650') no-repeat 15px center;
   padding-left: 40px;
 }
-/* line 225, ../../sass/_layout.scss */
+/* line 226, ../../sass/_layout.scss */
 #sheet #detail-sidebar ul li #sidebar-tweet {
   background: transparent url('/static/img/twitter.png?1299843629') no-repeat 15px center;
   padding-left: 40px;
 }
-/* line 229, ../../sass/_layout.scss */
+/* line 230, ../../sass/_layout.scss */
 #sheet #detail-sidebar ul li #sidebar-share {
   background: transparent url('/static/img/share.png?1299843635') no-repeat 15px center;
   padding-left: 40px;
 }
-/* line 233, ../../sass/_layout.scss */
+/* line 234, ../../sass/_layout.scss */
 #sheet #detail-sidebar ul li #sidebar-report {
   background: transparent url('/static/img/flag.png?1299854677') no-repeat 15px center;
   padding-left: 40px;
 }
 /* line 240, ../../sass/_layout.scss */
+#sheet #detail-sidebar .popup-box {
+  background: white;
+  border: 1px solid #afafaf;
+  -moz-border-radius: 4px;
+  -webkit-border-radius: 4px;
+  -o-border-radius: 4px;
+  -ms-border-radius: 4px;
+  -khtml-border-radius: 4px;
+  border-radius: 4px;
+  position: absolute;
+  width: 20em;
+  left: -23em;
+  top: -3em;
+  margin: 0;
+  padding: 1em;
+  -moz-box-shadow: rgba(0, 0, 0, 0.4) 0 2px 10px 0;
+  -webkit-box-shadow: rgba(0, 0, 0, 0.4) 0 2px 10px 0;
+  -o-box-shadow: rgba(0, 0, 0, 0.4) 0 2px 10px 0;
+  box-shadow: rgba(0, 0, 0, 0.4) 0 2px 10px 0;
+  /* creates the smaller  triangle */
+}
+/* line 251, ../../sass/_layout.scss */
+#sheet #detail-sidebar .popup-box .close-popup {
+  display: none;
+}
+/* line 254, ../../sass/_layout.scss */
+.no-js #sheet #detail-sidebar .popup-box .close-popup {
+  display: inline;
+  position: absolute;
+  top: 2px;
+  right: 4px;
+  margin: 0;
+  padding: 0;
+}
+/* line 262, ../../sass/_layout.scss */
+#sheet #detail-sidebar .popup-box h2 {
+  margin-top: 0;
+}
+/* line 265, ../../sass/_layout.scss */
+#sheet #detail-sidebar .popup-box form {
+  margin-bottom: 0;
+}
+/* line 267, ../../sass/_layout.scss */
+#sheet #detail-sidebar .popup-box form div.field {
+  margin: 0.5em 0;
+}
+/* line 270, ../../sass/_layout.scss */
+#sheet #detail-sidebar .popup-box form ul {
+  margin: 0;
+}
+/* line 272, ../../sass/_layout.scss */
+#sheet #detail-sidebar .popup-box form ul li {
+  padding: 0.25em 0.5em;
+  border-bottom: 0;
+  -moz-border-radius: 3px;
+  -webkit-border-radius: 3px;
+  -o-border-radius: 3px;
+  -ms-border-radius: 3px;
+  -khtml-border-radius: 3px;
+  border-radius: 3px;
+}
+/* line 276, ../../sass/_layout.scss */
+#sheet #detail-sidebar .popup-box form ul li label {
+  padding-left: 0.25em;
+}
+/* line 280, ../../sass/_layout.scss */
+#sheet #detail-sidebar .popup-box form ul li.selected {
+  background-color: #f0a40c;
+}
+/* line 285, ../../sass/_layout.scss */
+#sheet #detail-sidebar .popup-box:before {
+  content: "";
+  display: block;
+  /* reduce the damage in FF3.0 */
+  position: absolute;
+  right: -21px;
+  top: 4em;
+  width: 0;
+  height: 0;
+  border: 10px solid transparent;
+  border-left-color: #afafaf;
+}
+/* line 298, ../../sass/_layout.scss */
+#sheet #detail-sidebar .popup-box:after {
+  content: "";
+  display: block;
+  /* reduce the damage in FF3.0 */
+  position: absolute;
+  right: -20px;
+  top: 4em;
+  width: 0;
+  height: 0;
+  border: 10px solid transparent;
+  border-left-color: white;
+}
+/* line 310, ../../sass/_layout.scss */
+#sheet #detail-sidebar #report {
+  display: none;
+}
+/* line 313, ../../sass/_layout.scss */
+#sheet #detail-sidebar #report:target {
+  display: block;
+}
+/* line 317, ../../sass/_layout.scss */
 #sheet p, #sheet blockquote, #sheet ul, #sheet ol {
   margin-top: 1em;
   margin-bottom: 1em;
 }
-/* line 245, ../../sass/_layout.scss */
+/* line 322, ../../sass/_layout.scss */
 #sheet div.field {
   *zoom: 1;
   margin-top: 1em;
@@ -728,27 +833,27 @@ footer {
   overflow: hidden;
   visibility: hidden;
 }
-/* line 249, ../../sass/_layout.scss */
+/* line 326, ../../sass/_layout.scss */
 #sheet div.field .checkbox label {
   padding-left: 0.5em;
 }
-/* line 252, ../../sass/_layout.scss */
+/* line 329, ../../sass/_layout.scss */
 #sheet div.field.small div.label {
   float: left;
   clear: left;
   width: 5em;
   padding-top: 6px;
 }
-/* line 257, ../../sass/_layout.scss */
+/* line 334, ../../sass/_layout.scss */
 #sheet div.field.small div.label label {
   font-weight: bold;
 }
-/* line 261, ../../sass/_layout.scss */
+/* line 338, ../../sass/_layout.scss */
 #sheet div.field.small div.control {
   float: left;
   width: 35em;
 }
-/* line 264, ../../sass/_layout.scss */
+/* line 341, ../../sass/_layout.scss */
 #sheet div.field.small div.control ul {
   -moz-column-count: 2;
   -webkit-column-count: 2;
@@ -757,7 +862,7 @@ footer {
   list-style: none;
   margin: 0;
 }
-/* line 268, ../../sass/_layout.scss */
+/* line 345, ../../sass/_layout.scss */
 #sheet div.field.small div.control ul li {
   padding: 0.5em;
   -moz-border-radius: 4px;
@@ -767,34 +872,34 @@ footer {
   -khtml-border-radius: 4px;
   border-radius: 4px;
 }
-/* line 271, ../../sass/_layout.scss */
+/* line 348, ../../sass/_layout.scss */
 #sheet div.field.small div.control ul li label {
   padding-left: 0.5em;
 }
-/* line 275, ../../sass/_layout.scss */
+/* line 352, ../../sass/_layout.scss */
 #sheet div.field.small div.control ul li.selected {
   background-color: #f0a40c;
 }
-/* line 280, ../../sass/_layout.scss */
+/* line 357, ../../sass/_layout.scss */
 #sheet div.field.check div.label {
   display: none;
 }
-/* line 283, ../../sass/_layout.scss */
+/* line 360, ../../sass/_layout.scss */
 #sheet div.field.wide div.label {
   float: none;
   clear: left;
 }
-/* line 286, ../../sass/_layout.scss */
+/* line 363, ../../sass/_layout.scss */
 #sheet div.field.wide div.label label {
   font-weight: bold;
 }
-/* line 290, ../../sass/_layout.scss */
+/* line 367, ../../sass/_layout.scss */
 #sheet div.field.wide div.control {
   margin-top: 0.25em;
   float: none;
   clear: left;
 }
-/* line 296, ../../sass/_layout.scss */
+/* line 373, ../../sass/_layout.scss */
 #sheet div.error {
   position: relative;
   background-color: #df5e0e;
@@ -808,7 +913,7 @@ footer {
   -khtml-border-radius: 3px;
   border-radius: 3px;
 }
-/* line 303, ../../sass/_layout.scss */
+/* line 380, ../../sass/_layout.scss */
 #sheet div.error:after {
   content: "";
   display: block;
@@ -820,20 +925,20 @@ footer {
   border: 10px solid transparent;
   border-top-color: #df5e0e;
 }
-/* line 316, ../../sass/_layout.scss */
+/* line 393, ../../sass/_layout.scss */
 #sheet span.description {
   font-size: 90%;
   color: #666;
 }
-/* line 320, ../../sass/_layout.scss */
+/* line 397, ../../sass/_layout.scss */
 #sheet form {
   margin-bottom: 1em;
 }
-/* line 323, ../../sass/_layout.scss */
+/* line 400, ../../sass/_layout.scss */
 #sheet input, #sheet textarea {
-  font-family: ff-meta-web-pro-1, ff-meta-web-pro-2, sans-serif;
+  font-family: ff-meta-web-pro-1, ff-meta-web-pro-2, georgia, sans-serif;
 }
-/* line 326, ../../sass/_layout.scss */
+/* line 403, ../../sass/_layout.scss */
 #sheet fieldset {
   *zoom: 1;
   margin-top: 1em;
@@ -848,12 +953,12 @@ footer {
   overflow: hidden;
   visibility: hidden;
 }
-/* line 331, ../../sass/_layout.scss */
+/* line 408, ../../sass/_layout.scss */
 #sheet textarea {
   width: 90%;
   height: 10em;
 }
-/* line 336, ../../sass/_layout.scss */
+/* line 413, ../../sass/_layout.scss */
 #sheet textarea, #sheet input[type="text"], #sheet input[type="password"], #sheet input[type="email"], #sheet input[type="url"], #sheet select {
   padding: 5px;
   color: #444;
@@ -865,31 +970,31 @@ footer {
   -khtml-border-radius: 3px;
   border-radius: 3px;
 }
-/* line 344, ../../sass/_layout.scss */
+/* line 421, ../../sass/_layout.scss */
 #sheet textarea, #sheet input[type="text"], #sheet input[type="password"], #sheet input[type="email"], #sheet input[type="url"] {
   -webkit-box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1), 0 1px 0 rgba(255, 255, 255, 0.5) inset;
   -moz-box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1), 0 1px 0 rgba(255, 255, 255, 0.5) inset;
   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1), 0 1px 0 rgba(255, 255, 255, 0.5) inset;
 }
-/* line 350, ../../sass/_layout.scss */
+/* line 427, ../../sass/_layout.scss */
 #sheet input[type="text"], #sheet input[type="email"], #sheet input[type="password"], #sheet input[type="url"] {
   width: 250px;
   height: 20px;
   margin-bottom: 5px;
   background: #fff;
 }
-/* line 356, ../../sass/_layout.scss */
+/* line 433, ../../sass/_layout.scss */
 #sheet #job_headline {
   width: 95%;
   font-size: 120%;
   font-weight: bold;
 }
 
-/* line 364, ../../sass/_layout.scss */
+/* line 441, ../../sass/_layout.scss */
 #sheet input[type="submit"], #guide input[type="submit"] {
   height: 27px;
   border: 1px solid #b7b7b7;
-  font-family: ff-meta-web-pro-1, ff-meta-web-pro-2, sans-serif;
+  font-family: ff-meta-web-pro-1, ff-meta-web-pro-2, georgia, sans-serif;
   font-size: 14px;
   -moz-border-radius: 3px;
   -webkit-border-radius: 3px;
@@ -906,7 +1011,7 @@ footer {
   color: #444;
   vertical-align: text-bottom;
 }
-/* line 376, ../../sass/_layout.scss */
+/* line 453, ../../sass/_layout.scss */
 #sheet input[type="submit"]:hover, #guide input[type="submit"]:hover {
   background: #d6d6d6;
   background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, color-stop(0%, #d6d6d6), color-stop(100%, #c6c6c6));
@@ -914,7 +1019,7 @@ footer {
   background-image: linear-gradient(top, #d6d6d6 0%, #c6c6c6 100%);
 }
 
-/* line 387, ../../sass/_layout.scss */
+/* line 464, ../../sass/_layout.scss */
 #search input {
   padding: 0 5px;
   margin: 0;
@@ -928,11 +1033,11 @@ footer {
   border-radius: 0;
   border: none;
 }
-/* line 396, ../../sass/_layout.scss */
+/* line 473, ../../sass/_layout.scss */
 #search input[type="text"] {
   border: 1px solid #b7b7b7;
   border-right: 0;
-  font-family: ff-meta-web-pro-1, ff-meta-web-pro-2, sans-serif;
+  font-family: ff-meta-web-pro-1, ff-meta-web-pro-2, georgia, sans-serif;
   background: white url('/static/img/search.png?1299763894') 4px center no-repeat;
   padding-left: 20px;
   -moz-border-radius-topleft: 3px;
@@ -950,12 +1055,12 @@ footer {
   width: 15em;
   height: 25px;
 }
-/* line 408, ../../sass/_layout.scss */
+/* line 485, ../../sass/_layout.scss */
 #search input[type="submit"] {
   height: 27px;
   border: 1px solid #b7b7b7;
   border-left: 0;
-  font-family: ff-meta-web-pro-1, ff-meta-web-pro-2, sans-serif;
+  font-family: ff-meta-web-pro-1, ff-meta-web-pro-2, georgia, sans-serif;
   -moz-border-radius-topright: 3px;
   -webkit-border-top-right-radius: 3px;
   -o-border-top-right-radius: 3px;
@@ -976,7 +1081,7 @@ footer {
   font-weight: bold;
   color: #666;
 }
-/* line 420, ../../sass/_layout.scss */
+/* line 497, ../../sass/_layout.scss */
 #search input[type="submit"]:hover {
   background: #d6d6d6;
   background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, color-stop(0%, #d6d6d6), color-stop(100%, #c6c6c6));
@@ -1007,14 +1112,14 @@ button {
     font-family: $font-button;
 }
 */
-/* line 454, ../../sass/_layout.scss */
+/* line 531, ../../sass/_layout.scss */
 h1 {
   font-size: 200%;
   color: #df5e0e;
   margin: 0;
 }
 
-/* line 460, ../../sass/_layout.scss */
+/* line 537, ../../sass/_layout.scss */
 h2 {
   font-size: 150%;
   color: #816894;
@@ -1123,6 +1228,9 @@ header .stickie {
   position: absolute;
   top: 0.25em;
   left: 0.5em;
+  height: 1.2em;
+  width: 75%;
+  overflow: hidden;
   -moz-transition-property: color;
   -webkit-transition-property: color;
   -o-transition-property: color;
@@ -1132,7 +1240,7 @@ header .stickie {
   -o-transition-duration: 0.5s;
   transition-duration: 0.5s;
 }
-/* line 73, ../../sass/_stickie.scss */
+/* line 77, ../../sass/_stickie.scss */
 .stickie:hover .location {
   color: #816894;
   -moz-transition-property: color;
@@ -1144,7 +1252,7 @@ header .stickie {
   -o-transition-duration: 0.5s;
   transition-duration: 0.5s;
 }
-/* line 79, ../../sass/_stickie.scss */
+/* line 83, ../../sass/_stickie.scss */
 .stickie .new {
   font-size: 80%;
   color: #df5e0e;
@@ -1155,7 +1263,7 @@ header .stickie {
   bottom: 0.25em;
 }
 
-/* line 90, ../../sass/_stickie.scss */
+/* line 94, ../../sass/_stickie.scss */
 #newpost, #filtered, #nojobs {
   font-family: "Walter Turncoat", sans-serif;
   background-color: #f6f6f6;
@@ -1179,7 +1287,7 @@ header .stickie {
   } */
 }
 
-/* line 108, ../../sass/_stickie.scss */
+/* line 112, ../../sass/_stickie.scss */
 #newpost textarea {
   font-family: "Architects Daughter", sans-serif;
   width: 100%;
@@ -1198,16 +1306,16 @@ header .stickie {
   -o-transition-duration: 0.5s;
   transition-duration: 0.5s;
 }
-/* line 120, ../../sass/_stickie.scss */
+/* line 124, ../../sass/_stickie.scss */
 #newpost #newpost_details {
   margin-top: 0.5em;
   text-align: right;
 }
-/* line 124, ../../sass/_stickie.scss */
+/* line 128, ../../sass/_stickie.scss */
 #newpost input[type="submit"] {
   height: 27px;
   border: 1px solid #b7b7b7;
-  font-family: ff-meta-web-pro-1, ff-meta-web-pro-2, sans-serif;
+  font-family: ff-meta-web-pro-1, ff-meta-web-pro-2, georgia, sans-serif;
   font-size: 14px;
   -moz-border-radius: 3px;
   -webkit-border-radius: 3px;
@@ -1223,7 +1331,7 @@ header .stickie {
   font-weight: bold;
   color: #444;
 }
-/* line 135, ../../sass/_stickie.scss */
+/* line 139, ../../sass/_stickie.scss */
 #newpost input[type="submit"]:hover {
   background: #d6d6d6;
   background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, color-stop(0%, #d6d6d6), color-stop(100%, #c6c6c6));
@@ -1231,51 +1339,51 @@ header .stickie {
   background-image: linear-gradient(top, #d6d6d6 0%, #c6c6c6 100%);
 }
 
-/* line 146, ../../sass/_stickie.scss */
+/* line 150, ../../sass/_stickie.scss */
 .info {
   font-family: "Walter Turncoat", sans-serif;
   background-color: #f6f6f6;
 }
 
-/* line 151, ../../sass/_stickie.scss */
+/* line 155, ../../sass/_stickie.scss */
 .fulltime {
   background-color: #ffffa2;
 }
 
-/* line 155, ../../sass/_stickie.scss */
+/* line 159, ../../sass/_stickie.scss */
 .parttime {
   background-color: #ffffa2;
 }
 
-/* line 159, ../../sass/_stickie.scss */
+/* line 163, ../../sass/_stickie.scss */
 .volunteer {
   background-color: #ffffa2;
 }
 
 /* TODO: Make stickies wrap */
 @media all and (min-width: 960px) {
-  /* line 165, ../../sass/_stickie.scss */
+  /* line 169, ../../sass/_stickie.scss */
   #main .stickie:nth-child(4n+1) {
     clear: left;
   }
 }
 
 @media all and (min-width: 60.01em) and (max-width: 75em) {
-  /* line 170, ../../sass/_stickie.scss */
+  /* line 174, ../../sass/_stickie.scss */
   #main .stickie:nth-child(3n+1) {
     clear: left;
   }
 }
 
 @media all and (min-width: 45.51em) and (max-width: 60em) {
-  /* line 175, ../../sass/_stickie.scss */
+  /* line 179, ../../sass/_stickie.scss */
   #main .stickie:nth-child(2n+1) {
     clear: left;
   }
 }
 
 @media all and (max-width: 380px) {
-  /* line 180, ../../sass/_stickie.scss */
+  /* line 184, ../../sass/_stickie.scss */
   #main .stickie {
     float: none;
   }
