@@ -1,4 +1,5 @@
 import string
+import re
 from random import randint
 from uuid import uuid4
 from base64 import b64encode
@@ -107,6 +108,48 @@ def simplify_text(text):
     else:
         text = text.translate(string.maketrans("",""), string.punctuation).lower()
     return " ".join(text.split())
+
+
+EMAIL_RE = re.compile(r'\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}\b', re.I)
+
+def scrubemail(data, rot13=False, css_junk=None):
+    """
+    Convert email addresses in text into HTML links,
+    and optionally obfuscate them with ROT13 and empty CSS classes,
+    to hide from spambots.
+
+    >>> scrubemail(u"Send email to test@example.com and you are all set.")
+    u'Send email to <a href="mailto:test@example.com">test@example.com</a> and you are all set.'
+    >>> scrubemail(u"Send email to test@example.com and you are all set.", rot13=True)
+    u'Send email to <a class="rot13" data-href="znvygb:grfg@rknzcyr.pbz">test@example.com</a> and you are all set.'
+    >>> scrubemail(u"Send email to test@example.com and you are all set.", rot13=True, css_junk='z')
+    u'Send email to <a class="rot13" data-href="znvygb:grfg@rknzcyr.pbz">test&#64;<span class="z">no</span>examp<span class="z">spam</span>le.com</a> and you are all set.'
+    >>> scrubemail(u"Send email to test@example.com and you are all set.", rot13=False, css_junk=('z', 'y'))
+    u'Send email to <span class="y">test&#64;</span><span class="z">no</span><span class="y">examp</span><span class="z">spam</span><span class="y">le.com</span> and you are all set.'
+    """
+    def convertemail(m):
+        aclass = ' class="rot13"' if rot13 else ''
+        email = m.group(0)
+        link = 'mailto:' + email
+        if rot13:
+            link = link.decode('rot13')
+        if css_junk and len(email)>3:
+            third = int(len(email) / 3)
+            parts = (email[:third], email[third:third*2], email[third*2:])
+            if isinstance(css_junk, (tuple, list)):
+                css_dirty, css_clean = css_junk
+                email = '<span class="%s">%s</span><span class="%s">no</span>'\
+                    '<span class="%s">%s</span><span class="%s">spam</span>'\
+                    '<span class="%s">%s</span>' % (
+                    css_clean, parts[0], css_dirty, css_clean, parts[1],
+                    css_dirty, css_clean, parts[2])
+            else:
+                email = '%s<span class="%s">no</span>%s<span class="%s">spam</span>%s' % (
+                    parts[0], css_junk, parts[1], css_junk, parts[2])
+            email = email.replace('@', '&#64;')
+        return '<a%s data-href="%s">%s</a>' % (aclass, link, email)
+    data = EMAIL_RE.sub(convertemail, data)
+    return data
 
 
 if __name__ == '__main__':

@@ -1126,6 +1126,12 @@ h2 {
   margin: 1em 0 0;
 }
 
+/* Spam protection */
+/* line 543, ../../sass/_layout.scss */
+.z {
+  display: none;
+}
+
 /* line 1, ../../sass/_stickie.scss */
 #stickie-area {
   *zoom: 1;

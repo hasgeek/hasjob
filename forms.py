@@ -40,9 +40,9 @@ class ListingForm(Form):
     job_perks_description = TextAreaField("Describe job perks",
         description=u"Stock options, free lunch, free conference passes, etc")
     job_how_to_apply = TextAreaField("How do people apply for this job?",
-        description=u'Example: "Send a resume to kumar@company.com". ', # <-- remove comma
-                    #u"Don’t worry about spambots seeing your email address. "
-                    #u"We’ll secure it",
+        description=u'Example: "Send a resume to kumar@company.com". '
+                    u"Don’t worry about spambots seeing your email address. "
+                    u"We’ll secure it",
         validators=[Required("HasGeek does not offer screening services. Please specify how candidates may apply")])
     company_name = TextField("Name",
         description=u"The name of the organization where the position is. "

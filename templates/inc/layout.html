@@ -25,7 +25,7 @@
   <link href="http://fonts.googleapis.com/css?family=Architects+Daughter" rel="stylesheet" type="text/css">
 
   <!-- Stylesheets -->
-  <link href="{{ url_for('static', filename='css/screen.css') }}?v=4" media="screen, projection" rel="stylesheet" type="text/css" />
+  <link href="{{ url_for('static', filename='css/screen.css') }}?v=5" media="screen, projection" rel="stylesheet" type="text/css" />
   <link href="{{ url_for('static', filename='css/print.css') }}?v=1" media="print" rel="stylesheet" type="text/css" />
   <!--[if IE]>
       <link href="{{ url_for('static', filename='css/ie.css') }}?v=2" media="screen, projection" rel="stylesheet" type="text/css" />
@@ -36,7 +36,7 @@
   <link rel="alternate" type="application/atom+xml"  title="All jobs – {{ config['SITE_TITLE']|e }}" href="{{ url_for('feed') }}" />
 
   {%- if config['TYPEKIT_CODE'] %}
-    <script type="text/javascript" src="http://use.typekit.com/{{ config['TYPEKIT_CODE'] }}.js"></script>
+    <script type="text/javascript" src="//use.typekit.com/{{ config['TYPEKIT_CODE'] }}.js"></script>
     <script type="text/javascript">try{Typekit.load();}catch(e){}</script>
   {% endif -%}
   {% block pageheaders %}{% endblock %}

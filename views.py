@@ -14,7 +14,7 @@ from app import app
 from models import db, POSTSTATUS, JobPost, JobType, JobCategory, JobPostReport, ReportCode, unique_hash
 import forms
 from uploads import uploaded_logos, process_image
-from utils import sanitize_html
+from utils import sanitize_html, scrubemail
 
 mail = Mail()
 
@@ -320,9 +320,11 @@ def newjob():
 def search():
     return render_template('notimplemented.html')
 
+
 @app.route('/tos')
 def terms_of_service():
     return render_template('tos.html')
+
 
 @app.route('/type/')
 @app.route('/category/')
@@ -340,17 +342,21 @@ def root_paths():
 def error_403(e):
     return render_template('403.html'), 403
 
+
 @app.errorhandler(404)
 def error_404(e):
     return render_template('404.html'), 404
+
 
 @app.errorhandler(410)
 def error_410(e):
     return render_template('410.html'), 410
 
+
 @app.errorhandler(500)
 def error_500(e):
     return render_template('500.html'), 500
+
 
 # --- Template filters --------------------------------------------------------
 
@@ -359,10 +365,12 @@ def shortdate(date):
     tz = timezone(app.config['TIMEZONE'])
     return utc.localize(date).astimezone(tz).strftime('%b %e')
 
+
 @app.template_filter('longdate')
 def longdate(date):
     tz = timezone(app.config['TIMEZONE'])
     return utc.localize(date).astimezone(tz).strftime('%B %e, %Y')
+
 
 @app.template_filter('cleanurl')
 def cleanurl(url):
@@ -376,12 +384,14 @@ def cleanurl(url):
         url = url[:-1]
     return url
 
+
 @app.template_filter('urlquote')
 def urlquote(data):
     if isinstance(data, unicode):
         return quote(data.encode('utf-8'))
     else:
         return quote(data)
+
 
 @app.template_filter('urlquoteplus')
 def urlquote(data):
@@ -391,13 +401,10 @@ def urlquote(data):
         return quote_plus(data)
 
 
-EMAIL_RE = re.compile(r'\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}\b', re.I)
-
 @app.template_filter('scrubemail')
-def scrubemail(data):
-    # TODO: ROT-13 encode email address and decode with JS
-    data = Markup(EMAIL_RE.sub('<a href="mailto:\\g<0>">\\g<0></a>', unicode(escape(data))))
-    return data
+def scrubemail_filter(data, css_junk=''):
+    return Markup(scrubemail(unicode(escape(data)), rot13=True, css_junk=css_junk))
+
 
 @app.template_filter('usessl')
 def usessl(url):
