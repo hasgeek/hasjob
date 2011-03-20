@@ -47,7 +47,7 @@
     <div id="detail-sidebar">
       <ul> <!-- TODO -->
         <li><a id="sidebar-email" href="mailto:?subject=Job%3A%20{{ post.headline|urlquote }}&amp;body={{ request.url|urlquote }}">Email this</a></li>
-        <li><a id="sidebar-tweet" target="_blank" href="http://twitter.com/share?url={{ request.url|urlquote }}&amp;counturl={{ request.url|urlquote }}&amp;via=hasjob&amp;related=hasjob:HasGeek%20Job%20Board&amp;text={{ post.headline|urlquote }}">Tweet this <span id="tweet-count"></span></a></li>
+        <li><a id="sidebar-tweet" target="_blank" href="http://twitter.com/share?url={{ request.url|urlquote }}&amp;counturl={{ request.url|urlquote }}&amp;via=hasjob&amp;related=hasjob:HasGeek%20Job%20Board&amp;text=Job%3A%20{{ post.headline|urlquote }}">Tweet this <span id="tweet-count"></span></a></li>
         {#<li><a id="sidebar-share" href="#share">Share this</a></li>#}
         <li>
           <a id="sidebar-report" href="#report">Report this</a>
