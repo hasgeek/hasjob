@@ -7,9 +7,9 @@
   <div class="guidecontent">
     <h2>Review this listing</h2>
     <p>
-      This is a preview. It is only visible to you. You may <a href="{{ url_for('editjob', hashid=post.hashid, key=post.edit_key) }}">edit again</a> or confirm this listing.
+      This is a preview. It is only visible to you. You may <a href="{{ url_for('editjob', hashid=post.hashid, key=post.edit_key)|usessl }}">edit again</a> or confirm this listing.
     </p>
-    <form action="{{ url_for('confirm', hashid=post.hashid) }}" method="POST">
+    <form action="{{ url_for('confirm', hashid=post.hashid)|usessl }}" method="POST">
       <input type="submit" value="This looks good, confirm it"/>
     </form>
   </div>
@@ -47,7 +47,7 @@
     <div id="detail-sidebar">
       <ul> <!-- TODO -->
         <li><a id="sidebar-email" href="mailto:?subject=Job%3A%20{{ post.headline|urlquote }}&amp;body={{ request.url|urlquote }}">Email this</a></li>
-        <li><a id="sidebar-tweet" target="_blank" href="http://twitter.com/?status=Job%3A%20{{ post.headline|urlquote }}%20{{ request.url|urlquote }}%20%23hasjob">Tweet this</a></li>
+        <li><a id="sidebar-tweet" target="_blank" href="http://twitter.com/share?url={{ request.url|urlquote }}&amp;counturl={{ request.url|urlquote }}&amp;via=hasjob&amp;related=hasjob:HasGeek%20Job%20Board&amp;text={{ post.headline|urlquote }}">Tweet this <span id="tweet-count"></span></a></li>
         {#<li><a id="sidebar-share" href="#share">Share this</a></li>#}
         <li>
           <a id="sidebar-report" href="#report">Report this</a>
@@ -78,6 +78,29 @@
         $(this).removeAttr('data-href');
         $(this).removeClass('rot13');
       };
+    });
+  });
+  $(function() {
+    jQuery.getJSON(
+      'http://urls.api.twitter.com/1/urls/count.json?url={{ request.url|urlquote }}&callback=?',
+      function (data) {
+        if (data.count>0) {
+          $("#tweet-count").html('('+data.count+')');
+        }
+      }
+    );
+    $("#sidebar-tweet").click(function() {
+      var d=550,a=450;
+      var c=screen.height;
+      var b=screen.width;
+      var h=Math.round((b/2)-(d/2));
+      var g=0;
+      if (c>a) {
+        g=Math.round((c/2)-(a/2))
+      }
+      window.open($(this).attr("href"), "twitter_tweet",
+        "left="+h+",top="+g+",width="+d+",height="+a+",personalbar=0,toolbar=0,scrollbars=1,resizable=1");
+      return false;
     });
   });
   $(function() {
