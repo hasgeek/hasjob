@@ -90,6 +90,6 @@
 
 
 // initialize all expanding textareas
-jQuery(document).ready(function() {
+jQuery(window).load(function() {
 	jQuery("textarea[class*=expand]").TextAreaExpander();
 });
