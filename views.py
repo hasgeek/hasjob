@@ -414,7 +414,7 @@ def usessl(url):
     if not app.config.get('USE_SSL'):
         return url
     if url.startswith('/'):
-        url = os.path.join(request.base_url, url[1:])
+        url = os.path.join(request.url_root, url[1:])
     if url.startswith('http:'):
         url = 'https:' + url[5:]
     return url
