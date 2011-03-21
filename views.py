@@ -262,7 +262,8 @@ def editjob(hashid, key, form=None, post=None, validated=False):
             logofilename = uploaded_logos.save(thumbnail, name='%s.' % post.hashid)
             post.company_logo = logofilename
         else:
-            post.company_logo = None
+            if form.company_logo_remove.data:
+                post.company_logo = None
 
         db.session.commit()
         userkeys = session.get('userkeys', [])
@@ -313,7 +314,7 @@ def newjob():
     # 1. GET request, page loaded for the first time
     # 2. POST request from main page's Post a Job box
     # 3. POST request from this page, with errors
-    return render_template('postjob.html', form=form)
+    return render_template('postjob.html', form=form, no_removelogo=True)
 
 
 @app.route('/search')

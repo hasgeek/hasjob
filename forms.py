@@ -52,6 +52,7 @@ class ListingForm(Form):
         description=u"Optional — Your company logo will appear at the top of your listing. "
                     u"170px wide is optimal. We’ll resize automatically if it’s wider",
         )#validators=[file_allowed(uploaded_logos, "That image type is not supported")])
+    company_logo_remove = BooleanField("Remove existing logo")
     company_url = URLField("URL",
         description = u"Example: http://www.google.com",
         validators=[optional_url])
