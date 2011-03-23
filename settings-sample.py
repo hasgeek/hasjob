@@ -12,6 +12,8 @@ SECRET_KEY = 'make this something random'
 TIMEZONE = 'Asia/Calcutta'
 #: Upload path
 UPLOADED_LOGOS_DEST='/tmp/uploads'
+#: Search index path
+SEARCH_INDEX_PATH='/tmp/search'
 #: Mail settings
 #: MAIL_FAIL_SILENTLY : default True
 #: MAIL_SERVER : default 'localhost'

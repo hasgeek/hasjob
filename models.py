@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from flaskext.sqlalchemy import SQLAlchemy
 
 from app import app
 from utils import random_long_key, random_hash_key, newid
 
 db = SQLAlchemy(app)
+
+agelimit = timedelta(days=30)
 
 class POSTSTATUS:
     DRAFT     = 0 # Being written
@@ -15,6 +17,7 @@ class POSTSTATUS:
     REVIEWED  = 3 # Reviewed and cleared for push channels
     REJECTED  = 4 # Reviewed and rejected as inappropriate
     WITHDRAWN = 5 # Withdrawn by owner
+    FLAGGED   = 6 # Flagged by users for review
 
 
 class USERLEVEL:
@@ -25,6 +28,7 @@ class USERLEVEL:
 
 class JobType(db.Model):
     __tablename__ = 'jobtype'
+    idref = 'type'
 
     id = db.Column(db.Integer, primary_key=True)
     slug = db.Column(db.String(250), nullable=False, unique=True)
@@ -34,10 +38,21 @@ class JobType(db.Model):
 
     def __call__(self):
         return self.title
+
+    def search_mapping(self):
+        """
+        Returns a dictionary suitable for search indexing.
+        """
+        return {'title': self.title,
+                'content': self.title,
+                'public': self.public,
+                'idref': u'%s/%s' % (self.idref, self.id),
+                }
 
 
 class JobCategory(db.Model):
     __tablename__ = 'jobcategory'
+    idref = 'category'
 
     id = db.Column(db.Integer, primary_key=True)
     slug = db.Column(db.String(250), nullable=False, unique=True)
@@ -47,6 +62,16 @@ class JobCategory(db.Model):
 
     def __call__(self):
         return self.title
+
+    def search_mapping(self):
+        """
+        Returns a dictionary suitable for search indexing.
+        """
+        return {'title': self.title,
+                'content': self.title,
+                'public': self.public,
+                'idref': u'%s/%s' % (self.idref, self.id),
+                }
 
 
 class ReportCode(db.Model):
@@ -70,6 +95,7 @@ class User(db.Model):
 
 class JobPost(db.Model):
     __tablename__ = 'jobpost'
+    idref = 'post'
 
     # Metadata
     id = db.Column(db.Integer, primary_key=True)
@@ -114,6 +140,32 @@ class JobPost(db.Model):
 
     def is_draft(self):
         return self.status == POSTSTATUS.DRAFT
+
+    def is_listed(self):
+        now = datetime.utcnow()
+        return (self.status in [POSTSTATUS.CONFIRMED, POSTSTATUS.REVIEWED]) and (
+            self.datetime > now - agelimit)
+
+    def is_flagged(self):
+        return self.status == POSTSTATUS.FLAGGED
+
+    def search_mapping(self):
+        """
+        Returns a dictionary suitable for search indexing.
+        """
+        content = '\n'.join((self.headline,
+                            self.location,
+                            self.company_name,
+                            self.company_url,
+                            self.description,
+                            self.perks,
+                            self.how_to_apply))
+
+        return {'title': self.headline,
+                'content': content,
+                'public': self.is_listed(),
+                'idref': u'%s/%s' % (self.idref, self.id),
+                }
 
 
 class JobPostReport(db.Model):

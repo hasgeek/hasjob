@@ -53,7 +53,7 @@ class ListingForm(Form):
                     u"170px wide is optimal. We’ll resize automatically if it’s wider",
         )#validators=[file_allowed(uploaded_logos, "That image type is not supported")])
     company_logo_remove = BooleanField("Remove existing logo")
-    company_url = URLField("URL",
+    company_url = TextField("URL",
         description = u"Example: http://www.google.com",
         validators=[optional_url])
     poster_email = EmailField("Email",

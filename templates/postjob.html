@@ -23,24 +23,24 @@
         {% for error in form.csrf.errors %}<div class="error">{{ error }}</div>{% endfor %}
       {% endif %}
       <h2>First, tell us about the position</h2>
-        {{ renderfield(form.job_headline, "small", autofocus=True) }}
-        {{ renderfield(form.job_type, "small") }}
-        {{ renderfield(form.job_category, "small") }}
-        {{ renderfield(form.job_location, "small") }}
-        {{ renderfield(form.job_relocation_assist, "small") }}
-        {{ renderfield(form.job_description, "wide", widget_css_class="tinymce") }}
-        {{ renderfield(form.job_perks, "check") }}
-        {{ renderfield(form.job_perks_description, "wide", widget_css_class="tinymce") }}
-        {{ renderfield(form.job_how_to_apply, "wide") }}
+      {{ renderfield(form.job_headline, "small", autofocus=True) }}
+      {{ renderfield(form.job_type, "small") }}
+      {{ renderfield(form.job_category, "small") }}
+      {{ renderfield(form.job_location, "small") }}
+      {{ renderfield(form.job_relocation_assist, "small") }}
+      {{ renderfield(form.job_description, "wide", widget_css_class="tinymce") }}
+      {{ renderfield(form.job_perks, "check") }}
+      {{ renderfield(form.job_perks_description, "wide", widget_css_class="tinymce") }}
+      {{ renderfield(form.job_how_to_apply, "wide") }}
     </div>
     <div class="section">
       <h2>Tell us about your company</h2>
-        {{ renderfield(form.company_name, "small") }}
-        {{ renderfield(form.company_logo, "small") }}
-        {% if not no_removelogo %}{{ renderfield(form.company_logo_remove, "small") }}{% endif %}
-        {{ renderfield(form.company_url, "small") }}
-        {{ renderfield(form.poster_email, "small") }}
-        <input type="submit" value="Review your job listing &rarr;"/>
+      {{ renderfield(form.company_name, "small") }}
+      {{ renderfield(form.company_logo, "small") }}
+      {% if not no_removelogo %}{{ renderfield(form.company_logo_remove, "small") }}{% endif %}
+      {{ renderfield(form.company_url, "small") }}
+      {{ renderfield(form.poster_email, "small") }}
+      <input type="submit" value="Review your job listing &rarr;"/>
     </div>
   </form>
 </div>

@@ -89,7 +89,15 @@
 })(jQuery);
 
 
-// initialize all expanding textareas
-jQuery(window).load(function() {
-	jQuery("textarea[class*=expand]").TextAreaExpander();
-});
+// Initialize all expanding textareas.
+// Activate on page load for Mozilla and on DOM-ready
+// for other browsers. Yucky, but what to do?
+if (jQuery.browser.mozilla) {
+    jQuery(window).load(function() {
+    	jQuery("textarea[class*=expand]").TextAreaExpander();
+    });
+} else {
+    jQuery(function() {
+    	jQuery("textarea[class*=expand]").TextAreaExpander();
+    });
+}

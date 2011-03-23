@@ -25,15 +25,16 @@
   <link href="http://fonts.googleapis.com/css?family=Architects+Daughter" rel="stylesheet" type="text/css">
 
   <!-- Stylesheets -->
-  <link href="{{ url_for('static', filename='css/screen.css') }}?v=5" media="screen, projection" rel="stylesheet" type="text/css" />
+  <link href="{{ url_for('static', filename='css/screen.css') }}?v=6" media="screen, projection" rel="stylesheet" type="text/css" />
   <link href="{{ url_for('static', filename='css/print.css') }}?v=1" media="print" rel="stylesheet" type="text/css" />
   <!--[if IE]>
-      <link href="{{ url_for('static', filename='css/ie.css') }}?v=2" media="screen, projection" rel="stylesheet" type="text/css" />
+      <link href="{{ url_for('static', filename='css/ie.css') }}?v=3" media="screen, projection" rel="stylesheet" type="text/css" />
   <![endif]-->
   <script src="{{ url_for('static', filename='js/libs/modernizr-1.6.min.js') }}"></script>
 
-  <!-- Feeds -->
+  <!-- Feed and search -->
   <link rel="alternate" type="application/atom+xml"  title="All jobs – {{ config['SITE_TITLE']|e }}" href="{{ url_for('feed') }}" />
+  <link rel="search" type="application/opensearchdescription+xml" href="{{ url_for('static', filename='opensearch.xml') }}" title="HasGeek Job Search" />
 
   {%- if config['TYPEKIT_CODE'] %}
     <script type="text/javascript" src="//use.typekit.com/{{ config['TYPEKIT_CODE'] }}.js"></script>

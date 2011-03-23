@@ -4,7 +4,7 @@
 import logging
 
 from app import app
-import models, forms, views, assets, uploads
+import models, forms, views, assets, uploads, search
 from models import db
 
 app.config.from_object(__name__)
@@ -16,6 +16,7 @@ except ImportError:
     print >> sys.stderr, "You may use the site without these settings, but some features may not work."
 
 uploads.configure()
+search.configure()
 views.mail.init_app(app)
 
 file_handler = logging.FileHandler(app.config['LOGFILE'])

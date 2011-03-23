@@ -13,9 +13,9 @@
 
 {% block content %}
   {# {% include "inc/logo.html" %} #}
-  <div id="stickie-area">
+  <ul id="stickie-area">
     {% if jobtype or jobcategory %}
-      <div id="filtered" class="stickie">
+      <li id="filtered" class="stickie">
         <a href="{{ url_for('index') }}">
           <span class="filtered">
             You are seeing
@@ -24,9 +24,9 @@
             jobs. See all jobs?
           </span>
         </a>
-      </div>
-    {% else %}
-      <div id="newpost" class="stickie">
+      </li>
+    {%- else -%}
+      <li id="newpost" class="stickie">
         <form action="{{ url_for('newjob')|usessl }}" method="POST">
           <input type="hidden" name="_charset_"/>
           <input type="hidden" name="form.id" value="newheadline"/>
@@ -34,23 +34,23 @@
           <textarea id="newpost_headline" name="job_headline" class="expand">Awesome Coder wanted at Awesome Company</textarea>
           <div id="newpost_details"><input type="submit" value="Add details &rarr;"/></div>
         </form>
-      </div>
-    {% endif %}
-    {% for post in posts %}
-      <div class="stickie fulltime">
+      </li>
+    {%- endif -%}
+    {%- for post in posts -%}
+      <li class="stickie">
         <a href="{{ url_for('jobdetail', hashid=post.hashid) }}" rel="bookmark">
           <span class="location">{{ post.location }}</span>
           <span class="date">{{ post.datetime|shortdate }}</span>
           <span class="headline">{{ post.headline }}</span>
-          {% if now - post.datetime < newlimit %}<span class="new">New!</span>{% endif %}
+          {%- if now - post.datetime < newlimit %}<span class="new">New!</span>{% endif %}
         </a>
-      </div>
-    {% else %}
-      <div class="stickie" id="nojobs">
+      </li>
+    {%- else -%}
+      <li class="stickie" id="nojobs">
         Sorry, no jobs listed.
-      </div>
+      </li>
     {% endfor %}
-  </div>
+  </ul>
 {% endblock %}
 {% block footerscripts %}
 <script type="text/javascript">

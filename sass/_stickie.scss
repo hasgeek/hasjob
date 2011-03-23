@@ -1,13 +1,15 @@
 #stickie-area {
-    @include pie-clearfix;
+    margin: 0;
     padding: 10px;
+    list-style: none;
 }
 .stickie {
     font-size: 150%;
     width: 240px;
     background: $color-stickie;
     position: relative;
-    float: left;
+    display: inline-block;
+    vertical-align: top;
     padding: 1.2em;
     margin: 10px 10px;
     @include border-radius(2px);
@@ -108,6 +110,11 @@
     } */
 }
 
+.stickie.special {
+    font-family: $font-stickie-info;
+    background-color: $color-stickie-info;
+}
+
 #newpost {
     textarea {
         font-family: $font-stickie-headline;
@@ -147,41 +154,7 @@
 
 
 
-.info {
+.stickie.info {
     font-family: $font-stickie-info;
     background-color: $color-stickie-info;
-}
-
-.fulltime {
-    background-color: $color-stickie-fulltime;
-}
-
-.parttime {
-    background-color: $color-stickie-parttime;
-}
-
-.volunteer {
-    background-color: $color-stickie-volunteer;
-}
-
-/* TODO: Make stickies wrap */
-@media all and (min-width: 960px) {
-    #main .stickie:nth-child(4n+1) {
-    	clear: left;
-    }
-}
-@media all and (min-width: 60.01em) and (max-width: 75em) {
-    #main .stickie:nth-child(3n+1) {
-    	clear: left;
-    }
-}
-@media all and (min-width: 45.51em) and (max-width: 60em) {
-    #main .stickie:nth-child(2n+1) {
-    	clear: left;
-    }
-}
-@media all and (max-width: 380px) {
-    #main .stickie {
-    	float: none;
-    }
 }

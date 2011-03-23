@@ -11,25 +11,33 @@ from flaskext.mail import Mail, Message
 from markdown import markdown
 
 from app import app
-from models import db, POSTSTATUS, JobPost, JobType, JobCategory, JobPostReport, ReportCode, unique_hash
+from models import db, POSTSTATUS, JobPost, JobType, JobCategory, JobPostReport, ReportCode, unique_hash, agelimit
 import forms
 from uploads import uploaded_logos, process_image
 from utils import sanitize_html, scrubemail
+from search import do_search
 
 mail = Mail()
+
+# --- Constants ---------------------------------------------------------------
+
+newlimit = timedelta(days=1)
+
+# --- Helper functions --------------------------------------------------------
 
 def getposts(basequery=None):
     if basequery is None:
         basequery = JobPost.query
     return basequery.filter(
         JobPost.status.in_([POSTSTATUS.CONFIRMED, POSTSTATUS.REVIEWED])).filter(
-        JobPost.datetime > datetime.now() - timedelta(days=30)).order_by(db.desc(JobPost.datetime))
+        JobPost.datetime > datetime.now() - agelimit).order_by(db.desc(JobPost.datetime))
 
+
+# --- Routes ------------------------------------------------------------------
 
 @app.route('/')
 def index(basequery=None, type=None, category=None):
     now = datetime.utcnow()
-    newlimit = timedelta(days=1)
     posts = getposts(basequery)
     return render_template('index.html', posts=posts, now=now, newlimit=newlimit,
                            jobtype=type, jobcategory=category)
@@ -120,7 +128,7 @@ def jobdetail(hashid):
     post = JobPost.query.filter_by(hashid=hashid).first()
     if post is None:
         abort(404)
-    if post.status == POSTSTATUS.DRAFT:
+    if post.status in [POSTSTATUS.DRAFT, POSTSTATUS.PENDING]:
         if post.edit_key not in session.get('userkeys', []):
             abort(403)
     if post.status in [POSTSTATUS.REJECTED, POSTSTATUS.WITHDRAWN]:
@@ -319,7 +327,9 @@ def newjob():
 
 @app.route('/search')
 def search():
-    return render_template('notimplemented.html')
+    now = datetime.utcnow()
+    results = do_search(request.args.get('q', u''), expand=True)
+    return render_template('search.html', results=results, now=now, newlimit=newlimit)
 
 
 @app.route('/tos')
@@ -360,6 +370,16 @@ def error_500(e):
 
 
 # --- Template filters --------------------------------------------------------
+
+@app.template_filter('urlfor')
+def url_from_ob(ob):
+    if isinstance(ob, JobPost):
+        return url_for('jobdetail', hashid=ob.hashid)
+    elif isinstance(ob, JobType):
+        return url_for('browse_by_type', slug=ob.slug)
+    elif isinstance(ob, JobCategory):
+        return url_for('browse_by_category', slug=ob.slug)
+
 
 @app.template_filter('shortdate')
 def shortdate(date):
