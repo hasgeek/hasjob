@@ -710,9 +710,6 @@ footer {
 }
 #sheet div.field.small div.control ul {
   -moz-column-count: 2;
-  -webkit-column-count: 2;
-  -o-column-count: 2;
-  column-count: 2;
   list-style: none;
   margin: 0;
 }

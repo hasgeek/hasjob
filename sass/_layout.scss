@@ -339,7 +339,7 @@ footer {
             float: left;
             width: 35em;
             ul {
-                @include column-count(2);
+                -moz-column-count: 2;
                 list-style: none;
                 margin: 0;
                 li {
