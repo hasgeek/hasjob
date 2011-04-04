@@ -9,6 +9,7 @@ from flask import (render_template, redirect, url_for, request, session, abort,
     flash, g, Response, Markup, escape)
 from flaskext.mail import Mail, Message
 from markdown import markdown
+from twitter import tweet
 
 from app import app
 from models import db, POSTSTATUS, JobPost, JobType, JobCategory, JobPostReport, ReportCode, unique_hash
@@ -198,6 +199,7 @@ def confirm_email(hashid, key):
             post.status = POSTSTATUS.CONFIRMED
             post.datetime = datetime.utcnow()
             db.session.commit()
+            tweet(post.headline, url_for('jobdetail', hashid=post.hashid, _external=True))
             flash("Congratulations! Your job listing has been published", "interactive")
     return redirect(url_for('jobdetail', hashid=post.hashid), code=302)
 
