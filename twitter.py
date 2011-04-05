@@ -15,7 +15,7 @@ def tweet(title, url):
     api.update_status(text)
 
 def shorten(url):
-    req = urllib2.Request("https://www.googleapis.com/urlshortener/v1/url?key=" + app.config['GOOGLE_KEY'], 
+    req = urllib2.Request("https://www.googleapis.com/urlshortener/v1/url, 
         headers = {"Content-Type": "application/json",},
         data = json.dumps({'longUrl' : url}))
     request_result = urllib2.urlopen(req)
