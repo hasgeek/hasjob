@@ -32,3 +32,12 @@ ADMINS=[]
 LOGFILE='error.log'
 #: Use SSL for some URLs
 USE_SSL=False
+#: Twitter integration (register as a "client" app)
+TWITTER_ENABLED=False
+TWITTER_CONSUMER_KEY = ''
+TWITTER_CONSUMER_SECRET = ''
+TWITTER_ACCESS_KEY = ''
+TWITTER_ACCESS_SECRET = ''
+#: Bit.ly integration for short URLs
+BITLY_USER = ''
+BITLY_KEY = ''
