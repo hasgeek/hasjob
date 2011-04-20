@@ -65,7 +65,7 @@ VALID_TAGS = {'strong': [],
               'ul': [],
               'li': [],
               'br': [],
-              'a': ['href', 'title']
+              'a': ['href', 'title', 'target']
               }
 
 def sanitize_html(value, valid_tags=VALID_TAGS):
@@ -125,7 +125,7 @@ def scrubemail(data, rot13=False, css_junk=None):
     >>> scrubemail(u"Send email to test@example.com and you are all set.", rot13=True, css_junk='z')
     u'Send email to <a class="rot13" data-href="znvygb:grfg@rknzcyr.pbz">test&#64;<span class="z">no</span>examp<span class="z">spam</span>le.com</a> and you are all set.'
     >>> scrubemail(u"Send email to test@example.com and you are all set.", rot13=False, css_junk=('z', 'y'))
-    u'Send email to <span class="y">test&#64;</span><span class="z">no</span><span class="y">examp</span><span class="z">spam</span><span class="y">le.com</span> and you are all set.'
+    u'Send email to <a href="mailto:test@example.com"><span class="y">test&#64;</span><span class="z">no</span><span class="y">examp</span><span class="z">spam</span><span class="y">le.com</span></a> and you are all set.'
     """
     def convertemail(m):
         aclass = ' class="rot13"' if rot13 else ''
@@ -147,7 +147,10 @@ def scrubemail(data, rot13=False, css_junk=None):
                 email = '%s<span class="%s">no</span>%s<span class="%s">spam</span>%s' % (
                     parts[0], css_junk, parts[1], css_junk, parts[2])
             email = email.replace('@', '&#64;')
-        return '<a%s data-href="%s">%s</a>' % (aclass, link, email)
+        if rot13:
+            return '<a%s data-href="%s">%s</a>' % (aclass, link, email)
+        else:
+            return '<a%s href="%s">%s</a>' % (aclass, link, email)
     data = EMAIL_RE.sub(convertemail, data)
     return data
 
