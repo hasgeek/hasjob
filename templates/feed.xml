@@ -17,6 +17,11 @@
     <updated>{{ post.datetime.isoformat() }}Z</updated>
     <published>{{ post.datetime.isoformat() }}Z</published>
     <content type="html">
+      {% if post.company_url %}
+        &lt;a href="{{ post.company_url|e }}"&gt;&lt;h2&gt;{{ post.company_name|e }}&lt;/h2&gt;&lt;/a&gt;
+      {% else %}
+        &lt;h2&gt;{{ post.company_name|e }}&lt;/h2&gt;
+      {% endif %}
       {{ post.description|e }}
       {% if post.perks -%}
       &lt;h2&gt;Job Perks&lt;/h2&gt;
