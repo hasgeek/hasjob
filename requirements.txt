@@ -10,3 +10,4 @@ pytz
 markdown
 tweepy
 bitlyapi
+whoosh
