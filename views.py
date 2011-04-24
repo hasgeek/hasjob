@@ -2,11 +2,12 @@
 
 import os.path
 import re
-from datetime import datetime, timedelta
+from collections import defaultdict
+from datetime import date, datetime, timedelta
 from urllib import quote, quote_plus
 from pytz import utc, timezone
 from flask import (render_template, redirect, url_for, request, session, abort,
-    flash, g, Response, Markup, escape)
+    flash, g, Response, Markup, escape, jsonify)
 from flaskext.mail import Mail, Message
 from markdown import markdown
 from twitter import tweet
@@ -31,7 +32,7 @@ def getposts(basequery=None):
         basequery = JobPost.query
     return basequery.filter(
         JobPost.status.in_([POSTSTATUS.CONFIRMED, POSTSTATUS.REVIEWED])).filter(
-        JobPost.datetime > datetime.now() - agelimit).order_by(db.desc(JobPost.datetime))
+        JobPost.datetime > datetime.utcnow() - agelimit).order_by(db.desc(JobPost.datetime))
 
 
 # --- Routes ------------------------------------------------------------------
@@ -338,6 +339,59 @@ def search():
 @app.route('/tos')
 def terms_of_service():
     return render_template('tos.html')
+
+
+@app.route('/stats')
+def stats():
+    return render_template('stats.html')
+
+
+@app.route('/stats/listings_by_date.json')
+def stats_listings_by_date():
+    now = datetime.utcnow()
+    jobs = getposts()
+    # Why is this code so complicated? How hard is it to get a count by date?
+    # Just because we store datetime instead of date?
+    listings_by_date = {}
+    looper = now - agelimit
+    for x in range(agelimit.days):
+        listings_by_date[date(year=looper.year, month=looper.month, day=looper.day)] = 0
+        looper += timedelta(days=1)
+    for job in jobs:
+        listings_by_date[date(year=job.datetime.year, month=job.datetime.month, day=job.datetime.day)] += 1
+    listings_by_date = listings_by_date.items() # Convert from dict to list
+    listings_by_date.sort()                     # and sort by date
+    return jsonify(data=[[(x, listings_by_date[x][1]) for x in range(len(listings_by_date))]],
+                   options={
+                            'series': {'bars': {'show': True}},
+                            'xaxis': {'show': True, 'min': 0, 'max': len(listings_by_date),
+                                      'ticks': [(x, listings_by_date[x][0].strftime('%b %d')) for x in range(len(listings_by_date))]
+                                     },
+                            'yaxis': {'min': 0, 'tickSize': 1, 'tickDecimals': 0},
+                            }
+                   )
+
+
+@app.route('/stats/listings_by_type.json')
+def stats_listings_by_type():
+    jobs = getposts()
+    typecount = defaultdict(int)
+    for job in jobs:
+        typecount[job.type_id] += 1
+    all_types = list(JobType.query.filter_by(public=True).order_by(JobType.seq).all())
+    all_types.reverse() # Charts are drawn bottom to top
+    data = []
+    labels = []
+    for x in range(len(all_types)):
+        data.append([x, typecount[all_types[x].id]])
+        labels.append([x, all_types[x].title])
+    return jsonify(data=[{'data': data}],
+                   options={
+                            'series': {'bars': {'show': True, 'horizontal': True}},
+                            'yaxis': {'show': True, 'min': 0, 'max': len(all_types), 'ticks': labels},
+                            'xaxis': {'min': 0, 'tickSize': 1, 'tickDecimals': 0},
+                            }
+                   )
 
 
 @app.route('/type/')

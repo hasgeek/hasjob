@@ -950,6 +950,10 @@ h2 {
   margin: 1em 0 0;
 }
 
+.chart {
+  margin: 1em 0;
+}
+
 /* Spam protection */
 .z {
   display: none;
