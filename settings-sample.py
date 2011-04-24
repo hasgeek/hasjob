@@ -41,3 +41,5 @@ TWITTER_ACCESS_SECRET = ''
 #: Bit.ly integration for short URLs
 BITLY_USER = ''
 BITLY_KEY = ''
+#: Access key for periodic server-only tasks
+PERIODIC_KEY = ''

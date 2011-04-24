@@ -17,7 +17,7 @@ from models import db, POSTSTATUS, JobPost, JobType, JobCategory, JobPostReport,
 import forms
 from uploads import uploaded_logos, process_image
 from utils import sanitize_html, scrubemail
-from search import do_search, delete_from_index
+from search import do_search
 
 mail = Mail()
 
@@ -364,17 +364,6 @@ def search():
     results = do_search(request.args.get('q', u''), expand=True)
     return render_template('search.html', results=results, now=now, newlimit=newlimit)
 
-
-@app.route('/admin/update-search/<mykey>')
-def delete_index(mykey):
-    if mykey == app.config['CRONKEY']:
-        now = datetime.utcnow()
-        upper_age_limit = timedelta(days=agelimit.days+2)
-        delete_from_index(JobPost.query.filter(JobPost.datetime > now - upper_age_limit).filter(JobPost.datetime < now - agelimit).all())
-        return "Done"
-    else:
-        abort(403)
-            
 
 @app.route('/tos')
 def terms_of_service():

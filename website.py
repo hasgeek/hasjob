@@ -4,7 +4,7 @@
 import logging
 
 from app import app
-import models, forms, views, assets, uploads, search
+import models, forms, views, admin, assets, uploads, search
 from models import db
 
 app.config.from_object(__name__)
