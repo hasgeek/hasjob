@@ -22,6 +22,7 @@
       {% else %}
         &lt;h2&gt;{{ post.company_name|e }}&lt;/h2&gt;
       {% endif %}
+      {% if post.company_logo %}&lt;img class="post-company-logo" alt="Logo" src="{{ url_for('logoimage', hashid=post.hashid) }}"&gt;{% endif %}
       {{ post.description|e }}
       {% if post.perks -%}
       &lt;h2&gt;Job Perks&lt;/h2&gt;
