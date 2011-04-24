@@ -70,6 +70,15 @@ def on_models_committed(sender, changes):
         writer.commit()
 
 
+def delete_from_index(oblist):
+    ix = index.open_dir(app.config['SEARCH_INDEX_PATH'])
+    writer = ix.writer()
+    for item in oblist:
+        mapping = item.search_mapping()
+        writer.delete_by_term('idref', mapping['idref'])
+    writer.commit()
+
+
 def configure():
     index_path = app.config['SEARCH_INDEX_PATH']
     models_committed.connect(on_models_committed, sender=app)
