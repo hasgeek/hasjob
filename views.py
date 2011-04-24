@@ -277,6 +277,8 @@ def editjob(hashid, key, form=None, post=None, validated=False):
             abort(404)
     if key != post.edit_key:
         abort(403)
+    if request.method == 'POST' and post.status != POSTSTATUS.DRAFT:
+        form.poster_email.data = post.email
     if request.method == 'POST' and (validated or form.validate()):
         post.headline = form.job_headline.data
         post.type_id = form.job_type.data
@@ -326,7 +328,7 @@ def editjob(hashid, key, form=None, post=None, validated=False):
         form.company_url.data = post.company_url
         form.poster_email.data = post.email
 
-    return render_template('postjob.html', form=form)
+    return render_template('postjob.html', form=form, no_email=post.status != POSTSTATUS.DRAFT)
 
 
 @app.route('/new', methods=('GET', 'POST'))

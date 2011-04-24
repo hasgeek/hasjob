@@ -39,7 +39,7 @@
       {{ renderfield(form.company_logo, "small") }}
       {% if not no_removelogo %}{{ renderfield(form.company_logo_remove, "small") }}{% endif %}
       {{ renderfield(form.company_url, "small") }}
-      {{ renderfield(form.poster_email, "small") }}
+      {% if not no_email %}{{ renderfield(form.poster_email, "small") }}{% endif %}
       <input type="submit" value="Review your job listing &rarr;"/>
     </div>
   </form>
