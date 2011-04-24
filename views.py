@@ -69,12 +69,18 @@ def browse_by_category(slug):
 
 @app.route('/feed')
 def feed(basequery=None, type=None, category=None):
+    title = "All jobs"
+    if type:
+        title = type.title
+    elif category:
+        title = category.title
     posts = getposts(basequery)
     updated = posts[0].datetime.isoformat()+'Z'
-    return Response(render_template('feed.xml', posts=posts, updated=updated, title="All jobs"),
+    return Response(render_template('feed.xml', posts=posts, updated=updated, title=title),
                            content_type = 'application/atom+xml; charset=utf-8')
 
-@app.route('/feed/type/<slug>')
+
+@app.route('/type/<slug>/feed')
 def feed_by_type(slug):
     if slug == 'all':
         return redirect(url_for('feed'))
@@ -84,7 +90,8 @@ def feed_by_type(slug):
     basequery = JobPost.query.filter_by(type_id=ob.id)
     return feed(basequery=basequery, type=ob)
 
-@app.route('/feed/category/<slug>')
+
+@app.route('/category/<slug>/feed')
 def feed_by_category(slug):
     if slug == 'all':
         return redirect(url_for('index'))
@@ -93,6 +100,7 @@ def feed_by_category(slug):
         abort(404)
     basequery = JobPost.query.filter_by(category_id=ob.id)
     return feed(basequery=basequery, category=ob)
+
 
 @app.route('/robots.txt')
 def robots():

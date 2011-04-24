@@ -2,7 +2,7 @@ Hello,
 
 This is a confirmation email for the job you listed at the HasGeek Job Board.
 
-**{{ post.headline }}**
+**{{ post.headline|e }}**
 
 [Click here to confirm your email address and publish the job][confirm]
 

@@ -11,18 +11,21 @@
 
   {% for post in posts -%}
   <entry>
-    <title type="text">{{ post.headline|e }}</title>
+    <title type="text">{{ post.headline|e|forceescape }}</title>
     <id>{{ url_for('jobdetail', hashid=post.hashid, _external=True) }}</id>
     <link href="{{ url_for('jobdetail', hashid=post.hashid, _external=True) }}"/>
     <updated>{{ post.datetime.isoformat() }}Z</updated>
     <published>{{ post.datetime.isoformat() }}Z</published>
     <content type="html">
-      {% if post.company_url %}
-        &lt;a href="{{ post.company_url|e }}"&gt;&lt;h2&gt;{{ post.company_name|e }}&lt;/h2&gt;&lt;/a&gt;
-      {% else %}
-        &lt;h2&gt;{{ post.company_name|e }}&lt;/h2&gt;
-      {% endif %}
-      {% if post.company_logo %}&lt;img class="post-company-logo" alt="Logo" src="{{ url_for('logoimage', hashid=post.hashid) }}"&gt;{% endif %}
+      &lt;p&gt;
+        {%- if post.company_logo %}&lt;img align="right" alt="Logo" src="{{ url_for('logoimage', hashid=post.hashid) }}"&gt;{% endif %}
+        {%- if post.company_url %}
+          &lt;strong&gt;&lt;a href="{{ post.company_url|e }}"&gt;{{ post.company_name|e|forceescape }}&lt;/a&gt;&lt;/strong&gt;&lt;br/&gt;
+        {% else %}
+          &lt;strong&gt;{{ post.company_name|e|forceescape }}&lt;/strong&gt;&lt;br/&gt;
+        {% endif -%}
+        {{ post.location|e|forceescape }}
+      &lt;/p&gt;
       {{ post.description|e }}
       {% if post.perks -%}
       &lt;h2&gt;Job Perks&lt;/h2&gt;
