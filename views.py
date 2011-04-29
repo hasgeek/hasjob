@@ -74,8 +74,11 @@ def feed(basequery=None, type=None, category=None):
         title = type.title
     elif category:
         title = category.title
-    posts = getposts(basequery)
-    updated = posts[0].datetime.isoformat()+'Z'
+    posts = list(getposts(basequery))
+    if posts: # Can't do this unless posts is a list
+        updated = posts[0].datetime.isoformat()+'Z'
+    else:
+        updated = datetime.utcnow().isoformat()+'Z'
     return Response(render_template('feed.xml', posts=posts, updated=updated, title=title),
                            content_type = 'application/atom+xml; charset=utf-8')
 
@@ -94,7 +97,7 @@ def feed_by_type(slug):
 @app.route('/category/<slug>/feed')
 def feed_by_category(slug):
     if slug == 'all':
-        return redirect(url_for('index'))
+        return redirect(url_for('feed'))
     ob = JobCategory.query.filter_by(slug=slug).first()
     if not ob:
         abort(404)
