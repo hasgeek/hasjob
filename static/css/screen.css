@@ -1,3 +1,4 @@
+@charset "UTF-8";
 /*  HTML5 ✰ Boilerplate  */
 html, body, div, span, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre,
 abbr, address, cite, code, del, dfn, em, img, ins, kbd, q, samp,
@@ -267,7 +268,6 @@ button {
   zoom: 1;
 }
 
-@charset "UTF-8";
 /* Background textures by Rüdiger Appel from http://www.3quarks.com/en/BackgroundPattern/ */
 body {
   font-family: ff-meta-web-pro-1, ff-meta-web-pro-2, arial, sans-serif;
