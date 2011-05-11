@@ -11,7 +11,7 @@
 
   {% for post in posts -%}
   <entry>
-    <title type="text">{{ post.headline|e|forceescape }}</title>
+    <title type="text">{{ post.headline|e }}</title>
     <id>{{ url_for('jobdetail', hashid=post.hashid, _external=True) }}</id>
     <link href="{{ url_for('jobdetail', hashid=post.hashid, _external=True) }}"/>
     <updated>{{ post.datetime.isoformat() }}Z</updated>
