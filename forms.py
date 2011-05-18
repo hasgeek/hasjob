@@ -30,7 +30,7 @@ class ListingForm(Form):
     job_type = RadioField("Type", coerce=int, validators=[Required("The job type must be specified")])
     job_category = RadioField("Category", coerce=int, validators=[Required("Select a category")])
     job_location = TextField("Location",
-        description=u'“Bangalore”, “Chennai”, “Pune”, or “Anywhere”',
+        description=u'“Bangalore”, “Chennai”, “Pune”, etc or “Anywhere” (without quotes)',
         validators=[Required(u"If this job doesn’t have a fixed location, use “Anywhere”")])
     job_relocation_assist = BooleanField("Relocation assistance available")
     job_description = TextAreaField("Description",
