@@ -209,6 +209,7 @@ def confirm(hashid):
             db.session.commit()
         session.get('userkeys', []).remove(post.edit_key)
         session.modified = True # Since it won't detect changes to lists
+        session.permanent = True
         return render_template('mailsent.html', post=post)
     return render_template('confirm.html', post=post, form=form)
 
@@ -280,8 +281,8 @@ def editjob(hashid, key, form=None, post=None, validated=False):
             abort(404)
     if key != post.edit_key:
         abort(403)
-    if request.method == 'POST' and post.status != POSTSTATUS.DRAFT:
-        form.poster_email.data = post.email
+    #if request.method == 'POST' and post.status != POSTSTATUS.DRAFT:
+    #    form.poster_email.data = post.email
     if request.method == 'POST' and (validated or form.validate()):
         post.headline = form.job_headline.data
         post.type_id = form.job_type.data
@@ -313,6 +314,7 @@ def editjob(hashid, key, form=None, post=None, validated=False):
         userkeys = session.get('userkeys', [])
         userkeys.append(post.edit_key)
         session['userkeys'] = userkeys
+        session.permanent = True
         return redirect(url_for('jobdetail', hashid=post.hashid), code=303)
     elif request.method == 'POST':
         flash("Please correct the indicated errors", category='interactive')
@@ -331,7 +333,7 @@ def editjob(hashid, key, form=None, post=None, validated=False):
         form.company_url.data = post.company_url
         form.poster_email.data = post.email
 
-    return render_template('postjob.html', form=form, no_email=post.status != POSTSTATUS.DRAFT)
+    return render_template('postjob.html', form=form)#, no_email=post.status != POSTSTATUS.DRAFT)
 
 
 @app.route('/new', methods=('GET', 'POST'))
