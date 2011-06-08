@@ -35,7 +35,7 @@
         <em>(relocation assistance available)</em>{% endif %}</span><br/>
       {%- if post.company_url -%}
         <span class="post-company-url">
-          <a href="{{ post.company_url }}" rel="nofollow">{{ post.company_url|cleanurl }}</a>
+          <a href="{{ post.company_url }}" target="_blank" rel="nofollow">{{ post.company_url|cleanurl }}</a>
         </span>
       {%- endif %}
     </p>

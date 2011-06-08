@@ -1,4 +1,3 @@
-@charset "UTF-8";
 /*  HTML5 ✰ Boilerplate  */
 html, body, div, span, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre,
 abbr, address, cite, code, del, dfn, em, img, ins, kbd, q, samp,
@@ -280,10 +279,10 @@ header {
   padding: 10px 20px;
   background: url('/static/img/paper.jpg?884184256');
   border-bottom: 1px solid #afafaf;
-  -moz-box-shadow: rgba(0, 0, 0, 0.4) -5px 1px 5px 0;
-  -webkit-box-shadow: rgba(0, 0, 0, 0.4) -5px 1px 5px 0;
-  -o-box-shadow: rgba(0, 0, 0, 0.4) -5px 1px 5px 0;
-  box-shadow: rgba(0, 0, 0, 0.4) -5px 1px 5px 0;
+  -moz-box-shadow: -5px 1px 5px rgba(0, 0, 0, 0.4);
+  -webkit-box-shadow: -5px 1px 5px rgba(0, 0, 0, 0.4);
+  -o-box-shadow: -5px 1px 5px rgba(0, 0, 0, 0.4);
+  box-shadow: -5px 1px 5px rgba(0, 0, 0, 0.4);
 }
 header:after {
   content: "\0020";
@@ -399,10 +398,10 @@ footer {
 
 footer {
   background: url('/static/img/paper.jpg?884184256');
-  -moz-box-shadow: rgba(0, 0, 0, 0.4) -5px -1px 5px 0;
-  -webkit-box-shadow: rgba(0, 0, 0, 0.4) -5px -1px 5px 0;
-  -o-box-shadow: rgba(0, 0, 0, 0.4) -5px -1px 5px 0;
-  box-shadow: rgba(0, 0, 0, 0.4) -5px -1px 5px 0;
+  -moz-box-shadow: -5px -1px 5px rgba(0, 0, 0, 0.4);
+  -webkit-box-shadow: -5px -1px 5px rgba(0, 0, 0, 0.4);
+  -o-box-shadow: -5px -1px 5px rgba(0, 0, 0, 0.4);
+  box-shadow: -5px -1px 5px rgba(0, 0, 0, 0.4);
   font-size: 100%;
   background-color: white;
   text-align: center;
@@ -429,10 +428,10 @@ footer {
   -ms-border-radius: 4px;
   -khtml-border-radius: 4px;
   border-radius: 4px;
-  -moz-box-shadow: rgba(0, 0, 0, 0.4) 0 2px 10px 0;
-  -webkit-box-shadow: rgba(0, 0, 0, 0.4) 0 2px 10px 0;
-  -o-box-shadow: rgba(0, 0, 0, 0.4) 0 2px 10px 0;
-  box-shadow: rgba(0, 0, 0, 0.4) 0 2px 10px 0;
+  -moz-box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+  -webkit-box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+  -o-box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
 }
 .flash div.flashmessage, .flash div.guidecontent, #guide div.flashmessage, #guide div.guidecontent {
   margin: 1em 2em;
@@ -600,10 +599,10 @@ footer {
   top: -3em;
   margin: 0;
   padding: 1em;
-  -moz-box-shadow: rgba(0, 0, 0, 0.4) 0 2px 10px 0;
-  -webkit-box-shadow: rgba(0, 0, 0, 0.4) 0 2px 10px 0;
-  -o-box-shadow: rgba(0, 0, 0, 0.4) 0 2px 10px 0;
-  box-shadow: rgba(0, 0, 0, 0.4) 0 2px 10px 0;
+  -moz-box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+  -webkit-box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+  -o-box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
   /* creates the smaller  triangle */
 }
 #sheet #detail-sidebar .popup-box .close-popup {
@@ -835,18 +834,22 @@ footer {
   border-radius: 3px;
   padding: 0 12px;
   background: #e6e6e6;
-  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, color-stop(0%, #e6e6e6), color-stop(100%, #d6d6d6));
-  background-image: -moz-linear-gradient(top, #e6e6e6 0%, #d6d6d6 100%);
-  background-image: linear-gradient(top, #e6e6e6 0%, #d6d6d6 100%);
+  background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #e6e6e6), color-stop(100%, #d6d6d6));
+  background-image: -webkit-linear-gradient(top, #e6e6e6, #d6d6d6);
+  background-image: -moz-linear-gradient(top, #e6e6e6, #d6d6d6);
+  background-image: -o-linear-gradient(top, #e6e6e6, #d6d6d6);
+  background-image: linear-gradient(top, #e6e6e6, #d6d6d6);
   font-weight: bold;
   color: #444;
   vertical-align: text-bottom;
 }
 #sheet input[type="submit"]:hover, #guide input[type="submit"]:hover {
   background: #d6d6d6;
-  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, color-stop(0%, #d6d6d6), color-stop(100%, #c6c6c6));
-  background-image: -moz-linear-gradient(top, #d6d6d6 0%, #c6c6c6 100%);
-  background-image: linear-gradient(top, #d6d6d6 0%, #c6c6c6 100%);
+  background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #d6d6d6), color-stop(100%, #c6c6c6));
+  background-image: -webkit-linear-gradient(top, #d6d6d6, #c6c6c6);
+  background-image: -moz-linear-gradient(top, #d6d6d6, #c6c6c6);
+  background-image: -o-linear-gradient(top, #d6d6d6, #c6c6c6);
+  background-image: linear-gradient(top, #d6d6d6, #c6c6c6);
 }
 
 #search input {
@@ -902,17 +905,21 @@ footer {
   border-bottom-right-radius: 3px;
   padding: 0 12px;
   background: #e6e6e6;
-  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, color-stop(0%, #e6e6e6), color-stop(100%, #d6d6d6));
-  background-image: -moz-linear-gradient(top, #e6e6e6 0%, #d6d6d6 100%);
-  background-image: linear-gradient(top, #e6e6e6 0%, #d6d6d6 100%);
+  background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #e6e6e6), color-stop(100%, #d6d6d6));
+  background-image: -webkit-linear-gradient(top, #e6e6e6, #d6d6d6);
+  background-image: -moz-linear-gradient(top, #e6e6e6, #d6d6d6);
+  background-image: -o-linear-gradient(top, #e6e6e6, #d6d6d6);
+  background-image: linear-gradient(top, #e6e6e6, #d6d6d6);
   font-weight: bold;
   color: #666;
 }
 #search input[type="submit"]:hover {
   background: #d6d6d6;
-  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, color-stop(0%, #d6d6d6), color-stop(100%, #c6c6c6));
-  background-image: -moz-linear-gradient(top, #d6d6d6 0%, #c6c6c6 100%);
-  background-image: linear-gradient(top, #d6d6d6 0%, #c6c6c6 100%);
+  background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #d6d6d6), color-stop(100%, #c6c6c6));
+  background-image: -webkit-linear-gradient(top, #d6d6d6, #c6c6c6);
+  background-image: -moz-linear-gradient(top, #d6d6d6, #c6c6c6);
+  background-image: -o-linear-gradient(top, #d6d6d6, #c6c6c6);
+  background-image: linear-gradient(top, #d6d6d6, #c6c6c6);
 }
 
 /*
@@ -993,13 +1000,14 @@ h2 {
   width: 50%;
   height: 20%;
   max-width: 300px;
-  -moz-box-shadow: rgba(0, 0, 0, 0.4) 0 15px 10px 0;
-  -webkit-box-shadow: rgba(0, 0, 0, 0.4) 0 15px 10px 0;
-  -o-box-shadow: rgba(0, 0, 0, 0.4) 0 15px 10px 0;
-  box-shadow: rgba(0, 0, 0, 0.4) 0 15px 10px 0;
+  -moz-box-shadow: 0 15px 10px rgba(0, 0, 0, 0.4);
+  -webkit-box-shadow: 0 15px 10px rgba(0, 0, 0, 0.4);
+  -o-box-shadow: 0 15px 10px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 15px 10px rgba(0, 0, 0, 0.4);
   -moz-transform: rotate(-3deg);
   -webkit-transform: rotate(-3deg);
   -o-transform: rotate(-3deg);
+  -ms-transform: rotate(-3deg);
   transform: rotate(-3deg);
 }
 .stickie:after {
@@ -1008,6 +1016,7 @@ h2 {
   -moz-transform: rotate(3deg);
   -webkit-transform: rotate(3deg);
   -o-transform: rotate(3deg);
+  -ms-transform: rotate(3deg);
   transform: rotate(3deg);
 }
 .stickie a, .stickie a:hover, .stickie a:active, .stickie a:visited, .stickie a:focus {
@@ -1141,17 +1150,21 @@ header .stickie {
   border-radius: 3px;
   padding: 0 12px;
   background: #e6e6e6;
-  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, color-stop(0%, #e6e6e6), color-stop(100%, #d6d6d6));
-  background-image: -moz-linear-gradient(top, #e6e6e6 0%, #d6d6d6 100%);
-  background-image: linear-gradient(top, #e6e6e6 0%, #d6d6d6 100%);
+  background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #e6e6e6), color-stop(100%, #d6d6d6));
+  background-image: -webkit-linear-gradient(top, #e6e6e6, #d6d6d6);
+  background-image: -moz-linear-gradient(top, #e6e6e6, #d6d6d6);
+  background-image: -o-linear-gradient(top, #e6e6e6, #d6d6d6);
+  background-image: linear-gradient(top, #e6e6e6, #d6d6d6);
   font-weight: bold;
   color: #444;
 }
 #newpost input[type="submit"]:hover {
   background: #d6d6d6;
-  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, color-stop(0%, #d6d6d6), color-stop(100%, #c6c6c6));
-  background-image: -moz-linear-gradient(top, #d6d6d6 0%, #c6c6c6 100%);
-  background-image: linear-gradient(top, #d6d6d6 0%, #c6c6c6 100%);
+  background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #d6d6d6), color-stop(100%, #c6c6c6));
+  background-image: -webkit-linear-gradient(top, #d6d6d6, #c6c6c6);
+  background-image: -moz-linear-gradient(top, #d6d6d6, #c6c6c6);
+  background-image: -o-linear-gradient(top, #d6d6d6, #c6c6c6);
+  background-image: linear-gradient(top, #d6d6d6, #c6c6c6);
 }
 
 .stickie.info {
@@ -1206,12 +1219,9 @@ header .stickie {
   color: #816894;
 }
 
-@media all and (orientation:portrait) {}
-@media all and (orientation:landscape) {}
 @media screen and (max-device-width: 480px) {
   /* html { -webkit-text-size-adjust:none; -ms-text-size-adjust:none; } */
 }
-
 @media print {
   * {
     background: transparent !important;
