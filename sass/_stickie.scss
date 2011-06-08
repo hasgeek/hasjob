@@ -13,9 +13,10 @@
     padding: 1.2em;
     margin: 10px 10px;
     @include border-radius(2px);
-    -webkit-box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3), 0 0 10px rgba(0, 0, 0, 0.1) inset;
-       -moz-box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3), 0 0 10px rgba(0, 0, 0, 0.1) inset;
-            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3), 0 0 10px rgba(0, 0, 0, 0.1) inset;
+    @include box-shadow(0 1px 4px rgba(0, 0, 0, 0.3), 0 0 10px rgba(0, 0, 0, 0.1) inset);
+    //-webkit-box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3), 0 0 10px rgba(0, 0, 0, 0.1) inset;
+    //   -moz-box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3), 0 0 10px rgba(0, 0, 0, 0.1) inset;
+    //        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3), 0 0 10px rgba(0, 0, 0, 0.1) inset;
     &:before, &:after {
         content: "";
         position: absolute;
@@ -25,7 +26,7 @@
         width: 50%;
         height: 20%;
         max-width: 300px;
-        @include box-shadow($color-shadow, 0, 15px, 10px);
+        @include single-box-shadow($color-shadow, 0, 15px, 10px);
         @include rotate(-3deg);
     }
     &:after {
@@ -140,13 +141,13 @@
         @include border-radius(3px);
         padding: 0 12px;
         background: #e6e6e6;
-        @include linear-gradient(color-stops(#e6e6e6, #d6d6d6));
+        @include background-image(linear-gradient(#e6e6e6, #d6d6d6));
         font-weight: bold;
         color: #444;
         &:hover {
             //text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
             background: #d6d6d6;
-            @include linear-gradient(color-stops(#d6d6d6, #c6c6c6));
+            @include background-image(linear-gradient(#d6d6d6, #c6c6c6));
             //color: #fff;
         }
     }

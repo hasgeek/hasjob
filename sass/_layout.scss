@@ -12,7 +12,7 @@ header {
     padding: 10px 20px;
     background: image_url("paper.jpg");
     border-bottom: 1px solid $color-sheet-border;
-    @include box-shadow($color-shadow, -5px, 1px, 5px);
+    @include single-box-shadow($color-shadow, -5px, 1px, 5px);
 
     form#search {
         float: right;
@@ -83,7 +83,7 @@ header {
 @include sticky-footer(40px, "#container", "#main_footer", "footer");
 footer {
     background: image_url("paper.jpg");
-    @include box-shadow($color-shadow, -5px, -1px, 5px);
+    @include single-box-shadow($color-shadow, -5px, -1px, 5px);
     font-size: 100%;
     background-color: white;
     text-align: center;
@@ -117,7 +117,7 @@ footer {
     form {
         margin-bottom: 2em;
     }
-    @include box-shadow($color-shadow, 0, 2px, 10px);
+    @include single-box-shadow($color-shadow, 0, 2px, 10px);
 //    -webkit-box-shadow: 0 2px 10px $color-shadow, 0 0 10px rgba(0, 0, 0, 0.1) inset;
 //       -moz-box-shadow: 0 2px 10px $color-shadow, 0 0 10px rgba(0, 0, 0, 0.1) inset;
 //            box-shadow: 0 2px 10px $color-shadow, 0 0 10px rgba(0, 0, 0, 0.1) inset;
@@ -162,10 +162,11 @@ footer {
     padding: 1em 0;
     border: 1px solid $color-sheet-border;
     @include border-radius(4px);
-    //@include box-shadow($color-shadow, 0, 2px, 10px);
-    -webkit-box-shadow: 0 2px 10px $color-shadow, 0 0 10px rgba(0, 0, 0, 0.1) inset;
-       -moz-box-shadow: 0 2px 10px $color-shadow, 0 0 10px rgba(0, 0, 0, 0.1) inset;
-            box-shadow: 0 2px 10px $color-shadow, 0 0 10px rgba(0, 0, 0, 0.1) inset;
+    //@include single-box-shadow($color-shadow, 0, 2px, 10px);
+    @include box-shadow(0 2px 10px $color-shadow, 0 0 10px rgba(0, 0, 0, 0.1) inset);
+    //-webkit-box-shadow: 0 2px 10px $color-shadow, 0 0 10px rgba(0, 0, 0, 0.1) inset;
+    //   -moz-box-shadow: 0 2px 10px $color-shadow, 0 0 10px rgba(0, 0, 0, 0.1) inset;
+    //        box-shadow: 0 2px 10px $color-shadow, 0 0 10px rgba(0, 0, 0, 0.1) inset;
     #company-info {
         color: $color-title-geek;
         margin: 1em 0;
@@ -247,7 +248,7 @@ footer {
             top: -3em;
             margin: 0;
             padding: 1em;
-            @include box-shadow($color-shadow, 0, 2px, 10px);
+            @include single-box-shadow($color-shadow, 0, 2px, 10px);
             .close-popup {
                 display: none;
             }
@@ -419,9 +420,10 @@ footer {
     }
 
     textarea, input[type="text"], input[type="password"], input[type="email"], input[type="url"] {
-        -webkit-box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1), 0 1px 0 rgba(255, 255, 255, 0.5) inset;
-           -moz-box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1), 0 1px 0 rgba(255, 255, 255, 0.5) inset;
-                box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1), 0 1px 0 rgba(255, 255, 255, 0.5) inset;
+        @include box-shadow(0 1px 0 rgba(0, 0, 0, 0.1), 0 1px 0 rgba(255, 255, 255, 0.5) inset);
+        //-webkit-box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1), 0 1px 0 rgba(255, 255, 255, 0.5) inset;
+        //   -moz-box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1), 0 1px 0 rgba(255, 255, 255, 0.5) inset;
+        //        box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1), 0 1px 0 rgba(255, 255, 255, 0.5) inset;
         }
 
     input[type="text"], input[type="email"], input[type="password"], input[type="url"] {
@@ -446,14 +448,14 @@ footer {
         @include border-radius(3px);
         padding: 0 12px;
         background: #e6e6e6;
-        @include linear-gradient(color-stops(#e6e6e6, #d6d6d6));
+        @include background-image(linear-gradient(#e6e6e6, #d6d6d6));
         font-weight: bold;
         color: #444;
         vertical-align: text-bottom;
         &:hover {
             //text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
             background: #d6d6d6;
-            @include linear-gradient(color-stops(#d6d6d6, #c6c6c6));
+            @include background-image(linear-gradient(#d6d6d6, #c6c6c6));
             //color: #fff;
         }
     }
@@ -491,13 +493,13 @@ footer {
         @include border-bottom-right-radius(3px);
         padding: 0 12px;
         background: #e6e6e6;
-        @include linear-gradient(color-stops(#e6e6e6, #d6d6d6));
+        @include background-image(linear-gradient(#e6e6e6, #d6d6d6));
         font-weight: bold;
         color: #666;
         &:hover {
             //text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
             background: #d6d6d6;
-            @include linear-gradient(color-stops(#d6d6d6, #c6c6c6));
+            @include background-image(linear-gradient(#d6d6d6, #c6c6c6));
             //color: #fff;
         }
     }

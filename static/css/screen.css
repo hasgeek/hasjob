@@ -492,8 +492,9 @@ footer {
   -ms-border-radius: 4px;
   -khtml-border-radius: 4px;
   border-radius: 4px;
-  -webkit-box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4), 0 0 10px rgba(0, 0, 0, 0.1) inset;
   -moz-box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4), 0 0 10px rgba(0, 0, 0, 0.1) inset;
+  -webkit-box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4), 0 0 10px rgba(0, 0, 0, 0.1) inset;
+  -o-box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4), 0 0 10px rgba(0, 0, 0, 0.1) inset;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4), 0 0 10px rgba(0, 0, 0, 0.1) inset;
   /* Form elements */
 }
@@ -805,8 +806,9 @@ footer {
   border-radius: 3px;
 }
 #sheet textarea, #sheet input[type="text"], #sheet input[type="password"], #sheet input[type="email"], #sheet input[type="url"] {
-  -webkit-box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1), 0 1px 0 rgba(255, 255, 255, 0.5) inset;
   -moz-box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1), 0 1px 0 rgba(255, 255, 255, 0.5) inset;
+  -webkit-box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1), 0 1px 0 rgba(255, 255, 255, 0.5) inset;
+  -o-box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1), 0 1px 0 rgba(255, 255, 255, 0.5) inset;
   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1), 0 1px 0 rgba(255, 255, 255, 0.5) inset;
 }
 #sheet input[type="text"], #sheet input[type="email"], #sheet input[type="password"], #sheet input[type="url"] {
@@ -835,10 +837,10 @@ footer {
   padding: 0 12px;
   background: #e6e6e6;
   background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #e6e6e6), color-stop(100%, #d6d6d6));
-  background-image: -webkit-linear-gradient(top, #e6e6e6, #d6d6d6);
-  background-image: -moz-linear-gradient(top, #e6e6e6, #d6d6d6);
-  background-image: -o-linear-gradient(top, #e6e6e6, #d6d6d6);
-  background-image: linear-gradient(top, #e6e6e6, #d6d6d6);
+  background-image: -webkit-linear-gradient(#e6e6e6, #d6d6d6);
+  background-image: -moz-linear-gradient(#e6e6e6, #d6d6d6);
+  background-image: -o-linear-gradient(#e6e6e6, #d6d6d6);
+  background-image: linear-gradient(#e6e6e6, #d6d6d6);
   font-weight: bold;
   color: #444;
   vertical-align: text-bottom;
@@ -846,10 +848,10 @@ footer {
 #sheet input[type="submit"]:hover, #guide input[type="submit"]:hover {
   background: #d6d6d6;
   background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #d6d6d6), color-stop(100%, #c6c6c6));
-  background-image: -webkit-linear-gradient(top, #d6d6d6, #c6c6c6);
-  background-image: -moz-linear-gradient(top, #d6d6d6, #c6c6c6);
-  background-image: -o-linear-gradient(top, #d6d6d6, #c6c6c6);
-  background-image: linear-gradient(top, #d6d6d6, #c6c6c6);
+  background-image: -webkit-linear-gradient(#d6d6d6, #c6c6c6);
+  background-image: -moz-linear-gradient(#d6d6d6, #c6c6c6);
+  background-image: -o-linear-gradient(#d6d6d6, #c6c6c6);
+  background-image: linear-gradient(#d6d6d6, #c6c6c6);
 }
 
 #search input {
@@ -906,20 +908,20 @@ footer {
   padding: 0 12px;
   background: #e6e6e6;
   background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #e6e6e6), color-stop(100%, #d6d6d6));
-  background-image: -webkit-linear-gradient(top, #e6e6e6, #d6d6d6);
-  background-image: -moz-linear-gradient(top, #e6e6e6, #d6d6d6);
-  background-image: -o-linear-gradient(top, #e6e6e6, #d6d6d6);
-  background-image: linear-gradient(top, #e6e6e6, #d6d6d6);
+  background-image: -webkit-linear-gradient(#e6e6e6, #d6d6d6);
+  background-image: -moz-linear-gradient(#e6e6e6, #d6d6d6);
+  background-image: -o-linear-gradient(#e6e6e6, #d6d6d6);
+  background-image: linear-gradient(#e6e6e6, #d6d6d6);
   font-weight: bold;
   color: #666;
 }
 #search input[type="submit"]:hover {
   background: #d6d6d6;
   background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #d6d6d6), color-stop(100%, #c6c6c6));
-  background-image: -webkit-linear-gradient(top, #d6d6d6, #c6c6c6);
-  background-image: -moz-linear-gradient(top, #d6d6d6, #c6c6c6);
-  background-image: -o-linear-gradient(top, #d6d6d6, #c6c6c6);
-  background-image: linear-gradient(top, #d6d6d6, #c6c6c6);
+  background-image: -webkit-linear-gradient(#d6d6d6, #c6c6c6);
+  background-image: -moz-linear-gradient(#d6d6d6, #c6c6c6);
+  background-image: -o-linear-gradient(#d6d6d6, #c6c6c6);
+  background-image: linear-gradient(#d6d6d6, #c6c6c6);
 }
 
 /*
@@ -987,8 +989,9 @@ h2 {
   -ms-border-radius: 2px;
   -khtml-border-radius: 2px;
   border-radius: 2px;
-  -webkit-box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3), 0 0 10px rgba(0, 0, 0, 0.1) inset;
   -moz-box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3), 0 0 10px rgba(0, 0, 0, 0.1) inset;
+  -webkit-box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3), 0 0 10px rgba(0, 0, 0, 0.1) inset;
+  -o-box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3), 0 0 10px rgba(0, 0, 0, 0.1) inset;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3), 0 0 10px rgba(0, 0, 0, 0.1) inset;
 }
 .stickie:before, .stickie:after {
@@ -1151,20 +1154,20 @@ header .stickie {
   padding: 0 12px;
   background: #e6e6e6;
   background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #e6e6e6), color-stop(100%, #d6d6d6));
-  background-image: -webkit-linear-gradient(top, #e6e6e6, #d6d6d6);
-  background-image: -moz-linear-gradient(top, #e6e6e6, #d6d6d6);
-  background-image: -o-linear-gradient(top, #e6e6e6, #d6d6d6);
-  background-image: linear-gradient(top, #e6e6e6, #d6d6d6);
+  background-image: -webkit-linear-gradient(#e6e6e6, #d6d6d6);
+  background-image: -moz-linear-gradient(#e6e6e6, #d6d6d6);
+  background-image: -o-linear-gradient(#e6e6e6, #d6d6d6);
+  background-image: linear-gradient(#e6e6e6, #d6d6d6);
   font-weight: bold;
   color: #444;
 }
 #newpost input[type="submit"]:hover {
   background: #d6d6d6;
   background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #d6d6d6), color-stop(100%, #c6c6c6));
-  background-image: -webkit-linear-gradient(top, #d6d6d6, #c6c6c6);
-  background-image: -moz-linear-gradient(top, #d6d6d6, #c6c6c6);
-  background-image: -o-linear-gradient(top, #d6d6d6, #c6c6c6);
-  background-image: linear-gradient(top, #d6d6d6, #c6c6c6);
+  background-image: -webkit-linear-gradient(#d6d6d6, #c6c6c6);
+  background-image: -moz-linear-gradient(#d6d6d6, #c6c6c6);
+  background-image: -o-linear-gradient(#d6d6d6, #c6c6c6);
+  background-image: linear-gradient(#d6d6d6, #c6c6c6);
 }
 
 .stickie.info {
