@@ -3,7 +3,7 @@
   <ShortName>HasGeek Job Search</ShortName>
   <Description>Search for jobs at the HasGeek Job Board</Description>
   <Url type="text/html" method="get"
-       template="http://jobs.hasgeek.in/search?q={searchTerms}"/>
+       template="http://jobs.hasgeek.com/search?q={searchTerms}"/>
   <Developer>HasGeek</Developer>
   <Language>en-us</Language>
   <OutputEncoding>UTF-8</OutputEncoding>

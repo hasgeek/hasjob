@@ -18,8 +18,8 @@ and you wish to withdraw it:
 The [HasGeek Job Board][jb] is a service of [HasGeek][hg]. Write to us at
 info@hasgeek.in if you have suggestions or questions on this service.
 
-[jb]: http://jobs.hasgeek.in
-[hg]: http://hasgeek.in
+[jb]: http://jobs.hasgeek.com
+[hg]: http://hasgeek.com
 
 If you did not list a job, you may safely ignore this email and the listing
 will be automatically removed.

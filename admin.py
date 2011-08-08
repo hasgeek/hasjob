@@ -6,7 +6,10 @@ from flask import abort, Response
 
 from app import app
 from search import delete_from_index
-from models import JobPost, agelimit
+from models import db, JobPost, agelimit
+from utils import md5sum
+
+# --- Admin command-line utilities -------------------------------------------
 
 @app.route('/admin/update-search/<key>')
 def delete_index(key):
@@ -19,3 +22,20 @@ def delete_index(key):
                         content_type='text/plain; charset=utf-8')
     else:
         abort(403)
+
+
+@app.route('/admin/update-md5sum/<key>')
+def update_md5sum(key):
+    # This view is a hack. We need proper SQL migrations instead of this
+    if key == app.config['PERIODIC_KEY']:
+        for post in JobPost.query.all():
+            if not post.md5sum:
+                post.md5sum = md5sum(post.email)
+        db.session.commit()
+        return Response("Updated md5sum for all posts.\n",
+                        content_type='text/plain; charset=utf-8')
+    else:
+        abort(403)
+
+# --- Admin views ------------------------------------------------------------
+# LastUser integration pending

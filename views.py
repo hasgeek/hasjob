@@ -16,7 +16,7 @@ from app import app
 from models import db, POSTSTATUS, JobPost, JobType, JobCategory, JobPostReport, ReportCode, unique_hash, agelimit
 import forms
 from uploads import uploaded_logos, process_image
-from utils import sanitize_html, scrubemail
+from utils import sanitize_html, scrubemail, md5sum
 from search import do_search
 
 mail = Mail()
@@ -38,11 +38,16 @@ def getposts(basequery=None):
 # --- Routes ------------------------------------------------------------------
 
 @app.route('/')
-def index(basequery=None, type=None, category=None):
+def index(basequery=None, type=None, category=None, md5sum=None):
     now = datetime.utcnow()
     posts = getposts(basequery)
+    if posts:
+        employer_name = posts[0].company_name
+    else:
+        employer_name = u'a single employer'
     return render_template('index.html', posts=posts, now=now, newlimit=newlimit,
-                           jobtype=type, jobcategory=category)
+                           jobtype=type, jobcategory=category, md5sum=md5sum,
+                           employer_name=employer_name)
 
 
 @app.route('/type/<slug>')
@@ -67,16 +72,28 @@ def browse_by_category(slug):
     return index(basequery=basequery, category=ob)
 
 
+@app.route('/by/<md5sum>')
+def browse_by_email(md5sum):
+    if not md5sum:
+        abort(404)
+    basequery = JobPost.query.filter_by(md5sum=md5sum)
+    return index(basequery=basequery, md5sum=md5sum)
+
+
 @app.route('/feed')
-def feed(basequery=None, type=None, category=None):
+def feed(basequery=None, type=None, category=None, md5sum=md5sum):
     title = "All jobs"
     if type:
         title = type.title
     elif category:
         title = category.title
+    elif md5sum:
+        title = u"Jobs at a single employer"
     posts = list(getposts(basequery))
     if posts: # Can't do this unless posts is a list
         updated = posts[0].datetime.isoformat()+'Z'
+        if md5sum:
+            title = posts[0].company_name
     else:
         updated = datetime.utcnow().isoformat()+'Z'
     return Response(render_template('feed.xml', posts=posts, updated=updated, title=title),
@@ -103,6 +120,14 @@ def feed_by_category(slug):
         abort(404)
     basequery = JobPost.query.filter_by(category_id=ob.id)
     return feed(basequery=basequery, category=ob)
+
+
+@app.route('/by/<md5sum>/feed')
+def feed_by_email(md5sum):
+    if not md5sum:
+        abort(404)
+    basequery = JobPost.query.filter_by(md5sum=md5sum)
+    return feed(basequery=basequery, md5sum=md5sum)
 
 
 @app.route('/robots.txt')
@@ -295,6 +320,7 @@ def editjob(hashid, key, form=None, post=None, validated=False):
         post.company_name = form.company_name.data
         post.company_url = form.company_url.data
         post.email = form.poster_email.data
+        post.md5sum = md5sum(post.email)
 
         # TODO: Provide option of replacing logo or leaving it alone
         if request.files['company_logo']:

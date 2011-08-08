@@ -7,6 +7,7 @@
 {% block pageheaders %}
 {%- if jobtype %}<link rel="alternate" type="application/atom+xml"  title="{{ jobtype.title }} – {{ config['SITE_TITLE']|e }}" href="{{ url_for('feed_by_type', slug=jobtype.slug) }}" />{% endif -%}
 {%- if jobcategory %}<link rel="alternate" type="application/atom+xml"  title="{{ jobcategory.title }} – {{ config['SITE_TITLE']|e }}" href="{{ url_for('feed_by_category', slug=jobcategory.slug) }}" />{% endif -%}
+{%- if md5sum %}<link rel="alternate" type="application/atom+xml" title="Jobs at {{ employer_name }} – {{ config['SITE_TITLE'] }}" href="{{ url_for('feed_by_email', md5sum=md5sum) }}" />{% endif -%}
 {% endblock %}
 
 {% block header %}
@@ -23,10 +24,18 @@
       <li id="filtered" class="stickie">
         <a href="{{ url_for('index') }}">
           <span class="filtered">
-            You are seeing
+            You are viewing
             {% if jobtype %}{{ jobtype.title.lower() }}{% endif %}
             {% if jobcategory %}{{ jobcategory.title.lower() }}{% endif %}
-            jobs. See all jobs?
+            jobs. View all jobs?
+          </span>
+        </a>
+      </li>
+    {%- elif md5sum %}
+      <li id="filtered" class="stickie">
+        <a href="{{ url_for('index') }}">
+          <span class="filtered">
+            You are viewing jobs at {{ employer_name }}. View all jobs?
           </span>
         </a>
       </li>

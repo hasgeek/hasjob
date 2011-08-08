@@ -3,6 +3,7 @@ import re
 from random import randint
 from uuid import uuid4
 from base64 import b64encode
+from hashlib import md5
 from BeautifulSoup import BeautifulSoup, Comment
 
 #: This code adapted from http://en.wikipedia.org/wiki/Base_36#Python%5FConversion%5FCode
@@ -41,6 +42,7 @@ def random_long_key():
     return base36encode(randint(1000000000000000,
                                 10000000000000000))
 
+
 def random_hash_key():
     """
     Returns a random key that is exactly five letters long.
@@ -51,11 +53,26 @@ def random_hash_key():
     """
     return ('0000' + base36encode(randint(0, 60466175)))[-5:] # 60466175 is 'zzzzz'
 
+
 def newid():
     """
     Return a new random id that is exactly 22 characters long.
     """
     return b64encode(uuid4().bytes, altchars=',-').replace('=', '')
+
+
+def md5sum(data):
+    """
+    Return md5sum of data as a 32-character string.
+
+    >>> md5sum('random text')
+    'd9b9bec3f4cc5482e7c5ef43143e563a'
+    >>> md5sum(u'random text')
+    'd9b9bec3f4cc5482e7c5ef43143e563a'
+    >>> len(md5sum('random text'))
+    32
+    """
+    return md5(data).hexdigest()
 
 
 VALID_TAGS = {'strong': [],

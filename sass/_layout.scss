@@ -14,10 +14,6 @@ header {
     border-bottom: 1px solid $color-sheet-border;
     @include single-box-shadow($color-shadow, -5px, 1px, 5px);
 
-    form#search {
-        float: right;
-        padding-left: 1.2em;
-    }
     #sections {
         li {
             float: left;
@@ -461,31 +457,31 @@ footer {
     }
 }
 
-
 #search {
+    float: right;
+    padding-left: 1.2em;
+    position: relative;
+
     input {
         padding: 0 5px;
         margin: 0;
         font-size: 14px;
-        float: left;
         @include border-radius(0);
         border: none;
     }
 
     input[type="text"] {
         border: 1px solid $color-outline;
-        border-right: 0;
         font-family: $font-input;
         background: white image_url('search.png') 4px center no-repeat;
         padding-left: 20px;
-        @include border-top-left-radius(3px);
-        @include border-bottom-left-radius(3px);
-        width: 15em;
+        padding-right: 43px;
+        @include border-radius(3px);
+        width: 12em;
         height: 25px;
     }
 
     input[type="submit"] {
-        height: 27px;
         border: 1px solid $color-outline;
         border-left: 0;
         font-family: $font-button;
@@ -496,38 +492,17 @@ footer {
         @include background-image(linear-gradient(#e6e6e6, #d6d6d6));
         font-weight: bold;
         color: #666;
+        width: 40px;
+        position: absolute;
+        right: 0;
+        top: 0;
+        bottom: 0;
         &:hover {
-            //text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
             background: #d6d6d6;
             @include background-image(linear-gradient(#d6d6d6, #c6c6c6));
-            //color: #fff;
         }
     }
 }
-
-/*
-input[type=search], input.search {
-    @include border-radius(100px);
-    background: white image_url('search.png') 4px center no-repeat;
-    padding: 0.1em 0 0.1em 20px;
-    vertical-align: baseline;
-    font-family: $font-input;
-    width: 15em;
-    border: 1px solid $color-outline;
-    &:focus {
-        outline: none;
-        border: 1px solid $color-title-geek;
-    }
-}
-
-button {
-    @include fancy-button;
-    @include fancy-button-colors-matte(#dddddd);
-    font-size: 100%;
-    font-weight: bold;
-    font-family: $font-button;
-}
-*/
 
 
 h1 {

@@ -269,7 +269,7 @@ button {
 
 /* Background textures by Rüdiger Appel from http://www.3quarks.com/en/BackgroundPattern/ */
 body {
-  font-family: ff-meta-web-pro-1, ff-meta-web-pro-2, arial, sans-serif;
+  font-family: ff-meta-web-pro-1, ff-meta-web-pro-2, MetaPlus, arial, sans-serif;
   background: url('/static/img/canvas.jpg?881083570');
 }
 
@@ -285,16 +285,9 @@ header {
   box-shadow: -5px 1px 5px rgba(0, 0, 0, 0.4);
 }
 header:after {
-  content: "\0020";
-  display: block;
-  height: 0;
+  content: "";
+  display: table;
   clear: both;
-  overflow: hidden;
-  visibility: hidden;
-}
-header form#search {
-  float: right;
-  padding-left: 1.2em;
 }
 header #sections li {
   float: left;
@@ -331,7 +324,7 @@ header #pitch {
 }
 
 #site-title {
-  font-family: ff-meta-web-pro-1, ff-meta-web-pro-2, arial, sans-serif;
+  font-family: ff-meta-web-pro-1, ff-meta-web-pro-2, MetaPlus, arial, sans-serif;
   float: left;
   padding-right: 0.5em;
   font-size: 30px;
@@ -499,12 +492,9 @@ footer {
   /* Form elements */
 }
 #sheet:after {
-  content: "\0020";
-  display: block;
-  height: 0;
+  content: "";
+  display: table;
   clear: both;
-  overflow: hidden;
-  visibility: hidden;
 }
 #sheet #company-info {
   color: #816894;
@@ -519,12 +509,9 @@ footer {
   border-top: 1px solid #e8e8e8;
 }
 #sheet .section:after {
-  content: "\0020";
-  display: block;
-  height: 0;
+  content: "";
+  display: table;
   clear: both;
-  overflow: hidden;
-  visibility: hidden;
 }
 #sheet .section.first {
   border-top: 0;
@@ -685,12 +672,9 @@ footer {
   margin-bottom: 1em;
 }
 #sheet div.field:after {
-  content: "\0020";
-  display: block;
-  height: 0;
+  content: "";
+  display: table;
   clear: both;
-  overflow: hidden;
-  visibility: hidden;
 }
 #sheet div.field .checkbox label {
   padding-left: 0.5em;
@@ -775,7 +759,7 @@ footer {
   margin-bottom: 1em;
 }
 #sheet input, #sheet textarea {
-  font-family: ff-meta-web-pro-1, ff-meta-web-pro-2, arial, sans-serif;
+  font-family: ff-meta-web-pro-1, ff-meta-web-pro-2, MetaPlus, arial, sans-serif;
 }
 #sheet fieldset {
   *zoom: 1;
@@ -783,12 +767,9 @@ footer {
   margin-bottom: 1em;
 }
 #sheet fieldset:after {
-  content: "\0020";
-  display: block;
-  height: 0;
+  content: "";
+  display: table;
   clear: both;
-  overflow: hidden;
-  visibility: hidden;
 }
 #sheet textarea {
   width: 90%;
@@ -826,7 +807,7 @@ footer {
 #sheet input[type="submit"], #guide input[type="submit"] {
   height: 27px;
   border: 1px solid #b7b7b7;
-  font-family: ff-meta-web-pro-1, ff-meta-web-pro-2, arial, sans-serif;
+  font-family: ff-meta-web-pro-1, ff-meta-web-pro-2, MetaPlus, arial, sans-serif;
   font-size: 14px;
   -moz-border-radius: 3px;
   -webkit-border-radius: 3px;
@@ -840,6 +821,7 @@ footer {
   background-image: -webkit-linear-gradient(#e6e6e6, #d6d6d6);
   background-image: -moz-linear-gradient(#e6e6e6, #d6d6d6);
   background-image: -o-linear-gradient(#e6e6e6, #d6d6d6);
+  background-image: -ms-linear-gradient(#e6e6e6, #d6d6d6);
   background-image: linear-gradient(#e6e6e6, #d6d6d6);
   font-weight: bold;
   color: #444;
@@ -851,14 +833,19 @@ footer {
   background-image: -webkit-linear-gradient(#d6d6d6, #c6c6c6);
   background-image: -moz-linear-gradient(#d6d6d6, #c6c6c6);
   background-image: -o-linear-gradient(#d6d6d6, #c6c6c6);
+  background-image: -ms-linear-gradient(#d6d6d6, #c6c6c6);
   background-image: linear-gradient(#d6d6d6, #c6c6c6);
 }
 
+#search {
+  float: right;
+  padding-left: 1.2em;
+  position: relative;
+}
 #search input {
   padding: 0 5px;
   margin: 0;
   font-size: 14px;
-  float: left;
   -moz-border-radius: 0;
   -webkit-border-radius: 0;
   -o-border-radius: 0;
@@ -869,30 +856,23 @@ footer {
 }
 #search input[type="text"] {
   border: 1px solid #b7b7b7;
-  border-right: 0;
-  font-family: ff-meta-web-pro-1, ff-meta-web-pro-2, arial, sans-serif;
+  font-family: ff-meta-web-pro-1, ff-meta-web-pro-2, MetaPlus, arial, sans-serif;
   background: white url('/static/img/search.png?1299763894') 4px center no-repeat;
   padding-left: 20px;
-  -moz-border-radius-topleft: 3px;
-  -webkit-border-top-left-radius: 3px;
-  -o-border-top-left-radius: 3px;
-  -ms-border-top-left-radius: 3px;
-  -khtml-border-top-left-radius: 3px;
-  border-top-left-radius: 3px;
-  -moz-border-radius-bottomleft: 3px;
-  -webkit-border-bottom-left-radius: 3px;
-  -o-border-bottom-left-radius: 3px;
-  -ms-border-bottom-left-radius: 3px;
-  -khtml-border-bottom-left-radius: 3px;
-  border-bottom-left-radius: 3px;
-  width: 15em;
+  padding-right: 43px;
+  -moz-border-radius: 3px;
+  -webkit-border-radius: 3px;
+  -o-border-radius: 3px;
+  -ms-border-radius: 3px;
+  -khtml-border-radius: 3px;
+  border-radius: 3px;
+  width: 12em;
   height: 25px;
 }
 #search input[type="submit"] {
-  height: 27px;
   border: 1px solid #b7b7b7;
   border-left: 0;
-  font-family: ff-meta-web-pro-1, ff-meta-web-pro-2, arial, sans-serif;
+  font-family: ff-meta-web-pro-1, ff-meta-web-pro-2, MetaPlus, arial, sans-serif;
   -moz-border-radius-topright: 3px;
   -webkit-border-top-right-radius: 3px;
   -o-border-top-right-radius: 3px;
@@ -911,9 +891,15 @@ footer {
   background-image: -webkit-linear-gradient(#e6e6e6, #d6d6d6);
   background-image: -moz-linear-gradient(#e6e6e6, #d6d6d6);
   background-image: -o-linear-gradient(#e6e6e6, #d6d6d6);
+  background-image: -ms-linear-gradient(#e6e6e6, #d6d6d6);
   background-image: linear-gradient(#e6e6e6, #d6d6d6);
   font-weight: bold;
   color: #666;
+  width: 40px;
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
 }
 #search input[type="submit"]:hover {
   background: #d6d6d6;
@@ -921,32 +907,10 @@ footer {
   background-image: -webkit-linear-gradient(#d6d6d6, #c6c6c6);
   background-image: -moz-linear-gradient(#d6d6d6, #c6c6c6);
   background-image: -o-linear-gradient(#d6d6d6, #c6c6c6);
+  background-image: -ms-linear-gradient(#d6d6d6, #c6c6c6);
   background-image: linear-gradient(#d6d6d6, #c6c6c6);
 }
 
-/*
-input[type=search], input.search {
-    @include border-radius(100px);
-    background: white image_url('search.png') 4px center no-repeat;
-    padding: 0.1em 0 0.1em 20px;
-    vertical-align: baseline;
-    font-family: $font-input;
-    width: 15em;
-    border: 1px solid $color-outline;
-    &:focus {
-        outline: none;
-        border: 1px solid $color-title-geek;
-    }
-}
-
-button {
-    @include fancy-button;
-    @include fancy-button-colors-matte(#dddddd);
-    font-size: 100%;
-    font-weight: bold;
-    font-family: $font-button;
-}
-*/
 h1 {
   font-size: 200%;
   color: #df5e0e;
@@ -1143,7 +1107,7 @@ header .stickie {
 #newpost input[type="submit"] {
   height: 27px;
   border: 1px solid #b7b7b7;
-  font-family: ff-meta-web-pro-1, ff-meta-web-pro-2, arial, sans-serif;
+  font-family: ff-meta-web-pro-1, ff-meta-web-pro-2, MetaPlus, arial, sans-serif;
   font-size: 14px;
   -moz-border-radius: 3px;
   -webkit-border-radius: 3px;
@@ -1157,6 +1121,7 @@ header .stickie {
   background-image: -webkit-linear-gradient(#e6e6e6, #d6d6d6);
   background-image: -moz-linear-gradient(#e6e6e6, #d6d6d6);
   background-image: -o-linear-gradient(#e6e6e6, #d6d6d6);
+  background-image: -ms-linear-gradient(#e6e6e6, #d6d6d6);
   background-image: linear-gradient(#e6e6e6, #d6d6d6);
   font-weight: bold;
   color: #444;
@@ -1167,6 +1132,7 @@ header .stickie {
   background-image: -webkit-linear-gradient(#d6d6d6, #c6c6c6);
   background-image: -moz-linear-gradient(#d6d6d6, #c6c6c6);
   background-image: -o-linear-gradient(#d6d6d6, #c6c6c6);
+  background-image: -ms-linear-gradient(#d6d6d6, #c6c6c6);
   background-image: linear-gradient(#d6d6d6, #c6c6c6);
 }
 

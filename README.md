@@ -1,7 +1,7 @@
 HasGeek Job Board -- beta
 =========================
 
-Code for HasGeek's job board at http://jobs.hasgeek.in/
+Code for HasGeek's job board at http://jobs.hasgeek.com/
 
 You are welcome to contribute a patch or use this code to run your own job
 board under the terms of the BSD license, but please design your own UI.
