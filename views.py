@@ -35,6 +35,22 @@ def getposts(basequery=None):
         JobPost.datetime > datetime.utcnow() - agelimit).order_by(db.desc(JobPost.datetime))
 
 
+def getallposts(order_by=None, desc=False, start=None, limit=None):
+    if order_by is None:
+        order_by = JobPost.datetime
+    filt = JobPost.query.filter(JobPost.status.in_([POSTSTATUS.CONFIRMED, POSTSTATUS.REVIEWED]))
+    count = filt.count()
+    if desc:
+        filt = filt.order_by(db.desc(order_by))
+    else:
+        filt = filt.order_by(order_by)
+    if start is not None:
+        filt = filt.offset(start)
+    if limit is not None:
+        filt = filt.limit(limit)
+    return count, filt
+
+
 # --- Routes ------------------------------------------------------------------
 
 @app.route('/')
@@ -130,11 +146,69 @@ def feed_by_email(md5sum):
     return feed(basequery=basequery, md5sum=md5sum)
 
 
+@app.route('/archive')
+def archive():
+    def sortarchive(order_by):
+        current_order_by = request.args.get('order_by')
+        reverse = request.args.get('reverse')
+        if order_by == current_order_by:
+            if reverse is None:
+                reverse = False
+            try:
+                reverse = bool(int(reverse))
+            except ValueError:
+                reverse = False
+            reverse = int(not reverse)
+        return url_for('archive', order_by=order_by,
+            reverse=reverse,
+            start=request.args.get('start'),
+            limit=request.args.get('limit'))
+
+    order_by = {
+        'date': JobPost.datetime,
+        'headline': JobPost.headline,
+        'company': JobPost.company_name,
+        'location': JobPost.location,
+        }.get(request.args.get('order_by'))
+    reverse = request.args.get('reverse')
+    start = request.args.get('start', 0)
+    limit = request.args.get('limit', 100)
+    if order_by is None and reverse is None:
+        order_by = JobPost.datetime
+        reverse = True
+    try:
+        if reverse is not None:
+            reverse = bool(int(reverse))
+    except ValueError:
+        reverse = None
+    try:
+        if start is not None:
+            start = int(start)
+    except ValueError:
+        start = 0
+    try:
+        if limit is not None:
+            limit = int(limit)
+    except ValueError:
+        limit = 100
+    count, posts = getallposts(order_by=order_by, desc=reverse, start=start, limit=limit)
+
+    if request.is_xhr:
+        tmpl = 'archive_inner.html'
+    else:
+        tmpl = 'archive.html'
+    return render_template(tmpl, order_by=request.args.get('order_by'),
+        posts=posts, start=start, limit=limit, count=count,
+        # Pass some functions
+        min=min, sortarchive=sortarchive)
+
+
 @app.route('/robots.txt')
 def robots():
     return Response("Disallow: /edit/*\n"
                     "Disallow: /confirm/*\n"
                     "Disallow: /withdraw/*\n"
+                    "Disallow: /admin/*\n"
                     "",
                     content_type = 'text/plain; charset=utf-8')
 

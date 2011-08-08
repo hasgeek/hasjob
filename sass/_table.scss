@@ -1,0 +1,64 @@
+table.listing {
+    width: 100%;
+    //border-top: 1px solid $color-listing-outline;
+    //border-bottom: 1px solid $color-listing-outline;
+    border-collapse: collapse;
+    font-size: 85%;
+    margin: 1em 0;
+    //@include single-box-shadow(rgba(0, 0, 0, 0.1), 0, 1px, 2px);
+}
+
+.listing th, .listing td {
+    padding: 0.2em 1em;
+    text-align: left;
+    vertical-align: top;
+    border-left: 1px solid $color-listing-outline;
+    border-right: 1px solid $color-listing-outline;
+}
+
+.listing th:first-child, .listing td:first-child {
+    border-left: 0;
+}
+
+.listing th:last-child, .listing td:last-child {
+    border-right: 0;
+}
+
+.listing td.separator {
+    border-bottom: 1px solid $color-listing-outline;
+}
+
+.listing tr:nth-of-type(even) {
+    background: $color-listing-even;
+}
+
+.listing thead th {
+    background: $color-listing-background;
+    padding: 0.4em 1em 0.2em;
+}
+
+.listing thead th, .listing thead td {
+    //border-bottom: 1px solid $color-listing-outline;
+}
+
+.listing tfoot th, .listing tfoot td {
+    //border-top: 1px solid $color-listing-outline;
+    background: $color-listing-background;
+}
+
+.listing th.num, .listing td.num {
+    text-align: right;
+}
+
+.listing tr.link a {
+    text-decoration: none;
+    border-bottom: 0;
+    display: block;
+    margin: -0.2em -1em;
+    padding: 0.2em 1em;
+    color: inherit;
+}
+
+.listing tr.link:hover {
+    background: $color-listing-hover;
+}
