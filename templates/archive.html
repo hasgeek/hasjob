@@ -6,7 +6,9 @@
   <div class="section first">
     <h1>{{ self.title() }}</h1>
     <p>All jobs ever posted on the board.</p>
-    {% include "archive_inner.html" %}
+    <div id="archive_table">
+      {% include "archive_inner.html" %}
+    </div>
   </div>
 </div>
 {% endblock %}

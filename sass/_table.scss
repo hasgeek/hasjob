@@ -28,6 +28,10 @@ table.listing {
     border-bottom: 1px solid $color-listing-outline;
 }
 
+.listing td.nowrap {
+    white-space: nowrap;
+}
+
 .listing tr:nth-of-type(even) {
     background: $color-listing-even;
 }

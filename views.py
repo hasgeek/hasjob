@@ -200,7 +200,7 @@ def archive():
     return render_template(tmpl, order_by=request.args.get('order_by'),
         posts=posts, start=start, limit=limit, count=count,
         # Pass some functions
-        min=min, sortarchive=sortarchive)
+        min=min, max=max, sortarchive=sortarchive)
 
 
 @app.route('/robots.txt')

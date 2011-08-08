@@ -11,7 +11,7 @@
     {% for post in posts %}
     {%- set link = url_for('jobdetail', hashid=post.hashid) %}
     <tr class="link">
-      <td><a href="{{ link }}">{{ post.datetime|longdate }}</a></td>
+      <td class="nowrap"><a href="{{ link }}">{{ post.datetime|longdate }}</a></td>
       <td><a href="{{ link }}">{{ post.headline }}</a></td>
       <td><a href="{{ link }}">{{ post.company_name }}</a></td>
       <td><a href="{{ link }}">{{ post.location }}</a></td>
@@ -25,6 +25,14 @@
 </table>
 <p>
   Showing {{ start + 1 }} to {{ min(start+limit, count) }} of {{ count }}.
-  {% if start > 0 %}<a href="">Previous</a>.{% endif %}
-  {% if start+limit < count %}<a href="">Next</a>.{% endif %}
+  {% if start > 0 %}<a href="{{ url_for('archive',
+    order_by=order_by,
+    reverse=request.args.get('reverse'),
+    limit=request.args.get('limit'),
+    start=max(0, start-limit)) }}">Previous</a>.{% endif %}
+  {% if start+limit < count %}<a href="{{ url_for('archive',
+    order_by=order_by,
+    reverse=request.args.get('reverse'),
+    limit=request.args.get('limit'),
+    start=min(start+limit, count-1)) }}">Next</a>.{% endif %}
 </p>

@@ -959,6 +959,10 @@ table.listing {
   border-bottom: 1px solid #e8e8e8;
 }
 
+.listing td.nowrap {
+  white-space: nowrap;
+}
+
 .listing tr:nth-of-type(even) {
   background: #f6f6f6;
 }
