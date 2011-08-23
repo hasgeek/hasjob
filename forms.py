@@ -82,8 +82,12 @@ class ListingForm(Form):
             raise ValidationError(u"Come on, write your own headline. You aren’t just another run-of-the-mill company, right?")
         if 'awesome' in field.data.lower():
             raise ValidationError(u'We’ve had a bit too much awesome around here lately. Got another adjective?')
-        if 'rockstar' in field.data.lower() or 'rock star' in field.data.lower() or 'ninja' in field.data.lower():
-            raise ValidationError(u'Sorry, we can’t help with hiring rockstars or ninjas. Got another adjective?')
+        if 'rockstar' in field.data.lower() or 'rock star' in field.data.lower() or 'rock-star' in field.data.lower():
+            raise ValidationError(u'You are not rich enough to hire a rockstar. Got another adjective?')
+        if 'kickass' in field.data.lower() or 'kick ass' in field.data.lower() or 'kick-ass' in field.data.lower():
+            raise ValidationError(u'We don’t condone kicking asses around here. Got another adjective?')
+        if 'ninja' in field.data.lower():
+            raise ValidationError(u'Ninjas kill people. We can’t allow that. Got another adjective?')
         if 'urgent' in field.data.lower():
             raise ValidationError(u'Sorry, we can’t help with urgent requirements. Geeks don’t grow on trees')
 
