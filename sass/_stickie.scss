@@ -78,7 +78,20 @@
         @include transition-property(color);
         @include transition-duration(0.5s);
     }
-    &:hover .location {
+    .company {
+        font-size: 80%;
+        color: #FBCACA;
+        font-family: $font-stickie-location;
+        position: absolute;
+        left: 0.5em;
+        bottom: 0.25em;
+        height: 1.2em;
+        width: 75%;
+        overflow: hidden;
+        @include transition-property(color);
+        @include transition-duration(0.5s);
+    }
+    &:hover .location, &:hover .company {
         //background: transparent url(../img/location1.png) no-repeat 2px 4px;
         color: $color-stickie-location;
         @include transition-property(color);
