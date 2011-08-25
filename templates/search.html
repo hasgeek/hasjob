@@ -21,6 +21,7 @@
         <span class="location">{{ result.location }}</span>
         <span class="date">{{ result.datetime|shortdate }}</span>
         <span class="headline">{{ result.headline }}</span>
+        <span class="company">{{ result.company_name }}</span>
         {%- if now - result.datetime < newlimit %}<span class="new">New!</span>{% endif %}
       {% endif %}
     </a>

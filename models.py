@@ -120,7 +120,7 @@ class JobPost(db.Model):
     # Company details
     company_name = db.Column(db.Unicode(80), nullable=False)
     company_logo = db.Column(db.Unicode(255), nullable=True)
-    company_url = db.Column(db.Unicode(255), nullable=False, default='')
+    company_url = db.Column(db.Unicode(255), nullable=False, default=u'')
     email = db.Column(db.Unicode(80), nullable=False)
     md5sum = db.Column(db.String(32), nullable=True)
 
