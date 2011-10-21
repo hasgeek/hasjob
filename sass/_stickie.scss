@@ -43,7 +43,7 @@
         width: 100%;
         height: 100%;
         margin: -1em;
-        padding: 1.2em 1em;
+        padding: 1.5em 1em;
         border-bottom: 0;
         overflow-x: hidden;
     }
@@ -63,40 +63,24 @@
         top: 0.25em;
         right: 0.5em;
     }
-    .location {
+    .location, .company {
         font-size: 80%;
-        color: #FBCACA;
+        color: $color-stickie-location;
         font-family: $font-stickie-location;
         position: absolute;
+        height: 1.2em;
+        overflow: hidden;
+    }
+    .location {
         top: 0.25em;
         left: 0.5em;
-        //padding-left: 12px;
-        // Don't let location get too long
-        height: 1.2em;
         width: 75%;
-        overflow: hidden;
-        @include transition-property(color);
-        @include transition-duration(0.5s);
     }
     .company {
-        font-size: 80%;
-        color: #FBCACA;
-        font-family: $font-stickie-location;
-        position: absolute;
         right: 0.5em;
         bottom: 0.25em;
-        height: 1.2em;
         width: 80%;
-        overflow: hidden;
         text-align: right;
-        @include transition-property(color);
-        @include transition-duration(0.5s);
-    }
-    &:hover .location, &:hover .company {
-        //background: transparent url(../img/location1.png) no-repeat 2px 4px;
-        color: $color-stickie-location;
-        @include transition-property(color);
-        @include transition-duration(0.5s);
     }
     .new {
         font-size: 80%;

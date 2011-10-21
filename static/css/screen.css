@@ -1056,7 +1056,7 @@ table.listing {
   width: 100%;
   height: 100%;
   margin: -1em;
-  padding: 1.2em 1em;
+  padding: 1.5em 1em;
   border-bottom: 0;
   overflow-x: hidden;
 }
@@ -1076,55 +1076,24 @@ header .stickie {
   top: 0.25em;
   right: 0.5em;
 }
-.stickie .location {
+.stickie .location, .stickie .company {
   font-size: 80%;
-  color: #FBCACA;
+  color: #816894;
   font-family: "Walter Turncoat", sans-serif;
   position: absolute;
+  height: 1.2em;
+  overflow: hidden;
+}
+.stickie .location {
   top: 0.25em;
   left: 0.5em;
-  height: 1.2em;
   width: 75%;
-  overflow: hidden;
-  -moz-transition-property: color;
-  -webkit-transition-property: color;
-  -o-transition-property: color;
-  transition-property: color;
-  -moz-transition-duration: 0.5s;
-  -webkit-transition-duration: 0.5s;
-  -o-transition-duration: 0.5s;
-  transition-duration: 0.5s;
 }
 .stickie .company {
-  font-size: 80%;
-  color: #FBCACA;
-  font-family: "Walter Turncoat", sans-serif;
-  position: absolute;
   right: 0.5em;
   bottom: 0.25em;
-  height: 1.2em;
   width: 80%;
-  overflow: hidden;
   text-align: right;
-  -moz-transition-property: color;
-  -webkit-transition-property: color;
-  -o-transition-property: color;
-  transition-property: color;
-  -moz-transition-duration: 0.5s;
-  -webkit-transition-duration: 0.5s;
-  -o-transition-duration: 0.5s;
-  transition-duration: 0.5s;
-}
-.stickie:hover .location, .stickie:hover .company {
-  color: #816894;
-  -moz-transition-property: color;
-  -webkit-transition-property: color;
-  -o-transition-property: color;
-  transition-property: color;
-  -moz-transition-duration: 0.5s;
-  -webkit-transition-duration: 0.5s;
-  -o-transition-duration: 0.5s;
-  transition-duration: 0.5s;
 }
 .stickie .new {
   font-size: 80%;
