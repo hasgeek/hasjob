@@ -662,6 +662,9 @@ footer {
 #sheet #detail-sidebar #report:target {
   display: block;
 }
+#sheet #detail-sidebar #banner {
+  margin: 2em 0;
+}
 #sheet p, #sheet blockquote, #sheet ul, #sheet ol {
   margin-top: 1em;
   margin-bottom: 1em;

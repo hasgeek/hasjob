@@ -56,7 +56,7 @@
       {% endif %}
     </div>
     <div id="detail-sidebar">
-      <ul> <!-- TODO -->
+      <ul>
         <li><a id="sidebar-email" href="mailto:?subject=Job%3A%20{{ post.headline|urlquote }}&amp;body={{ request.url|urlquote }}">Email this</a></li>
         <li><a id="sidebar-tweet" target="_blank" href="http://twitter.com/share?url={{ request.url|urlquote }}&amp;counturl={{ request.url|urlquote }}&amp;via=hasjob&amp;related=hasjob:HasGeek%20Job%20Board&amp;text=Job%3A%20{{ post.headline|urlquote }}">Tweet this <span id="tweet-count"></span></a></li>
         {#<li><a id="sidebar-share" href="#share">Share this</a></li>#}
@@ -69,6 +69,10 @@
           </div>
         </li>
       </ul>
+      <div id="banner">
+        <a href="http://droidcon.in/2011/" target="_blank" title="Droidcon India"><img src="{{
+          url_for('static', filename='img/banner.jpg') }}" width="170" height="170" alt="Droidcon India" /></a>
+      </div>
     </div>
   </div>
   <div class="section">
