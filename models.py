@@ -122,7 +122,8 @@ class JobPost(db.Model):
     company_logo = db.Column(db.Unicode(255), nullable=True)
     company_url = db.Column(db.Unicode(255), nullable=False, default=u'')
     email = db.Column(db.Unicode(80), nullable=False)
-    md5sum = db.Column(db.String(32), nullable=True)
+    email_domain = db.Column(db.Unicode(80), nullable=False, index=True)
+    md5sum = db.Column(db.String(32), nullable=False, index=True)
 
     # Payment, audit and workflow fields
     promocode = db.Column(db.String(40), nullable=True)

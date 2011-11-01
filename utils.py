@@ -75,6 +75,22 @@ def md5sum(data):
     return md5(data).hexdigest()
 
 
+def get_email_domain(email):
+    """
+    Return the domain component of an email address.
+
+    >>> get_email_domain('jace@pobox.com')
+    'pobox.com'
+    >>> get_email_domain('jace+test@pobox.com')
+    'pobox.com'
+    >>> get_email_domain('foobar')
+    """
+    try:
+        return email.split('@')[1]
+    except IndexError:
+        return None
+
+
 VALID_TAGS = {'strong': [],
               'em': [],
               'p': [],

@@ -16,7 +16,7 @@ from app import app
 from models import db, POSTSTATUS, JobPost, JobType, JobCategory, JobPostReport, ReportCode, unique_hash, agelimit
 import forms
 from uploads import uploaded_logos, process_image
-from utils import sanitize_html, scrubemail, md5sum
+from utils import sanitize_html, scrubemail, md5sum, get_email_domain
 from search import do_search
 
 mail = Mail()
@@ -394,6 +394,7 @@ def editjob(hashid, key, form=None, post=None, validated=False):
         post.company_name = form.company_name.data
         post.company_url = form.company_url.data
         post.email = form.poster_email.data
+        post.email_domain = get_email_domain(post.email)
         post.md5sum = md5sum(post.email)
 
         # TODO: Provide option of replacing logo or leaving it alone
