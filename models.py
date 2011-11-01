@@ -126,6 +126,7 @@ class JobPost(db.Model):
     md5sum = db.Column(db.String(32), nullable=False, index=True)
 
     # Payment, audit and workflow fields
+    words = db.Column(db.UnicodeText, nullable=True) # All words in description, perks and how_to_apply
     promocode = db.Column(db.String(40), nullable=True)
     status = db.Column(db.Integer, nullable=False, default=POSTSTATUS.DRAFT)
     ipaddr = db.Column(db.String(45), nullable=False)

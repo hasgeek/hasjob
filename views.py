@@ -6,6 +6,7 @@ from collections import defaultdict
 from datetime import date, datetime, timedelta
 from urllib import quote, quote_plus
 from pytz import utc, timezone
+from difflib import SequenceMatcher
 from flask import (render_template, redirect, url_for, request, session, abort,
     flash, g, Response, Markup, escape, jsonify)
 from flaskext.mail import Mail, Message
@@ -16,7 +17,7 @@ from app import app
 from models import db, POSTSTATUS, JobPost, JobType, JobCategory, JobPostReport, ReportCode, unique_hash, agelimit
 import forms
 from uploads import uploaded_logos, process_image
-from utils import sanitize_html, scrubemail, md5sum, get_email_domain
+from utils import sanitize_html, scrubemail, md5sum, get_email_domain, get_word_bag
 from search import do_search
 
 mail = Mail()
@@ -273,7 +274,7 @@ def jobdetail(hashid):
         db.session.add(report)
         db.session.commit()
         if request.is_xhr:
-            return "<p>Thanks! This job listing has been flagged for review.</p>" #Ugh!
+            return "<p>Thanks! This job listing has been flagged for review.</p>" #FIXME: Ugh!
         else:
             flash("Thanks! This job listing has been flagged for review.", "interactive")
     elif request.method == 'POST' and request.is_xhr:
@@ -375,48 +376,71 @@ def editjob(hashid, key, form=None, post=None, validated=False):
         form.job_type.choices = [(ob.id, ob.title) for ob in JobType.query.filter_by(public=True).order_by('seq')]
         form.job_category.choices = [(ob.id, ob.title) for ob in JobCategory.query.filter_by(public=True).order_by('seq')]
     if post is None:
-        post = JobPost.query.filter_by(hashid=hashid).first()
-        if post is None:
-            abort(404)
+        post = JobPost.query.filter_by(hashid=hashid).first_or_404()
     if key != post.edit_key:
         abort(403)
-    #if request.method == 'POST' and post.status != POSTSTATUS.DRAFT:
-    #    form.poster_email.data = post.email
+    # Don't allow email address to be changed once its confirmed
+    if request.method == 'POST' and post.status >= POSTSTATUS.CONFIRMED:
+        form.poster_email.data = post.email
     if request.method == 'POST' and (validated or form.validate()):
-        post.headline = form.job_headline.data
-        post.type_id = form.job_type.data
-        post.category_id = form.job_category.data
-        post.location = form.job_location.data
-        post.relocation_assist = form.job_relocation_assist.data
-        post.description = sanitize_html(form.job_description.data)
-        post.perks = sanitize_html(form.job_perks_description.data) if form.job_perks.data else ''
-        post.how_to_apply = form.job_how_to_apply.data
-        post.company_name = form.company_name.data
-        post.company_url = form.company_url.data
-        post.email = form.poster_email.data
-        post.email_domain = get_email_domain(post.email)
-        post.md5sum = md5sum(post.email)
+        form_description = sanitize_html(form.job_description.data)
+        form_perks = sanitize_html(form.job_perks_description.data) if form.job_perks.data else ''
+        form_how_to_apply = form.job_how_to_apply.data
+        form_email_domain = get_email_domain(form.poster_email.data)
+        form_words = get_word_bag(u' '.join((form_description, form_perks, form_how_to_apply)))
 
-        # TODO: Provide option of replacing logo or leaving it alone
-        if request.files['company_logo']:
-            thumbnail = g.company_logo
-            #if 'company_logo' in g:
-            #    # The validator saved a copy of the processed logo
-            #    thumbnail = g['company_logo']
-            #else:
-            #    thumbnail = process_image(request.files['company_logo'])
-            logofilename = uploaded_logos.save(thumbnail, name='%s.' % post.hashid)
-            post.company_logo = logofilename
+        similar = False
+        for oldpost in JobPost.query.filter(JobPost.email_domain == form_email_domain).filter(
+                                            JobPost.status > POSTSTATUS.PENDING).filter(
+                                            JobPost.datetime > datetime.utcnow() - agelimit).all():
+            if oldpost.id != post.id:
+                if oldpost.words:
+                    s = SequenceMatcher(None, form_words, oldpost.words)
+                    if s.ratio() > 0.6:
+                        similar = True
+                        break
+
+        if similar:
+            flash("This listing is very similar to an earlier listing. You may not relist the same job "
+                "in less than %d days. If you believe this to be an error, please email us at %s." % (agelimit.days,
+                app.config['ADMINS'][0]), category='interactive')
         else:
-            if form.company_logo_remove.data:
-                post.company_logo = None
+            post.headline = form.job_headline.data
+            post.type_id = form.job_type.data
+            post.category_id = form.job_category.data
+            post.location = form.job_location.data
+            post.relocation_assist = form.job_relocation_assist.data
+            post.description = form_description
+            post.perks = form_perks
+            post.how_to_apply = form_how_to_apply
+            post.company_name = form.company_name.data
+            post.company_url = form.company_url.data
+            post.email = form.poster_email.data
+            post.email_domain = form_email_domain
+            post.md5sum = md5sum(post.email)
+            # To protect from gaming, don't allow words to be removed in edited listings once the post
+            # has been confirmed. Just add the new words.
+            if post.status >= POSTSTATUS.CONFIRMED:
+                prev_words = post.words or ''
+            else:
+                prev_words = u''
+            post.words = get_word_bag(u' '.join((prev_words, form_description, form_perks, form_how_to_apply)))
 
-        db.session.commit()
-        userkeys = session.get('userkeys', [])
-        userkeys.append(post.edit_key)
-        session['userkeys'] = userkeys
-        session.permanent = True
-        return redirect(url_for('jobdetail', hashid=post.hashid), code=303)
+            if request.files['company_logo']:
+                # The form's validator saved the processed logo in g.company_logo.
+                thumbnail = g.company_logo
+                logofilename = uploaded_logos.save(thumbnail, name='%s.' % post.hashid)
+                post.company_logo = logofilename
+            else:
+                if form.company_logo_remove.data:
+                    post.company_logo = None
+
+            db.session.commit()
+            userkeys = session.get('userkeys', [])
+            userkeys.append(post.edit_key)
+            session['userkeys'] = userkeys
+            session.permanent = True
+            return redirect(url_for('jobdetail', hashid=post.hashid), code=303)
     elif request.method == 'POST':
         flash("Please correct the indicated errors", category='interactive')
     elif request.method == 'GET':
@@ -434,7 +458,7 @@ def editjob(hashid, key, form=None, post=None, validated=False):
         form.company_url.data = post.company_url
         form.poster_email.data = post.email
 
-    return render_template('postjob.html', form=form)#, no_email=post.status != POSTSTATUS.DRAFT)
+    return render_template('postjob.html', form=form, no_email=post.status > POSTSTATUS.DRAFT)
 
 
 @app.route('/new', methods=('GET', 'POST'))

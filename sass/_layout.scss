@@ -193,6 +193,9 @@ footer {
     .post-company-logo {
         float: right;
     }
+    #apply-info {
+        line-height: 1.5;
+    }
     #detailed-info {
         float: left;
         max-width: 600px;
@@ -522,6 +525,11 @@ h2 {
 
 .chart {
      margin: 1em 0;
+}
+
+#newpost_headline:hover {
+    @include border-radius(2px);
+    @include box-shadow(#ccf 0 0 5px, #ccf 0 0 5px 0 inset);
 }
 
 /* Spam protection */

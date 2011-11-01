@@ -188,6 +188,60 @@ def scrubemail(data, rot13=False, css_junk=None):
     return data
 
 
+WORDSPLIT_RE = re.compile('\W+')
+TAGSPLIT_RE = re.compile('<.*?>')
+
+def striptags(text):
+    """
+    Remove HTML/XML tags from text, inserting spaces in their place:
+
+    >>> striptags('<h1>title</h1>')
+    ' title '
+    >>> striptags('plain text')
+    'plain text'
+    >>> striptags(u'word<br>break')
+    u'word break'
+    """
+    return TAGSPLIT_RE.sub(' ', text)
+
+
+def getwords(text):
+    """
+    Get words in text by splitting text along punctuation
+    and stripping out the punctuation:
+
+    >>> getwords('this is some text.')
+    ['this', 'is', 'some', 'text']
+    >>> getwords('and/or')
+    ['and', 'or']
+    >>> getwords('one||two')
+    ['one', 'two']
+    >>> getwords("does not is doesn't")
+    ['does', 'not', 'is', 'doesn', 't']
+    >>> getwords(u'hola unicode!')
+    [u'hola', u'unicode']
+    """
+    result = WORDSPLIT_RE.split(text)
+    # Blank tokens will only be at beginning or end of text.
+    if result[0] == '':
+        result.pop(0)
+    if result and result[-1] == '':
+        result.pop(-1)
+    return result
+
+
+def get_word_bag(text):
+    """
+    Return a string containing all unique words in the given text, in alphabetical order.
+    
+    >>> get_word_bag("This is a piece\tof text with this extra bit!")
+    'a bit extra is of piece text this with'
+    """
+    words = list(set(simplify_text(striptags(text)).split(' ')))
+    words.sort()
+    return " ".join(words)
+
+
 if __name__ == '__main__':
     import doctest
     doctest.testmod()

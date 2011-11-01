@@ -531,6 +531,9 @@ footer {
 #sheet .post-company-logo {
   float: right;
 }
+#sheet #apply-info {
+  line-height: 1.5;
+}
 #sheet #detailed-info {
   float: left;
   max-width: 600px;
@@ -928,6 +931,19 @@ h2 {
 
 .chart {
   margin: 1em 0;
+}
+
+#newpost_headline:hover {
+  -moz-border-radius: 2px;
+  -webkit-border-radius: 2px;
+  -o-border-radius: 2px;
+  -ms-border-radius: 2px;
+  -khtml-border-radius: 2px;
+  border-radius: 2px;
+  -moz-box-shadow: #ccccff 0 0 5px, #ccccff 0 0 5px 0 inset;
+  -webkit-box-shadow: #ccccff 0 0 5px, #ccccff 0 0 5px 0 inset;
+  -o-box-shadow: #ccccff 0 0 5px, #ccccff 0 0 5px 0 inset;
+  box-shadow: #ccccff 0 0 5px, #ccccff 0 0 5px 0 inset;
 }
 
 /* Spam protection */
