@@ -2,7 +2,7 @@
 
 packages=( Flask Flask-SQLAlchemy Flask-WTF Flask-Uploads Flask-Mail 
             Flask-Assets BeautifulSoup PIL pytz markdown tweepy 
-            bitlyapi whoosh )
+            bitlyapi whoosh jsmin )
 
 for package in ${packages[@]}
 do

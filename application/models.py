@@ -2,9 +2,8 @@
 
 from datetime import datetime, timedelta
 from flaskext.sqlalchemy import SQLAlchemy
-
-from app import app
 from utils import random_long_key, random_hash_key, newid
+from app import app
 
 db = SQLAlchemy(app)
 
