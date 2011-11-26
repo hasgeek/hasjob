@@ -10,6 +10,7 @@ import models
 import views
 import uploads
 import search
+import assets
 
 
 app.config.from_object(__name__)
@@ -25,6 +26,7 @@ except ImportError:
 uploads.configure()
 search.configure()
 views.mail.init_app(app)
+assets.load()
 
 file_handler = logging.FileHandler(app.config['LOGFILE'])
 file_handler.setLevel(logging.WARNING)
@@ -38,7 +40,6 @@ if app.config['ADMINS']:
                         app.config['MAIL_PASSWORD']))
     mail_handler.setLevel(logging.ERROR)
     app.logger.addHandler(mail_handler)
-
 
 if __name__ == '__main__':
     import sys
