@@ -1,15 +1,16 @@
-import os.path
 from flaskext.sqlalchemy import models_committed
 from whoosh import fields, index
 from whoosh.qparser import QueryParser
 from whoosh.analysis import StemmingAnalyzer
+from application import app
 
+import os.path
 import models
-from app import app
 
 search_schema = fields.Schema(title=fields.TEXT(stored=True),
                               content=fields.TEXT(analyzer=StemmingAnalyzer()),
                               idref=fields.ID(stored=True, unique=True))
+
 
 # For search results
 def ob_from_idref(idref):
@@ -49,7 +50,8 @@ def do_search(query, expand=False):
 def on_models_committed(sender, changes):
     index_required = False
     for model, change in changes:
-        if isinstance(model, (models.JobType, models.JobCategory, models.JobPost)):
+        if isinstance(model, (models.JobType, models.JobCategory,
+                                models.JobPost)):
             index_required = True
             break
     if index_required:

@@ -7,7 +7,8 @@ Get Twitter access key and secret.
 import tweepy
 import settings
 
-auth = tweepy.OAuthHandler(settings.TWITTER_CONSUMER_KEY, settings.TWITTER_CONSUMER_SECRET)
+auth = tweepy.OAuthHandler(settings.TWITTER_CONSUMER_KEY,
+                            settings.TWITTER_CONSUMER_SECRET)
 auth_url = auth.get_authorization_url()
 print 'Please authorize: ' + auth_url
 verifier = raw_input('PIN: ').strip()

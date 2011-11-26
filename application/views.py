@@ -1,24 +1,26 @@
 # -*- coding: utf-8 -*-
 
-import os.path
-import re
 from collections import defaultdict
 from datetime import date, datetime, timedelta
 from urllib import quote, quote_plus
 from pytz import utc, timezone
 from difflib import SequenceMatcher
 from flask import (render_template, redirect, url_for, request, session, abort,
-    flash, g, Response, Markup, escape, jsonify)
+                    flash, g, Response, Markup, escape, jsonify)
 from flaskext.mail import Mail, Message
 from markdown import markdown
 from twitter import tweet
 
-from app import app
-from models import db, POSTSTATUS, JobPost, JobType, JobCategory, JobPostReport, ReportCode, unique_hash, agelimit
-import forms
-from uploads import uploaded_logos, process_image
-from utils import sanitize_html, scrubemail, md5sum, get_email_domain, get_word_bag
+from application import app
+from models import (db, POSTSTATUS, JobPost, JobType, JobCategory,
+                    JobPostReport, ReportCode, unique_hash, agelimit)
+from uploads import uploaded_logos
+from utils import (sanitize_html, scrubemail, md5sum, get_email_domain,
+                    get_word_bag)
 from search import do_search
+
+import os.path
+import forms
 
 mail = Mail()
 
@@ -28,18 +30,21 @@ newlimit = timedelta(days=1)
 
 # --- Helper functions --------------------------------------------------------
 
+
 def getposts(basequery=None):
     if basequery is None:
         basequery = JobPost.query
     return basequery.filter(
-        JobPost.status.in_([POSTSTATUS.CONFIRMED, POSTSTATUS.REVIEWED])).filter(
-        JobPost.datetime > datetime.utcnow() - agelimit).order_by(db.desc(JobPost.datetime))
+        JobPost.status.in_([POSTSTATUS.CONFIRMED, POSTSTATUS.REVIEWED]))\
+            .filter(JobPost.datetime > datetime.utcnow() - agelimit)\
+            .order_by(db.desc(JobPost.datetime))
 
 
 def getallposts(order_by=None, desc=False, start=None, limit=None):
     if order_by is None:
         order_by = JobPost.datetime
-    filt = JobPost.query.filter(JobPost.status.in_([POSTSTATUS.CONFIRMED, POSTSTATUS.REVIEWED]))
+    filt = JobPost.query.filter(JobPost.status.in_([POSTSTATUS.CONFIRMED,
+                                                    POSTSTATUS.REVIEWED]))
     count = filt.count()
     if desc:
         filt = filt.order_by(db.desc(order_by))
@@ -62,9 +67,10 @@ def index(basequery=None, type=None, category=None, md5sum=None):
         employer_name = posts[0].company_name
     else:
         employer_name = u'a single employer'
-    return render_template('index.html', posts=posts, now=now, newlimit=newlimit,
-                           jobtype=type, jobcategory=category, md5sum=md5sum,
-                           employer_name=employer_name)
+    return render_template('index.html', posts=posts, now=now,
+                            newlimit=newlimit, jobtype=type,
+                            jobcategory=category, md5sum=md5sum,
+                            employer_name=employer_name)
 
 
 @app.route('/type/<slug>')
@@ -108,13 +114,14 @@ def feed(basequery=None, type=None, category=None, md5sum=md5sum):
         title = u"Jobs at a single employer"
     posts = list(getposts(basequery))
     if posts: # Can't do this unless posts is a list
-        updated = posts[0].datetime.isoformat()+'Z'
+        updated = posts[0].datetime.isoformat() + 'Z'
         if md5sum:
             title = posts[0].company_name
     else:
-        updated = datetime.utcnow().isoformat()+'Z'
-    return Response(render_template('feed.xml', posts=posts, updated=updated, title=title),
-                           content_type = 'application/atom+xml; charset=utf-8')
+        updated = datetime.utcnow().isoformat() + 'Z'
+    return Response(render_template('feed.xml', posts=posts,
+                                    updated=updated, title=title),
+                   content_type='application/atom+xml; charset=utf-8')
 
 
 @app.route('/type/<slug>/feed')
@@ -149,6 +156,7 @@ def feed_by_email(md5sum):
 
 @app.route('/archive')
 def archive():
+
     def sortarchive(order_by):
         current_order_by = request.args.get('order_by')
         reverse = request.args.get('reverse')
@@ -192,7 +200,8 @@ def archive():
             limit = int(limit)
     except ValueError:
         limit = 100
-    count, posts = getallposts(order_by=order_by, desc=reverse, start=start, limit=limit)
+    count, posts = getallposts(order_by=order_by, desc=reverse,
+                                start=start, limit=limit)
 
     if request.is_xhr:
         tmpl = 'archive_inner.html'
@@ -211,32 +220,40 @@ def robots():
                     "Disallow: /withdraw/*\n"
                     "Disallow: /admin/*\n"
                     "",
-                    content_type = 'text/plain; charset=utf-8')
+                    content_type='text/plain; charset=utf-8')
 
 
 @app.route('/sitemap.xml')
 def sitemap():
     sitemapxml = '<?xml version="1.0" encoding="UTF-8"?>\n'\
-                 '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+             '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
     # Add job type pages to sitemap
     for item in JobType.query.all():
         sitemapxml += '  <url>\n'\
-                      '    <loc>%s</loc>\n' % url_for('browse_by_type', slug=item.slug, _external=True) + \
+                      '    <loc>%s</loc>\n' % url_for('browse_by_type',
+                                                        slug=item.slug,
+                                                        _external=True) + \
                       '  </url>\n'
     # Add job category pages to sitemap
     for item in JobCategory.query.all():
-      sitemapxml += '  <url>\n'\
-                    '    <loc>%s</loc>\n' % url_for('browse_by_category', slug=item.slug, _external=True) + \
+        sitemapxml += '  <url>\n'\
+                    '    <loc>%s</loc>\n' % url_for('browse_by_category',
+                                                    slug=item.slug,
+                                                    _external=True) + \
                     '  </url>\n'
     # Add live posts to sitemap
     for post in getposts():
         sitemapxml += '  <url>\n'\
-                      '    <loc>%s</loc>\n' % url_for('jobdetail', hashid=post.hashid, _external=True) + \
-                      '    <lastmod>%s</lastmod>\n' % (post.datetime.isoformat()+'Z') + \
+                      '    <loc>%s</loc>\n' % url_for('jobdetail',
+                                                        hashid=post.hashid,
+                                                        _external=True) + \
+                      '    <lastmod>%s</lastmod>\n' % \
+                                (post.datetime.isoformat() + 'Z') + \
                       '    <changefreq>monthly</changefreq>\n'\
                       '  </url>\n'
     sitemapxml += '</urlset>'
-    return Response(sitemapxml, content_type = 'text/xml; charset=utf-8')
+    return Response(sitemapxml,
+                    content_type='text/xml; charset=utf-8')
 
 
 @app.route('/favicon.ico')
@@ -266,19 +283,27 @@ def jobdetail(hashid):
     if post.status in [POSTSTATUS.REJECTED, POSTSTATUS.WITHDRAWN]:
         abort(410)
     reportform = forms.ReportForm()
-    reportform.report_code.choices = [(ob.id, ob.title) for ob in ReportCode.query.filter_by(public=True).order_by('seq')]
+    reportform.report_code.choices = [(ob.id, ob.title) \
+                            for ob in ReportCode.query.filter_by(public=True)\
+                                                        .order_by('seq')]
     if reportform.validate_on_submit():
-        report = JobPostReport(post=post, reportcode_id = reportform.report_code.data)
+        report = JobPostReport(post=post,
+                                reportcode_id=reportform.report_code.data)
         report.ipaddr = request.environ['REMOTE_ADDR']
         report.useragent = request.user_agent.string
         db.session.add(report)
         db.session.commit()
         if request.is_xhr:
-            return "<p>Thanks! This job listing has been flagged for review.</p>" #FIXME: Ugh!
+            #FIXME: Ugh!
+            return ('<p>Thanks! This job listing has been '
+                        'flagged for review.</p>')
         else:
-            flash("Thanks! This job listing has been flagged for review.", "interactive")
+            flash("Thanks! This job listing has been flagged for review.",
+                    "interactive")
     elif request.method == 'POST' and request.is_xhr:
-        return render_template('inc/reportform.html', reportform=reportform, ajaxreg=True)
+        return render_template('inc/reportform.html',
+                                reportform=reportform,
+                                ajaxreg=True)
     return render_template('detail.html', post=post, reportform=reportform)
 
 
@@ -297,9 +322,11 @@ def confirm(hashid):
         # Any other status: no confirmation required (via this handler)
         return redirect(url_for('jobdetail', hashid=post.hashid), code=302)
     if 'form.id' in request.form and form.validate_on_submit():
-        # User has accepted terms of service. Now send email and/or wait for payment
+        # User has accepted terms of service. Now send email
+        # and/or wait for payment
         if not post.email_sent:
-            msg = Message(subject="Confirmation of your job listing at the HasGeek Job Board",
+            msg = Message(subject='Confirmation of your job listing at'
+                                    'the HasGeek Job Board',
                 recipients=[post.email])
             msg.body = render_template("confirm_email.md", post=post)
             msg.html = markdown(msg.body)
@@ -316,16 +343,19 @@ def confirm(hashid):
 
 @app.route('/confirm/<hashid>/<key>')
 def confirm_email(hashid, key):
-    # If post is in pending state and email key is correct, convert to published
+    # If post is in pending state and email key is correct,
+    # convert to published
     # and update post.datetime to utcnow() so it'll show on top of the stack
-    # This function expects key to be email_verify_key, not edit_key like the others
+    # This function expects key to be email_verify_key, not edit_key
+    # like the others
     post = JobPost.query.filter_by(hashid=hashid).first()
     if post is None:
         abort(404)
     elif post.status == POSTSTATUS.REJECTED:
         abort(410)
     elif post.status in [POSTSTATUS.CONFIRMED, POSTSTATUS.REVIEWED]:
-        flash("This job listing has already been confirmed and published", "interactive")
+        flash("This job listing has already been confirmed and published",
+                "interactive")
         return redirect(url_for('jobdetail', hashid=post.hashid), code=302)
     elif post.status == POSTSTATUS.DRAFT:
         # This should not happen. The user doesn't have this URL until they
@@ -340,8 +370,10 @@ def confirm_email(hashid, key):
             post.datetime = datetime.utcnow()
             db.session.commit()
             if app.config['TWITTER_ENABLED']:
-                tweet(post.headline, url_for('jobdetail', hashid=post.hashid, _external=True))
-            flash("Congratulations! Your job listing has been published", "interactive")
+                tweet(post.headline, url_for('jobdetail', hashid=post.hashid,
+                                                _external=True))
+            flash("Congratulations! Your job listing has been published",
+                    "interactive")
     return redirect(url_for('jobdetail', hashid=post.hashid), code=302)
 
 
@@ -364,7 +396,8 @@ def withdraw(hashid, key):
         post.status = POSTSTATUS.WITHDRAWN
         post.closed_datetime = datetime.utcnow()
         db.session.commit()
-        flash("Your job listing has been withdrawn and is no longer available", "info")
+        flash("Your job listing has been withdrawn and is no longer available",
+                "info")
         return redirect(url_for('index'), code=303)
     return render_template("withdraw.html", post=post, form=form)
 
@@ -373,8 +406,10 @@ def withdraw(hashid, key):
 def editjob(hashid, key, form=None, post=None, validated=False):
     if form is None:
         form = forms.ListingForm(request.form)
-        form.job_type.choices = [(ob.id, ob.title) for ob in JobType.query.filter_by(public=True).order_by('seq')]
-        form.job_category.choices = [(ob.id, ob.title) for ob in JobCategory.query.filter_by(public=True).order_by('seq')]
+        form.job_type.choices = [(ob.id, ob.title) \
+            for ob in JobType.query.filter_by(public=True).order_by('seq')]
+        form.job_category.choices = [(ob.id, ob.title) \
+            for ob in JobCategory.query.filter_by(public=True).order_by('seq')]
     if post is None:
         post = JobPost.query.filter_by(hashid=hashid).first_or_404()
     if key != post.edit_key:
@@ -384,15 +419,18 @@ def editjob(hashid, key, form=None, post=None, validated=False):
         form.poster_email.data = post.email
     if request.method == 'POST' and (validated or form.validate()):
         form_description = sanitize_html(form.job_description.data)
-        form_perks = sanitize_html(form.job_perks_description.data) if form.job_perks.data else ''
+        form_perks = sanitize_html(form.job_perks_description.data) \
+                                    if form.job_perks.data else ''
         form_how_to_apply = form.job_how_to_apply.data
         form_email_domain = get_email_domain(form.poster_email.data)
-        form_words = get_word_bag(u' '.join((form_description, form_perks, form_how_to_apply)))
+        form_words = get_word_bag(u' '.join((form_description, form_perks,
+                                                form_how_to_apply)))
 
         similar = False
-        for oldpost in JobPost.query.filter(JobPost.email_domain == form_email_domain).filter(
-                                            JobPost.status > POSTSTATUS.PENDING).filter(
-                                            JobPost.datetime > datetime.utcnow() - agelimit).all():
+        for oldpost in JobPost.query.filter(
+                        JobPost.email_domain == form_email_domain).filter(
+                        JobPost.status > POSTSTATUS.PENDING).filter(
+                        JobPost.datetime > datetime.utcnow() - agelimit).all():
             if oldpost.id != post.id:
                 if oldpost.words:
                     s = SequenceMatcher(None, form_words, oldpost.words)
@@ -401,9 +439,11 @@ def editjob(hashid, key, form=None, post=None, validated=False):
                         break
 
         if similar:
-            flash("This listing is very similar to an earlier listing. You may not relist the same job "
-                "in less than %d days. If you believe this to be an error, please email us at %s." % (agelimit.days,
-                app.config['ADMINS'][0]), category='interactive')
+            flash("This listing is very similar to an earlier listing. "
+                    "You may not relist the same job "
+                    "in less than %d days. If you believe this to be an "
+                    "error, please email us at %s." % (agelimit.days,
+                        app.config['ADMINS'][0]), category='interactive')
         else:
             post.headline = form.job_headline.data
             post.type_id = form.job_type.data
@@ -418,18 +458,22 @@ def editjob(hashid, key, form=None, post=None, validated=False):
             post.email = form.poster_email.data
             post.email_domain = form_email_domain
             post.md5sum = md5sum(post.email)
-            # To protect from gaming, don't allow words to be removed in edited listings once the post
+            # To protect from gaming, don't allow words to be removed in
+            # edited listings once the post
             # has been confirmed. Just add the new words.
             if post.status >= POSTSTATUS.CONFIRMED:
                 prev_words = post.words or ''
             else:
                 prev_words = u''
-            post.words = get_word_bag(u' '.join((prev_words, form_description, form_perks, form_how_to_apply)))
+            post.words = get_word_bag(u' '.join((prev_words, form_description,
+                                            form_perks, form_how_to_apply)))
 
             if request.files['company_logo']:
-                # The form's validator saved the processed logo in g.company_logo.
+                # The form's validator saved the processed
+                # logo in g.company_logo.
                 thumbnail = g.company_logo
-                logofilename = uploaded_logos.save(thumbnail, name='%s.' % post.hashid)
+                logofilename = uploaded_logos.save(thumbnail,
+                                                    name='%s.' % post.hashid)
                 post.company_logo = logofilename
             else:
                 if form.company_logo_remove.data:
@@ -458,26 +502,32 @@ def editjob(hashid, key, form=None, post=None, validated=False):
         form.company_url.data = post.company_url
         form.poster_email.data = post.email
 
-    return render_template('postjob.html', form=form, no_email=post.status > POSTSTATUS.DRAFT)
+    return render_template('postjob.html', form=form,
+                            no_email=post.status > POSTSTATUS.DRAFT)
 
 
 @app.route('/new', methods=('GET', 'POST'))
 def newjob():
     form = forms.ListingForm()
-    form.job_type.choices = [(ob.id, ob.title) for ob in JobType.query.filter_by(public=True).order_by('seq')]
-    form.job_category.choices = [(ob.id, ob.title) for ob in JobCategory.query.filter_by(public=True).order_by('seq')]
-    if request.method == 'POST' and request.form.get('form.id') == 'newheadline':
+    form.job_type.choices = [(ob.id, ob.title) \
+            for ob in JobType.query.filter_by(public=True).order_by('seq')]
+    form.job_category.choices = [(ob.id, ob.title) \
+            for ob in JobCategory.query.filter_by(public=True).order_by('seq')]
+    if request.method == 'POST' and \
+            request.form.get('form.id') == 'newheadline':
         # POST request from the main page's Post a Job box.
         form.csrf.data = form.reset_csrf()
-    if request.method == 'POST' and request.form.get('form.id') != 'newheadline' and form.validate():
+    if request.method == 'POST' and \
+            request.form.get('form.id') != 'newheadline' and form.validate():
         # POST request from new job page, with successful validation
         # Move it to the editjob page for handling here forward
-        post = JobPost(hashid = unique_hash(JobPost),
-                       ipaddr = request.environ['REMOTE_ADDR'],
-                       useragent = request.user_agent.string)
+        post = JobPost(hashid=unique_hash(JobPost),
+                       ipaddr=request.environ['REMOTE_ADDR'],
+                       useragent=request.user_agent.string)
         db.session.add(post)
         return editjob(post.hashid, post.edit_key, form, post, validated=True)
-    elif request.method == 'POST' and request.form.get('form.id') != 'newheadline':
+    elif request.method == 'POST' and \
+            request.form.get('form.id') != 'newheadline':
         # POST request from new job page, with errors
         flash("Please correct the indicated errors", category='interactive')
 
@@ -492,7 +542,8 @@ def newjob():
 def search():
     now = datetime.utcnow()
     results = do_search(request.args.get('q', u''), expand=True)
-    return render_template('search.html', results=results, now=now, newlimit=newlimit)
+    return render_template('search.html', results=results,
+                            now=now, newlimit=newlimit)
 
 
 @app.route('/tos')
@@ -514,21 +565,26 @@ def stats_listings_by_date():
     listings_by_date = {}
     looper = now - agelimit
     for x in range(agelimit.days):
-        listings_by_date[date(year=looper.year, month=looper.month, day=looper.day)] = 0
+        listings_by_date[date(year=looper.year, month=looper.month,
+                            day=looper.day)] = 0
         looper += timedelta(days=1)
     for job in jobs:
-        listings_by_date[date(year=job.datetime.year, month=job.datetime.month, day=job.datetime.day)] += 1
+        listings_by_date[date(year=job.datetime.year, month=job.datetime.month,
+                                day=job.datetime.day)] += 1
     listings_by_date = listings_by_date.items() # Convert from dict to list
     listings_by_date.sort()                     # and sort by date
-    return jsonify(data=[[(x, listings_by_date[x][1]) for x in range(len(listings_by_date))]],
+    return jsonify(data=[[(x, listings_by_date[x][1]) \
+                            for x in range(len(listings_by_date))]],
                    options={
                             'series': {'bars': {'show': True}},
-                            'xaxis': {'show': True, 'min': 0, 'max': len(listings_by_date),
-                                      'ticks': [(x, listings_by_date[x][0].strftime('%b %d')) for x in range(len(listings_by_date))]
-                                     },
-                            'yaxis': {'min': 0, 'tickSize': 1, 'tickDecimals': 0},
-                            }
-                   )
+                            'xaxis': {'show': True, 'min': 0,
+                                'max': len(listings_by_date),
+                                'ticks': [(x,
+                                   listings_by_date[x][0].strftime('%b %d')) \
+                                       for x in range(len(listings_by_date))]},
+                            'yaxis': {'min': 0, 'tickSize': 1,
+                                        'tickDecimals': 0},
+                            })
 
 
 @app.route('/stats/listings_by_type.json')
@@ -537,7 +593,8 @@ def stats_listings_by_type():
     typecount = defaultdict(int)
     for job in jobs:
         typecount[job.type_id] += 1
-    all_types = list(JobType.query.filter_by(public=True).order_by(JobType.seq).all())
+    all_types = list(JobType.query.filter_by(public=True)\
+                        .order_by(JobType.seq).all())
     all_types.reverse() # Charts are drawn bottom to top
     data = []
     labels = []
@@ -546,11 +603,15 @@ def stats_listings_by_type():
         labels.append([x, all_types[x].title])
     return jsonify(data=[{'data': data}],
                    options={
-                            'series': {'bars': {'show': True, 'horizontal': True}},
-                            'yaxis': {'show': True, 'min': 0, 'max': len(all_types), 'ticks': labels},
-                            'xaxis': {'min': 0, 'tickSize': 1, 'tickDecimals': 0},
-                            }
-                   )
+                            'series': {'bars':
+                                        {'show': True,
+                                            'horizontal': True}},
+                            'yaxis': {'show': True, 'min': 0,
+                                        'max': len(all_types),
+                                        'ticks': labels},
+                            'xaxis': {'min': 0, 'tickSize': 1,
+                                        'tickDecimals': 0},
+                            })
 
 
 @app.route('/type/')
@@ -631,7 +692,7 @@ def urlquote(data):
 
 
 @app.template_filter('urlquoteplus')
-def urlquote(data):
+def urlquoteplus(data):
     if isinstance(data, unicode):
         return quote_plus(data.encode('utf-8'))
     else:
@@ -640,7 +701,8 @@ def urlquote(data):
 
 @app.template_filter('scrubemail')
 def scrubemail_filter(data, css_junk=''):
-    return Markup(scrubemail(unicode(escape(data)), rot13=True, css_junk=css_junk))
+    return Markup(scrubemail(unicode(escape(data)), rot13=True,
+                                css_junk=css_junk))
 
 
 @app.template_filter('usessl')

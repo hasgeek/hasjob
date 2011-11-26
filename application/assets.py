@@ -1,5 +1,5 @@
 from flaskext.assets import Environment, Bundle
-from app import app
+from application import app
 
 assets = Environment(app)
 
