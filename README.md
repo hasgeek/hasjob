@@ -9,7 +9,8 @@ Don't copy ours. We will like you better if you contribute a patch.
 
 This code runs on [Python][] with the [Flask][] microframework. You will need
 to install all the requirements listed in `requirements.txt` using
-`easy_install` or `pip`. Copy `settings-sample.py` to `settings.py`, edit as
+`easy_install` or `pip` or run `setup.sh` which shall install all the packages
+mentioned in requirements.txt. Copy `settings-sample.py` to `settings.py`, edit as
 necessary, and start the server with:
 
     $ python website.py

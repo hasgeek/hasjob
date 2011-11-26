@@ -4,19 +4,23 @@
 from datetime import datetime, timedelta
 from flask import abort, Response
 
-from app import app
+from application import app
 from search import delete_from_index
 from models import db, JobPost, agelimit
 from utils import md5sum
 
 # --- Admin command-line utilities -------------------------------------------
 
+
 @app.route('/admin/update-search/<key>')
 def delete_index(key):
     if key == app.config['PERIODIC_KEY']:
         now = datetime.utcnow()
-        upper_age_limit = timedelta(days=agelimit.days*2) # Reasonably large window to clear backlog
-        items = JobPost.query.filter(JobPost.datetime > now - upper_age_limit).filter(JobPost.datetime < now - agelimit).all()
+        # Reasonably large window to clear backlog
+        upper_age_limit = timedelta(days=agelimit.days * 2)
+        expression = JobPost.datetime > now - upper_age_limit and \
+                        JobPost.datetime < now - agelimit
+        items = JobPost.query.filter(expression).all()
         delete_from_index(items)
         return Response("Removed %d items.\n" % len(items),
                         content_type='text/plain; charset=utf-8')
@@ -36,6 +40,3 @@ def update_md5sum(key):
                         content_type='text/plain; charset=utf-8')
     else:
         abort(403)
-
-# --- Admin views ------------------------------------------------------------
-# LastUser integration pending
