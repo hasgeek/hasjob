@@ -6,6 +6,7 @@ import logging
 from app import app
 import models, forms, views, admin, assets, uploads, search
 from models import db
+import loghandler
 
 app.config.from_object(__name__)
 try:
@@ -19,7 +20,9 @@ uploads.configure()
 search.configure()
 views.mail.init_app(app)
 
+log_formatter = loghandler.LocalVarFormatter()
 file_handler = logging.FileHandler(app.config['LOGFILE'])
+file_handler.setFormatter(log_formatter)
 file_handler.setLevel(logging.WARNING)
 app.logger.addHandler(file_handler)
 if app.config['ADMINS']:

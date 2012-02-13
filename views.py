@@ -249,6 +249,9 @@ def logoimage(hashid):
     post = JobPost.query.filter_by(hashid=hashid).first()
     if post is None:
         abort(404)
+    if not post.company_logo:
+        # If there's no logo (perhaps it was deleted), don't try to show one
+        abort(404)
     if post.status == POSTSTATUS.REJECTED:
         # Don't show logo if post has been rejected. Could be spam
         abort(410)
