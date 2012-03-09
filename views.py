@@ -98,7 +98,7 @@ def browse_by_email(md5sum):
 
 
 @app.route('/feed')
-def feed(basequery=None, type=None, category=None, md5sum=md5sum):
+def feed(basequery=None, type=None, category=None, md5sum=None):
     title = "All jobs"
     if type:
         title = type.title
