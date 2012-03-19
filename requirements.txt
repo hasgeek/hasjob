@@ -11,3 +11,5 @@ markdown
 tweepy
 bitlyapi
 whoosh
+twill
+Flask-Testing
