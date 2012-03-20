@@ -13,3 +13,4 @@ bitlyapi
 whoosh
 twill
 Flask-Testing
+coverage
