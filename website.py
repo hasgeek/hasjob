@@ -4,7 +4,7 @@
 import logging
 
 from app import app
-import models, forms, views, admin, assets, uploads, search
+import models, forms, views, admin, assets, search
 from models import db
 import loghandler
 

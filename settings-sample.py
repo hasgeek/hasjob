@@ -10,8 +10,6 @@ SQLALCHEMY_DATABASE_URI = 'sqlite:///test.db'
 SECRET_KEY = 'make this something random'
 #: Timezone
 TIMEZONE = 'Asia/Calcutta'
-#: Upload path
-UPLOADED_LOGOS_DEST='/tmp/uploads'
 #: Search index path
 SEARCH_INDEX_PATH='/tmp/search'
 #: Mail settings
