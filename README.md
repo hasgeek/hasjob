@@ -8,18 +8,18 @@ version of this app at [demo][]
 
 ## Install and setup
 
-`pip install -r requirements.txt`
-`cp settings-sample.py settings.py ; edit as necessary`
+    pip install -r requirements.txt`
+    cp settings-sample.py settings.py ; edit as necessary
 
 ## Tests
 
-`nosetests --with-coverage --cover-package=admin,app,assets,forms,get-twitter,loghandler,models,search,twitter,uploads,utils,views,website`
+    nosetests --with-coverage --cover-package=admin,app,assets,forms,get-twitter,loghandler,models,search,twitter,uploads,utils,views,website
 
 ## Run
 
-For dev setup, just do 
+For dev setup
 
-`$ python website.py`
+    $ python website.py
 
 WSGI is recommended for production. Enable `mod_wsgi` in Apache and make a
 `VirtualHost` with:
