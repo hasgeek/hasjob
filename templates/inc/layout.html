@@ -45,9 +45,9 @@
 <body>
   <div id="container" class="container">
     <header>
-      <div id="site-title"><a href="{{ url_for('index') }}"><span class="has">Has</span><span class="geek">Geek</span> <span class="jobs">Job Board</span> <small class="has">β</small></a></div>
+      <div id="site-title"><a href="{{ url_for('index') }}"><span class="geek">Your</span> <span class="jobs">classifieds board</span></a></div>
       <form id="search" action="{{ url_for('search') }}">
-        <input type="text" placeholder="Find a job..." name="q"/>
+        <input type="text" placeholder="Find a classified..." name="q"/>
         <input type="submit" value="Go"/>
       </form>
       {% block header %}{% endblock %}
@@ -65,11 +65,8 @@
   <footer>
     {% block footer %}
     <p>
-      The HasGeek Job Board is a service of <a href="http://hasgeek.com/">HasGeek</a>.
-      Subscribe to <a href="{{ url_for('feed') }}">the feed</a> or follow
-      <a href="http://twitter.com/hasjob">@hasjob on Twitter</a>
-      to find out when new jobs are posted. Hosted by
-      <a href="http://e2enetworks.com/">E2E Networks</a>.
+      A service of a <a href="https://github.com/caulagi/classifieds/" target='_blank'>geek</a>.
+      Subscribe to our <a href="{{ url_for('feed') }}">feed</a>.
     </p>
     {% endblock %}
   </footer>

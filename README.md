@@ -1,6 +1,6 @@
 # Classifieds
 
-[![Build Status](https://secure.travis-ci.org/caulagi/classified.png?branch=master)](http://travis-ci.org/caulagi/classified)
+[![Build Status](https://secure.travis-ci.org/caulagi/classifieds.png?branch=master)](http://travis-ci.org/caulagi/classifieds)
 
 classifieds is a [Flask][] based web app that is free to use.
 You can get started in less that 2 minutes.  There is a demo

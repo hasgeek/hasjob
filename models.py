@@ -26,54 +26,6 @@ class USERLEVEL:
     ADMINISTRATOR = 2 # Admin. Allowed to change job types and categories
 
 
-class JobType(db.Model):
-    __tablename__ = 'jobtype'
-    idref = 'type'
-
-    id = db.Column(db.Integer, primary_key=True)
-    slug = db.Column(db.String(250), nullable=False, unique=True)
-    title = db.Column(db.Unicode(250), nullable=False)
-    seq = db.Column(db.Integer, nullable=False, default=0)
-    public = db.Column(db.Boolean, nullable=False, default=True)
-
-    def __call__(self):
-        return self.title
-
-    def search_mapping(self):
-        """
-        Returns a dictionary suitable for search indexing.
-        """
-        return {'title': self.title,
-                'content': self.title,
-                'public': self.public,
-                'idref': u'%s/%s' % (self.idref, self.id),
-                }
-
-
-class JobCategory(db.Model):
-    __tablename__ = 'jobcategory'
-    idref = 'category'
-
-    id = db.Column(db.Integer, primary_key=True)
-    slug = db.Column(db.String(250), nullable=False, unique=True)
-    title = db.Column(db.Unicode(250), nullable=False)
-    seq = db.Column(db.Integer, nullable=False, default=0)
-    public = db.Column(db.Boolean, nullable=False, default=True)
-
-    def __call__(self):
-        return self.title
-
-    def search_mapping(self):
-        """
-        Returns a dictionary suitable for search indexing.
-        """
-        return {'title': self.title,
-                'content': self.title,
-                'public': self.public,
-                'idref': u'%s/%s' % (self.idref, self.id),
-                }
-
-
 class ReportCode(db.Model):
     __tablename__ = 'reportcode'
 
@@ -107,20 +59,9 @@ class JobPost(db.Model):
 
     # Job description
     headline = db.Column(db.Unicode(100), nullable=False)
-    type_id = db.Column(db.Integer, db.ForeignKey('jobtype.id'), nullable=False)
-    type = db.relation(JobType, primaryjoin=type_id == JobType.id)
-    category_id = db.Column(db.Integer, db.ForeignKey('jobcategory.id'), nullable=False)
-    category = db.relation(JobCategory, primaryjoin=category_id == JobCategory.id)
     location = db.Column(db.Unicode(80), nullable=False)
-    relocation_assist = db.Column(db.Boolean, default=False, nullable=False)
     description = db.Column(db.UnicodeText, nullable=False)
-    perks = db.Column(db.UnicodeText, nullable=False)
-    how_to_apply = db.Column(db.UnicodeText, nullable=False)
 
-    # Company details
-    company_name = db.Column(db.Unicode(80), nullable=False)
-    company_logo = db.Column(db.Unicode(255), nullable=True)
-    company_url = db.Column(db.Unicode(255), nullable=False, default=u'')
     email = db.Column(db.Unicode(80), nullable=False)
     email_domain = db.Column(db.Unicode(80), nullable=False, index=True)
     md5sum = db.Column(db.String(32), nullable=False, index=True)
@@ -158,11 +99,7 @@ class JobPost(db.Model):
         """
         content = '\n'.join((self.headline,
                             self.location,
-                            self.company_name,
-                            self.company_url,
-                            self.description,
-                            self.perks,
-                            self.how_to_apply))
+                            self.description))
 
         return {'title': self.headline,
                 'content': content,

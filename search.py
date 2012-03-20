@@ -16,11 +16,6 @@ def ob_from_idref(idref):
     ref, objid = idref.split('/')
     if ref == 'post':
         return models.JobPost.query.get(int(objid))
-    elif ref == 'type':
-        return models.JobType.query.get(int(objid))
-    elif ref == 'category':
-        return models.JobCategory.query.get(int(objid))
-
 
 def do_search(query, expand=False):
     """
@@ -49,7 +44,7 @@ def do_search(query, expand=False):
 def on_models_committed(sender, changes):
     index_required = False
     for model, change in changes:
-        if isinstance(model, (models.JobType, models.JobCategory, models.JobPost)):
+        if isinstance(model, (models.JobPost)):
             index_required = True
             break
     if index_required:
@@ -87,7 +82,7 @@ def configure():
         ix = index.create_in(index_path, search_schema)
         writer = ix.writer()
         # Index everything since this is the first time
-        for model in [models.JobType, models.JobCategory, models.JobPost]:
+        for model in [models.JobPost]:
             for ob in model.query.all():
                 mapping = ob.search_mapping()
                 public = mapping.pop('public')

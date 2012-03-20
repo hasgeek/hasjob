@@ -1,18 +1,12 @@
 {% extends "inc/layout.html" %}
 {% from "inc/forms.html" import renderfield %}
-{% block title %}List a job{% endblock %}
+{% block title %}List a classified{% endblock %}
 {% block content %}
 <div id="sheet">
   <div class="section first">
     <h1>
       {{ self.title()|e }}
     </h1>
-    <p class="caption">
-      HasGeek reaches out to thousands of developers via events, blogs and discussion groups.
-      Job listings made here will be shown across the network. Listings are valid for 30 days.
-      Each job listing must be for <strong>one position only</strong> and must comply with the
-      <a href="{{ url_for('terms_of_service') }}" target="_blank">terms of service</a>.
-    </p>
   </div>
   <form id="newjob" enctype="multipart/form-data" method="POST">
     <input type="hidden" name="_charset_"/>
@@ -22,24 +16,10 @@
       {% if form.csrf.errors %}
         {% for error in form.csrf.errors %}<div class="error">{{ error }}</div>{% endfor %}
       {% endif %}
-      <h2>First, tell us about the position</h2>
       {{ renderfield(form.job_headline, "small", autofocus=True) }}
-      {{ renderfield(form.job_type, "small") }}
-      {{ renderfield(form.job_category, "small") }}
       {{ renderfield(form.job_location, "small") }}
-      {{ renderfield(form.job_relocation_assist, "small") }}
-      {{ renderfield(form.job_description, "wide", widget_css_class="tinymce") }}
-      {{ renderfield(form.job_perks, "check") }}
-      {{ renderfield(form.job_perks_description, "wide", widget_css_class="tinymce") }}
-      {{ renderfield(form.job_how_to_apply, "wide") }}
-    </div>
-    <div class="section">
-      <h2>Tell us about your company</h2>
-      {{ renderfield(form.company_name, "small") }}
-      {{ renderfield(form.company_logo, "small") }}
-      {% if not no_removelogo %}{{ renderfield(form.company_logo_remove, "small") }}{% endif %}
-      {{ renderfield(form.company_url, "small") }}
       {% if not no_email %}{{ renderfield(form.poster_email, "small") }}{% endif %}
+      {{ renderfield(form.job_description, "wide", widget_css_class="tinymce") }}
       <input type="submit" value="Review your job listing &rarr;"/>
     </div>
   </form>
@@ -47,21 +27,6 @@
 {% endblock %}
 {% block footerscripts %}
 <script type="text/javascript">
-  $(function() {
-    if (! $("#job_perks").is(":checked")) {
-      $("#field-job_perks_description").hide();
-    };
-    $("#job_perks").click(function() {
-      if ($(this).is(":checked")) {
-        $("#field-job_perks_description").slideDown();
-      } else {
-        $("#field-job_perks_description").slideUp();
-      };
-    });
-    radioHighlight('job_type', 'selected');
-    radioHighlight('job_category', 'selected');
-  });
-
   $(function() {
   	$('textarea.tinymce').tinymce({
       // Location of TinyMCE script
