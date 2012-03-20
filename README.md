@@ -1,23 +1,39 @@
-HasGeek Job Board -- beta
-=========================
+# Classifieds
 
-Code for HasGeek's job board at http://jobs.hasgeek.com/
+[![Build Status](https://secure.travis-ci.org/caulagi/classified.png?branch=master)](http://travis-ci.org/caulagi/classified)
 
-You are welcome to contribute a patch or use this code to run your own job
-board under the terms of the BSD license, but please design your own UI.
-Don't copy ours. We will like you better if you contribute a patch.
+classifieds is a [Flask][] based web app that is free to use.
+You can get started in less that 2 minutes.  There is a demo
+version of this app at [demo][]
 
-This code runs on [Python][] with the [Flask][] microframework. You will need
-to install all the requirements listed in `requirements.txt` using
-`easy_install` or `pip`. Copy `settings-sample.py` to `settings.py`, edit as
-necessary, and start the server with:
+## Install and setup
 
-    $ python website.py
+`pip install -r requirements.txt`
+`cp settings-sample.py settings.py ; edit as necessary`
+
+## Tests
+
+`nosetests --with-coverage --cover-package=admin,app,assets,forms,get-twitter,loghandler,models,search,twitter,uploads,utils,views,website`
+
+## Run
+
+For dev setup, just do 
+
+`$ python website.py`
 
 WSGI is recommended for production. Enable `mod_wsgi` in Apache and make a
 `VirtualHost` with:
 
     WSGIScriptAlias / /path/to/website.wsgi
 
-[Python]: http://python.org/
+## Acknowledgements
+
+As is evident from the git history, classifieds is a fork of [hasjob][]
+
+## License
+
+Classifieds is MIT licensed.  See the accompanying LICENSE for legalese.
+
+[hasjob]: https://github.com/hasgeek/hasjob/
 [Flask]: http://flask.pocoo.org/
+[demo]: http://classifieds.caulagi.com/
