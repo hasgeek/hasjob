@@ -16,7 +16,6 @@ from twitter import tweet
 from app import app
 from models import db, POSTSTATUS, JobPost, JobPostReport, ReportCode, unique_hash, agelimit
 import forms
-from uploads import uploaded_logos, process_image
 from utils import sanitize_html, scrubemail, md5sum, get_email_domain, get_word_bag
 from search import do_search
 

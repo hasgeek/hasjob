@@ -6,7 +6,6 @@ from flaskext.wtf import Form, TextField, TextAreaField, RadioField, FileField, 
 from flaskext.wtf import Required, Email, Length, URL, ValidationError
 from flaskext.wtf.html5 import URLField, EmailField
 
-from uploads import process_image
 from utils import simplify_text
 
 QUOTES_RE = re.compile(ur'[\'"`‘’“”′″‴]+')
