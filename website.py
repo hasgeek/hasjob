@@ -17,7 +17,6 @@ except ImportError:
     print >> sys.stderr, "You may use the site without these settings, but some features may not work."
 
 def configure():
-    uploads.configure()
     search.configure()
     views.mail.init_app(app)
 

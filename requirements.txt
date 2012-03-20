@@ -1,7 +1,6 @@
 Flask
 Flask-SQLAlchemy
 Flask-WTF
-Flask-Uploads
 Flask-Mail
 Flask-Assets
 BeautifulSoup
