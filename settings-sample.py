@@ -1,5 +1,5 @@
 #: The title of this site
-SITE_TITLE='Job Board'
+SITE_TITLE='Classifieds Board'
 #: TypeKit code for fonts
 TYPEKIT_CODE=''
 #: Google Analytics code UA-XXXXXX-X

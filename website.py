@@ -50,4 +50,4 @@ if __name__ == '__main__':
             db.session.add(models.ReportCode(seq=30, slug='anon', title=u'Organization is not clearly identified'))
             db.session.add(models.ReportCode(seq=40, slug='unclear', title=u'Job position is not properly described'))
             db.session.commit()
-    app.run(debug=True)
+    app.run(host='0.0.0.0')
