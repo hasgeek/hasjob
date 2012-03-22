@@ -29,34 +29,18 @@
     <h1>{{ post.headline }}</h1>
     {% if post.company_logo %}<img class="post-company-logo" alt="Logo" src="{{ url_for('logoimage', hashid=post.hashid) }}"/>{% endif %}
     <p class="post-date">Posted {{ post.datetime|longdate }}</p>
-    <p id="company-info">
-      <span class="post-company-name">{{ post.company_name }}</span><br/>
-      <span class="post-location">{{ post.location }}{% if post.relocation_assist %}
-        <em>(relocation assistance available)</em>{% endif %}</span><br/>
-      {%- if post.company_url -%}
-        <span class="post-company-url">
-          <a href="{{ post.company_url }}" target="_blank" rel="nofollow">{{ post.company_url|cleanurl }}</a>
-        </span>
-      {%- endif %}
-    </p>
-    <p id="post-meta">
-      <a href="{{ url_for('browse_by_type', slug=post.type.slug) }}">{{ post.type.title }}</a> /
-      <a href="{{ url_for('browse_by_category', slug=post.category.slug) }}">{{ post.category.title }}</a>
-      {%- if post.md5sum %}
-        / <a href="{{ url_for('browse_by_email', md5sum=post.md5sum) }}">All jobs at {{ post.company_name }}</a>
-      {% endif -%}      
-    </p>
   </div>
   <div class="section columns">
     <div id="detailed-info">
       {{ post.description|safe }}
-      {% if post.perks %}
-        <h2>Job Perks</h2>
-        {{ post.perks|safe }}
-      {% endif %}
     </div>
     <div id="detail-sidebar">
       <ul>
+        <li>
+          {%- if post.md5sum %}
+            <a href="{{ url_for('browse_by_email', md5sum=post.md5sum) }}">All jobs at {{ post.company_name }}</a>
+          {% endif -%}      
+        </li>
         <li><a id="sidebar-email" href="mailto:?subject=Job%3A%20{{ post.headline|urlquote }}&amp;body={{ request.url|urlquote }}">Email this</a></li>
         <li><a id="sidebar-tweet" target="_blank" href="http://twitter.com/share?url={{ request.url|urlquote }}&amp;counturl={{ request.url|urlquote }}&amp;via=hasjob&amp;related=hasjob:HasGeek%20Job%20Board&amp;text=Job%3A%20{{ post.headline|urlquote }}">Tweet this <span id="tweet-count"></span></a></li>
         {#<li><a id="sidebar-share" href="#share">Share this</a></li>#}

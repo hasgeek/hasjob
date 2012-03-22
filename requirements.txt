@@ -1,11 +1,9 @@
 Flask
 Flask-SQLAlchemy
 Flask-WTF
-Flask-Uploads
 Flask-Mail
 Flask-Assets
 BeautifulSoup
-PIL
 pytz
 markdown
 tweepy
@@ -13,3 +11,4 @@ bitlyapi
 whoosh
 twill
 Flask-Testing
+coverage

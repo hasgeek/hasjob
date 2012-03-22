@@ -1,0 +1,5 @@
+language: python
+python:
+  - 2.7
+script:
+  - nosetests --with-coverage --cover-package=admin,app,assets,forms,get-twitter,loghandler,models,search,twitter,utils,views,website

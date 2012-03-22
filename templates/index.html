@@ -10,13 +10,6 @@
 {%- if md5sum %}<link rel="alternate" type="application/atom+xml" title="Jobs at {{ employer_name }} – {{ config['SITE_TITLE'] }}" href="{{ url_for('feed_by_email', md5sum=md5sum) }}" />{% endif -%}
 {% endblock %}
 
-{% block header %}
-  <p id="pitch">
-    HasGeek reaches out to thousands of developers via events, blogs and discussion groups.
-    Job listings made here reach the entire network. <a href="{{ url_for('newjob')|usessl }}">Post a job &rarr;</a>
-  </p>
-{% endblock %}
-
 {% block content %}
   {# {% include "inc/logo.html" %} #}
   <ul id="stickie-area">
@@ -44,8 +37,8 @@
         <form action="{{ url_for('newjob')|usessl }}" method="POST">
           <input type="hidden" name="_charset_"/>
           <input type="hidden" name="form.id" value="newheadline"/>
-          <label id="newpost_title" for="newpost_headline">Post a job:</label>
-          <textarea id="newpost_headline" name="job_headline" class="expand">Awesome Coder wanted at Awesome Company</textarea>
+          <label id="newpost_title" for="newpost_headline">Post a classified:</label>
+          <textarea id="newpost_headline" name="job_headline" class="expand">Awesome product at an awesome price</textarea>
           <div id="newpost_details"><input type="submit" value="Add details &rarr;"/></div>
         </form>
       </li>
@@ -62,7 +55,7 @@
       </li>
     {%- else -%}
       <li class="stickie" id="nojobs">
-        Sorry, no jobs listed.
+        Sorry, no classifieds yet.
       </li>
     {% endfor %}
   </ul>

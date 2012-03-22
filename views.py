@@ -14,9 +14,8 @@ from markdown import markdown
 from twitter import tweet
 
 from app import app
-from models import db, POSTSTATUS, JobPost, JobType, JobCategory, JobPostReport, ReportCode, unique_hash, agelimit
+from models import db, POSTSTATUS, JobPost, JobPostReport, ReportCode, unique_hash, agelimit
 import forms
-from uploads import uploaded_logos, process_image
 from utils import sanitize_html, scrubemail, md5sum, get_email_domain, get_word_bag
 from search import do_search
 
@@ -62,31 +61,7 @@ def index(basequery=None, type=None, category=None, md5sum=None):
         employer_name = posts[0].company_name
     else:
         employer_name = u'a single employer'
-    return render_template('index.html', posts=posts, now=now, newlimit=newlimit,
-                           jobtype=type, jobcategory=category, md5sum=md5sum,
-                           employer_name=employer_name)
-
-
-@app.route('/type/<slug>')
-def browse_by_type(slug):
-    if slug == 'all':
-        return redirect(url_for('index'))
-    ob = JobType.query.filter_by(slug=slug).first()
-    if not ob:
-        abort(404)
-    basequery = JobPost.query.filter_by(type_id=ob.id)
-    return index(basequery=basequery, type=ob)
-
-
-@app.route('/category/<slug>')
-def browse_by_category(slug):
-    if slug == 'all':
-        return redirect(url_for('index'))
-    ob = JobCategory.query.filter_by(slug=slug).first()
-    if not ob:
-        abort(404)
-    basequery = JobPost.query.filter_by(category_id=ob.id)
-    return index(basequery=basequery, category=ob)
+    return render_template('index.html', posts=posts, now=now, newlimit=newlimit, md5sum=md5sum)
 
 
 @app.route('/by/<md5sum>')
@@ -115,28 +90,6 @@ def feed(basequery=None, type=None, category=None, md5sum=None):
         updated = datetime.utcnow().isoformat()+'Z'
     return Response(render_template('feed.xml', posts=posts, updated=updated, title=title),
                            content_type = 'application/atom+xml; charset=utf-8')
-
-
-@app.route('/type/<slug>/feed')
-def feed_by_type(slug):
-    if slug == 'all':
-        return redirect(url_for('feed'))
-    ob = JobType.query.filter_by(slug=slug).first()
-    if not ob:
-        abort(404)
-    basequery = JobPost.query.filter_by(type_id=ob.id)
-    return feed(basequery=basequery, type=ob)
-
-
-@app.route('/category/<slug>/feed')
-def feed_by_category(slug):
-    if slug == 'all':
-        return redirect(url_for('feed'))
-    ob = JobCategory.query.filter_by(slug=slug).first()
-    if not ob:
-        abort(404)
-    basequery = JobPost.query.filter_by(category_id=ob.id)
-    return feed(basequery=basequery, category=ob)
 
 
 @app.route('/by/<md5sum>/feed')
@@ -218,16 +171,6 @@ def robots():
 def sitemap():
     sitemapxml = '<?xml version="1.0" encoding="UTF-8"?>\n'\
                  '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
-    # Add job type pages to sitemap
-    for item in JobType.query.all():
-        sitemapxml += '  <url>\n'\
-                      '    <loc>%s</loc>\n' % url_for('browse_by_type', slug=item.slug, _external=True) + \
-                      '  </url>\n'
-    # Add job category pages to sitemap
-    for item in JobCategory.query.all():
-      sitemapxml += '  <url>\n'\
-                    '    <loc>%s</loc>\n' % url_for('browse_by_category', slug=item.slug, _external=True) + \
-                    '  </url>\n'
     # Add live posts to sitemap
     for post in getposts():
         sitemapxml += '  <url>\n'\
@@ -377,8 +320,6 @@ def withdraw(hashid, key):
 def editjob(hashid, key, form=None, post=None, validated=False):
     if form is None:
         form = forms.ListingForm(request.form)
-        form.job_type.choices = [(ob.id, ob.title) for ob in JobType.query.filter_by(public=True).order_by('seq')]
-        form.job_category.choices = [(ob.id, ob.title) for ob in JobCategory.query.filter_by(public=True).order_by('seq')]
     if post is None:
         post = JobPost.query.filter_by(hashid=hashid).first_or_404()
     if key != post.edit_key:
@@ -388,10 +329,8 @@ def editjob(hashid, key, form=None, post=None, validated=False):
         form.poster_email.data = post.email
     if request.method == 'POST' and (validated or form.validate()):
         form_description = sanitize_html(form.job_description.data)
-        form_perks = sanitize_html(form.job_perks_description.data) if form.job_perks.data else ''
-        form_how_to_apply = form.job_how_to_apply.data
         form_email_domain = get_email_domain(form.poster_email.data)
-        form_words = get_word_bag(u' '.join((form_description, form_perks, form_how_to_apply)))
+        form_words = get_word_bag(u' '.join(form_description))
 
         similar = False
         for oldpost in JobPost.query.filter(JobPost.email_domain == form_email_domain).filter(
@@ -410,15 +349,8 @@ def editjob(hashid, key, form=None, post=None, validated=False):
                 app.config['ADMINS'][0]), category='interactive')
         else:
             post.headline = form.job_headline.data
-            post.type_id = form.job_type.data
-            post.category_id = form.job_category.data
             post.location = form.job_location.data
-            post.relocation_assist = form.job_relocation_assist.data
             post.description = form_description
-            post.perks = form_perks
-            post.how_to_apply = form_how_to_apply
-            post.company_name = form.company_name.data
-            post.company_url = form.company_url.data
             post.email = form.poster_email.data
             post.email_domain = form_email_domain
             post.md5sum = md5sum(post.email)
@@ -428,16 +360,7 @@ def editjob(hashid, key, form=None, post=None, validated=False):
                 prev_words = post.words or ''
             else:
                 prev_words = u''
-            post.words = get_word_bag(u' '.join((prev_words, form_description, form_perks, form_how_to_apply)))
-
-            if request.files['company_logo']:
-                # The form's validator saved the processed logo in g.company_logo.
-                thumbnail = g.company_logo
-                logofilename = uploaded_logos.save(thumbnail, name='%s.' % post.hashid)
-                post.company_logo = logofilename
-            else:
-                if form.company_logo_remove.data:
-                    post.company_logo = None
+            post.words = get_word_bag(u' '.join((prev_words, form_description)))
 
             db.session.commit()
             userkeys = session.get('userkeys', [])
@@ -450,16 +373,8 @@ def editjob(hashid, key, form=None, post=None, validated=False):
     elif request.method == 'GET':
         # Populate form from model
         form.job_headline.data = post.headline
-        form.job_type.data = post.type_id
-        form.job_category.data = post.category_id
         form.job_location.data = post.location
-        form.job_relocation_assist.data = post.relocation_assist
         form.job_description.data = post.description
-        form.job_perks.data = True if post.perks else False
-        form.job_perks_description.data = post.perks
-        form.job_how_to_apply.data = post.how_to_apply
-        form.company_name.data = post.company_name
-        form.company_url.data = post.company_url
         form.poster_email.data = post.email
 
     return render_template('postjob.html', form=form, no_email=post.status > POSTSTATUS.DRAFT)
@@ -468,8 +383,6 @@ def editjob(hashid, key, form=None, post=None, validated=False):
 @app.route('/new', methods=('GET', 'POST'))
 def newjob():
     form = forms.ListingForm()
-    form.job_type.choices = [(ob.id, ob.title) for ob in JobType.query.filter_by(public=True).order_by('seq')]
-    form.job_category.choices = [(ob.id, ob.title) for ob in JobCategory.query.filter_by(public=True).order_by('seq')]
     if request.method == 'POST' and request.form.get('form.id') == 'newheadline':
         # POST request from the main page's Post a Job box.
         form.csrf.data = form.reset_csrf()
@@ -541,8 +454,6 @@ def stats_listings_by_type():
     typecount = defaultdict(int)
     for job in jobs:
         typecount[job.type_id] += 1
-    all_types = list(JobType.query.filter_by(public=True).order_by(JobType.seq).all())
-    all_types.reverse() # Charts are drawn bottom to top
     data = []
     labels = []
     for x in range(len(all_types)):
@@ -595,10 +506,6 @@ def error_500(e):
 def url_from_ob(ob):
     if isinstance(ob, JobPost):
         return url_for('jobdetail', hashid=ob.hashid)
-    elif isinstance(ob, JobType):
-        return url_for('browse_by_type', slug=ob.slug)
-    elif isinstance(ob, JobCategory):
-        return url_for('browse_by_category', slug=ob.slug)
 
 
 @app.template_filter('shortdate')
