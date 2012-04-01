@@ -472,7 +472,7 @@ def newjob():
     form.job_category.choices = [(ob.id, ob.title) for ob in JobCategory.query.filter_by(public=True).order_by('seq')]
     if request.method == 'POST' and request.form.get('form.id') == 'newheadline':
         # POST request from the main page's Post a Job box.
-        form.csrf_token.data = form.reset_csrf()
+        form.csrf_token.data = form.generate_csrf_token(session)
     if request.method == 'POST' and request.form.get('form.id') != 'newheadline' and form.validate():
         # POST request from new job page, with successful validation
         # Move it to the editjob page for handling here forward
