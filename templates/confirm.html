@@ -11,7 +11,7 @@
     <form method="POST">
       <input type="hidden" name="_charset_"/>
       <input type="hidden" name="form.id" value="confirmjob"/>
-      {{ form.csrf() }}
+      {{ form.hidden_tag() }}
       {{ renderfield(form.terms_accepted, "check") }}
       <input type="submit" value="Accept terms and publish"/>
     </form>

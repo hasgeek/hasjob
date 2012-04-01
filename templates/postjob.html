@@ -17,10 +17,10 @@
   <form id="newjob" enctype="multipart/form-data" method="POST">
     <input type="hidden" name="_charset_"/>
     <input type="hidden" name="form.id" value="newjob"/>
-    {{ form.csrf() }}
+    {{ form.hidden_tag() }}
     <div class="section">
-      {% if form.csrf.errors %}
-        {% for error in form.csrf.errors %}<div class="error">{{ error }}</div>{% endfor %}
+      {% if form.csrf_token.errors %}
+        {% for error in form.csrf_token.errors %}<div class="error">{{ error }}</div>{% endfor %}
       {% endif %}
       <h2>First, tell us about the position</h2>
       {{ renderfield(form.job_headline, "small", autofocus=True) }}

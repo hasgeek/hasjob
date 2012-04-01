@@ -2,7 +2,7 @@
 <form id="reportform" method="POST">
   <input type="hidden" name="_charset_"/>
   <input type="hidden" name="form.id" value="reportform"/>
-  {{ reportform.csrf() }}
+  {{ reportform.hidden_tag() }}
   {{ renderfield(reportform.report_code, nolabeldesc=True) }}
   <input type="submit" value="Report this"/>
 </form>
