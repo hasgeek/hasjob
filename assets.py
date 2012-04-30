@@ -1,4 +1,4 @@
-from flaskext.assets import Environment, Bundle
+from flask.ext.assets import Environment, Bundle
 from app import app
 
 assets = Environment(app)
