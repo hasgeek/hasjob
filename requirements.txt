@@ -3,6 +3,7 @@ Flask-SQLAlchemy==0.16
 Flask-WTF==0.5.4
 Flask-Mail
 Flask-Assets
+Flask-Uploads
 BeautifulSoup
 PIL
 pytz
