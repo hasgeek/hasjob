@@ -4,9 +4,9 @@ import re
 from flask import g, request
 from flaskext.wtf import Form, TextField, TextAreaField, RadioField, FileField, BooleanField
 from flaskext.wtf import Required, Email, Length, URL, ValidationError
-from flaskext.wtf.html5 import URLField, EmailField
+from flaskext.wtf.html5 import EmailField
 
-from uploads import process_image
+from uploads import process_image, UploadNotAllowed
 from utils import simplify_text
 
 QUOTES_RE = re.compile(ur'[\'"`‘’“”′″‴]+')
@@ -55,14 +55,14 @@ class ListingForm(Form):
     company_logo = FileField("Logo",
         description=u"Optional — Your company logo will appear at the top of your listing. "
                     u"170px wide is optimal. We’ll resize automatically if it’s wider",
-        )#validators=[file_allowed(uploaded_logos, "That image type is not supported")])
+        )  # validators=[file_allowed(uploaded_logos, "That image type is not supported")])
     company_logo_remove = BooleanField("Remove existing logo")
     company_url = TextField("URL",
-        description = u"Example: http://www.google.com",
+        description=u"Example: http://www.google.com",
         validators=[optional_url])
     poster_email = EmailField("Email",
-        description = u"This is where we’ll send your confirmation email. "\
-                      u"It will not be revealed to applicants",
+        description=u"This is where we’ll send your confirmation email. "
+                    u"It will not be revealed to applicants",
         validators=[Required("We need to confirm your email address before the job can be listed"),
             Email("That does not appear to be a valid email address")])
 
@@ -75,6 +75,8 @@ class ListingForm(Form):
             raise ValidationError(e.message)
         except KeyError, e:
             raise ValidationError("Unknown file format")
+        except UploadNotAllowed:
+            raise ValidationError("Unsupported file format. We accept JPEG, PNG and GIF")
 
     def validate_job_headline(form, field):
         # XXX: These validations belong in a config file or in the db, not here.
@@ -101,9 +103,11 @@ class ConfirmForm(Form):
         validators=[Required("You must accept the terms of service to publish this listing")])
     #promocode = TextField("Promo code")
 
+
 class WithdrawForm(Form):
     really_withdraw = BooleanField("Yes, I really want to withdraw the job listing",
         validators=[Required(u"If you don’t want to withdraw the listing, just close this page")])
+
 
 class ReportForm(Form):
     report_code = RadioField("Code", coerce=int, validators=[Required(u"Pick one")])
