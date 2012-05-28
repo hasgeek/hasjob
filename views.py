@@ -346,10 +346,13 @@ def confirm_email(hashid, key):
                 try:
                     tweet(post.headline, url_for('jobdetail', hashid=post.hashid,
                         _external=True), post.location)
-                    flash("Congratulations! Your job listing has been published", "interactive")
+                    flash("Congratulations! Your job listing has been published and tweeted",
+                          "interactive")
                 except:  # FIXME: Catch-all
-                    pass
-            flash("Congratulations! Your job listing has been published", "interactive")
+                    flash("Congratulations! Your job listing has been published "
+                          "(Twitter was not reachable for tweeting)", "interactive")
+            else:
+                flash("Congratulations! Your job listing has been published", "interactive")
     return redirect(url_for('jobdetail', hashid=post.hashid), code=302)
 
 
