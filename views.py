@@ -343,8 +343,12 @@ def confirm_email(hashid, key):
             post.datetime = datetime.utcnow()
             db.session.commit()
             if app.config['TWITTER_ENABLED']:
-                tweet(post.headline, url_for('jobdetail', hashid=post.hashid,
-                    _external=True), post.location)
+                try:
+                    tweet(post.headline, url_for('jobdetail', hashid=post.hashid,
+                        _external=True), post.location)
+                    flash("Congratulations! Your job listing has been published", "interactive")
+                except:  # FIXME: Catch-all
+                    pass
             flash("Congratulations! Your job listing has been published", "interactive")
     return redirect(url_for('jobdetail', hashid=post.hashid), code=302)
 
