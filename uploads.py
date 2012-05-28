@@ -3,7 +3,7 @@ from StringIO import StringIO
 from os.path import splitext
 from werkzeug import FileStorage
 
-from flaskext.uploads import UploadSet, configure_uploads, IMAGES, UploadNotAllowed
+from flask.ext.uploads import UploadSet, configure_uploads, IMAGES, UploadNotAllowed
 from app import app
 
 uploaded_logos = UploadSet('logos', IMAGES)
