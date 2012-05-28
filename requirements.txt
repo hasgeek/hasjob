@@ -1,9 +1,9 @@
-Flask
-Flask-SQLAlchemy
-Flask-WTF
-Flask-Uploads
+Flask==0.8
+Flask-SQLAlchemy==0.16
+Flask-WTF==0.5.4
 Flask-Mail
 Flask-Assets
+Flask-Uploads
 BeautifulSoup
 PIL
 pytz
@@ -13,3 +13,4 @@ bitlyapi
 whoosh
 twill
 Flask-Testing
+coverage

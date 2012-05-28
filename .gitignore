@@ -8,3 +8,4 @@ test.db
 .settings
 .sass-cache
 error.log
+.coverage

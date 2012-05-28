@@ -1,5 +1,5 @@
 import os.path
-from flaskext.sqlalchemy import models_committed
+from flask.ext.sqlalchemy import models_committed
 from whoosh import fields, index
 from whoosh.qparser import QueryParser
 from whoosh.analysis import StemmingAnalyzer
