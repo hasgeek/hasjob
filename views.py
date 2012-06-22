@@ -60,7 +60,7 @@ def getallposts(order_by=None, desc=False, start=None, limit=None):
 @app.route('/')
 def index(basequery=None, type=None, category=None, md5sum=None):
     now = datetime.utcnow()
-    posts = list(getposts(basequery, True))
+    posts = list(getposts(basequery, sticky=True))
     if posts:
         employer_name = posts[0].company_name
     else:
