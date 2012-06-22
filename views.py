@@ -31,15 +31,12 @@ newlimit = timedelta(days=1)
 def getposts(basequery=None, sticky=False):
     if basequery is None:
         basequery = JobPost.query
+    query = basequery.filter(
+            JobPost.status.in_([POSTSTATUS.CONFIRMED, POSTSTATUS.REVIEWED])).filter(
+            JobPost.datetime > datetime.utcnow() - agelimit)
     if sticky:
-        return basequery.filter(
-            JobPost.status.in_([POSTSTATUS.CONFIRMED, POSTSTATUS.REVIEWED])).filter(
-            JobPost.datetime > datetime.utcnow() -
-            agelimit).order_by(db.desc(JobPost.sticky)).order_by(db.desc(JobPost.datetime))
-    else:
-        return basequery.filter(
-            JobPost.status.in_([POSTSTATUS.CONFIRMED, POSTSTATUS.REVIEWED])).filter(
-            JobPost.datetime > datetime.utcnow() - agelimit).order_by(db.desc(JobPost.datetime))
+        query = query.order_by(db.desc(JobPost.sticky))
+    return query.order_by(db.desc(JobPost.datetime))
 
 
 def getallposts(order_by=None, desc=False, start=None, limit=None):
