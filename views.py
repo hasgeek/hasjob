@@ -28,12 +28,18 @@ newlimit = timedelta(days=1)
 
 # --- Helper functions --------------------------------------------------------
 
-def getposts(basequery=None):
+def getposts(basequery=None, sticky=False):
     if basequery is None:
         basequery = JobPost.query
-    return basequery.filter(
-        JobPost.status.in_([POSTSTATUS.CONFIRMED, POSTSTATUS.REVIEWED])).filter(
-        JobPost.datetime > datetime.utcnow() - agelimit).order_by(db.desc(JobPost.sticky)).order_by(db.desc(JobPost.datetime))
+    if sticky:
+        return basequery.filter(
+            JobPost.status.in_([POSTSTATUS.CONFIRMED, POSTSTATUS.REVIEWED])).filter(
+            JobPost.datetime > datetime.utcnow() -
+            agelimit).order_by(db.desc(JobPost.sticky)).order_by(db.desc(JobPost.datetime))
+    else:
+        return basequery.filter(
+            JobPost.status.in_([POSTSTATUS.CONFIRMED, POSTSTATUS.REVIEWED])).filter(
+            JobPost.datetime > datetime.utcnow() - agelimit).order_by(db.desc(JobPost.datetime))
 
 
 def getallposts(order_by=None, desc=False, start=None, limit=None):
@@ -57,7 +63,9 @@ def getallposts(order_by=None, desc=False, start=None, limit=None):
 @app.route('/')
 def index(basequery=None, type=None, category=None, md5sum=None):
     now = datetime.utcnow()
-    posts = list(getposts(basequery))
+    posts = list(getposts(basequery, True))
+    for post in posts:
+        print post.headline
     if posts:
         employer_name = posts[0].company_name
     else:

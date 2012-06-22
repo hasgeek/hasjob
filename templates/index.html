@@ -56,8 +56,9 @@
           <span class="location">{{ post.location }}</span>
           <span class="date">{{ post.datetime|shortdate }}</span>
           <span class="headline">{{ post.headline }}</span>
-          <span class="company">{{ post.company_name }}</span>
-          {%- if now - post.datetime < newlimit %}<span class="new">New!</span>{% endif %}
+		  <span class="company">{{ post.company_name }}</span>
+		  {%- if post.sticky%}<span class="new">Sticky!</span>{% else %}
+		  {%- if now - post.datetime < newlimit %}<span class="new">New!</span>{% endif %}{% endif %}
         </a>
       </li>
     {%- else -%}
