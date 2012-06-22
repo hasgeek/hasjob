@@ -64,8 +64,6 @@ def getallposts(order_by=None, desc=False, start=None, limit=None):
 def index(basequery=None, type=None, category=None, md5sum=None):
     now = datetime.utcnow()
     posts = list(getposts(basequery, True))
-    for post in posts:
-        print post.headline
     if posts:
         employer_name = posts[0].company_name
     else:
