@@ -35,6 +35,7 @@ class JobType(db.Model):
     title = db.Column(db.Unicode(250), nullable=False)
     seq = db.Column(db.Integer, nullable=False, default=0)
     public = db.Column(db.Boolean, nullable=False, default=True)
+    sticky = db.Column(db.Boolean, nullable=False, default=False)
 
     def __call__(self):
         return self.title

@@ -33,7 +33,7 @@ def getposts(basequery=None):
         basequery = JobPost.query
     return basequery.filter(
         JobPost.status.in_([POSTSTATUS.CONFIRMED, POSTSTATUS.REVIEWED])).filter(
-        JobPost.datetime > datetime.utcnow() - agelimit).order_by(db.desc(JobPost.datetime))
+        JobPost.datetime > datetime.utcnow() - agelimit).order_by(db.desc(JobPost.sticky)).order_by(db.desc(JobPost.datetime))
 
 
 def getallposts(order_by=None, desc=False, start=None, limit=None):
