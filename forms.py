@@ -48,6 +48,10 @@ class ListingForm(Form):
                     u"Don’t worry about spambots seeing your email address. "
                     u"We’ll secure it",
         validators=[Required("HasGeek does not offer screening services. Please specify how candidates may apply")])
+    job_hr_contact = RadioField("Is it okay for recruiters and other "
+        "intermediaries to contact you about this listing?", coerce=int,
+        choices=[(1, 'No'), (2, 'Yes')], validators=[Required(
+            "Select an option")])
     company_name = TextField("Name",
         description=u"The name of the organization where the position is. "
                     u"No intermediaries or unnamed stealth startups. Use your own real name if the company isn’t named yet",
