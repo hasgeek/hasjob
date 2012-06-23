@@ -116,6 +116,7 @@ class JobPost(db.Model):
     description = db.Column(db.UnicodeText, nullable=False)
     perks = db.Column(db.UnicodeText, nullable=False)
     how_to_apply = db.Column(db.UnicodeText, nullable=False)
+    hr_contact = db.Column(db.Boolean, default=False, nullable=False)
 
     # Company details
     company_name = db.Column(db.Unicode(80), nullable=False)
