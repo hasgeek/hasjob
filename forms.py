@@ -12,6 +12,10 @@ from utils import simplify_text
 QUOTES_RE = re.compile(ur'[\'"`‘’“”′″‴]+')
 
 
+def boolint(value):
+    return bool(int(value))
+
+
 def optional_url(form, field):
     """
     Validate URL only if present.
@@ -38,7 +42,7 @@ class ListingForm(Form):
         validators=[Required(u"If this job doesn’t have a fixed location, use “Anywhere”")])
     job_relocation_assist = BooleanField("Relocation assistance available")
     job_description = TextAreaField("Description",
-        description=u"Our apologies for the mismatched font you see here. We’re working on it",
+        description=u"Our apologies for the mismatched font you see here. We’re (still) working on it",
         validators=[Required("A description of the job is required")])
     job_perks = BooleanField("Job perks are available")
     job_perks_description = TextAreaField("Describe job perks",
@@ -47,14 +51,17 @@ class ListingForm(Form):
         description=u'Example: "Send a resume to kumar@company.com". '
                     u"Don’t worry about spambots seeing your email address. "
                     u"We’ll secure it",
-        validators=[Required("HasGeek does not offer screening services. Please specify how candidates may apply")])
-    job_hr_contact = RadioField("Is it okay for recruiters and other "
-        "intermediaries to contact you about this listing?", coerce=int,
-        choices=[(1, 'No'), (2, 'Yes')], validators=[Required(
-            "Select an option")])
+        validators=[Required(u"HasGeek does not offer screening services. Please specify how candidates may apply")])
+    hr_contact = RadioField(u"Is it okay for recruiters and other "
+        u"intermediaries to contact you about this listing?", coerce=boolint,
+        description=u"We’ll display a notice to this effect on the listing",
+        default=0,
+        choices=[(0, u"No, it is NOT OK"), (1, u"Yes, recruiters may contact me")])
     company_name = TextField("Name",
         description=u"The name of the organization where the position is. "
-                    u"No intermediaries or unnamed stealth startups. Use your own real name if the company isn’t named yet",
+                    u"No intermediaries or unnamed stealth startups. Use your own real name if the company isn’t named "
+                    u"yet. We do not accept listings from third parties such as HR consultants. Such listings may be "
+                    u"removed without notice.",
         validators=[Required(u"This is required. Posting any name other than that of the actual organization is a violation of the ToS")])
     company_logo = FileField("Logo",
         description=u"Optional — Your company logo will appear at the top of your listing. "

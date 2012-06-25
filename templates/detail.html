@@ -73,9 +73,21 @@
   </div>
   <div class="section" id="apply-info">
     <h2>Apply for this position</h2>
-	<p>{{ post.how_to_apply|scrubemail(('z', 'y')) }}</p>
-	{% if not post.hr_contact == 2 %}<p>It is <strong>NOT okay</strong> for recruiters, HR consultants, and other intermediaries to contact this employer about this position.<p>{% endif %}
+    <p>{{ post.how_to_apply|scrubemail(('z', 'y')) }}</p>
   </div>
+  {% if post.hr_contact is not none %}{# Don't display notice on old listings #}
+    <div class="section" id="recruiter-notice">
+    {% if post.hr_contact %}
+      <p>
+        It is <strong>OK</strong> for recruiters, HR consultants, and other intermediaries to contact this employer about this position.
+      </p>
+    {% else %}
+      <p>
+        It is <strong>NOT OK</strong> for recruiters, HR consultants, and other intermediaries to contact this employer about this position.
+      </p>
+    {% endif %}
+    </div>
+  {% endif %}
 </div>
 {% endblock %}
 {% block footerscripts %}

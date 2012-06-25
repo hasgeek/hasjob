@@ -40,7 +40,7 @@
       {% if not no_removelogo %}{{ renderfield(form.company_logo_remove, "small") }}{% endif %}
       {{ renderfield(form.company_url, "small") }}
       {% if not no_email %}{{ renderfield(form.poster_email, "small") }}{% endif %}
-      {{ renderfield(form.job_hr_contact, "wide") }}
+      {{ renderfield(form.hr_contact, "widelist") }}
       <input type="submit" value="Review your job listing &rarr;"/>
     </div>
   </form>
@@ -61,6 +61,7 @@
     });
     radioHighlight('job_type', 'selected');
     radioHighlight('job_category', 'selected');
+    radioHighlight('hr_contact', 'selected');
   });
 
   $(function() {

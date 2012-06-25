@@ -432,7 +432,7 @@ def editjob(hashid, key, form=None, post=None, validated=False):
             post.email = form.poster_email.data
             post.email_domain = form_email_domain
             post.md5sum = md5sum(post.email)
-            post.hr_contact = form.job_hr_contact.data
+            post.hr_contact = form.hr_contact.data
             # To protect from gaming, don't allow words to be removed in edited listings once the post
             # has been confirmed. Just add the new words.
             if post.status >= POSTSTATUS.CONFIRMED:
@@ -472,6 +472,7 @@ def editjob(hashid, key, form=None, post=None, validated=False):
         form.company_name.data = post.company_name
         form.company_url.data = post.company_url
         form.poster_email.data = post.email
+        form.hr_contact.data = int(post.hr_contact or False)
 
     return render_template('postjob.html', form=form, no_email=post.status > POSTSTATUS.DRAFT)
 

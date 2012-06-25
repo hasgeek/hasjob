@@ -270,14 +270,14 @@ button {
 /* Background textures by Rüdiger Appel from http://www.3quarks.com/en/BackgroundPattern/ */
 body {
   font-family: ff-meta-web-pro-1, ff-meta-web-pro-2, MetaPlus, arial, sans-serif;
-  background: url('/static/img/canvas.jpg?1331299709');
+  background: url('/static/img/canvas.jpg?881083570');
 }
 
 /* Header area */
 header {
   *zoom: 1;
   padding: 10px 20px;
-  background: url('/static/img/paper.jpg?1331299709');
+  background: url('/static/img/paper.jpg?884184256');
   border-bottom: 1px solid #afafaf;
   -moz-box-shadow: -5px 1px 5px rgba(0, 0, 0, 0.4);
   -webkit-box-shadow: -5px 1px 5px rgba(0, 0, 0, 0.4);
@@ -305,7 +305,7 @@ header #pitch {
   text-indent: -119988px;
   overflow: hidden;
   text-align: left;
-  background-image: url('/static/img/logo-star.png?1331299709');
+  background-image: url('/static/img/logo-star.png?1298309415');
   background-repeat: no-repeat;
   background-position: 0 0;
   width: 170px;
@@ -390,7 +390,7 @@ footer {
 }
 
 footer {
-  background: url('/static/img/paper.jpg?1331299709');
+  background: url('/static/img/paper.jpg?884184256');
   -moz-box-shadow: -5px -1px 5px rgba(0, 0, 0, 0.4);
   -webkit-box-shadow: -5px -1px 5px rgba(0, 0, 0, 0.4);
   -o-box-shadow: -5px -1px 5px rgba(0, 0, 0, 0.4);
@@ -560,19 +560,19 @@ footer {
   text-decoration: none;
 }
 #sheet #detail-sidebar ul li #sidebar-email {
-  background: transparent url('/static/img/email.png?1331299709') no-repeat 15px center;
+  background: transparent url('/static/img/email.png?1299843650') no-repeat 15px center;
   padding-left: 40px;
 }
 #sheet #detail-sidebar ul li #sidebar-tweet {
-  background: transparent url('/static/img/twitter.png?1331299709') no-repeat 15px center;
+  background: transparent url('/static/img/twitter.png?1299843629') no-repeat 15px center;
   padding-left: 40px;
 }
 #sheet #detail-sidebar ul li #sidebar-share {
-  background: transparent url('/static/img/share.png?1331299709') no-repeat 15px center;
+  background: transparent url('/static/img/share.png?1299843635') no-repeat 15px center;
   padding-left: 40px;
 }
 #sheet #detail-sidebar ul li #sidebar-report {
-  background: transparent url('/static/img/flag.png?1331299709') no-repeat 15px center;
+  background: transparent url('/static/img/flag.png?1299854677') no-repeat 15px center;
   padding-left: 40px;
 }
 #sheet #detail-sidebar .popup-box {
@@ -694,17 +694,23 @@ footer {
 #sheet div.field.small div.label label {
   font-weight: bold;
 }
+#sheet div.field.widelist div.label {
+  padding-bottom: 0.2em;
+}
+#sheet div.field.widelist div.label label {
+  font-weight: bold;
+}
 #sheet div.field.small div.control {
   float: left;
   width: 35em;
 }
-#sheet div.field.small div.control ul {
+#sheet div.field.widelist div.control ul, #sheet div.field.small div.control ul {
   -moz-column-count: 2;
   list-style: none;
   margin: 0;
 }
-#sheet div.field.small div.control ul li {
-  padding: 0.5em;
+#sheet div.field.widelist div.control ul li, #sheet div.field.small div.control ul li {
+  padding: 0.2em 0.5em;
   -moz-border-radius: 4px;
   -webkit-border-radius: 4px;
   -o-border-radius: 4px;
@@ -712,11 +718,11 @@ footer {
   -khtml-border-radius: 4px;
   border-radius: 4px;
 }
-#sheet div.field.small div.control ul li label {
+#sheet div.field.widelist div.control ul li label, #sheet div.field.small div.control ul li label {
   padding-left: 0.5em;
 }
-#sheet div.field.small div.control ul li.selected {
-  background-color: #f0a40c;
+#sheet div.field.widelist div.control ul li.selected, #sheet div.field.small div.control ul li.selected {
+  font-weight: bold;
 }
 #sheet div.field.check div.label {
   display: none;
@@ -863,7 +869,7 @@ footer {
 #search input[type="text"] {
   border: 1px solid #b7b7b7;
   font-family: ff-meta-web-pro-1, ff-meta-web-pro-2, MetaPlus, arial, sans-serif;
-  background: white url('/static/img/search.png?1331299709') 4px center no-repeat;
+  background: white url('/static/img/search.png?1299763894') 4px center no-repeat;
   padding-left: 20px;
   padding-right: 43px;
   -moz-border-radius: 3px;
@@ -944,10 +950,6 @@ h2 {
   -webkit-box-shadow: #ccccff 0 0 5px, #ccccff 0 0 5px 0 inset;
   -o-box-shadow: #ccccff 0 0 5px, #ccccff 0 0 5px 0 inset;
   box-shadow: #ccccff 0 0 5px, #ccccff 0 0 5px 0 inset;
-}
-
-#job_hr_contact {
-  list-style-type: none;
 }
 
 /* Spam protection */
