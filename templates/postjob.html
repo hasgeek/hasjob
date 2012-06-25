@@ -32,7 +32,7 @@
       {{ renderfield(form.job_perks, "check") }}
       {{ renderfield(form.job_perks_description, "wide", widget_css_class="tinymce") }}
       {{ renderfield(form.job_how_to_apply, "wide") }}
-    </div>
+  </div>
     <div class="section">
       <h2>Tell us about your company</h2>
       {{ renderfield(form.company_name, "small") }}
@@ -40,6 +40,7 @@
       {% if not no_removelogo %}{{ renderfield(form.company_logo_remove, "small") }}{% endif %}
       {{ renderfield(form.company_url, "small") }}
       {% if not no_email %}{{ renderfield(form.poster_email, "small") }}{% endif %}
+      {{ renderfield(form.job_hr_contact, "wide") }}
       <input type="submit" value="Review your job listing &rarr;"/>
     </div>
   </form>

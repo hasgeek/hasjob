@@ -73,7 +73,8 @@
   </div>
   <div class="section" id="apply-info">
     <h2>Apply for this position</h2>
-    <p>{{ post.how_to_apply|scrubemail(('z', 'y')) }}</p>
+	<p>{{ post.how_to_apply|scrubemail(('z', 'y')) }}</p>
+	{% if not post.hr_contact == 2 %}<p>It is <strong>NOT okay</strong> for recruiters, HR consultants, and other intermediaries to contact this employer about this position.<p>{% endif %}
   </div>
 </div>
 {% endblock %}

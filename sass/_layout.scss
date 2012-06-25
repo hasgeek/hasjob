@@ -532,5 +532,9 @@ h2 {
     @include box-shadow(#ccf 0 0 5px, #ccf 0 0 5px 0 inset);
 }
 
+#job_hr_contact {
+	list-style-type: none;
+}
+
 /* Spam protection */
 .z {display: none;}
