@@ -104,6 +104,7 @@ class JobPost(db.Model):
     datetime = db.Column(db.DateTime, default=datetime.utcnow, nullable=False) # Published
     closed_datetime = db.Column(db.DateTime, nullable=True) # If withdrawn or rejected
     #modified_datetime = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    sticky = db.Column(db.Boolean, nullable=False, default=False)
 
     # Job description
     headline = db.Column(db.Unicode(100), nullable=False)
