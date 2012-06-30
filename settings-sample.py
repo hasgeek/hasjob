@@ -43,3 +43,6 @@ BITLY_USER = ''
 BITLY_KEY = ''
 #: Access key for periodic server-only tasks
 PERIODIC_KEY = ''
+#: Throttle limit for email domain
+THROTTLE_LIMIT = 5
+SUPPORT_EMAIL = 'person@example.com'

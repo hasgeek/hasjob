@@ -341,6 +341,15 @@ def confirm_email(hashid, key):
         if key != post.email_verify_key:
             abort(403)
         else:
+            if app.config.get('THROTTLE_LIMIT', 0) > 0:
+                post_count = JobPost.query.filter(JobPost.email_domain == post.email_domain).filter(
+                                              JobPost.status > POSTSTATUS.PENDING).filter(
+                                              JobPost.datetime > datetime.utcnow() - timedelta(days=1)).all()
+                if len(post_count) > app.config['THROTTLE_LIMIT']:
+                    flash(u"We've received too many listings from %s in the last 24 hours. Please try again in a few hours. "
+                        "If you believe this to be an error, please email us at %s." % (post.email_domain,
+                        app.config['SUPPORT_EMAIL']), category='info')
+                    return redirect(url_for('index'))
             post.email_verified = True
             post.status = POSTSTATUS.CONFIRMED
             post.datetime = datetime.utcnow()
@@ -417,7 +426,7 @@ def editjob(hashid, key, form=None, post=None, validated=False):
         if similar:
             flash("This listing is very similar to an earlier listing. You may not relist the same job "
                 "in less than %d days. If you believe this to be an error, please email us at %s." % (agelimit.days,
-                app.config['ADMINS'][0]), category='interactive')
+                app.config['SUPPORT_EMAIL']), category='interactive')
         else:
             post.headline = form.job_headline.data
             post.type_id = form.job_type.data
