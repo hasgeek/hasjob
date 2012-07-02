@@ -2,6 +2,7 @@
 
 import os.path
 import re
+import bleach
 from collections import defaultdict
 from datetime import date, datetime, timedelta
 from urllib import quote, quote_plus
@@ -17,13 +18,23 @@ from app import app
 from models import db, POSTSTATUS, JobPost, JobType, JobCategory, JobPostReport, ReportCode, unique_hash, agelimit
 import forms
 from uploads import uploaded_logos, process_image
-from utils import sanitize_html, scrubemail, md5sum, get_email_domain, get_word_bag
+from utils import scrubemail, md5sum, get_email_domain, get_word_bag
 from search import do_search
 
 mail = Mail()
 
 # --- Constants ---------------------------------------------------------------
 
+ALLOWED_TAGS = [
+    'strong',
+    'em',
+    'p',
+    'ol',
+    'ul',
+    'li',
+    'br',
+    'a',
+]
 newlimit = timedelta(days=1)
 
 # --- Helper functions --------------------------------------------------------
@@ -397,8 +408,9 @@ def editjob(hashid, key, form=None, post=None, validated=False):
     if request.method == 'POST' and post.status >= POSTSTATUS.PENDING:
         form.poster_email.data = post.email
     if request.method == 'POST' and (validated or form.validate()):
-        form_description = sanitize_html(form.job_description.data)
-        form_perks = sanitize_html(form.job_perks_description.data) if form.job_perks.data else ''
+        form_description = bleach.clean(form.job_description.data, tags=ALLOWED_TAGS)
+        form_description = bleach.linkify(form_description)
+        form_perks = bleach.clean(form.job_perks_description.data, tags=ALLOWED_TAGS) if form.job_perks.data else ''
         form_how_to_apply = form.job_how_to_apply.data
         form_email_domain = get_email_domain(form.poster_email.data)
         form_words = get_word_bag(u' '.join((form_description, form_perks, form_how_to_apply)))

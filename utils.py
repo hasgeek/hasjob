@@ -10,7 +10,7 @@ from BeautifulSoup import BeautifulSoup, Comment
 def base36encode(number, alphabet='0123456789abcdefghijklmnopqrstuvwxyz'):
     """
     Convert positive integer to a base36 string.
-    
+
     >>> base36encode(0)
     '0'
     >>> base36encode(60466175)
@@ -91,44 +91,10 @@ def get_email_domain(email):
         return None
 
 
-VALID_TAGS = {'strong': [],
-              'em': [],
-              'p': [],
-              'ol': [],
-              'ul': [],
-              'li': [],
-              'br': [],
-              'a': ['href', 'title', 'target']
-              }
-
-def sanitize_html(value, valid_tags=VALID_TAGS):
-    """
-    Strips unwanted markup out of HTML.
-    """
-    soup = BeautifulSoup(value)
-    comments = soup.findAll(text=lambda text:isinstance(text, Comment))
-    [comment.extract() for comment in comments]
-    # Some markup can be crafted to slip through BeautifulSoup's parser, so
-    # we run this repeatedly until it generates the same output twice.
-    newoutput = soup.renderContents()
-    while 1:
-        oldoutput = newoutput
-        soup = BeautifulSoup(newoutput)
-        for tag in soup.findAll(True):
-            if tag.name not in valid_tags:
-                tag.hidden = True
-            else:
-                tag.attrs = [(attr, value) for attr, value in tag.attrs if attr in valid_tags[tag.name]]
-        newoutput = soup.renderContents()
-        if oldoutput == newoutput:
-            break
-    return unicode(newoutput, 'utf-8')
-
-
 def simplify_text(text):
     """
     Simplify text to allow comparison.
-    
+
     >>> simplify_text("Awesome Coder wanted at Awesome Company")
     'awesome coder wanted at awesome company'
     >>> simplify_text("Awesome Coder, wanted  at Awesome Company! ")
@@ -233,7 +199,7 @@ def getwords(text):
 def get_word_bag(text):
     """
     Return a string containing all unique words in the given text, in alphabetical order.
-    
+
     >>> get_word_bag("This is a piece\tof text with this extra bit!")
     'a bit extra is of piece text this with'
     """
