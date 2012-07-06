@@ -4,7 +4,6 @@ from random import randint
 from uuid import uuid4
 from base64 import b64encode
 from hashlib import md5
-from BeautifulSoup import BeautifulSoup, Comment
 
 #: This code adapted from http://en.wikipedia.org/wiki/Base_36#Python%5FConversion%5FCode
 def base36encode(number, alphabet='0123456789abcdefghijklmnopqrstuvwxyz'):
