@@ -14,3 +14,4 @@ whoosh
 twill
 Flask-Testing
 coverage
+bleach
