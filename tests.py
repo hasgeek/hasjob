@@ -1,5 +1,5 @@
 import unittest
-from flaskext.testing import TestCase, Twill
+from flask.ext.testing import TestCase, Twill
 from website import app, db
 
 # Base setup to run tests
