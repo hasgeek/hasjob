@@ -344,8 +344,8 @@ def confirm_email(hashid, key):
             if app.config.get('THROTTLE_LIMIT', 0) > 0:
                 post_count = JobPost.query.filter(JobPost.email_domain == post.email_domain).filter(
                                               JobPost.status > POSTSTATUS.PENDING).filter(
-                                              JobPost.datetime > datetime.utcnow() - timedelta(days=1)).all()
-                if len(post_count) > app.config['THROTTLE_LIMIT']:
+                                              JobPost.datetime > datetime.utcnow() - timedelta(days=1)).count()
+                if post_count > app.config['THROTTLE_LIMIT']:
                     flash(u"We've received too many listings from %s in the last 24 hours. Please try again in a few hours. "
                         "If you believe this to be an error, please email us at %s." % (post.email_domain,
                         app.config['SUPPORT_EMAIL']), category='info')
