@@ -35,6 +35,7 @@ assets.register('js_all', js)
 # Third, after config, import the models and views
 
 import hasjob.models
+import hasjob.helpers
 import hasjob.views
 if environ.get('HASJOB_ENV') == 'prod':
     import hasjob.loghandler
