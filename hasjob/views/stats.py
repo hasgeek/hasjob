@@ -1,5 +1,11 @@
-from flask import render_template
+from collections import defaultdict
+from datetime import datetime, timedelta, date
+
+from flask import jsonify
+
 from hasjob import app
+from hasjob.models import agelimit, JobType
+from hasjob.views.helpers import getposts
 
 @app.route('/stats/listings_by_date.json')
 def stats_listings_by_date():

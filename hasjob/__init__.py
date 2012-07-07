@@ -15,10 +15,10 @@ mail = Mail()
 mail.init_app(app)
 assets = Environment(app)
 # Imported here to prevent circular imports
-from uploads import configure
-from search import configure
-uploads.configure()
-search.configure()
+from uploads import uconfigure
+from search import sconfigure
+uconfigure()
+sconfigure()
 # Second, setup assets
 
 assets = Environment(app)
