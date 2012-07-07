@@ -6,7 +6,6 @@ from flask import Flask
 from flask.ext.mail import Mail
 from flask.ext.assets import Environment, Bundle
 from coaster import configureapp
-import uploads, search
 
 # First, make an app and config it
 
@@ -15,9 +14,10 @@ configureapp(app, 'HASJOB_ENV')
 mail = Mail()
 mail.init_app(app)
 assets = Environment(app)
+from uploads import configure
+from search import configure
 uploads.configure()
 search.configure()
-
 # Second, setup assets
 
 assets = Environment(app)
@@ -35,5 +35,9 @@ assets.register('js_all', js)
 
 import hasjob.models
 import hasjob.views
+from uploads import configure
+from search import configure
+uploads.configure()
+search.configure()
 if environ.get('HASJOB_ENV') == 'prod':
     import hasjob.loghandler

@@ -4,7 +4,8 @@ from os.path import splitext
 from werkzeug import FileStorage
 
 from flask.ext.uploads import UploadSet, configure_uploads, IMAGES, UploadNotAllowed
-from app import app
+
+from hasjob import app
 
 uploaded_logos = UploadSet('logos', IMAGES)
 
