@@ -4,6 +4,7 @@ from hasjob.models.jobtype import JobType
 from hasjob.models.jobcategory import JobCategory
 from hasjob.utils import random_long_key
 
+
 class JobPost(db.Model):
     __tablename__ = 'jobpost'
     idref = 'post'
@@ -12,8 +13,8 @@ class JobPost(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     hashid = db.Column(db.String(5), nullable=False, unique=True)
     created_datetime = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
-    datetime = db.Column(db.DateTime, default=datetime.utcnow, nullable=False) # Published
-    closed_datetime = db.Column(db.DateTime, nullable=True) # If withdrawn or rejected
+    datetime = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)  # Published
+    closed_datetime = db.Column(db.DateTime, nullable=True)  # If withdrawn or rejected
     #modified_datetime = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
     sticky = db.Column(db.Boolean, nullable=False, default=False)
 
@@ -39,7 +40,7 @@ class JobPost(db.Model):
     md5sum = db.Column(db.String(32), nullable=False, index=True)
 
     # Payment, audit and workflow fields
-    words = db.Column(db.UnicodeText, nullable=True) # All words in description, perks and how_to_apply
+    words = db.Column(db.UnicodeText, nullable=True)  # All words in description, perks and how_to_apply
     promocode = db.Column(db.String(40), nullable=True)
     status = db.Column(db.Integer, nullable=False, default=POSTSTATUS.DRAFT)
     ipaddr = db.Column(db.String(45), nullable=False)

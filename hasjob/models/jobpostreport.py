@@ -3,6 +3,7 @@ from hasjob.models import db
 from hasjob.models.jobpost import JobPost
 from hasjob.models.reportcode import ReportCode
 
+
 class JobPostReport(db.Model):
     __tablename__ = 'jobpostreport'
 

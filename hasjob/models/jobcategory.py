@@ -1,5 +1,6 @@
 from hasjob.models import db
 
+
 class JobCategory(db.Model):
     __tablename__ = 'jobcategory'
     idref = 'category'

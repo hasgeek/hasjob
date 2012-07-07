@@ -1,6 +1,7 @@
 from hasjob.models import db
 from hasjob.utils import newid
 
+
 class User(db.Model):
     __tablename__ = 'user'
 

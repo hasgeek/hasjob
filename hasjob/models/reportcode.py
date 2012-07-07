@@ -1,5 +1,6 @@
 from hasjob.models import db
 
+
 class ReportCode(db.Model):
     __tablename__ = 'reportcode'
 
