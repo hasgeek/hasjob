@@ -1,5 +1,8 @@
 import bleach
 from datetime import datetime, timedelta
+from markdown import markdown
+from difflib import SequenceMatcher
+
 from flask import (
     abort,
     flash,
@@ -10,9 +13,10 @@ from flask import (
     url_for,
     session,
     )
-
+from flask.ext.mail import Message
 from hasjob import app, forms, mail
 from hasjob.models import (
+    agelimit,
     db,
     JobCategory,
     JobType,
@@ -20,8 +24,11 @@ from hasjob.models import (
     JobPostReport,
     POSTSTATUS,
     ReportCode,
+    unique_hash,
     )
-from hasjob.utils import get_email_domain, get_word_bag
+from hasjob.twitter import tweet
+from hasjob.uploads import uploaded_logos
+from hasjob.utils import get_email_domain, get_word_bag, md5sum
 from hasjob.views.constants import ALLOWED_TAGS
 
 @app.route('/view/<hashid>', methods=('GET', 'POST'))

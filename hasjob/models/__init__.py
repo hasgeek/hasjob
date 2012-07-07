@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from datetime import datetime, timedelta
+from datetime import timedelta
 from flask.ext.sqlalchemy import SQLAlchemy
 
 from hasjob import app
-from hasjob.utils import random_long_key, random_hash_key, newid
+from hasjob.utils import random_hash_key
 
 db = SQLAlchemy(app)
 
