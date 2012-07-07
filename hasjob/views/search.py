@@ -1,4 +1,8 @@
+from datetime import datetime
+from flask import render_template, request
 from hasjob import app
+from hasjob.models import newlimit
+from hasjob.search import do_search
 
 @app.route('/search')
 def search():

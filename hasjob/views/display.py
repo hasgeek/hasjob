@@ -1,9 +1,18 @@
 from datetime import datetime
-from flask import render_template
+from flask import (
+    abort,
+    redirect,
+    render_template,
+    request,
+    Response,
+    url_for,
+    )
 
 from hasjob import app
+from hasjob.models import JobCategory, JobPost, JobType, POSTSTATUS
 from hasjob.views.constants import newlimit
-from hasjob.views.helper import getposts
+from hasjob.views.helper import getposts, getallposts
+from hasjob.uploads import uploaded_logos
 
 @app.route('/')
 def index(basequery=None, type=None, category=None, md5sum=None):

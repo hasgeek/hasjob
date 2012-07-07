@@ -1,6 +1,5 @@
 from datetime import datetime
 
-from hasjob import app
 from hasjob.models import agelimit, db, JobPost, POSTSTATUS
 
 def getposts(basequery=None, sticky=False):
