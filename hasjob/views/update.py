@@ -29,7 +29,7 @@ from hasjob.models import (
 from hasjob.twitter import tweet
 from hasjob.uploads import uploaded_logos
 from hasjob.utils import get_email_domain, get_word_bag, md5sum
-from hasjob.views.constants import ALLOWED_TAGS
+from hasjob.views import ALLOWED_TAGS
 
 @app.route('/view/<hashid>', methods=('GET', 'POST'))
 def jobdetail(hashid):
