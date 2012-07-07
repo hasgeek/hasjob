@@ -2,9 +2,9 @@
 
 import re
 from flask import g, request
-from flaskext.wtf import Form, TextField, TextAreaField, RadioField, FileField, BooleanField
-from flaskext.wtf import Required, Email, Length, URL, ValidationError
-from flaskext.wtf.html5 import EmailField
+from flask.ext.wtf import Form, TextField, TextAreaField, RadioField, FileField, BooleanField
+from flask.ext.wtf import Required, Email, Length, URL, ValidationError
+from flask.ext.wtf.html5 import EmailField
 
 from uploads import process_image, UploadNotAllowed
 from utils import simplify_text
