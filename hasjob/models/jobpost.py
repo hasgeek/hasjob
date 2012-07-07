@@ -1,5 +1,5 @@
 from datetime import datetime
-from hasjob.models import db, POSTSTATUS
+from hasjob.models import agelimit, db, POSTSTATUS
 from hasjob.models.jobtype import JobType
 from hasjob.models.jobcategory import JobCategory
 from hasjob.utils import random_long_key

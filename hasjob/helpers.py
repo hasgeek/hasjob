@@ -1,4 +1,11 @@
+from os import path
+from pytz import utc, timezone
+from urllib import quote, quote_plus
+
+from flask import escape, Markup, request, url_for
 from hasjob import app
+from hasjob.models import JobCategory, JobPost, JobType
+from hasjob.utils import scrubemail
 
 @app.template_filter('urlfor')
 def url_from_ob(ob):
@@ -44,7 +51,7 @@ def urlquote(data):
 
 
 @app.template_filter('urlquoteplus')
-def urlquote(data):
+def urlquoteplus(data):
     if isinstance(data, unicode):
         return quote_plus(data.encode('utf-8'))
     else:
@@ -66,7 +73,7 @@ def usessl(url):
     if url.startswith('//'): # //www.example.com/path
         return 'https:' + url
     if url.startswith('/'): # /path
-        url = os.path.join(request.url_root, url[1:])
+        url = path.join(request.url_root, url[1:])
     if url.startswith('http:'): # http://www.example.com
         url = 'https:' + url[5:]
     return url
