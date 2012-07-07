@@ -15,8 +15,8 @@ mail = Mail()
 mail.init_app(app)
 assets = Environment(app)
 # Imported here to prevent circular imports
-from uploads import uconfigure
-from search import sconfigure
+from uploads import configure as uconfigure
+from search import configure as sconfigure
 uconfigure()
 sconfigure()
 # Second, setup assets

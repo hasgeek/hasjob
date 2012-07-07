@@ -5,7 +5,7 @@ from flask import jsonify, render_template
 
 from hasjob import app
 from hasjob.models import agelimit, JobType
-from hasjob.views.helpers import getposts
+from hasjob.views.helper import getposts
 
 @app.route('/stats')
 def stats():
