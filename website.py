@@ -3,24 +3,10 @@
 
 import logging
 
-from app import app
-import models, forms, views, admin, assets, uploads, search
-from models import db
-import loghandler
-
-app.config.from_object(__name__)
-try:
-    app.config.from_object('settings')
-except ImportError:
-    import sys
-    print >> sys.stderr, "Please create a settings.py with the necessary settings. See settings-sample.py."
-    print >> sys.stderr, "You may use the site without these settings, but some features may not work."
+from hasjob import app, models, forms, views, admin, assets, uploads, search, loghandler
+from hasjob.models import db
 
 def configure():
-    uploads.configure()
-    search.configure()
-    views.mail.init_app(app)
-
     log_formatter = loghandler.LocalVarFormatter()
     file_handler = logging.FileHandler(app.config['LOGFILE'])
     file_handler.setFormatter(log_formatter)

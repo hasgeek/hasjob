@@ -10,16 +10,15 @@ from pytz import utc, timezone
 from difflib import SequenceMatcher
 from flask import (render_template, redirect, url_for, request, session, abort,
     flash, g, Response, Markup, escape, jsonify)
-from flaskext.mail import Mail, Message
+from flask.ext.mail import Mail, Message
 from markdown import markdown
-from twitter import tweet
 
-from app import app
-from models import db, POSTSTATUS, JobPost, JobType, JobCategory, JobPostReport, ReportCode, unique_hash, agelimit
-import forms
-from uploads import uploaded_logos, process_image
-from utils import scrubemail, md5sum, get_email_domain, get_word_bag
-from search import do_search
+from hasjob.twitter import tweet
+from hasjob import app, forms
+from hasjob.models import db, POSTSTATUS, JobPost, JobType, JobCategory, JobPostReport, ReportCode, unique_hash, agelimit
+from hasjob.uploads import uploaded_logos, process_image
+from hasjob.utils import scrubemail, md5sum, get_email_domain, get_word_bag
+from hasjob.search import do_search
 
 mail = Mail()
 

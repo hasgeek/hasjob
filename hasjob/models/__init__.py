@@ -3,8 +3,8 @@
 from datetime import datetime, timedelta
 from flask.ext.sqlalchemy import SQLAlchemy
 
-from app import app
-from utils import random_long_key, random_hash_key, newid
+from hasjob import app
+from hasjob.utils import random_long_key, random_hash_key, newid
 
 db = SQLAlchemy(app)
 
