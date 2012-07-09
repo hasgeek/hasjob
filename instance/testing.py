@@ -1,1 +1,1 @@
-SQLALCHEMY_DATABASE_URI = 'mysql://root:@localhost/hasjob'
+SQLALCHEMY_DATABASE_URI = 'sqlite://'

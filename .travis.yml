@@ -2,9 +2,7 @@ language: python
 python:
   - 2.6
   - 2.7
-before_script:
-  - mysql -e 'create database hasjob';
-script: nosetests hasjob/tests
+script: python runtests.py
 notifications:
   email: false
   irc: "irc.freenode.net#hasgeek"
