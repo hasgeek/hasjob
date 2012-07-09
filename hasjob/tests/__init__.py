@@ -38,5 +38,9 @@ class TestWorkflow(TestBase):
         with Twill(self.app, port=5000) as t:
             t.browser.go(t.url('/blah'))
 
+    def test_admin(self):
+        with Twill(self.app, port=5000) as t:
+            t.browser.go(t.url(''.join(['/admin/update-search/', app.config['PERIODIC_KEY']])))
+
 if __name__=='__main__':
     unittest.main()

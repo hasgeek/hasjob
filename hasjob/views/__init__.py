@@ -30,3 +30,4 @@ from hasjob.views.error_handling import *
 from hasjob.views.stats import *
 from hasjob.views.helper import *
 from hasjob.views.update import *
+from hasjob.views.admin import *
