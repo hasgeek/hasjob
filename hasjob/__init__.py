@@ -14,11 +14,6 @@ configureapp(app, 'HASJOB_ENV')
 mail = Mail()
 mail.init_app(app)
 assets = Environment(app)
-# Imported here to prevent circular imports
-from uploads import configure as uconfigure
-from search import configure as sconfigure
-uconfigure()
-sconfigure()
 # Second, setup assets
 
 assets = Environment(app)
@@ -37,5 +32,12 @@ assets.register('js_all', js)
 import hasjob.models
 import hasjob.helpers
 import hasjob.views
+
+# Imported here to prevent circular imports
+from uploads import configure as uconfigure
+from search import configure as sconfigure
+uconfigure()
+sconfigure()
+
 if environ.get('HASJOB_ENV') == 'prod':
     import hasjob.loghandler
