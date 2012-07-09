@@ -34,10 +34,10 @@ import hasjob.helpers
 import hasjob.views
 
 # Imported here to prevent circular imports
-from uploads import configure as uconfigure
+"""from uploads import configure as uconfigure
 from search import configure as sconfigure
 uconfigure()
-sconfigure()
+sconfigure() """
 
 if environ.get('HASJOB_ENV') == 'prod':
     import hasjob.loghandler
