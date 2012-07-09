@@ -15,4 +15,3 @@ Flask-Testing
 coverage
 bleach
 https://github.com/hasgeek/coaster/zipball/master
-MySQL-python
