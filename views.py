@@ -417,10 +417,9 @@ def editjob(hashid, key, form=None, post=None, validated=False):
     if request.method == 'POST' and post.status >= POSTSTATUS.PENDING:
         form.poster_email.data = post.email
     if request.method == 'POST' and (validated or form.validate()):
-        form_description = bleach.clean(form.job_description.data, tags=ALLOWED_TAGS)
-        form_description = bleach.linkify(form_description)
+        form_description = bleach.linkify(bleach.clean(form.job_description.data, tags=ALLOWED_TAGS))
         form_perks = bleach.linkify(bleach.clean(form.job_perks_description.data, tags=ALLOWED_TAGS)) if form.job_perks.data else ''
-        form_how_to_apply = form.job_how_to_apply.data
+        form_how_to_apply = bleach.linkify(form.job_how_to_apply.data)
         form_email_domain = get_email_domain(form.poster_email.data)
         form_words = get_word_bag(u' '.join((form_description, form_perks, form_how_to_apply)))
 
