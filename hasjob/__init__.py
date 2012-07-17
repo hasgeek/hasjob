@@ -30,7 +30,6 @@ assets.register('js_all', js)
 # Third, after config, import the models and views
 
 import hasjob.models
-import hasjob.helpers
 import hasjob.views
 
 
