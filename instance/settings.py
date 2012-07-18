@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #: The title of this site
 SITE_TITLE='Job Board'
 #: TypeKit code for fonts
@@ -48,3 +49,11 @@ PERIODIC_KEY = ''
 #: Throttle limit for email domain
 THROTTLE_LIMIT = 5
 SUPPORT_EMAIL = 'info@hasgeek.com'
+BANNED_WORDS = [
+    [['awesome'], u'We’ve had a bit too much awesome around here lately. Got another adjective?'],
+    [['rockstar', 'rock star', 'rock-star'], u'You are not rich enough to hire a rockstar. Got another adjective?'],
+    [['superstar', 'super star'], u'Everyone around here is a superstar. The term is redundant.'],
+    [['kickass', 'kick ass', 'kick-ass'], u'We don’t condone kicking asses around here. Got another adjective?'],
+    [['ninja'], u'Ninjas kill people. We can’t allow that. Got another adjective?'],
+    [['urgent', 'immediate'], u'Sorry, we can’t help with urgent or requirements. Geeks don’t grow on trees'],
+]
