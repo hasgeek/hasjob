@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from os import environ
 
 from hasjob import app, models
 from hasjob.models import db
@@ -10,6 +11,7 @@ if __name__ == '__main__':
 
     import sys
     # Create database table
+    environ['HASJOB_ENV'] = 'development'
     db.create_all()
     search_configure()
     uploads_configure()
