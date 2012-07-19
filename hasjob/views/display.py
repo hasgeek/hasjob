@@ -165,16 +165,6 @@ def archive():
         min=min, max=max, sortarchive=sortarchive)
 
 
-@app.route('/robots.txt')
-def robots():
-    return Response("Disallow: /edit/*\n"
-                    "Disallow: /confirm/*\n"
-                    "Disallow: /withdraw/*\n"
-                    "Disallow: /admin/*\n"
-                    "",
-                    content_type = 'text/plain; charset=utf-8')
-
-
 @app.route('/sitemap.xml')
 def sitemap():
     sitemapxml = '<?xml version="1.0" encoding="UTF-8"?>\n'\
@@ -200,11 +190,6 @@ def sitemap():
     return Response(sitemapxml, content_type = 'text/xml; charset=utf-8')
 
 
-@app.route('/favicon.ico')
-def favicon():
-    return redirect(url_for('static', filename='img/favicon.ico'))
-
-
 @app.route('/logo/<hashid>')
 def logoimage(hashid):
     post = JobPost.query.filter_by(hashid=hashid).first()
@@ -217,17 +202,3 @@ def logoimage(hashid):
         # Don't show logo if post has been rejected. Could be spam
         abort(410)
     return redirect(uploaded_logos.url(post.company_logo))
-
-
-@app.route('/tos')
-def terms_of_service():
-    return render_template('tos.html')
-
-
-@app.route('/search')
-def search():
-    now = datetime.utcnow()
-    results = sorted(do_search(request.args.get('q', u''), expand=True),
-        key=lambda r: getattr(r, 'datetime', now))
-    results.reverse()
-    return render_template('search.html', results=results, now=now, newlimit=newlimit)
