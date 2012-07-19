@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from os import environ
-
-from hasjob import app, models
+from hasjob import app, init_app, models
 from hasjob.models import db
 from hasjob.search import configure as search_configure
 from hasjob.uploads import configure as uploads_configure
@@ -10,11 +8,9 @@ from hasjob.uploads import configure as uploads_configure
 if __name__ == '__main__':
 
     import sys
+    init_app(app, 'dev')
     # Create database table
-    environ['HASJOB_ENV'] = 'development'
     db.create_all()
-    search_configure()
-    uploads_configure()
     # Seed with sample data
     with app.test_request_context():
         if models.JobType.query.count() == 0:

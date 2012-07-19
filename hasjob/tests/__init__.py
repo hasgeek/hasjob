@@ -1,12 +1,13 @@
 import unittest
 from flask.ext.testing import TestCase, Twill
-from hasjob import app
+from hasjob import app, init_app
 from hasjob.models import db
 
 # Base setup to run tests
 class TestBase(TestCase):
     def create_app(self):
         app.config['TESTING'] = True
+        init_app(app, 'testing')
         return app
 
     def setUp(self):
