@@ -27,14 +27,6 @@ class USERLEVEL:
     ADMINISTRATOR = 2  # Admin. Allowed to change job types and categories
 
 
-from hasjob.models.jobcategory import *
-from hasjob.models.jobpostreport import *
-from hasjob.models.jobtype import *
-from hasjob.models.reportcode import *
-from hasjob.models.jobpost import *
-from hasjob.models.user import *
-
-
 def unique_hash(model=JobPost):
     """
     Returns a unique hash for a given model
@@ -44,3 +36,10 @@ def unique_hash(model=JobPost):
         if model.query.filter_by(hashid=hashid).count() == 0:
             break
     return hashid
+
+
+from hasjob.models.jobcategory import *
+from hasjob.models.jobpostreport import *
+from hasjob.models.jobtype import *
+from hasjob.models.reportcode import *
+from hasjob.models.jobpost import *
