@@ -94,7 +94,7 @@ class ListingForm(Form):
         # XXX: These validations belong in a config file or in the db, not here.
         if simplify_text(field.data) == 'awesome coder wanted at awesome company':
             raise ValidationError(u"Come on, write your own headline. You aren’t just another run-of-the-mill company, right?")
-        for word_list, message in app.config['BANNED_WORDS']:
+        for word_list, message in app.config.get('BANNED_WORDS', []):
             for word in word_list:
                 if word in field.data.lower():
                     raise ValidationError(message)
