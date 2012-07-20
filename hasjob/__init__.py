@@ -21,7 +21,7 @@ js = Bundle('js/libs/jquery-1.5.1.min.js',
             filters='jsmin', output='js/packed.js')
 
 # Configure the app
-def init_app(app, env):
+def init_for(env):
     coaster.app.init_app(app, env)
     from hasjob.search import configure as search_configure
     from hasjob.uploads import configure as uploads_configure

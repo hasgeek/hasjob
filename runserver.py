@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from hasjob import app, init_app, models
+from hasjob import app, init_for, models
 from hasjob.models import db
 from hasjob.search import configure as search_configure
 from hasjob.uploads import configure as uploads_configure
@@ -8,7 +8,7 @@ from hasjob.uploads import configure as uploads_configure
 if __name__ == '__main__':
 
     import sys
-    init_app(app, 'dev')
+    init_for('dev')
     # Create database table
     db.create_all()
     # Seed with sample data
