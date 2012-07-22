@@ -419,7 +419,7 @@ def editjob(hashid, key, form=None, post=None, validated=False):
     if request.method == 'POST' and (validated or form.validate()):
         form_description = bleach.linkify(bleach.clean(form.job_description.data, tags=ALLOWED_TAGS))
         form_perks = bleach.linkify(bleach.clean(form.job_perks_description.data, tags=ALLOWED_TAGS)) if form.job_perks.data else ''
-        form_how_to_apply = bleach.linkify(form.job_how_to_apply.data)
+        form_how_to_apply = form.job_how_to_apply.data
         form_email_domain = get_email_domain(form.poster_email.data)
         form_words = get_word_bag(u' '.join((form_description, form_perks, form_how_to_apply)))
 
@@ -678,7 +678,7 @@ def urlquote(data):
 
 @app.template_filter('scrubemail')
 def scrubemail_filter(data, css_junk=''):
-    return Markup(scrubemail(unicode(escape(data)), rot13=True, css_junk=css_junk))
+    return Markup(scrubemail(unicode(bleach.linkify(bleach.clean(data))), rot13=True, css_junk=css_junk))
 
 
 @app.template_filter('usessl')
