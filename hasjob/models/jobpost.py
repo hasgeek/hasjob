@@ -2,7 +2,7 @@ from datetime import datetime
 from hasjob.models import agelimit, db, POSTSTATUS
 from hasjob.models.jobtype import JobType
 from hasjob.models.jobcategory import JobCategory
-from hasjob.utils import random_long_key
+from hasjob.utils import random_long_key, random_hash_key
 
 
 class JobPost(db.Model):
@@ -82,3 +82,14 @@ class JobPost(db.Model):
                 'public': self.is_listed(),
                 'idref': u'%s/%s' % (self.idref, self.id),
                 }
+
+
+def unique_hash(model=JobPost):
+    """
+    Returns a unique hash for a given model
+    """
+    while 1:
+        hashid = random_hash_key()
+        if model.query.filter_by(hashid=hashid).count() == 0:
+            break
+    return hashid

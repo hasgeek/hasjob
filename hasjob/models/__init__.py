@@ -4,7 +4,6 @@ from datetime import timedelta
 from flask.ext.sqlalchemy import SQLAlchemy
 
 from hasjob import app
-from hasjob.utils import random_hash_key
 
 
 db = SQLAlchemy(app)
@@ -25,17 +24,6 @@ class USERLEVEL:
     USER = 0  # Just a user
     REVIEWER = 1  # Reviewer. Allowed to edit
     ADMINISTRATOR = 2  # Admin. Allowed to change job types and categories
-
-
-def unique_hash(model=JobPost):
-    """
-    Returns a unique hash for a given model
-    """
-    while 1:
-        hashid = random_hash_key()
-        if model.query.filter_by(hashid=hashid).count() == 0:
-            break
-    return hashid
 
 
 from hasjob.models.jobcategory import *
