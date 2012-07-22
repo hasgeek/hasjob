@@ -51,7 +51,6 @@ class JobPost(db.Model):
     email_verified = db.Column(db.Boolean, nullable=False, default=False)
     payment_value = db.Column(db.Integer, nullable=False, default=0)
     payment_received = db.Column(db.Boolean, nullable=False, default=False)
-    reviewer = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     review_datetime = db.Column(db.DateTime, nullable=True)
     review_comments = db.Column(db.Unicode(250), nullable=True)
 
