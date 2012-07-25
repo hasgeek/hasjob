@@ -56,4 +56,5 @@ BANNED_WORDS = [
     [['kickass', 'kick ass', 'kick-ass'], u'We don’t condone kicking asses around here. Got another adjective?'],
     [['ninja'], u'Ninjas kill people. We can’t allow that. Got another adjective?'],
     [['urgent', 'immediate'], u'Sorry, we can’t help with urgent or requirements. Geeks don’t grow on trees'],
+    [['passionate'], u'Passion is implicit. Why even ask? Try another adjective?'],
 ]
