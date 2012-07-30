@@ -49,6 +49,7 @@ PERIODIC_KEY = ''
 #: Throttle limit for email domain
 THROTTLE_LIMIT = 5
 SUPPORT_EMAIL = 'info@hasgeek.com'
+#: Words banned in the title and their error messages
 BANNED_WORDS = [
     [['awesome'], u'We’ve had a bit too much awesome around here lately. Got another adjective?'],
     [['rockstar', 'rock star', 'rock-star'], u'You are not rich enough to hire a rockstar. Got another adjective?'],
