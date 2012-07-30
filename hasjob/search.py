@@ -4,8 +4,7 @@ from whoosh import fields, index
 from whoosh.qparser import QueryParser
 from whoosh.analysis import StemmingAnalyzer
 
-import models
-from app import app
+from hasjob import models, app
 
 search_schema = fields.Schema(title=fields.TEXT(stored=True),
                               content=fields.TEXT(analyzer=StemmingAnalyzer()),

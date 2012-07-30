@@ -1,6 +1,5 @@
 .DS_Store
 *.pyc
-settings.py
 test.db
 *.wpr
 .project
@@ -9,3 +8,5 @@ test.db
 .sass-cache
 error.log
 .coverage
+instance/production.py
+instance/development.py

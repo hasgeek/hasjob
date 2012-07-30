@@ -6,6 +6,7 @@ from flask.ext.wtf import Form, TextField, TextAreaField, RadioField, FileField,
 from flask.ext.wtf import Required, Email, Length, URL, ValidationError
 from flask.ext.wtf.html5 import EmailField
 
+from hasjob import app
 from uploads import process_image, UploadNotAllowed
 from utils import simplify_text
 
@@ -93,16 +94,10 @@ class ListingForm(Form):
         # XXX: These validations belong in a config file or in the db, not here.
         if simplify_text(field.data) == 'awesome coder wanted at awesome company':
             raise ValidationError(u"Come on, write your own headline. You aren’t just another run-of-the-mill company, right?")
-        if 'awesome' in field.data.lower():
-            raise ValidationError(u'We’ve had a bit too much awesome around here lately. Got another adjective?')
-        if 'rockstar' in field.data.lower() or 'rock star' in field.data.lower() or 'rock-star' in field.data.lower():
-            raise ValidationError(u'You are not rich enough to hire a rockstar. Got another adjective?')
-        if 'kickass' in field.data.lower() or 'kick ass' in field.data.lower() or 'kick-ass' in field.data.lower():
-            raise ValidationError(u'We don’t condone kicking asses around here. Got another adjective?')
-        if 'ninja' in field.data.lower():
-            raise ValidationError(u'Ninjas kill people. We can’t allow that. Got another adjective?')
-        if 'urgent' in field.data.lower():
-            raise ValidationError(u'Sorry, we can’t help with urgent requirements. Geeks don’t grow on trees')
+        for word_list, message in app.config.get('BANNED_WORDS', []):
+            for word in word_list:
+                if word in field.data.lower():
+                    raise ValidationError(message)
 
     def validate_job_location(form, field):
         if QUOTES_RE.search(field.data) is not None:

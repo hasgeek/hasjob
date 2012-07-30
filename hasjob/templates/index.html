@@ -8,7 +8,8 @@
 {%- if jobtype %}<link rel="alternate" type="application/atom+xml"  title="{{ jobtype.title }} – {{ config['SITE_TITLE']|e }}" href="{{ url_for('feed_by_type', slug=jobtype.slug) }}" />{% endif -%}
 {%- if jobcategory %}<link rel="alternate" type="application/atom+xml"  title="{{ jobcategory.title }} – {{ config['SITE_TITLE']|e }}" href="{{ url_for('feed_by_category', slug=jobcategory.slug) }}" />{% endif -%}
 {%- if md5sum %}<link rel="alternate" type="application/atom+xml" title="Jobs at {{ employer_name }} – {{ config['SITE_TITLE'] }}" href="{{ url_for('feed_by_email', md5sum=md5sum) }}" />{% endif -%}
-{%- if domain %}<link rel="alternate" type="application/atom+xml" title="Jobs at {{ employer_name }} – {{ config['SITE_TITLE'] }}" href="{{ url_for('feed_by_domain', domain=domain) }}" />{% endif -%}{% endblock %}
+{%- if domain %}<link rel="alternate" type="application/atom+xml" title="Jobs at {{ employer_name }} – {{ config['SITE_TITLE'] }}" href="{{ url_for('feed_by_domain', domain=domain) }}" />{% endif -%}
+{% endblock %}
 
 {% block header %}
   <p id="pitch">

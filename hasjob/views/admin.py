@@ -4,12 +4,11 @@
 from datetime import datetime, timedelta
 from flask import abort, Response
 
-from app import app
-from search import delete_from_index
-from models import db, JobPost, agelimit
-from utils import md5sum
+from hasjob import app
+from hasjob.search import delete_from_index
+from hasjob.models import db, JobPost, agelimit
+from hasjob.utils import md5sum
 
-# --- Admin command-line utilities -------------------------------------------
 
 @app.route('/admin/update-search/<key>')
 def delete_index(key):
