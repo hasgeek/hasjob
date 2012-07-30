@@ -16,7 +16,7 @@ from hasjob.views.helper import getposts, getallposts
 from hasjob.uploads import uploaded_logos
 
 @app.route('/')
-def index(basequery=None, type=None, category=None, md5sum=None):
+def index(basequery=None, type=None, category=None, md5sum=None, domain=None):
     now = datetime.utcnow()
     posts = list(getposts(basequery, sticky=True))
     if posts:
@@ -25,7 +25,7 @@ def index(basequery=None, type=None, category=None, md5sum=None):
         employer_name = u'a single employer'
     return render_template('index.html', posts=posts, now=now, newlimit=newlimit,
                            jobtype=type, jobcategory=category, md5sum=md5sum,
-                           employer_name=employer_name)
+                           domain=domain, employer_name=employer_name)
 
 
 @app.route('/type/<slug>')
@@ -37,6 +37,14 @@ def browse_by_type(slug):
         abort(404)
     basequery = JobPost.query.filter_by(type_id=ob.id)
     return index(basequery=basequery, type=ob)
+
+
+@app.route('/at/<domain>')
+def browse_by_domain(domain):
+    if not domain:
+        abort(404)
+    basequery = JobPost.query.filter_by(email_domain=domain)
+    return index(basequery=basequery, domain=domain)
 
 
 @app.route('/category/<slug>')
@@ -59,13 +67,13 @@ def browse_by_email(md5sum):
 
 
 @app.route('/feed')
-def feed(basequery=None, type=None, category=None, md5sum=None):
+def feed(basequery=None, type=None, category=None, md5sum=None, domain=None):
     title = "All jobs"
     if type:
         title = type.title
     elif category:
         title = category.title
-    elif md5sum:
+    elif md5sum or domain:
         title = u"Jobs at a single employer"
     posts = list(getposts(basequery))
     if posts: # Can't do this unless posts is a list
@@ -106,6 +114,14 @@ def feed_by_email(md5sum):
         abort(404)
     basequery = JobPost.query.filter_by(md5sum=md5sum)
     return feed(basequery=basequery, md5sum=md5sum)
+
+
+@app.route('/at/<domain>')
+def browse_by_domain(domain):
+    if not domain:
+        abort(404)
+    basequery = JobPost.query.filter_by(email_domain=domain)
+    return index(basequery=basequery, domain=domain)
 
 
 @app.route('/archive')
