@@ -7,11 +7,9 @@ from hasjob.models import db
 class TestBase(TestCase):
     def create_app(self):
         app.config['TESTING'] = True
+        db.create_all()
         init_for('testing')
         return app
-
-    def setUp(self):
-        db.create_all()
 
     def tearDown(self):
         db.session.remove()
