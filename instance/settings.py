@@ -58,4 +58,5 @@ BANNED_WORDS = [
     [['ninja'], u'Ninjas kill people. We can’t allow that. Got another adjective?'],
     [['urgent', 'immediate'], u'Sorry, we can’t help with urgent or immediate requirements. Geeks don’t grow on trees'],
     [['passionate'], u'Passion is implicit. Why even ask? Try another adjective?'],
+    [['amazing'], u'Everybody’s amazing around here. The adjective is redundant.'],
 ]
