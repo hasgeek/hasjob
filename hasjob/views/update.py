@@ -43,6 +43,7 @@ def jobdetail(hashid):
         abort(410)
     reportform = forms.ReportForm()
     reportform.report_code.choices = [(ob.id, ob.title) for ob in ReportCode.query.filter_by(public=True).order_by('seq')]
+    rejectform = forms.RejectForm()
     if reportform.validate_on_submit():
         report = JobPostReport(post=post, reportcode_id = reportform.report_code.data)
         report.ipaddr = request.environ['REMOTE_ADDR']
@@ -54,8 +55,33 @@ def jobdetail(hashid):
         else:
             flash("Thanks! This job listing has been flagged for review.", "interactive")
     elif request.method == 'POST' and request.is_xhr:
-        return render_template('inc/reportform.html', reportform=reportform, ajaxreg=True)
-    return render_template('detail.html', post=post, reportform=reportform)
+        return render_template('inc/reportform.html', reportform=reportform, rejectform=rejectform, ajaxreg=True)
+    return render_template('detail.html', post=post, reportform=reportform, rejectform=rejectform)
+
+
+@app.route('/reject/<hashid>', methods=('GET','POST'))
+def rejectjob(hashid):
+    post = JobPost.query.filter_by(hashid=hashid).first()
+    if post is None:
+        abort(404)
+    if post.status in [POSTSTATUS.DRAFT, POSTSTATUS.PENDING]:
+        if post.edit_key not in session.get('userkeys', []):
+            abort(403)
+    if post.status in [POSTSTATUS.REJECTED, POSTSTATUS.WITHDRAWN]:
+        abort(410)
+    rejectform = forms.RejectForm()
+    if rejectform.validate_on_submit() and 'siteadmin' in g.lastuserinfo.permissions:
+        post.closed_datetime = datetime.utcnow()
+        post.review_comments = rejectform.reason.data
+        post.review_datetime = datetime.utcnow()
+        post.status = POSTSTATUS.REJECTED
+        if request.is_xhr:
+            return "<p>This job listing has been rejected.</p>"
+        else:
+            flask("This job listing has been rejected", "interactive")
+    elif request.method == 'POST' and request.is_xhr:
+        return render_template('inc/rejectform.html', reportform=reportform, rejectform=rejectform, ajaxreg=True)
+    return redirect(url_for('jobdetail', hashid=post.hashid))
 
 
 @app.route('/confirm/<hashid>', methods=('GET', 'POST'))

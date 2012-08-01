@@ -68,6 +68,16 @@
             {% include "inc/reportform.html" %}
           </div>
         </li>
+        {% if 'siteadmin' in g.lastuserinfo.permissions %}
+        <li>
+          <a id="sidebar-reject" href="#reject">Reject this</a>
+          <div class="popup-box" id="reject">
+            <a class="close-popup" href="#">&#10005;</a>
+            <h2>What’s wrong with it?</h2>
+            {% include "inc/rejectform.html" %}
+          </div>
+        </li>
+        {% endif %}
       </ul>
     </div>
   </div>
@@ -130,6 +140,21 @@
       return false;
     });
   });
+  $(function() {
+    $("body").click(function() {
+      // Hide popups
+      $("#reject").fadeOut("fast");
+    });
+    $("#reject").click(function(event) {
+      // Prevent clicks within popup from hiding it
+      event.stopPropagation();
+    });
+    $("#sidebar-reject").click(function() {
+      $("#reject").fadeToggle("fast");
+      return false;
+    });
+  });
 </script>
 {{ ajaxform('reportform') }}
+{{ ajaxform('rejectform') }}
 {% endblock %}
