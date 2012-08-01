@@ -75,6 +75,7 @@ def rejectjob(hashid):
         post.review_comments = rejectform.reason.data
         post.review_datetime = datetime.utcnow()
         post.status = POSTSTATUS.REJECTED
+        db.session.commit()
         if request.is_xhr:
             return "<p>This job listing has been rejected.</p>"
         else:
