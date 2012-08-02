@@ -68,7 +68,7 @@
             {% include "inc/reportform.html" %}
           </div>
         </li>
-        {% if 'siteadmin' in g.lastuserinfo.permissions %}
+        {% if g.lastuserinfo and 'siteadmin' in g.lastuserinfo.permissions %}
         <li>
           <a id="sidebar-reject" href="#reject">Reject this</a>
           <div class="popup-box" id="reject">
