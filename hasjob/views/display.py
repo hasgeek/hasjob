@@ -109,7 +109,7 @@ def feed_by_email(md5sum):
 
 
 @app.route('/at/<domain>')
-def browse_by_domain(domain):
+def feed_by_domain(domain):
     if not domain:
         abort(404)
     basequery = JobPost.query.filter_by(email_domain=domain)
