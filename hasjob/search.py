@@ -1,5 +1,6 @@
 import os.path
 from flask.ext.sqlalchemy import models_committed
+import time
 from whoosh import fields, index
 from whoosh.qparser import QueryParser
 from whoosh.analysis import StemmingAnalyzer
@@ -53,7 +54,11 @@ def on_models_committed(sender, changes):
             break
     if index_required:
         ix = index.open_dir(app.config['SEARCH_INDEX_PATH'])
-        writer = ix.writer()
+        try:
+            writer = ix.writer()
+        except:
+            time.sleep(1)
+            writer = ix.writer()
         for model, change in changes:
             mapping = model.search_mapping()
             public = mapping.pop('public')
