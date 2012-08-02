@@ -129,9 +129,9 @@
     radioHighlight('report_code', 'selected');
     $("body").click(function() {
       // Hide popups
-      $("#report").fadeOut("fast");
+      $(".popup-box").fadeOut("fast");
     });
-    $("#report").click(function(event) {
+    $(".popup-box").click(function(event) {
       // Prevent clicks within popup from hiding it
       event.stopPropagation();
     });
@@ -141,14 +141,6 @@
     });
   });
   $(function() {
-    $("body").click(function() {
-      // Hide popups
-      $("#reject").fadeOut("fast");
-    });
-    $("#reject").click(function(event) {
-      // Prevent clicks within popup from hiding it
-      event.stopPropagation();
-    });
     $("#sidebar-reject").click(function() {
       $("#reject").fadeToggle("fast");
       return false;
