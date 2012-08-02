@@ -54,7 +54,7 @@ def jobdetail(hashid):
             flash("Thanks! This job listing has been flagged for review.", "interactive")
     elif request.method == 'POST' and request.is_xhr:
         return render_template('inc/reportform.html', reportform=reportform, ajaxreg=True)
-    return render_template('detail.html', post=post, reportform=reportform, rejectform=rejectform)
+    return render_template('detail.html', post=post, reportform=reportform, rejectform=rejectform, siteadmin=lastuser.has_permission('siteadmin'))
 
 
 @app.route('/reject/<hashid>', methods=('GET','POST'))
