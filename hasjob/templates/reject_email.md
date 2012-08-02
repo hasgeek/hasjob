@@ -8,7 +8,7 @@ who left the following comment:
 
 "**{{ post.review_comments }}**"
 
-You are welcome to post a new listing which conforms with our [Terms of Service][tos].
+You are welcome to post a new listing which complies with our [Terms of Service][tos].
 
 The [HasGeek Job Board][jb] is a service of [HasGeek][hg]. Write to us at
 info@hasgeek.com if you have suggestions or questions on this service.
