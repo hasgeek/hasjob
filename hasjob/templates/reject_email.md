@@ -1,9 +1,9 @@
 Hi {{ post.company_name }},
 
 This is regarding your job listing on the HasGeek Job Board titled
-"**{{ post.headline|e }}**". Unfortunately, your listing is not in
+"**{{ post.headline }}**". Unfortunately, your listing is not in
 compliance with our [Terms of Service][tos] and therefore has been
-taken down. Your listing was reviewed by {{ post.reviewer.fullname }}
+taken down. Your listing was reviewed by {{ post.reviewer.fullname }},
 who left the following comment:
 
 "**{{ post.review_comments }}**"
