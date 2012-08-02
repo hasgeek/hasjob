@@ -7,6 +7,8 @@ from whoosh.analysis import StemmingAnalyzer
 
 from hasjob import models, app
 
+
+INDEXABLE = (models.JobType, models.JobCategory, models.JobPost)
 search_schema = fields.Schema(title=fields.TEXT(stored=True),
                               content=fields.TEXT(analyzer=StemmingAnalyzer()),
                               idref=fields.ID(stored=True, unique=True))
@@ -49,7 +51,7 @@ def do_search(query, expand=False):
 def on_models_committed(sender, changes):
     index_required = False
     for model, change in changes:
-        if isinstance(model, (models.JobType, models.JobCategory, models.JobPost)):
+        if isinstance(model, INDEXABLE):
             index_required = True
             break
     if index_required:
@@ -60,17 +62,18 @@ def on_models_committed(sender, changes):
             time.sleep(1)
             writer = ix.writer()
         for model, change in changes:
-            mapping = model.search_mapping()
-            public = mapping.pop('public')
-            if public:
-                if change == 'insert':
-                    writer.add_document(**mapping)
-                elif change == 'update':
-                    writer.update_document(**mapping)
-                elif change == 'delete':
+            if isinstance(model, INDEXABLE):
+                mapping = model.search_mapping()
+                public = mapping.pop('public')
+                if public:
+                    if change == 'insert':
+                        writer.add_document(**mapping)
+                    elif change == 'update':
+                        writer.update_document(**mapping)
+                    elif change == 'delete':
+                        writer.delete_by_term('idref', mapping['idref'])
+                else:
                     writer.delete_by_term('idref', mapping['idref'])
-            else:
-                writer.delete_by_term('idref', mapping['idref'])
         writer.commit()
 
 
