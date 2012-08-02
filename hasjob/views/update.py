@@ -73,6 +73,11 @@ def rejectjob(hashid):
         post.review_datetime = datetime.utcnow()
         post.status = POSTSTATUS.REJECTED
         post.reviewer = g.user
+        msg = Message(subject="Rejection of your job listing at the HasGeek Job Board",
+            recipients=[post.email])
+        msg.body = render_template("reject_email.md", post=post)
+        msg.html = markdown(msg.body)
+        mail.send(msg)
         db.session.commit()
         if request.is_xhr:
             return "<p>This job listing has been rejected.</p>"
