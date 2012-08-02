@@ -14,7 +14,7 @@ from flask import (
     session,
     )
 from flask.ext.mail import Message
-from hasjob import app, forms, mail
+from hasjob import app, forms, mail, lastuser
 from hasjob.models import (
     agelimit,
     db,
@@ -33,9 +33,7 @@ from hasjob.views import ALLOWED_TAGS
 
 @app.route('/view/<hashid>', methods=('GET', 'POST'))
 def jobdetail(hashid):
-    post = JobPost.query.filter_by(hashid=hashid).first()
-    if post is None:
-        abort(404)
+    post = JobPost.query.filter_by(hashid=hashid).first_or_404()
     if post.status in [POSTSTATUS.DRAFT, POSTSTATUS.PENDING]:
         if post.edit_key not in session.get('userkeys', []):
             abort(403)
@@ -43,6 +41,7 @@ def jobdetail(hashid):
         abort(410)
     reportform = forms.ReportForm()
     reportform.report_code.choices = [(ob.id, ob.title) for ob in ReportCode.query.filter_by(public=True).order_by('seq')]
+    rejectform = forms.RejectForm()
     if reportform.validate_on_submit():
         report = JobPostReport(post=post, reportcode_id = reportform.report_code.data)
         report.ipaddr = request.environ['REMOTE_ADDR']
@@ -55,16 +54,40 @@ def jobdetail(hashid):
             flash("Thanks! This job listing has been flagged for review.", "interactive")
     elif request.method == 'POST' and request.is_xhr:
         return render_template('inc/reportform.html', reportform=reportform, ajaxreg=True)
-    return render_template('detail.html', post=post, reportform=reportform)
+    return render_template('detail.html', post=post, reportform=reportform, rejectform=rejectform)
+
+
+@app.route('/reject/<hashid>', methods=('GET','POST'))
+@lastuser.requires_permission('siteadmin')
+def rejectjob(hashid):
+    post = JobPost.query.filter_by(hashid=hashid).first_or_404()
+    if post.status in [POSTSTATUS.DRAFT, POSTSTATUS.PENDING]:
+        if post.edit_key not in session.get('userkeys', []):
+            abort(403)
+    if post.status in [POSTSTATUS.REJECTED, POSTSTATUS.WITHDRAWN]:
+        abort(410)
+    rejectform = forms.RejectForm()
+    if rejectform.validate_on_submit():
+        post.closed_datetime = datetime.utcnow()
+        post.review_comments = rejectform.reason.data
+        post.review_datetime = datetime.utcnow()
+        post.status = POSTSTATUS.REJECTED
+        post.reviewer = g.user
+        db.session.commit()
+        if request.is_xhr:
+            return "<p>This job listing has been rejected.</p>"
+        else:
+            flash("This job listing has been rejected", "interactive")
+    elif request.method == 'POST' and request.is_xhr:
+        return render_template('inc/rejectform.html', post=post, rejectform=rejectform, ajaxreg=True)
+    return redirect(url_for('jobdetail', hashid=post.hashid))
 
 
 @app.route('/confirm/<hashid>', methods=('GET', 'POST'))
 def confirm(hashid):
-    post = JobPost.query.filter_by(hashid=hashid).first()
+    post = JobPost.query.filter_by(hashid=hashid).first_or_404()
     form = forms.ConfirmForm()
-    if post is None:
-        abort(404)
-    elif post.status == POSTSTATUS.REJECTED:
+    if post.status == POSTSTATUS.REJECTED:
         abort(410)
     elif post.status == POSTSTATUS.DRAFT:
         if post.edit_key not in session.get('userkeys', []):
@@ -95,10 +118,8 @@ def confirm_email(hashid, key):
     # If post is in pending state and email key is correct, convert to published
     # and update post.datetime to utcnow() so it'll show on top of the stack
     # This function expects key to be email_verify_key, not edit_key like the others
-    post = JobPost.query.filter_by(hashid=hashid).first()
-    if post is None:
-        abort(404)
-    elif post.status == POSTSTATUS.REJECTED:
+    post = JobPost.query.filter_by(hashid=hashid).first_or_404()
+    if post.status == POSTSTATUS.REJECTED:
         abort(410)
     elif post.status in [POSTSTATUS.CONFIRMED, POSTSTATUS.REVIEWED]:
         flash("This job listing has already been confirmed and published", "interactive")
@@ -141,10 +162,8 @@ def confirm_email(hashid, key):
 @app.route('/withdraw/<hashid>/<key>', methods=('GET', 'POST'))
 def withdraw(hashid, key):
     # TODO: Support for withdrawing job posts
-    post = JobPost.query.filter_by(hashid=hashid).first()
+    post = JobPost.query.filter_by(hashid=hashid).first_or_404()
     form = forms.WithdrawForm()
-    if post is None:
-        abort(404)
     if key != post.edit_key:
         abort(403)
     if post.status == POSTSTATUS.WITHDRAWN:

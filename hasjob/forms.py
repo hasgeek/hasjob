@@ -117,3 +117,7 @@ class WithdrawForm(Form):
 
 class ReportForm(Form):
     report_code = RadioField("Code", coerce=int, validators=[Required(u"Pick one")])
+
+
+class RejectForm(Form):
+    reason = TextField('Reason', validators=[Required(u"Give a reason")])
