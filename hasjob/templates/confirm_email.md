@@ -16,7 +16,7 @@ and you wish to withdraw it:
 * [Withdraw job listing]({{ url_for('withdraw', _external=True, hashid=post.hashid, key=post.edit_key) }})
 
 The [HasGeek Job Board][jb] is a service of [HasGeek][hg]. Write to us at
-info@hasgeek.in if you have suggestions or questions on this service.
+info@hasgeek.com if you have suggestions or questions on this service.
 
 [jb]: http://jobs.hasgeek.com
 [hg]: http://hasgeek.com
