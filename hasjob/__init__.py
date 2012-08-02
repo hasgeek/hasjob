@@ -4,12 +4,14 @@
 from flask import Flask
 from flask.ext.mail import Mail
 from flask.ext.assets import Environment, Bundle
+from flask.ext.lastuser import LastUser
 import coaster.app
 
 # First, make an app and config it
 
 app = Flask(__name__, instance_relative_config=True)
 mail = Mail()
+lastuser = LastUser()
 
 # Second, setup assets
 assets = Environment(app)
@@ -28,6 +30,7 @@ def init_for(env):
     search_configure()
     uploads_configure()
     mail.init_app(app)
+    lastuser.init_app(app)
     assets.register('js_all', js)
 
 # Third, after config, import the models and views

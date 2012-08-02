@@ -60,3 +60,10 @@ BANNED_WORDS = [
     [['passionate'], u'Passion is implicit. Why even ask? Try another adjective?'],
     [['amazing'], u'Everybody’s amazing around here. The adjective is redundant.'],
 ]
+
+#: LastUser server
+LASTUSER_SERVER = 'https://auth.hasgeek.com'
+#: LastUser client id
+LASTUSER_CLIENT_ID = ''
+#: LastUser client secret
+LASTUSER_CLIENT_SECRET = ''

@@ -14,3 +14,4 @@ Flask-Testing
 coverage
 bleach
 https://github.com/hasgeek/coaster/zipball/master
+https://github.com/hasgeek/flask-lastuser/zipball/master

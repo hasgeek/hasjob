@@ -32,9 +32,7 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None):
 def browse_by_type(slug):
     if slug == 'all':
         return redirect(url_for('index'))
-    ob = JobType.query.filter_by(slug=slug).first()
-    if not ob:
-        abort(404)
+    ob = JobType.query.filter_by(slug=slug).first_or_404()
     basequery = JobPost.query.filter_by(type_id=ob.id)
     return index(basequery=basequery, type=ob)
 
@@ -51,9 +49,7 @@ def browse_by_domain(domain):
 def browse_by_category(slug):
     if slug == 'all':
         return redirect(url_for('index'))
-    ob = JobCategory.query.filter_by(slug=slug).first()
-    if not ob:
-        abort(404)
+    ob = JobCategory.query.filter_by(slug=slug).first_or_404()
     basequery = JobPost.query.filter_by(category_id=ob.id)
     return index(basequery=basequery, category=ob)
 
@@ -90,9 +86,7 @@ def feed(basequery=None, type=None, category=None, md5sum=None, domain=None):
 def feed_by_type(slug):
     if slug == 'all':
         return redirect(url_for('feed'))
-    ob = JobType.query.filter_by(slug=slug).first()
-    if not ob:
-        abort(404)
+    ob = JobType.query.filter_by(slug=slug).first_or_404()
     basequery = JobPost.query.filter_by(type_id=ob.id)
     return feed(basequery=basequery, type=ob)
 
@@ -101,9 +95,7 @@ def feed_by_type(slug):
 def feed_by_category(slug):
     if slug == 'all':
         return redirect(url_for('feed'))
-    ob = JobCategory.query.filter_by(slug=slug).first()
-    if not ob:
-        abort(404)
+    ob = JobCategory.query.filter_by(slug=slug).first_or_404()
     basequery = JobPost.query.filter_by(category_id=ob.id)
     return feed(basequery=basequery, category=ob)
 
@@ -208,9 +200,7 @@ def sitemap():
 
 @app.route('/logo/<hashid>')
 def logoimage(hashid):
-    post = JobPost.query.filter_by(hashid=hashid).first()
-    if post is None:
-        abort(404)
+    post = JobPost.query.filter_by(hashid=hashid).first_or_404()
     if not post.company_logo:
         # If there's no logo (perhaps it was deleted), don't try to show one
         abort(404)

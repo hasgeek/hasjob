@@ -662,7 +662,13 @@ footer {
 #sheet #detail-sidebar #report {
   display: none;
 }
+#sheet #detail-sidebar #reject {
+  display: none;
+}
 #sheet #detail-sidebar #report:target {
+  display: block;
+}
+#sheet #detail-sidebar #reject:target {
   display: block;
 }
 #sheet #detail-sidebar #banner {

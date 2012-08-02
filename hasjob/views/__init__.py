@@ -31,3 +31,4 @@ from hasjob.views.helper import *
 from hasjob.views.update import *
 from hasjob.views.admin import *
 from hasjob.views.static import *
+from hasjob.views.login import *
