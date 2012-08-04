@@ -1,5 +1,6 @@
 from datetime import datetime
 from os import path
+import bleach
 from pytz import utc, timezone
 from urllib import quote, quote_plus
 from flask import escape, Markup, request, url_for
@@ -88,7 +89,7 @@ def urlquoteplus(data):
 
 @app.template_filter('scrubemail')
 def scrubemail_filter(data, css_junk=''):
-    return Markup(scrubemail(unicode(escape(data)), rot13=True, css_junk=css_junk))
+    return Markup(scrubemail(unicode(bleach.linkify(bleach.clean(data))), rot13=True, css_junk=css_junk))
 
 
 @app.template_filter('usessl')
