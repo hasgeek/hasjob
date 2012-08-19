@@ -147,7 +147,9 @@
     });
   });
   $(function() {
-    $('#detailed-info a').oembed();
+    $('#detailed-info a').oembed(null, {
+      allowedProviders: ['youtube', 'flickr', 'viddler', 'blip', 'vimeo', 'dailymotion', 'slideshare', 'scribd'],
+    });
   });
 </script>
 {{ ajaxform('reportform') }}

@@ -27,7 +27,6 @@ js = Bundle('js/libs/jquery-1.5.1.min.js',
             filters='jsmin', output='js/packed.js')
 
 css = Bundle(networkbar_css,
-             'css/jquery.oembed.css',
              'css/screen.css',
              filters='cssmin', output='css/packed.css')
 
