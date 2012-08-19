@@ -941,6 +941,10 @@ h2 {
   box-shadow: #ccccff 0 0 5px, #ccccff 0 0 5px 0 inset;
 }
 
+iframe {
+  max-width: 100%;
+}
+
 /* Spam protection */
 .z {
   display: none;
