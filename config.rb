@@ -7,4 +7,4 @@ images_dir = "hasjob/static/img"
 javascripts_dir = "hasjob/static/js"
 line_comments = false
 # To enable relative paths to assets via compass helper functions. Uncomment:
-# relative_assets = true
+relative_assets = true
