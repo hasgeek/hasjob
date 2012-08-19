@@ -276,12 +276,12 @@ body {
 /* Header area */
 header {
   *zoom: 1;
-  padding: 10px 20px;
+  padding-bottom: 10px;
   background: url('../img/paper.jpg?1343882941');
   border-bottom: 1px solid #afafaf;
-  -webkit-box-shadow: -5px 1px 5px rgba(0, 0, 0, 0.4);
-  -moz-box-shadow: -5px 1px 5px rgba(0, 0, 0, 0.4);
-  box-shadow: -5px 1px 5px rgba(0, 0, 0, 0.4);
+  -webkit-box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
+  -moz-box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
 }
 header:after {
   content: "";
@@ -298,6 +298,23 @@ header #sections li {
 }
 header #pitch {
   max-width: 60em;
+}
+
+#hg-bar {
+  margin-bottom: 20px;
+  -webkit-box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
+  -moz-box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
+}
+
+.header-content {
+  *zoom: 1;
+  padding: 0 20px;
+}
+.header-content:after {
+  content: "";
+  display: table;
+  clear: both;
 }
 
 #logo {
@@ -390,9 +407,9 @@ footer {
 
 footer {
   background: url('../img/paper.jpg?1343882941');
-  -webkit-box-shadow: -5px -1px 5px rgba(0, 0, 0, 0.4);
-  -moz-box-shadow: -5px -1px 5px rgba(0, 0, 0, 0.4);
-  box-shadow: -5px -1px 5px rgba(0, 0, 0, 0.4);
+  -webkit-box-shadow: 0 -1px 5px rgba(0, 0, 0, 0.4);
+  -moz-box-shadow: 0 -1px 5px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 -1px 5px rgba(0, 0, 0, 0.4);
   font-size: 100%;
   background-color: white;
   text-align: center;

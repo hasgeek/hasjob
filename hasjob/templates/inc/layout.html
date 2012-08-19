@@ -1,3 +1,4 @@
+{% from "baseframe/components.html" import networkbar -%}
 <!DOCTYPE html>
 <!--[if lt IE 7 ]> <html lang="en" class="no-js ie6"> <![endif]-->
 <!--[if IE 7 ]>    <html lang="en" class="no-js ie7"> <![endif]-->
@@ -46,12 +47,15 @@
 <body>
   <div id="container" class="container">
     <header>
-      <div id="site-title"><a href="{{ url_for('index') }}"><span class="has">Has</span><span class="geek">Geek</span> <span class="jobs">Job Board</span> <small class="has">β</small></a></div>
-      <form id="search" action="{{ url_for('search') }}">
-        <input type="text" placeholder="Find a job..." name="q"/>
-        <input type="submit" value="Go"/>
-      </form>
-      {% block header %}{% endblock %}
+      {{ networkbar(siteid='jobs', login=false, baseclass=none, containerclass='header-content') }}
+      <div class="header-content">
+        <div id="site-title"><a href="{{ url_for('index') }}"><span class="has">Has</span><span class="geek">Geek</span> <span class="jobs">Job Board</span> <small class="has">β</small></a></div>
+        <form id="search" action="{{ url_for('search') }}">
+          <input type="text" placeholder="Find a job..." name="q"/>
+          <input type="submit" value="Go"/>
+        </form>
+        {% block header %}{% endblock %}
+      </div>
     </header>
     <div id="main">
       <div id="flash-messages">

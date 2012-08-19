@@ -9,10 +9,10 @@ body {
 
 header {
     @include pie-clearfix;
-    padding: 10px 20px;
+    padding-bottom: 10px;
     background: image_url("paper.jpg");
     border-bottom: 1px solid $color-sheet-border;
-    @include single-box-shadow($color-shadow, -5px, 1px, 5px);
+    @include single-box-shadow($color-shadow, 0, 1px, 5px);
 
     #sections {
         li {
@@ -27,6 +27,16 @@ header {
     #pitch {
         max-width: 60em;
     }
+}
+
+#hg-bar {
+    margin-bottom: 20px;
+    @include single-box-shadow($color-shadow, 0, 1px, 5px);
+}
+
+.header-content {
+  @include pie-clearfix;
+  padding: 0 20px;
 }
 
 #logo {
@@ -79,7 +89,7 @@ header {
 @include sticky-footer(40px, "#container", "#main_footer", "footer");
 footer {
     background: image_url("paper.jpg");
-    @include single-box-shadow($color-shadow, -5px, -1px, 5px);
+    @include single-box-shadow($color-shadow, 0, -1px, 5px);
     font-size: 100%;
     background-color: white;
     text-align: center;
