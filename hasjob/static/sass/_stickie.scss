@@ -2,9 +2,9 @@
     margin: 0;
     padding: 10px;
     list-style: none;
+    font-size: 150%;
 }
 .stickie {
-    font-size: 150%;
     width: 240px;
     background: $color-stickie;
     position: relative;
@@ -90,6 +90,23 @@
         position: absolute;
         left: 0.5em;
         bottom: 0.25em;
+    }
+}
+
+.stickie.grouped {
+    position: relative;
+}
+
+.stickie.grouped.under {
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    bottom: -15px;
+    right: -15px;
+    width: auto;
+    z-index: -3;
+    &:before, &:after {
+        @include box-shadow(none);
     }
 }
 

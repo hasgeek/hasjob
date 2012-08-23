@@ -1023,10 +1023,10 @@ table.listing {
   margin: 0;
   padding: 10px;
   list-style: none;
+  font-size: 150%;
 }
 
 .stickie {
-  font-size: 150%;
   width: 240px;
   background: #ffffa2;
   position: relative;
@@ -1126,6 +1126,25 @@ header .stickie {
   position: absolute;
   left: 0.5em;
   bottom: 0.25em;
+}
+
+.stickie.grouped {
+  position: relative;
+}
+
+.stickie.grouped.under {
+  position: absolute;
+  top: -5px;
+  left: -5px;
+  bottom: -15px;
+  right: -15px;
+  width: auto;
+  z-index: -3;
+}
+.stickie.grouped.under:before, .stickie.grouped.under:after {
+  -webkit-box-shadow: none;
+  -moz-box-shadow: none;
+  box-shadow: none;
 }
 
 #newpost, #filtered, #nojobs {

@@ -73,13 +73,14 @@
             </a>
           </li>
         {%- else -%}
-          <li class="stickie">
+          <li class="stickie grouped">
             <a href="{{ url_for('browse_by_domain', domain=domain) }}">
               <span class="date">{{ post.datetime|shortdate }}</span>
               <span class="headline">{{ group|length }} jobs at {{ domain }}</span>
               {%- if post.sticky %}<span class="new">Sticky!</span>{% else %}
               {%- if now - post.datetime < newlimit %}<span class="new">New!</span>{% endif %}{% endif %}
             </a>
+            <div class="stickie grouped under">&nbsp;</div>
           </li>
         {%- endif %}
       {%- endwith -%}{%- endfor -%}
