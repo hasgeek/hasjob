@@ -32,7 +32,15 @@
           </span>
         </a>
       </li>
-    {%- elif md5sum or domain %}
+    {%- elif domain %}
+      <li id="filtered" class="stickie">
+        <a href="{{ url_for('index') }}">
+          <span class="filtered">
+            You are viewing jobs at {{ domain }}. View all jobs?
+          </span>
+        </a>
+      </li>
+    {%- elif md5sum %}
       <li id="filtered" class="stickie">
         <a href="{{ url_for('index') }}">
           <span class="filtered">
