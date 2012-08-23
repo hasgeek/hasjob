@@ -1134,10 +1134,10 @@ header .stickie {
 
 .stickie.grouped.under {
   position: absolute;
-  top: -5px;
-  left: -5px;
-  bottom: -15px;
-  right: -15px;
+  top: 0;
+  left: 0;
+  bottom: -20px;
+  right: -20px;
   width: auto;
   z-index: -3;
 }
