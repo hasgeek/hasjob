@@ -51,22 +51,48 @@
         </form>
       </li>
     {%- endif -%}
-    {%- for post in posts -%}
-      <li class="stickie">
-        <a href="{{ url_for('jobdetail', hashid=post.hashid) }}" rel="bookmark">
-          <span class="location">{{ post.location }}</span>
-          <span class="date">{{ post.datetime|shortdate }}</span>
-          <span class="headline">{{ post.headline }}</span>
-		      <span class="company">{{ post.company_name }}</span>
-		      {%- if post.sticky %}<span class="new">Sticky!</span>{% else %}
-		      {%- if now - post.datetime < newlimit %}<span class="new">New!</span>{% endif %}{% endif %}
-        </a>
-      </li>
-    {%- else -%}
-      <li class="stickie" id="nojobs">
-        Sorry, no jobs listed.
-      </li>
-    {% endfor %}
+    {%- if grouped %}
+      {%- for domain, group in grouped.items() -%}{%- with post = group[0] -%}
+        {%- if group|length == 1 -%}
+          <li class="stickie">
+            <a href="{{ url_for('jobdetail', hashid=post.hashid) }}" rel="bookmark">
+              <span class="location">{{ post.location }}</span>
+              <span class="date">{{ post.datetime|shortdate }}</span>
+              <span class="headline">{{ post.headline }}</span>
+              <span class="company">{{ post.company_name }}</span>
+              {%- if post.sticky %}<span class="new">Sticky!</span>{% else %}
+              {%- if now - post.datetime < newlimit %}<span class="new">New!</span>{% endif %}{% endif %}
+            </a>
+          </li>
+        {%- else -%}
+          <li class="stickie">
+            <a href="{{ url_for('browse_by_domain', domain=domain) }}">
+              <span class="date">{{ post.datetime|shortdate }}</span>
+              <span class="headline">{{ group|length }} jobs at {{ domain }}</span>
+              {%- if post.sticky %}<span class="new">Sticky!</span>{% else %}
+              {%- if now - post.datetime < newlimit %}<span class="new">New!</span>{% endif %}{% endif %}
+            </a>
+          </li>
+        {%- endif %}
+      {%- endwith -%}{%- endfor -%}
+    {%- else %}
+      {%- for post in posts -%}
+        <li class="stickie">
+          <a href="{{ url_for('jobdetail', hashid=post.hashid) }}" rel="bookmark">
+            <span class="location">{{ post.location }}</span>
+            <span class="date">{{ post.datetime|shortdate }}</span>
+            <span class="headline">{{ post.headline }}</span>
+  		      <span class="company">{{ post.company_name }}</span>
+  		      {%- if post.sticky %}<span class="new">Sticky!</span>{% else %}
+  		      {%- if now - post.datetime < newlimit %}<span class="new">New!</span>{% endif %}{% endif %}
+          </a>
+        </li>
+      {%- else -%}
+        <li class="stickie" id="nojobs">
+          Sorry, no jobs listed.
+        </li>
+      {%- endfor %}
+    {%- endif %}
   </ul>
 {% endblock %}
 {% block footerscripts %}

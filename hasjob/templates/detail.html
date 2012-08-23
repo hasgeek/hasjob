@@ -22,6 +22,16 @@
       Previous viewers of this listing flagged it for review by a moderator.
       A review is currently pending.
     </p>
+  </div>
+</div>
+{% elif post.is_old() %}
+<div id="guide">
+  <div class="guidecontent">
+    <p>
+      This listing is over 30 days old. The position may no longer be available.
+    </p>
+  </div>
+</div>
 {% endif %}
 
 <div id="sheet">

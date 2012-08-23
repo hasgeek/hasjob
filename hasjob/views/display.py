@@ -1,4 +1,8 @@
 from datetime import datetime
+try:
+    from collections import OrderedDict
+except ImportError:
+    from ordereddict import OrderedDict
 from flask import (
     abort,
     redirect,
@@ -15,6 +19,7 @@ from hasjob.views import newlimit
 from hasjob.views.helper import getposts, getallposts
 from hasjob.uploads import uploaded_logos
 
+
 @app.route('/')
 def index(basequery=None, type=None, category=None, md5sum=None, domain=None):
     now = datetime.utcnow()
@@ -23,9 +28,18 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None):
         employer_name = posts[0].company_name
     else:
         employer_name = u'a single employer'
-    return render_template('index.html', posts=posts, now=now, newlimit=newlimit,
-                           jobtype=type, jobcategory=category, md5sum=md5sum,
-                           domain=domain, employer_name=employer_name)
+
+    if basequery is None and posts:
+        # Group posts by email_domain on index page only
+        grouped = OrderedDict()
+        for post in posts:
+            grouped.setdefault(post.email_domain, []).append(post)
+    else:
+        grouped = None
+
+    return render_template('index.html', posts=posts, grouped=grouped, now=now,
+                           newlimit=newlimit, jobtype=type, jobcategory=category,
+                           md5sum=md5sum, domain=domain, employer_name=employer_name)
 
 
 @app.route('/type/<slug>')

@@ -74,7 +74,9 @@ class ListingForm(Form):
         validators=[optional_url])
     poster_email = EmailField("Email",
         description=u"This is where we’ll send your confirmation email. "
-                    u"It will not be revealed to applicants",
+                    u"Use your company email id: "
+                    u"listings are classified by your email domain. "
+                    u"Your full email address will not be revealed to applicants.",
         validators=[Required("We need to confirm your email address before the job can be listed"),
             Email("That does not appear to be a valid email address")])
 

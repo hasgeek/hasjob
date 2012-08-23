@@ -13,6 +13,7 @@ whoosh
 Flask-Testing
 coverage
 bleach
+ordereddict
 https://github.com/hasgeek/coaster/zipball/master
 https://github.com/hasgeek/flask-lastuser/zipball/master
 https://github.com/hasgeek/baseframe/zipball/master

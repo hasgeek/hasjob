@@ -66,6 +66,9 @@ class JobPost(db.Model):
     def is_flagged(self):
         return self.status == POSTSTATUS.FLAGGED
 
+    def is_old(self):
+        return self.datetime <= datetime.utcnow() - agelimit
+
     def search_mapping(self):
         """
         Returns a dictionary suitable for search indexing.
