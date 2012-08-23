@@ -91,10 +91,18 @@
         left: 0.5em;
         bottom: 0.25em;
     }
-}
-
-.stickie.grouped {
-    position: relative;
+    .sticky {
+        text-indent: -10000px;
+        display: block;
+        position: absolute;
+        top: -4px;
+        left: 135px;
+        width: 10px;
+        height: 10px;
+        @include border-radius(5px);
+        background: $color-title-has;
+        @include box-shadow(0 2px 2px rgba(0, 0, 0, 0.2));
+    }
 }
 
 .stickie.grouped.under {

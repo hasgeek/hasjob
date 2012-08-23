@@ -1127,9 +1127,23 @@ header .stickie {
   left: 0.5em;
   bottom: 0.25em;
 }
-
-.stickie.grouped {
-  position: relative;
+.stickie .sticky {
+  text-indent: -10000px;
+  display: block;
+  position: absolute;
+  top: -4px;
+  left: 135px;
+  width: 10px;
+  height: 10px;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  -ms-border-radius: 5px;
+  -o-border-radius: 5px;
+  border-radius: 5px;
+  background: #df5e0e;
+  -webkit-box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
+  -moz-box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
 }
 
 .stickie.grouped.under {

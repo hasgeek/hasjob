@@ -64,21 +64,21 @@
         {%- if group|length == 1 -%}
           <li class="stickie">
             <a href="{{ url_for('jobdetail', hashid=post.hashid) }}" rel="bookmark">
+              {%- if post.sticky %}<span class="sticky">Sticky!</span>{% endif %}
               <span class="location">{{ post.location }}</span>
               <span class="date">{{ post.datetime|shortdate }}</span>
               <span class="headline">{{ post.headline }}</span>
               <span class="company">{{ post.company_name }}</span>
-              {%- if post.sticky %}<span class="new">Sticky!</span>{% else %}
-              {%- if now - post.datetime < newlimit %}<span class="new">New!</span>{% endif %}{% endif %}
+              {%- if now - post.datetime < newlimit %}<span class="new">New!</span>{% endif %}
             </a>
           </li>
         {%- else -%}
           <li class="stickie grouped">
             <a href="{{ url_for('browse_by_domain', domain=domain) }}">
+              {%- if post.sticky %}<span class="sticky">Sticky!</span>{% endif %}
               <span class="date">{{ post.datetime|shortdate }}</span>
               <span class="headline">{{ group|length }} jobs at {{ domain }}</span>
-              {%- if post.sticky %}<span class="new">Sticky!</span>{% else %}
-              {%- if now - post.datetime < newlimit %}<span class="new">New!</span>{% endif %}{% endif %}
+              {%- if now - post.datetime < newlimit %}<span class="new">New!</span>{% endif %}
             </a>
             <div class="stickie grouped under">&nbsp;</div>
           </li>
@@ -88,12 +88,12 @@
       {%- for post in posts -%}
         <li class="stickie">
           <a href="{{ url_for('jobdetail', hashid=post.hashid) }}" rel="bookmark">
+            {%- if post.sticky %}<span class="sticky">Sticky!</span>{% endif %}
             <span class="location">{{ post.location }}</span>
             <span class="date">{{ post.datetime|shortdate }}</span>
             <span class="headline">{{ post.headline }}</span>
   		      <span class="company">{{ post.company_name }}</span>
-  		      {%- if post.sticky %}<span class="new">Sticky!</span>{% else %}
-  		      {%- if now - post.datetime < newlimit %}<span class="new">New!</span>{% endif %}{% endif %}
+  		      {%- if now - post.datetime < newlimit %}<span class="new">New!</span>{% endif %}
           </a>
         </li>
       {%- else -%}
