@@ -141,16 +141,16 @@
     // Top right
     .stickie:hover &:nth-of-type(3) {
         top: -25px;
-        left: 10px;
+        left: 0;
         right: -20px;
         bottom: 5px;
     }
     // Bottom left
     .stickie:hover &:nth-of-type(4) {
-        top: 5px;
-        left: -25px;
-        right: 5px;
-        bottom: -25px;
+        top: 0;
+        left: -20px;
+        right: 0;
+        bottom: -20px;
     }
     // Top
     .stickie:hover &:nth-of-type(5) {
