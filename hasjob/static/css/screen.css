@@ -1187,10 +1187,10 @@ header .stickie {
   bottom: -25px;
 }
 .stickie:hover .stickie.grouped.under:nth-of-type(3) {
-  top: -25px;
+  top: -20px;
   left: 0;
   right: -20px;
-  bottom: 5px;
+  bottom: 0px;
 }
 .stickie:hover .stickie.grouped.under:nth-of-type(4) {
   top: 0;

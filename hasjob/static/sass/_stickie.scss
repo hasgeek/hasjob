@@ -140,10 +140,10 @@
     }
     // Top right
     .stickie:hover &:nth-of-type(3) {
-        top: -25px;
+        top: -20px;
         left: 0;
         right: -20px;
-        bottom: 5px;
+        bottom: 0px;
     }
     // Bottom left
     .stickie:hover &:nth-of-type(4) {
