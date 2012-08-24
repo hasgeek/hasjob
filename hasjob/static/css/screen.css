@@ -1144,11 +1144,65 @@ header .stickie {
   right: -5px;
   width: auto;
   z-index: -3;
+  -webkit-transition-duration: 0.1s;
+  -moz-transition-duration: 0.1s;
+  -o-transition-duration: 0.1s;
+  transition-duration: 0.1s;
+  -webkit-transition-property: top, left, bottom, right;
+  -moz-transition-property: top, left, bottom, right;
+  -o-transition-property: top, left, bottom, right;
+  transition-property: top, left, bottom, right;
+  -webkit-transition-timing-function: ease-out;
+  -moz-transition-timing-function: ease-out;
+  -o-transition-timing-function: ease-out;
+  transition-timing-function: ease-out;
 }
 .stickie.grouped.under:before, .stickie.grouped.under:after {
   -webkit-box-shadow: none;
   -moz-box-shadow: none;
   box-shadow: none;
+}
+.stickie:hover .stickie.grouped.under {
+  top: -25px;
+  left: -25px;
+  right: 5px;
+  bottom: 5px;
+  -webkit-transition-duration: 0.1s;
+  -moz-transition-duration: 0.1s;
+  -o-transition-duration: 0.1s;
+  transition-duration: 0.1s;
+  -webkit-transition-property: top, left, bottom, right;
+  -moz-transition-property: top, left, bottom, right;
+  -o-transition-property: top, left, bottom, right;
+  transition-property: top, left, bottom, right;
+  -webkit-transition-timing-function: ease-out;
+  -moz-transition-timing-function: ease-out;
+  -o-transition-timing-function: ease-out;
+  transition-timing-function: ease-out;
+}
+.stickie:hover .stickie.grouped.under:nth-of-type(2) {
+  top: 5px;
+  left: 5px;
+  right: -25px;
+  bottom: -25px;
+}
+.stickie:hover .stickie.grouped.under:nth-of-type(3) {
+  top: -25px;
+  left: 10px;
+  right: -20px;
+  bottom: 5px;
+}
+.stickie:hover .stickie.grouped.under:nth-of-type(4) {
+  top: 5px;
+  left: -25px;
+  right: 5px;
+  bottom: -25px;
+}
+.stickie:hover .stickie.grouped.under:nth-of-type(5) {
+  top: -30px;
+  left: -10px;
+  right: -10px;
+  bottom: 10px;
 }
 
 #newpost, #filtered, #nojobs {

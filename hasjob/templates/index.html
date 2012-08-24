@@ -87,7 +87,16 @@
               <span class="company">{{ post.company_name }}</span>
               {%- if now - post.datetime < newlimit %}<span class="new">New!</span>{% endif %}
             </a>
-            <div class="stickie grouped under">&nbsp;</div>
+            {%- for post in group[1:] -%}
+              <div class="stickie grouped under">
+                {%- if post.sticky %}<span class="sticky">Sticky!</span>{% endif %}
+                <span class="location">{{ post.location }}</span>
+                <span class="date">{{ post.datetime|shortdate }}</span>
+                <span class="headline">{{ post.headline }}</span>
+                <span class="company">{{ post.company_name }}</span>
+                {%- if now - post.datetime < newlimit %}<span class="new">New!</span>{% endif %}
+              </div>
+            {%- endfor %}
           </li>
         {%- endif %}
       {%- endwith -%}{%- endfor -%}
