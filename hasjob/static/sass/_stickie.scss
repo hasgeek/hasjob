@@ -70,6 +70,8 @@
         position: absolute;
         height: 1.2em;
         overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
     }
     .location {
         top: 0.25em;
