@@ -52,9 +52,11 @@
     <p id="post-meta">
       <a href="{{ url_for('browse_by_type', slug=post.type.slug) }}">{{ post.type.title }}</a> /
       <a href="{{ url_for('browse_by_category', slug=post.category.slug) }}">{{ post.category.title }}</a>
-      {%- if post.email_domain %}
+      {%- if post.email_domain in webmail_domains %}
+        / <a href="{{ url_for('browse_by_email', md5sum=post.md5sum) }}">All jobs by {{ post.company_name }}</a>
+      {%- else %}
         / <a href="{{ url_for('browse_by_domain', domain=post.email_domain) }}">All jobs at {{ post.email_domain }}</a>
-      {% endif -%}
+      {%- endif %}
     </p>
   </div>
   <div class="section columns">

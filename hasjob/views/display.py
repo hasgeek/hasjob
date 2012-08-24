@@ -19,6 +19,8 @@ from hasjob.views import newlimit
 from hasjob.views.helper import getposts, getallposts
 from hasjob.uploads import uploaded_logos
 
+webmail_domains = set(['gmail.com', 'yahoo.com'])
+
 
 @app.route('/')
 def index(basequery=None, type=None, category=None, md5sum=None, domain=None):
@@ -33,7 +35,10 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None):
         # Group posts by email_domain on index page only
         grouped = OrderedDict()
         for post in posts:
-            grouped.setdefault(post.email_domain, []).append(post)
+            if post.email_domain in webmail_domains:
+                grouped.setdefault(('e', post.md5sum), []).append(post)
+            else:
+                grouped.setdefault(('d', post.email_domain), []).append(post)
     else:
         grouped = None
 
@@ -86,14 +91,14 @@ def feed(basequery=None, type=None, category=None, md5sum=None, domain=None):
     elif md5sum or domain:
         title = u"Jobs at a single employer"
     posts = list(getposts(basequery))
-    if posts: # Can't do this unless posts is a list
-        updated = posts[0].datetime.isoformat()+'Z'
+    if posts:  # Can't do this unless posts is a list
+        updated = posts[0].datetime.isoformat() + 'Z'
         if md5sum:
             title = posts[0].company_name
     else:
-        updated = datetime.utcnow().isoformat()+'Z'
+        updated = datetime.utcnow().isoformat() + 'Z'
     return Response(render_template('feed.xml', posts=posts, updated=updated, title=title),
-                           content_type = 'application/atom+xml; charset=utf-8')
+                           content_type='application/atom+xml; charset=utf-8')
 
 
 @app.route('/type/<slug>/feed')
@@ -198,18 +203,18 @@ def sitemap():
                       '  </url>\n'
     # Add job category pages to sitemap
     for item in JobCategory.query.all():
-      sitemapxml += '  <url>\n'\
-                    '    <loc>%s</loc>\n' % url_for('browse_by_category', slug=item.slug, _external=True) + \
-                    '  </url>\n'
+        sitemapxml += '  <url>\n'\
+                      '    <loc>%s</loc>\n' % url_for('browse_by_category', slug=item.slug, _external=True) + \
+                      '  </url>\n'
     # Add live posts to sitemap
     for post in getposts():
         sitemapxml += '  <url>\n'\
                       '    <loc>%s</loc>\n' % url_for('jobdetail', hashid=post.hashid, _external=True) + \
-                      '    <lastmod>%s</lastmod>\n' % (post.datetime.isoformat()+'Z') + \
+                      '    <lastmod>%s</lastmod>\n' % (post.datetime.isoformat() + 'Z') + \
                       '    <changefreq>monthly</changefreq>\n'\
                       '  </url>\n'
     sitemapxml += '</urlset>'
-    return Response(sitemapxml, content_type = 'text/xml; charset=utf-8')
+    return Response(sitemapxml, content_type='text/xml; charset=utf-8')
 
 
 @app.route('/logo/<hashid>')

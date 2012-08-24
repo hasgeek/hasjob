@@ -30,6 +30,8 @@ from hasjob.twitter import tweet
 from hasjob.uploads import uploaded_logos
 from hasjob.utils import get_email_domain, get_word_bag, md5sum
 from hasjob.views import ALLOWED_TAGS
+from hasjob.views.display import webmail_domains
+
 
 @app.route('/view/<hashid>', methods=('GET', 'POST'))
 def jobdetail(hashid):
@@ -43,21 +45,21 @@ def jobdetail(hashid):
     reportform.report_code.choices = [(ob.id, ob.title) for ob in ReportCode.query.filter_by(public=True).order_by('seq')]
     rejectform = forms.RejectForm()
     if reportform.validate_on_submit():
-        report = JobPostReport(post=post, reportcode_id = reportform.report_code.data)
+        report = JobPostReport(post=post, reportcode_id=reportform.report_code.data)
         report.ipaddr = request.environ['REMOTE_ADDR']
         report.useragent = request.user_agent.string
         db.session.add(report)
         db.session.commit()
         if request.is_xhr:
-            return "<p>Thanks! This job listing has been flagged for review.</p>" #FIXME: Ugh!
+            return "<p>Thanks! This job listing has been flagged for review.</p>"  # FIXME: Ugh!
         else:
             flash("Thanks! This job listing has been flagged for review.", "interactive")
     elif request.method == 'POST' and request.is_xhr:
         return render_template('inc/reportform.html', reportform=reportform, ajaxreg=True)
-    return render_template('detail.html', post=post, reportform=reportform, rejectform=rejectform, siteadmin=lastuser.has_permission('siteadmin'))
+    return render_template('detail.html', post=post, reportform=reportform, rejectform=rejectform, siteadmin=lastuser.has_permission('siteadmin'), webmail_domains=webmail_domains)
 
 
-@app.route('/reject/<hashid>', methods=('GET','POST'))
+@app.route('/reject/<hashid>', methods=('GET', 'POST'))
 @lastuser.requires_permission('siteadmin')
 def rejectjob(hashid):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
@@ -112,7 +114,7 @@ def confirm(hashid):
             post.status = POSTSTATUS.PENDING
             db.session.commit()
         session.get('userkeys', []).remove(post.edit_key)
-        session.modified = True # Since it won't detect changes to lists
+        session.modified = True  # Since it won't detect changes to lists
         session.permanent = True
         return render_template('mailsent.html', post=post)
     return render_template('confirm.html', post=post, form=form)

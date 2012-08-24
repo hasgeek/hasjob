@@ -60,7 +60,7 @@
       </li>
     {%- endif -%}
     {%- if grouped %}
-      {%- for domain, group in grouped.items() -%}{%- with post = group[0] -%}
+      {%- for grouping, group in grouped.items() -%}{%- with post = group[0] -%}
         {%- if group|length == 1 -%}
           <li class="stickie">
             <a href="{{ url_for('jobdetail', hashid=post.hashid) }}" rel="bookmark">
@@ -74,10 +74,17 @@
           </li>
         {%- else -%}
           <li class="stickie grouped">
-            <a href="{{ url_for('browse_by_domain', domain=domain) }}">
+            <a href="
+              {%- if grouping[0] == 'd' -%}
+                {{ url_for('browse_by_domain', domain=grouping[1]) }}
+              {%- elif grouping[0] == 'e' -%}
+                {{ url_for('browse_by_email', md5sum=grouping[1]) }}
+              {%- endif -%}">
               {%- if post.sticky %}<span class="sticky">Sticky!</span>{% endif %}
+              <span class="location">{{ post.location }}</span>
               <span class="date">{{ post.datetime|shortdate }}</span>
-              <span class="headline">{{ group|length }} jobs at {{ domain }}</span>
+              <span class="headline">{{ post.headline }}</span>
+              <span class="company">{{ post.company_name }}</span>
               {%- if now - post.datetime < newlimit %}<span class="new">New!</span>{% endif %}
             </a>
             <div class="stickie grouped under">&nbsp;</div>
