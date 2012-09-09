@@ -2,7 +2,7 @@
 
 body {
     font-family: $font-default;
-    background: image_url("canvas.jpg");
+    background: image-url("canvas.jpg");
 }
 
 /* Header area */
@@ -10,7 +10,7 @@ body {
 header {
     @include pie-clearfix;
     padding-bottom: 10px;
-    background: image_url("paper.jpg");
+    background: image-url("paper.jpg");
     border-bottom: 1px solid $color-sheet-border;
     @include single-box-shadow($color-shadow, 0, 1px, 5px);
 
@@ -88,7 +88,7 @@ header {
 
 @include sticky-footer(40px, "#container", "#main_footer", "footer");
 footer {
-    background: image_url("paper.jpg");
+    background: image-url("paper.jpg");
     @include single-box-shadow($color-shadow, 0, -1px, 5px);
     font-size: 100%;
     background-color: white;
@@ -392,19 +392,19 @@ footer {
                 text-decoration: none;
             }
             #sidebar-email {
-                background: transparent image_url("email.png") no-repeat 15px center;
+                background: transparent image-url("email.png") no-repeat 15px center;
                 padding-left: 40px;
             }
             #sidebar-tweet {
-                background: transparent image_url("twitter.png") no-repeat 15px center;
+                background: transparent image-url("twitter.png") no-repeat 15px center;
                 padding-left: 40px;
             }
             #sidebar-share {
-                background: transparent image_url("share.png") no-repeat 15px center;
+                background: transparent image-url("share.png") no-repeat 15px center;
                 padding-left: 40px;
             }
             #sidebar-report {
-                background: transparent image_url("flag.png") no-repeat 15px center;
+                background: transparent image-url("flag.png") no-repeat 15px center;
                 padding-left: 40px;
             }
         }
@@ -509,7 +509,7 @@ footer {
     input[type="text"] {
         border: 1px solid $color-outline;
         font-family: $font-input;
-        background: white image_url('search.png') 4px center no-repeat;
+        background: white image-url('search.png') 4px center no-repeat;
         padding-left: 20px;
         padding-right: 43px;
         @include border-radius(3px);

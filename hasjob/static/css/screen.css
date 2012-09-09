@@ -1011,7 +1011,7 @@ table.listing {
   margin: 0;
   padding: 10px;
   list-style: none;
-  font-size: 150%;
+  font-size: 130%;
 }
 
 .stickie {
@@ -1077,18 +1077,18 @@ header .stickie {
   font-family: "Walter Turncoat", sans-serif;
 }
 .stickie .headline {
-  font-family: "Architects Daughter", sans-serif;
+  font-family: "McLaren", sans-serif;
 }
 .stickie .date {
-  font-size: 80%;
+  font-size: 90%;
   color: #816894;
-  font-family: "Architects Daughter", sans-serif;
+  font-family: "Walter Turncoat", sans-serif;
   position: absolute;
   top: 0.25em;
   right: 0.5em;
 }
 .stickie .location, .stickie .company {
-  font-size: 80%;
+  font-size: 90%;
   color: #816894;
   font-family: "Walter Turncoat", sans-serif;
   position: absolute;
@@ -1109,7 +1109,7 @@ header .stickie {
   text-align: right;
 }
 .stickie .new {
-  font-size: 80%;
+  font-size: 90%;
   color: #df5e0e;
   font-family: "Walter Turncoat", sans-serif;
   text-transform: lowercase;
@@ -1234,7 +1234,7 @@ header .stickie {
 }
 
 #newpost textarea {
-  font-family: "Architects Daughter", sans-serif;
+  font-family: "McLaren", sans-serif;
   width: 100%;
   border: 0;
   background-color: #f6f6f6;

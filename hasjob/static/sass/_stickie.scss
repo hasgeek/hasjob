@@ -2,7 +2,7 @@
     margin: 0;
     padding: 10px;
     list-style: none;
-    font-size: 150%;
+    font-size: 130%;
 }
 .stickie {
     width: 240px;
@@ -56,7 +56,7 @@
         font-family: $font-stickie-headline;
     }
     .date {
-        font-size: 80%;
+        font-size: 90%;
         color: $color-stickie-date;
         font-family: $font-stickie-date;
         position: absolute;
@@ -64,7 +64,7 @@
         right: 0.5em;
     }
     .location, .company {
-        font-size: 80%;
+        font-size: 90%;
         color: $color-stickie-location;
         font-family: $font-stickie-location;
         position: absolute;
@@ -85,7 +85,7 @@
         text-align: right;
     }
     .new {
-        font-size: 80%;
+        font-size: 90%;
         color: $color-stickie-new;
         font-family: $font-stickie-new;
         text-transform: lowercase;
