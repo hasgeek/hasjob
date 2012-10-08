@@ -35,7 +35,9 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None):
         # Group posts by email_domain on index page only
         grouped = OrderedDict()
         for post in posts:
-            if post.email_domain in webmail_domains:
+            if post.sticky:
+                grouped.setdefault(('s', post.hashid), []).append(post)
+            elif post.email_domain in webmail_domains:
                 grouped.setdefault(('e', post.md5sum), []).append(post)
             else:
                 grouped.setdefault(('d', post.email_domain), []).append(post)
