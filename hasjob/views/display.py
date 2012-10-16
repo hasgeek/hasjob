@@ -36,11 +36,14 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None):
         grouped = OrderedDict()
         for post in posts:
             if post.sticky:
-                grouped.setdefault(('s', post.hashid), []).append(post)
+                if post.email_domain in webmail_domains:
+                    grouped.setdefault(('se', post.md5sum), []).append(post)
+                else:
+                    grouped.setdefault(('sd', post.email_domain), []).append(post)
             elif post.email_domain in webmail_domains:
-                grouped.setdefault(('e', post.md5sum), []).append(post)
+                grouped.setdefault(('ne', post.md5sum), []).append(post)
             else:
-                grouped.setdefault(('d', post.email_domain), []).append(post)
+                grouped.setdefault(('nd', post.email_domain), []).append(post)
     else:
         grouped = None
 

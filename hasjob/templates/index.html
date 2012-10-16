@@ -75,11 +75,11 @@
         {%- else -%}
           <li class="stickie grouped">
             <a href="
-              {%- if grouping[0] == 'd' -%}
-                {{ url_for('browse_by_domain', domain=grouping[1]) }}
-              {%- elif grouping[0] == 'e' -%}
-                {{ url_for('browse_by_email', md5sum=grouping[1]) }}
-              {%- endif -%}">
+                {%- if grouping[0] in ['sd', 'nd'] -%}
+                  {{ url_for('browse_by_domain', domain=grouping[1]) }}
+                {%- elif grouping[0] in ['se', 'ne'] -%}
+                  {{ url_for('browse_by_email', md5sum=grouping[1]) }}
+                {%- endif -%}">
               {%- if post.sticky %}<span class="sticky">Sticky!</span>{% endif %}
               <span class="location">{{ post.location }}</span>
               <span class="date">{{ post.datetime|shortdate }}</span>
