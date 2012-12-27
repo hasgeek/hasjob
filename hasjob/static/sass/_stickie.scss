@@ -115,6 +115,7 @@
     right: -5px;
     width: auto;
     z-index: -3;
+    overflow: hidden;
     @include transition-duration(0.1s);
     @include transition-property(top, left, bottom, right);
     @include transition-timing-function(ease-out);

@@ -1144,6 +1144,7 @@ header .stickie {
   right: -5px;
   width: auto;
   z-index: -3;
+  overflow: hidden;
   -webkit-transition-duration: 0.1s;
   -moz-transition-duration: 0.1s;
   -o-transition-duration: 0.1s;
