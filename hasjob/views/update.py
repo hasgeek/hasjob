@@ -293,9 +293,9 @@ def newjob():
     if request.method == 'POST' and request.form.get('form.id') != 'newheadline' and form.validate():
         # POST request from new job page, with successful validation
         # Move it to the editjob page for handling here forward
-        post = JobPost(hashid = unique_hash(JobPost),
-                       ipaddr = request.environ['REMOTE_ADDR'],
-                       useragent = request.user_agent.string)
+        post = JobPost(hashid=unique_hash(JobPost),
+                       ipaddr=request.environ['REMOTE_ADDR'],
+                       useragent=request.user_agent.string)
         db.session.add(post)
         return editjob(post.hashid, post.edit_key, form, post, validated=True)
     elif request.method == 'POST' and request.form.get('form.id') != 'newheadline':

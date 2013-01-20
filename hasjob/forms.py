@@ -12,6 +12,9 @@ from utils import simplify_text
 
 QUOTES_RE = re.compile(ur'[\'"`‘’“”′″‴]+')
 
+CAPS_RE = re.compile('[A-Z]')
+SMALL_RE = re.compile('[a-z]')
+
 
 def boolint(value):
     return bool(int(value))
@@ -96,6 +99,10 @@ class ListingForm(Form):
         # XXX: These validations belong in a config file or in the db, not here.
         if simplify_text(field.data) == 'awesome coder wanted at awesome company':
             raise ValidationError(u"Come on, write your own headline. You aren’t just another run-of-the-mill company, right?")
+        caps = len(CAPS_RE.findall(field.data))
+        small = len(SMALL_RE.findall(field.data))
+        if small == 0 or caps / float(small) > 0.5:
+            raise ValidationError("No shouting, please. Reduce the number of capital letters in your headline")
         for word_list, message in app.config.get('BANNED_WORDS', []):
             for word in word_list:
                 if word in field.data.lower():
