@@ -1,4 +1,4 @@
-{% from "baseframe/components.html" import networkbar -%}
+{% from "baseframe/components.html" import networkbar with context -%}
 <!DOCTYPE html>
 <!--[if lt IE 7 ]> <html lang="en" class="no-js ie6"> <![endif]-->
 <!--[if IE 7 ]>    <html lang="en" class="no-js ie7"> <![endif]-->
@@ -21,8 +21,9 @@
   <link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.ico') }}"/>
   <link rel="apple-touch-icon" href="{{ url_for('static', filename='img/logo-star.png') }}"/>
   <!-- Fonts -->
-  <link href="//fonts.googleapis.com/css?family=Walter+Turncoat" rel="stylesheet" type="text/css">
-  <link href='//fonts.googleapis.com/css?family=McLaren' rel='stylesheet' type='text/css'>
+  <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Walter+Turncoat">
+  <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=McLaren">
+  <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Open+Sans:400,600">
 
   <!-- Stylesheets -->
   {% assets "css_all" -%}
@@ -46,7 +47,7 @@
 <body>
   <div id="container" class="container">
     <header>
-      {{ networkbar(siteid='jobs', login=false, baseclass=none, containerclass='header-content') }}
+      {{ networkbar(siteid='jobs', login=true, baseclass=none, containerclass='header-content') }}
       <div class="header-content">
         <div id="site-title"><a href="{{ url_for('index') }}"><span class="has">Has</span><span class="geek">Geek</span> <span class="jobs">Job Board</span> <small class="has">β</small></a></div>
         <form id="search" action="{{ url_for('search') }}">

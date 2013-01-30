@@ -1,7 +1,9 @@
 from datetime import datetime
+from coaster.sqlalchemy import TimestampMixin
 from hasjob.models import agelimit, db, POSTSTATUS
 from hasjob.models.jobtype import JobType
 from hasjob.models.jobcategory import JobCategory
+from hasjob.models.user import User
 from hasjob.utils import random_long_key, random_hash_key
 
 
@@ -86,6 +88,18 @@ class JobPost(db.Model):
                 'public': self.is_listed(),
                 'idref': u'%s/%s' % (self.idref, self.id),
                 }
+
+
+class UserJobView(TimestampMixin, db.Model):
+    __tablename__ = 'userjobview'
+    #: User who saw a listing
+    user_id = db.Column(None, db.ForeignKey('user.id'), primary_key=True)
+    user = db.relationship(User)
+    #: Job listing they saw
+    jobpost_id = db.Column(None, db.ForeignKey('jobpost.id'), primary_key=True)
+    jobpost = db.relationship(JobPost)
+    #: Has the user viewed apply instructions?
+    applied = db.Column(db.Boolean, default=False, nullable=False)
 
 
 def unique_hash(model=JobPost):

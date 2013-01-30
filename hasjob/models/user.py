@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from flask import url_for
 from flask.ext.lastuser.sqlalchemy import UserBase
 from hasjob.models import db
 

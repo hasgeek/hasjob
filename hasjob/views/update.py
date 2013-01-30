@@ -12,6 +12,7 @@ from flask import (
     request,
     url_for,
     session,
+    escape,
     )
 from flask.ext.mail import Message
 from hasjob import app, forms, mail, lastuser
@@ -24,11 +25,12 @@ from hasjob.models import (
     JobPostReport,
     POSTSTATUS,
     ReportCode,
+    UserJobView,
     unique_hash,
     )
 from hasjob.twitter import tweet
 from hasjob.uploads import uploaded_logos
-from hasjob.utils import get_email_domain, get_word_bag, md5sum
+from hasjob.utils import get_email_domain, get_word_bag, md5sum, scrubemail
 from hasjob.views import ALLOWED_TAGS
 from hasjob.views.display import webmail_domains
 
@@ -41,6 +43,14 @@ def jobdetail(hashid):
             abort(403)
     if post.status in [POSTSTATUS.REJECTED, POSTSTATUS.WITHDRAWN]:
         abort(410)
+    if g.user:
+        jobview = UserJobView.query.get((g.user.id, post.id))
+        if jobview is None:
+            jobview = UserJobView(user=g.user, jobpost=post)
+            db.session.add(jobview)
+            db.session.commit()
+    else:
+        jobview = None
     reportform = forms.ReportForm()
     reportform.report_code.choices = [(ob.id, ob.title) for ob in ReportCode.query.filter_by(public=True).order_by('seq')]
     rejectform = forms.RejectForm()
@@ -56,7 +66,30 @@ def jobdetail(hashid):
             flash("Thanks! This job listing has been flagged for review.", "interactive")
     elif request.method == 'POST' and request.is_xhr:
         return render_template('inc/reportform.html', reportform=reportform, ajaxreg=True)
-    return render_template('detail.html', post=post, reportform=reportform, rejectform=rejectform, siteadmin=lastuser.has_permission('siteadmin'), webmail_domains=webmail_domains)
+    return render_template('detail.html', post=post, reportform=reportform, rejectform=rejectform, siteadmin=lastuser.has_permission('siteadmin'), webmail_domains=webmail_domains, jobview=jobview)
+
+
+@app.route('/reveal/<hashid>')
+@lastuser.requires_login
+def revealjob(hashid):
+    """
+    This view is a GET request and that is intentional.
+    """
+    post = JobPost.query.filter_by(hashid=hashid).first_or_404()
+    if post.status in [POSTSTATUS.REJECTED, POSTSTATUS.WITHDRAWN]:
+        abort(410)
+    jobview = UserJobView.query.get((g.user.id, post.id))
+    if jobview is None:
+        jobview = UserJobView(user=g.user, jobpost=post, applied=True)
+        db.session.add(jobview)
+        db.session.commit()
+    elif jobview.applied == False:
+        jobview.applied = True
+        db.session.commit()
+    if request.is_xhr:
+        return scrubemail(escape(post.how_to_apply), ('z', 'y'))
+    else:
+        return redirect(url_for('jobdetail', hashid=post.hashid), 303)
 
 
 @app.route('/reject/<hashid>', methods=('GET', 'POST'))

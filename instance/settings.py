@@ -62,7 +62,7 @@ BANNED_WORDS = [
 ]
 
 #: LastUser server
-LASTUSER_SERVER = 'https://auth.hasgeek.com'
+LASTUSER_SERVER = 'https://auth.hasgeek.com/'
 #: LastUser client id
 LASTUSER_CLIENT_ID = ''
 #: LastUser client secret

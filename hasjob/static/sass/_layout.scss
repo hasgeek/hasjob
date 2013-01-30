@@ -333,7 +333,7 @@ footer {
 }
 
 #sheet, #guide {
-    input[type="submit"] {
+    input[type="submit"], a.btn {
         height: 27px;
         border: 1px solid $color-outline;
         font-family: $font-button;
@@ -343,6 +343,7 @@ footer {
         background: #e6e6e6;
         @include background-image(linear-gradient(#e6e6e6, #d6d6d6));
         font-weight: bold;
+        text-decoration: none;
         color: #444;
         vertical-align: text-bottom;
         &:hover {
@@ -351,6 +352,9 @@ footer {
             @include background-image(linear-gradient(#d6d6d6, #c6c6c6));
             //color: #fff;
         }
+    }
+    a.btn {
+        padding: 3px 5px 2px;
     }
 }
 

@@ -95,7 +95,21 @@
   </div>
   <div class="section" id="apply-info">
     <h2>Apply for this position</h2>
-    <p>{{ post.how_to_apply|scrubemail(('z', 'y')) }}</p>
+    <p id="apply-info-para">
+      {% if post.is_draft() %}{# Always show when in draft state #}
+        {{ post.how_to_apply|scrubemail(('z', 'y')) }}
+      {%- elif g.user %}
+        {% if jobview.applied %}{# User has already hit the reveal button #}
+          {{ post.how_to_apply|scrubemail(('z', 'y')) }}
+        {%- else %}
+          <a class="btn" id="reveal-button" href="{{ url_for('revealjob', hashid=post.hashid) }}">Show instructions</a>
+        {%- endif %}
+      {%- else %}
+        <a class="btn" href="{{ url_for('revealjob', hashid=post.hashid) }}">Login with Twitter or Google</a>
+        to see instructions on how to apply.
+        Your identity will not be revealed to the employer.
+      {%- endif %}
+    </p>
   </div>
   {% if post.hr_contact is not none %}{# Don't display notice on old listings #}
     <div class="section" id="recruiter-notice">
@@ -161,6 +175,15 @@
   $(function() {
     $('#detailed-info a').oembed(null, {
       allowedProviders: ['youtube', 'flickr', 'viddler', 'blip', 'vimeo', 'dailymotion', 'slideshare', 'scribd'],
+    });
+  });
+  $(function() {
+    $("#reveal-button").click(function(e) {
+      $.ajax($(this).attr('href')).done(function(html) {
+        $("#apply-info-para").html(html);
+      });
+      e.preventDefault();
+      return false;
     });
   });
 </script>
