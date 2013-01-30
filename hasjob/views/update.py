@@ -87,7 +87,7 @@ def revealjob(hashid):
         jobview.applied = True
         db.session.commit()
     if request.is_xhr:
-        return scrubemail(escape(post.how_to_apply), ('z', 'y'))
+        return scrubemail(unicode(escape(post.how_to_apply)), ('z', 'y'))
     else:
         return redirect(url_for('jobdetail', hashid=post.hashid), 303)
 

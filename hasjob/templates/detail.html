@@ -181,6 +181,7 @@
     $("#reveal-button").click(function(e) {
       $.ajax($(this).attr('href')).done(function(html) {
         $("#apply-info-para").html(html);
+        unrot13();
       });
       e.preventDefault();
       return false;

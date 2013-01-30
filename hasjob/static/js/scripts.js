@@ -10,7 +10,7 @@ function radioHighlight(radioName, highlightClass) {
 }
 
 // ROT13 link handler
-$(function() {
+function unrot13() {
   $("a.rot13").each(function() {
     if ($(this).attr('data-href')) {
       var decoded = $(this).attr('data-href').replace(/[a-zA-Z]/g, function(c) {
@@ -19,6 +19,10 @@ $(function() {
       $(this).attr('href', decoded);
       $(this).removeAttr('data-href');
       $(this).removeClass('rot13');
-    };
+    }
   });
+}
+
+$(function() {
+  unrot13();
 });
