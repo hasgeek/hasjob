@@ -30,6 +30,12 @@ css = Bundle(networkbar_css,
              'css/screen.css',
              filters='cssmin', output='css/packed.css')
 
+# Third, after config, import the models and views
+
+import hasjob.models
+import hasjob.views
+from hasjob.models import db
+
 
 # Configure the app
 def init_for(env):
@@ -42,8 +48,3 @@ def init_for(env):
     lastuser.init_app(app)
     assets.register('js_all', js)
     assets.register('css_all', css)
-
-# Third, after config, import the models and views
-
-import hasjob.models
-import hasjob.views
