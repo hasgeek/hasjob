@@ -58,6 +58,9 @@
           <div id="newpost_details"><input type="submit" value="Add details &rarr;"/></div>
         </form>
       </li>
+      <li id="stickiead" class="stickie">
+        <a href="http://metarefresh.in/2013/" target="_blank"><img src="{{ url_for('static', filename='img/banner.png') }}"></a>
+      </li>
     {%- endif -%}
     {%- if grouped %}
       {%- for grouping, group in grouped.items() -%}{%- with post = group[0] -%}

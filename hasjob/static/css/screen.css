@@ -850,6 +850,10 @@ footer {
   margin: 2em 0;
 }
 
+#banner-bottom {
+  margin: 2em 0 1em 0;
+}
+
 #search {
   float: right;
   padding-left: 1.2em;
@@ -1210,7 +1214,7 @@ header .stickie {
   bottom: 10px;
 }
 
-#newpost, #filtered, #nojobs {
+#newpost, #filtered, #nojobs, #stickiead {
   font-family: "Walter Turncoat", sans-serif;
   background-color: #f6f6f6;
   -webkit-transition-property: background-color;
@@ -1231,6 +1235,10 @@ header .stickie {
           @include transition-duration(0.5s);
       }
   } */
+}
+
+#stickiead a {
+  text-align: center;
 }
 
 .stickie.special {

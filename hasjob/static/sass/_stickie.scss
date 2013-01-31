@@ -165,7 +165,7 @@
     // Left
 }
 
-#newpost, #filtered, #nojobs {
+#newpost, #filtered, #nojobs, #stickiead {
     font-family: $font-stickie-info;
     background-color: $color-stickie-info;
     @include transition-property(background-color);
@@ -180,6 +180,10 @@
             @include transition-duration(0.5s);
         }
     } */
+}
+
+#stickiead a {
+    text-align: center;
 }
 
 .stickie.special {
