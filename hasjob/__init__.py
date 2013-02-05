@@ -17,7 +17,9 @@ lastuser = LastUser()
 
 # Second, setup assets
 assets = Environment(app)
-js = Bundle('js/libs/jquery-1.5.1.min.js',
+js = Bundle('js/libs/jquery-1.8.3.min.js',
+            'js/libs/jquery-ui-1.10.0.custom.js',
+            'js/libs/jQRangeSlider-min.js',
             'js/libs/jquery.textarea-expander.js',
             'js/libs/tiny_mce/jquery.tinymce.js',
             'js/libs/jquery.form.js',
@@ -27,6 +29,8 @@ js = Bundle('js/libs/jquery-1.5.1.min.js',
             filters='jsmin', output='js/packed.js')
 
 css = Bundle(networkbar_css,
+             'css/jquery-ui.css',
+             'css/range-slider.css',
              'css/screen.css',
              filters='cssmin', output='css/packed.css')
 
