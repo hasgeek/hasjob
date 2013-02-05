@@ -5,10 +5,10 @@ from flask import g, request
 from flask.ext.wtf import Form, TextField, TextAreaField, RadioField, FileField, BooleanField
 from flask.ext.wtf import Required, Email, Length, URL, ValidationError
 from flask.ext.wtf.html5 import EmailField
+from uploads import process_image, UploadNotAllowed
 
 from hasjob import app
-from uploads import process_image, UploadNotAllowed
-from utils import simplify_text
+from hasjob.utils import simplify_text, EMAIL_RE
 
 QUOTES_RE = re.compile(ur'[\'"`‘’“”′″‴]+')
 
@@ -111,6 +111,14 @@ class ListingForm(Form):
     def validate_job_location(form, field):
         if QUOTES_RE.search(field.data) is not None:
             raise ValidationError(u"Don’t use quotes in the location name")
+
+    def validate_job_description(form, field):
+        if EMAIL_RE.search(field.data) is not None:
+            raise ValidationError(u"Contact information should be in the How to Apply section below, not here")
+
+    def validate_job_perks_description(form, field):
+        if EMAIL_RE.search(field.data) is not None:
+            raise ValidationError(u"Contact information should be in the How to Apply section below, not here")
 
 
 class ConfirmForm(Form):
