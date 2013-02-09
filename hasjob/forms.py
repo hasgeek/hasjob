@@ -64,8 +64,8 @@ class ListingForm(Form):
     company_name = TextField("Name",
         description=u"The name of the organization where the position is. "
                     u"No intermediaries or unnamed stealth startups. Use your own real name if the company isn’t named "
-                    u"yet. We do not accept listings from third parties such as HR consultants. Such listings may be "
-                    u"removed without notice.",
+                    u"yet. We do not accept listings from third parties such as recruitment consultants. Such listings "
+                    u"may be removed without notice",
         validators=[Required(u"This is required. Posting any name other than that of the actual organization is a violation of the ToS")])
     company_logo = FileField("Logo",
         description=u"Optional — Your company logo will appear at the top of your listing. "
