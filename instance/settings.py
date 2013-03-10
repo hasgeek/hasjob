@@ -6,7 +6,7 @@ TYPEKIT_CODE=''
 #: Google Analytics code UA-XXXXXX-X
 GA_CODE=''
 #: Database backend
-SQLALCHEMY_DATABASE_URI = 'sqlite://'
+SQLALCHEMY_DATABASE_URI = 'sqlite:///'
 #: Secret key
 SECRET_KEY = 'make this something random'
 #: Timezone

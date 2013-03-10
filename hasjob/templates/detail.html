@@ -182,7 +182,8 @@
     });
   });
   $(function() {
-    $("#reveal-button").click(function(e) {
+    $("#reveal-button").on('click dblclick', function(e) {
+      $(this).hide();
       $.ajax($(this).attr('href')).done(function(html) {
         $("#apply-info-para").html(html);
         unrot13();
