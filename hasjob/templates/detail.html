@@ -183,12 +183,12 @@
   });
   $(function() {
     $("#reveal-button").on('click dblclick', function(e) {
-      $(this).hide();
+      e.preventDefault();
+      $(this).attr('disabled', 'disabled');
       $.ajax($(this).attr('href')).done(function(html) {
         $("#apply-info-para").html(html);
         unrot13();
       });
-      e.preventDefault();
       return false;
     });
   });
