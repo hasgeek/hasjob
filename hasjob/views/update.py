@@ -108,7 +108,7 @@ def rejectjob(hashid):
         post.review_datetime = datetime.utcnow()
         post.status = POSTSTATUS.REJECTED
         post.reviewer = g.user
-        msg = Message(subject="Rejection of your job listing at the HasGeek Job Board",
+        msg = Message(subject="About your job listing on the HasGeek Job Board",
             recipients=[post.email])
         msg.body = render_template("reject_email.md", post=post)
         msg.html = markdown(msg.body)
@@ -243,8 +243,9 @@ def editjob(hashid, key, form=None, post=None, validated=False):
 
         similar = False
         for oldpost in JobPost.query.filter(JobPost.email_domain == form_email_domain).filter(
-                                            JobPost.status > POSTSTATUS.PENDING).filter(
-                                            JobPost.datetime > datetime.utcnow() - agelimit).all():
+                JobPost.status.in_([POSTSTATUS.CONFIRMED, POSTSTATUS.REVIEWED,
+                    POSTSTATUS.WITHDRAWN, POSTSTATUS.REJECTED])).filter(
+                JobPost.datetime > datetime.utcnow() - agelimit).all():
             if oldpost.id != post.id:
                 if oldpost.words:
                     s = SequenceMatcher(None, form_words, oldpost.words)
