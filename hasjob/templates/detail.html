@@ -188,6 +188,9 @@
       $.ajax($(this).attr('href')).done(function(html) {
         $("#apply-info-para").html(html);
         unrot13();
+      })
+      .fail(function(msg){
+        $(this).removeAttr("disabled");
       });
       return false;
     });
