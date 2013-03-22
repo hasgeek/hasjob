@@ -3,10 +3,11 @@
 
 from flask import Flask
 from flask.ext.mail import Mail
-from flask.ext.assets import Environment, Bundle
 from flask.ext.lastuser import LastUser
-from baseframe import baseframe, networkbar_js, networkbar_css
+from baseframe import baseframe, assets, Version
 import coaster.app
+from ._version import __version__
+
 
 # First, make an app and config it
 
@@ -16,23 +17,15 @@ mail = Mail()
 lastuser = LastUser()
 
 # Second, setup assets
-assets = Environment(app)
-js = Bundle('js/libs/jquery-1.8.3.min.js',
-            'js/libs/jquery-ui-1.10.0.custom.js',
-            'js/libs/jQRangeSlider-min.js',
-            'js/libs/jquery.textarea-expander.js',
-            'js/libs/tiny_mce/jquery.tinymce.js',
-            'js/libs/jquery.form.js',
-            'js/libs/jquery.oembed.js',
-            networkbar_js,
-            'js/scripts.js',
-            filters='jsmin', output='js/packed.js')
-
-css = Bundle(networkbar_css,
-             'css/jquery-ui.css',
-             'css/range-slider.css',
-             'css/screen.css',
-             filters='cssmin', output='css/packed.css')
+version = Version(__version__)
+assets['jquery-ui.js'][version] = 'js/libs/jquery-ui-1.10.0.custom.js'
+assets['jQRangeSlider.js'][version] = 'js/libs/jQRangeSlider-min.js'
+assets['jquery.textarea.expander.js'][version] = 'js/libs/jquery.textarea-expander.js'
+assets['jquery.oembed.js'][version] = 'js/libs/jquery.oembed.js'
+assets['hasjob.js'][version] = 'js/scripts.js'
+assets['hasjob.css'][version] = 'css/screen.css'
+assets['jquery-ui.css'][version] = 'css/jquery-ui.css'
+assets['range-slider.css'][version] = 'css/range-slider.css'
 
 # Third, after config, import the models and views
 
@@ -44,11 +37,12 @@ from hasjob.models import db
 # Configure the app
 def init_for(env):
     coaster.app.init_app(app, env)
+    baseframe.init_app(app, requires=['jquery.js==1.8.3', 'jquery-ui', 'jQRangeSlider',
+        'jquery.textarea.expander', 'jquery.tinymce', 'jquery.form',
+        'jquery.oembed', 'baseframe-networkbar', 'range-slider', 'hasjob'])
     from hasjob.search import configure as search_configure
     from hasjob.uploads import configure as uploads_configure
     search_configure()
     uploads_configure()
     mail.init_app(app)
     lastuser.init_app(app)
-    assets.register('js_all', js)
-    assets.register('css_all', css)
