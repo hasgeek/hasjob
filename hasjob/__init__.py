@@ -4,7 +4,9 @@
 from flask import Flask
 from flask.ext.mail import Mail
 from flask.ext.lastuser import LastUser
-from baseframe import baseframe, assets, Version
+from flask.ext.assets import Environment
+from baseframe import baseframe, Version
+from baseframe import assets as assets_registry
 import coaster.app
 from ._version import __version__
 
@@ -18,14 +20,15 @@ lastuser = LastUser()
 
 # Second, setup assets
 version = Version(__version__)
-assets['jquery-ui.js'][version] = 'js/libs/jquery-ui-1.10.0.custom.js'
-assets['jQRangeSlider.js'][version] = 'js/libs/jQRangeSlider-min.js'
-assets['jquery.textarea.expander.js'][version] = 'js/libs/jquery.textarea-expander.js'
-assets['jquery.oembed.js'][version] = 'js/libs/jquery.oembed.js'
-assets['hasjob.js'][version] = 'js/scripts.js'
-assets['hasjob.css'][version] = 'css/screen.css'
-assets['jquery-ui.css'][version] = 'css/jquery-ui.css'
-assets['range-slider.css'][version] = 'css/range-slider.css'
+assets = Environment(app)
+assets_registry['jquery-ui.js'][version] = 'js/libs/jquery-ui-1.10.0.custom.js'
+assets_registry['jQRangeSlider.js'][version] = 'js/libs/jQRangeSlider-min.js'
+assets_registry['jquery.textarea.expander.js'][version] = 'js/libs/jquery.textarea-expander.js'
+assets_registry['jquery.oembed.js'][version] = 'js/libs/jquery.oembed.js'
+assets_registry['hasjob.js'][version] = 'js/scripts.js'
+assets_registry['hasjob.css'][version] = 'css/screen.css'
+assets_registry['jquery-ui.css'][version] = 'css/jquery-ui.css'
+assets_registry['range-slider.css'][version] = 'css/range-slider.css'
 
 # Third, after config, import the models and views
 
@@ -37,12 +40,14 @@ from hasjob.models import db
 # Configure the app
 def init_for(env):
     coaster.app.init_app(app, env)
-    baseframe.init_app(app, requires=['jquery.js==1.8.3', 'jquery-ui', 'jQRangeSlider',
-        'jquery.textarea.expander', 'jquery.tinymce', 'jquery.form',
-        'jquery.oembed', 'baseframe-networkbar', 'range-slider', 'hasjob'])
     from hasjob.search import configure as search_configure
     from hasjob.uploads import configure as uploads_configure
     search_configure()
     uploads_configure()
     mail.init_app(app)
     lastuser.init_app(app)
+    assets.register('js_all', assets_registry.require('jquery.js', 'jquery-ui.js', 'jQRangeSlider.js',
+        'jquery.textarea.expander.js', 'jquery.tinymce.js', 'jquery.form.js',
+        'jquery.oembed.js', 'baseframe-networkbar.js', 'range-slider.js', 'hasjob.js'))
+    assets.register('css_all', assets_registry.require('baseframe-networkbar.css',
+                    'range-slider.css', 'jquery-ui.css','hasjob.css'))
