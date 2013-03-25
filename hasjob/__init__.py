@@ -5,7 +5,7 @@ from flask import Flask
 from flask.ext.mail import Mail
 from flask.ext.lastuser import LastUser
 from baseframe import baseframe, Version
-from baseframe import assets as assets
+from baseframe import assets
 import coaster.app
 from ._version import __version__
 
