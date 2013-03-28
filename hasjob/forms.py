@@ -43,7 +43,8 @@ class ListingForm(Form):
     job_category = RadioField("Category", coerce=int, validators=[Required("Select a category")])
     job_location = TextField("Location",
         description=u'“Bangalore”, “Chennai”, “Pune”, etc or “Anywhere” (without quotes)',
-        validators=[Required(u"If this job doesn’t have a fixed location, use “Anywhere”")])
+        validators=[Required(u"If this job doesn’t have a fixed location, use “Anywhere”"),
+            Length(min=3, max=80, message="%(max)d characters maximum")])
     job_relocation_assist = BooleanField("Relocation assistance available")
     job_description = TextAreaField("Description",
         description=u"Our apologies for the mismatched font you see here. We’re (still) working on it",
