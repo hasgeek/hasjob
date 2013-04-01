@@ -60,6 +60,7 @@ BANNED_WORDS = [
     [['passionate'], u'Passion is implicit. Why even ask? Try another adjective?'],
     [['amazing'], u'Everybody’s amazing around here. The adjective is redundant.'],
     [['fodu'], u'We don’t know what you mean, but that sounds like a dirty word. Got another adjective?'],
+    [['sick'], u'Need an ambulance? Call 102, 108, 112 or 1298. One of those should work.']
 ]
 
 #: LastUser server
