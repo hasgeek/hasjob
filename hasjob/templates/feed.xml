@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom">
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/">
   <title>{{ title|e }} – {{ config['SITE_TITLE']|e }}</title>
   <link href="{{ url_for('index', _external=True) }}"/>
   <link rel="self" href="{{ request.base_url }}"/>
@@ -18,16 +18,16 @@
     <published>{{ post.datetime.isoformat() }}Z</published>
     <content type="html">
       &lt;p&gt;
-        {%- if post.company_logo %}&lt;img alt="Logo"src="{{ url_for('logoimage', hashid=post.hashid, _external=True) }}"&gt;&lt;br/&gt;{% endif %}
+        {%- if post.company_logo %}&lt;img alt="Logo" src="{{ url_for('logoimage', hashid=post.hashid, _external=True) }}"&gt;&lt;br/&gt;{% endif %}
         {%- if post.company_url %}
           &lt;strong&gt;&lt;a href="{{ post.company_url|e }}"&gt;{{ post.company_name|e|forceescape }}&lt;/a&gt;&lt;/strong&gt;&lt;br/&gt;
-        {% else %}
+        {%- else %}
           &lt;strong&gt;{{ post.company_name|e|forceescape }}&lt;/strong&gt;&lt;br/&gt;
         {% endif -%}
         {{ post.location|e|forceescape }}
       &lt;/p&gt;
       {{ post.description|e }}
-      {% if post.perks -%}
+      {%- if post.perks %}
       &lt;h2&gt;Job Perks&lt;/h2&gt;
       {{ post.perks|e }}
       {%- endif %}
