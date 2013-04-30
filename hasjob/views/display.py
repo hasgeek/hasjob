@@ -36,10 +36,12 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None):
         grouped = OrderedDict()
         for post in posts:
             if post.sticky:
-                if post.email_domain in webmail_domains:
-                    grouped.setdefault(('se', post.md5sum), []).append(post)
-                else:
-                    grouped.setdefault(('sd', post.email_domain), []).append(post)
+                # Make sticky posts appear in a group of one
+                grouped.setdefault(('s', post.hashid), []).append(post)
+                # if post.email_domain in webmail_domains:
+                #     grouped.setdefault(('se', post.md5sum), []).append(post)
+                # else:
+                #     grouped.setdefault(('sd', post.email_domain), []).append(post)
             elif post.email_domain in webmail_domains:
                 grouped.setdefault(('ne', post.md5sum), []).append(post)
             else:

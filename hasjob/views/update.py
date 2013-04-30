@@ -112,6 +112,7 @@ def stickyjob(hashid):
         return Markup('<p>' + msg + '</p>')
     else:
         flash(msg)
+        return redirect(url_for('jobdetail', hashid=post.hashid), 303)
 
 
 @app.route('/reject/<hashid>', methods=('GET', 'POST'))
