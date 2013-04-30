@@ -13,6 +13,7 @@ from flask import (
     url_for,
     session,
     escape,
+    Markup,
     )
 from flask.ext.mail import Message
 from hasjob import app, forms, mail, lastuser
@@ -54,6 +55,7 @@ def jobdetail(hashid):
     reportform = forms.ReportForm()
     reportform.report_code.choices = [(ob.id, ob.title) for ob in ReportCode.query.filter_by(public=True).order_by('seq')]
     rejectform = forms.RejectForm()
+    stickyform = forms.StickyForm(obj=post)
     if reportform.validate_on_submit():
         report = JobPostReport(post=post, reportcode_id=reportform.report_code.data)
         report.ipaddr = request.environ['REMOTE_ADDR']
@@ -66,7 +68,7 @@ def jobdetail(hashid):
             flash("Thanks! This job listing has been flagged for review.", "interactive")
     elif request.method == 'POST' and request.is_xhr:
         return render_template('inc/reportform.html', reportform=reportform, ajaxreg=True)
-    return render_template('detail.html', post=post, reportform=reportform, rejectform=rejectform, siteadmin=lastuser.has_permission('siteadmin'), webmail_domains=webmail_domains, jobview=jobview)
+    return render_template('detail.html', post=post, reportform=reportform, rejectform=rejectform, siteadmin=lastuser.has_permission('siteadmin'), webmail_domains=webmail_domains, jobview=jobview, stickyform=stickyform)
 
 
 @app.route('/reveal/<hashid>')
@@ -83,13 +85,33 @@ def revealjob(hashid):
         jobview = UserJobView(user=g.user, jobpost=post, applied=True)
         db.session.add(jobview)
         db.session.commit()
-    elif jobview.applied == False:
+    elif not jobview.applied:
         jobview.applied = True
         db.session.commit()
     if request.is_xhr:
         return scrubemail(unicode(escape(post.how_to_apply)), ('z', 'y'))
     else:
         return redirect(url_for('jobdetail', hashid=post.hashid), 303)
+
+
+@app.route('/sticky/<hashid>', methods=['POST'])
+@lastuser.requires_permission('siteadmin')
+def stickyjob(hashid):
+    post = JobPost.query.filter_by(hashid=hashid).first_or_404()
+    stickyform = forms.StickyForm(obj=post)
+    if stickyform.validate_on_submit():
+        post.sticky = stickyform.sticky.data
+        db.session.commit()
+        if post.sticky:
+            msg = "This listing has been made sticky."
+        else:
+            msg = "This listing is no longer sticky."
+    else:
+        msg = "Invalid submission"
+    if request.is_xhr:
+        return Markup('<p>' + msg + '</p>')
+    else:
+        flash(msg)
 
 
 @app.route('/reject/<hashid>', methods=('GET', 'POST'))
@@ -174,8 +196,8 @@ def confirm_email(hashid, key):
         else:
             if app.config.get('THROTTLE_LIMIT', 0) > 0:
                 post_count = JobPost.query.filter(JobPost.email_domain == post.email_domain).filter(
-                                              JobPost.status > POSTSTATUS.PENDING).filter(
-                                              JobPost.datetime > datetime.utcnow() - timedelta(days=1)).count()
+                    JobPost.status > POSTSTATUS.PENDING).filter(
+                        JobPost.datetime > datetime.utcnow() - timedelta(days=1)).count()
                 if post_count > app.config['THROTTLE_LIMIT']:
                     flash(u"We've received too many listings from %s in the last 24 hours. Please try again in a few hours. "
                         "If you believe this to be an error, please email us at %s." % (post.email_domain,

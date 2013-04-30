@@ -485,11 +485,11 @@ footer {
     }
 }
 
-#report, #reject {
+#report, #reject, #makesticky {
     display: none;
 }
 
-#report:target, #reject:target {
+#report:target, #reject:target, #makesticky:target {
     display: block;
 }
 

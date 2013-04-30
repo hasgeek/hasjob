@@ -141,3 +141,7 @@ class ReportForm(Form):
 
 class RejectForm(Form):
     reason = TextField('Reason', validators=[Required(u"Give a reason")])
+
+
+class StickyForm(Form):
+    sticky = BooleanField("Make this sticky?")

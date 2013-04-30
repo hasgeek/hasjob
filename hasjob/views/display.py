@@ -103,7 +103,7 @@ def feed(basequery=None, type=None, category=None, md5sum=None, domain=None):
     else:
         updated = datetime.utcnow().isoformat() + 'Z'
     return Response(render_template('feed.xml', posts=posts, updated=updated, title=title),
-                           content_type='application/atom+xml; charset=utf-8')
+        content_type='application/atom+xml; charset=utf-8')
 
 
 @app.route('/type/<slug>/feed')

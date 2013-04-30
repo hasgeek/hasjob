@@ -89,6 +89,13 @@
             {% include "inc/rejectform.html" %}
           </div>
         </li>
+        <li>
+          <a id="sidebar-sticky" href="#makesticky">Make sticky</a>
+          <div class="popup-box" id="makesticky">
+            <a class="close-popup" href="#">&#10005;</a>
+            {% include "inc/stickyform.html" %}
+          </div>
+        </li>
         {% endif %}
       </ul>
       {#<div id="banner">
@@ -157,6 +164,7 @@
   });
   $(function() {
     radioHighlight('report_code', 'selected');
+    $(".popup-box").hide();
     $("body").click(function() {
       // Hide popups
       $(".popup-box").fadeOut("fast");
@@ -173,6 +181,12 @@
   $(function() {
     $("#sidebar-reject").click(function() {
       $("#reject").fadeToggle("fast");
+      return false;
+    });
+  });
+  $(function() {
+    $("#sidebar-sticky").click(function() {
+      $("#makesticky").fadeToggle("fast");
       return false;
     });
   });
@@ -198,4 +212,5 @@
 </script>
 {{ ajaxform('reportform') }}
 {{ ajaxform('rejectform') }}
+{{ ajaxform('stickyform') }}
 {% endblock %}

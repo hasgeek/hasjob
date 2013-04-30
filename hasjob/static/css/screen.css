@@ -838,11 +838,11 @@ footer {
   border-left-color: white;
 }
 
-#report, #reject {
+#report, #reject, #makesticky {
   display: none;
 }
 
-#report:target, #reject:target {
+#report:target, #reject:target, #makesticky:target {
   display: block;
 }
 
