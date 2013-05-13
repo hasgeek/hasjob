@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 #: The title of this site
-SITE_TITLE='Job Board'
+SITE_TITLE = 'Job Board'
 #: TypeKit code for fonts
-TYPEKIT_CODE=''
+TYPEKIT_CODE = ''
 #: Google Analytics code UA-XXXXXX-X
-GA_CODE=''
+GA_CODE = ''
 #: Database backend
 SQLALCHEMY_DATABASE_URI = 'sqlite:///'
 #: Secret key
@@ -12,9 +12,9 @@ SECRET_KEY = 'make this something random'
 #: Timezone
 TIMEZONE = 'Asia/Calcutta'
 #: Upload path
-UPLOADED_LOGOS_DEST='/tmp/uploads'
+UPLOADED_LOGOS_DEST = '/tmp/uploads'
 #: Search index path
-SEARCH_INDEX_PATH='/tmp/search'
+SEARCH_INDEX_PATH = '/tmp/search'
 #: Mail settings
 #: MAIL_FAIL_SILENTLY : default True
 #: MAIL_SERVER : default 'localhost'
@@ -60,7 +60,8 @@ BANNED_WORDS = [
     [['passionate'], u'Passion is implicit. Why even ask? Try another adjective?'],
     [['amazing'], u'Everybody’s amazing around here. The adjective is redundant.'],
     [['fodu'], u'We don’t know what you mean, but that sounds like a dirty word. Got another adjective?'],
-    [['sick'], u'Need an ambulance? Call 102, 108, 112 or 1298. One of those should work.']
+    [['sick'], u'Need an ambulance? Call 102, 108, 112 or 1298. One of those should work.'],
+    [['iit', 'iitian', 'iit-ian', 'iim'], u'Q: How do you know someone is from IIT/IIM? A: They remind you all the time. Don’t be that person.'],
 ]
 
 #: LastUser server
