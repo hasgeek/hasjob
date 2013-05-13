@@ -27,6 +27,7 @@ SEARCH_INDEX_PATH = '/tmp/search'
 MAIL_FAIL_SILENTLY = False
 MAIL_SERVER = 'localhost'
 DEFAULT_MAIL_SENDER = ('Job Board', 'test@example.com')
+MAIL_DEFAULT_SENDER = DEFAULT_MAIL_SENDER
 MAIL_USERNAME = None
 MAIL_PASSWORD = None
 #: Logging: recipients of error emails
