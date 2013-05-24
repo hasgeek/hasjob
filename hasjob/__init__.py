@@ -3,9 +3,8 @@
 
 from flask import Flask
 from flask.ext.mail import Mail
-from flask.ext.lastuser import LastUser
-from baseframe import baseframe, Version
-from baseframe import assets
+from flask.ext.lastuser import Lastuser
+from baseframe import baseframe, assets, Version
 import coaster.app
 from ._version import __version__
 
@@ -14,7 +13,7 @@ from ._version import __version__
 
 app = Flask(__name__, instance_relative_config=True)
 mail = Mail()
-lastuser = LastUser()
+lastuser = Lastuser()
 
 # Second, setup assets
 version = Version(__version__)
