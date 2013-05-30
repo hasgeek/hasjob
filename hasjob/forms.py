@@ -134,6 +134,8 @@ class ListingForm(Form):
             raise ValidationError(u"That domain does not exist")
         except dns.resolver.NoAnswer:
             raise ValidationError(u"That email address does not exist")
+        except (dns.resolver.Timeout, dns.resolver.NoNameservers):
+            pass
 
 
 class ConfirmForm(Form):
