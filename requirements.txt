@@ -15,6 +15,7 @@ coverage
 bleach
 ordereddict
 jsmin
+dnspython
 https://github.com/hasgeek/coaster/zipball/master
 https://github.com/hasgeek/flask-lastuser/zipball/master
 https://github.com/hasgeek/baseframe/zipball/master
