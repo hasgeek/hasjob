@@ -87,7 +87,7 @@ class ListingForm(Form):
                     u"Your full email address will not be revealed to applicants.",
         validators=[Required("We need to confirm your email address before the job can be listed"),
             Length(min=5, max=80, message="%(max)d characters maximum"),
-            Email("That does not appear to be a valid email address")])
+            Email("This does not appear to be a valid email address")])
 
     def validate_company_logo(form, field):
         if not request.files['company_logo']:
