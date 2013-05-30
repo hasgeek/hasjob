@@ -87,7 +87,7 @@ class ListingForm(Form):
                     u"Your full email address will not be revealed to applicants.",
         validators=[Required("We need to confirm your email address before the job can be listed"),
             Length(min=5, max=80, message="%(max)d characters maximum"),
-            Email("This does not appear to be a valid email address")])
+            Email("That does not appear to be a valid email address")])
 
     def validate_company_logo(form, field):
         if not request.files['company_logo']:
@@ -131,9 +131,9 @@ class ListingForm(Form):
         try:
             dns.resolver.query(email_domain, 'MX')
         except dns.resolver.NXDOMAIN:
-            raise ValidationError(u"This domain does not exist")
+            raise ValidationError(u"That domain does not exist")
         except dns.resolver.NoAnswer:
-            raise ValidationError(u"This email address does not exist")
+            raise ValidationError(u"That email address does not exist")
 
 
 class ConfirmForm(Form):
