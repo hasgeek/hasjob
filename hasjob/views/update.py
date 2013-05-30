@@ -16,6 +16,7 @@ from flask import (
     Markup,
     )
 from flask.ext.mail import Message
+from coaster import get_email_domain, md5sum
 from hasjob import app, forms, mail, lastuser
 from hasjob.models import (
     agelimit,
@@ -31,7 +32,7 @@ from hasjob.models import (
     )
 from hasjob.twitter import tweet
 from hasjob.uploads import uploaded_logos
-from hasjob.utils import get_email_domain, get_word_bag, md5sum, scrubemail
+from hasjob.utils import get_word_bag, scrubemail
 from hasjob.views import ALLOWED_TAGS
 from hasjob.views.display import webmail_domains
 

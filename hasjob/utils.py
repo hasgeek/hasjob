@@ -1,9 +1,9 @@
-import string
 import re
 from random import randint
 from uuid import uuid4
 from base64 import b64encode
-from hashlib import md5
+from coaster import simplify_text
+
 
 #: This code adapted from http://en.wikipedia.org/wiki/Base_36#Python%5FConversion%5FCode
 def base36encode(number, alphabet='0123456789abcdefghijklmnopqrstuvwxyz'):
@@ -50,7 +50,7 @@ def random_hash_key():
     ...     if len(random_hash_key()) != 5:
     ...         print "Length is not 5!"
     """
-    return ('0000' + base36encode(randint(0, 60466175)))[-5:] # 60466175 is 'zzzzz'
+    return ('0000' + base36encode(randint(0, 60466175)))[-5:]  # 60466175 is 'zzzzz'
 
 
 def newid():
@@ -60,55 +60,8 @@ def newid():
     return b64encode(uuid4().bytes, altchars=',-').replace('=', '')
 
 
-def md5sum(data):
-    """
-    Return md5sum of data as a 32-character string.
-
-    >>> md5sum('random text')
-    'd9b9bec3f4cc5482e7c5ef43143e563a'
-    >>> md5sum(u'random text')
-    'd9b9bec3f4cc5482e7c5ef43143e563a'
-    >>> len(md5sum('random text'))
-    32
-    """
-    return md5(data).hexdigest()
-
-
-def get_email_domain(email):
-    """
-    Return the domain component of an email address.
-
-    >>> get_email_domain('jace@pobox.com')
-    'pobox.com'
-    >>> get_email_domain('jace+test@pobox.com')
-    'pobox.com'
-    >>> get_email_domain('foobar')
-    """
-    try:
-        return email.split('@')[1]
-    except IndexError:
-        return None
-
-
-def simplify_text(text):
-    """
-    Simplify text to allow comparison.
-
-    >>> simplify_text("Awesome Coder wanted at Awesome Company")
-    'awesome coder wanted at awesome company'
-    >>> simplify_text("Awesome Coder, wanted  at Awesome Company! ")
-    'awesome coder wanted at awesome company'
-    >>> simplify_text(u"Awesome Coder, wanted  at Awesome Company! ")
-    u'awesome coder wanted at awesome company'
-    """
-    if isinstance(text, unicode):
-        text = unicode(text.encode('utf-8').translate(string.maketrans("",""), string.punctuation).lower(), 'utf-8')
-    else:
-        text = text.translate(string.maketrans("",""), string.punctuation).lower()
-    return " ".join(text.split())
-
-
 EMAIL_RE = re.compile(r'\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}\b', re.I)
+
 
 def scrubemail(data, rot13=False, css_junk=None):
     """
@@ -131,7 +84,7 @@ def scrubemail(data, rot13=False, css_junk=None):
         link = 'mailto:' + email
         if rot13:
             link = link.decode('rot13')
-        if css_junk and len(email)>3:
+        if css_junk and len(email) > 3:
             third = int(len(email) / 3)
             parts = (email[:third], email[third:third*2], email[third*2:])
             if isinstance(css_junk, (tuple, list)):
@@ -155,6 +108,7 @@ def scrubemail(data, rot13=False, css_junk=None):
 
 WORDSPLIT_RE = re.compile('\W+')
 TAGSPLIT_RE = re.compile('<.*?>')
+
 
 def striptags(text):
     """

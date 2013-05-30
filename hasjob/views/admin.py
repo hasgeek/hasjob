@@ -3,18 +3,18 @@
 
 from datetime import datetime, timedelta
 from flask import abort, Response
+from coaster import md5sum
 
 from hasjob import app
 from hasjob.search import delete_from_index
 from hasjob.models import db, JobPost, agelimit
-from hasjob.utils import md5sum
 
 
 @app.route('/admin/update-search/<key>')
 def delete_index(key):
     if key == app.config['PERIODIC_KEY']:
         now = datetime.utcnow()
-        upper_age_limit = timedelta(days=agelimit.days*2) # Reasonably large window to clear backlog
+        upper_age_limit = timedelta(days=agelimit.days * 2)  # Reasonably large window to clear backlog
         items = JobPost.query.filter(JobPost.datetime > now - upper_age_limit).filter(JobPost.datetime < now - agelimit).all()
         delete_from_index(items)
         return Response("Removed %d items.\n" % len(items),
