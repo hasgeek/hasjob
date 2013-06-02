@@ -32,7 +32,7 @@ def lastuserauth():
     return redirect(get_next_url())
 
 
-@app.route('/login/notify')
+@app.route('/login/notify', methods=['POST'])
 @lastuser.notification_handler
 def lastusernotify(user):
     # Save the user object
