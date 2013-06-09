@@ -267,7 +267,7 @@ def editjob(hashid, key, form=None, post=None, validated=False):
         similar = False
         for oldpost in JobPost.query.filter(JobPost.email_domain == form_email_domain).filter(
                 JobPost.status.in_([POSTSTATUS.CONFIRMED, POSTSTATUS.REVIEWED,
-                    POSTSTATUS.WITHDRAWN])).filter(
+                    POSTSTATUS.WITHDRAWN, POSTSTATUS.REJECTED])).filter(
                 JobPost.datetime > datetime.utcnow() - agelimit).all():
             if oldpost.id != post.id:
                 if oldpost.words:
