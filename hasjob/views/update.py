@@ -43,7 +43,7 @@ def jobdetail(hashid):
     if post.status in [POSTSTATUS.DRAFT, POSTSTATUS.PENDING]:
         if post.edit_key not in session.get('userkeys', []):
             abort(403)
-    if post.status in [POSTSTATUS.REJECTED, POSTSTATUS.WITHDRAWN]:
+    if post.status in [POSTSTATUS.REJECTED, POSTSTATUS.WITHDRAWN, POSTSTATUS.SPAM]:
         abort(410)
     if g.user:
         jobview = UserJobView.query.get((g.user.id, post.id))
@@ -79,7 +79,7 @@ def revealjob(hashid):
     This view is a GET request and that is intentional.
     """
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
-    if post.status in [POSTSTATUS.REJECTED, POSTSTATUS.WITHDRAWN]:
+    if post.status in [POSTSTATUS.REJECTED, POSTSTATUS.WITHDRAWN, POSTSTATUS.SPAM]:
         abort(410)
     jobview = UserJobView.query.get((g.user.id, post.id))
     if jobview is None:
@@ -123,25 +123,32 @@ def rejectjob(hashid):
     if post.status in [POSTSTATUS.DRAFT, POSTSTATUS.PENDING]:
         if post.edit_key not in session.get('userkeys', []):
             abort(403)
-    if post.status in [POSTSTATUS.REJECTED, POSTSTATUS.WITHDRAWN]:
+    if post.status in [POSTSTATUS.REJECTED, POSTSTATUS.WITHDRAWN, POSTSTATUS.SPAM]:
         abort(410)
     rejectform = forms.RejectForm()
     if rejectform.validate_on_submit():
         post.closed_datetime = datetime.utcnow()
         post.review_comments = rejectform.reason.data
         post.review_datetime = datetime.utcnow()
-        post.status = POSTSTATUS.REJECTED
         post.reviewer = g.user
-        msg = Message(subject="About your job listing on the HasGeek Job Board",
-            recipients=[post.email])
-        msg.body = render_template("reject_email.md", post=post)
-        msg.html = markdown(msg.body)
-        mail.send(msg)
+
+        if request.form.get('submit') == 'spam':
+            flashmsg = "This job listing has been marked as spam."
+            post.status = POSTSTATUS.SPAM
+        else:
+            flashmsg = "This job listing has been rejected."
+            post.status = POSTSTATUS.REJECTED
+            msg = Message(subject="About your job listing on the HasGeek Job Board",
+                recipients=[post.email])
+            msg.body = render_template("reject_email.md", post=post)
+            msg.html = markdown(msg.body)
+            mail.send(msg)
         db.session.commit()
         if request.is_xhr:
-            return "<p>This job listing has been rejected.</p>"
+
+            return "<p>%s</p>" % flashmsg
         else:
-            flash("This job listing has been rejected", "interactive")
+            flash(flashmsg, "interactive")
     elif request.method == 'POST' and request.is_xhr:
         return render_template('inc/rejectform.html', post=post, rejectform=rejectform, ajaxreg=True)
     return redirect(url_for('jobdetail', hashid=post.hashid))
@@ -151,7 +158,7 @@ def rejectjob(hashid):
 def confirm(hashid):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
     form = forms.ConfirmForm()
-    if post.status == POSTSTATUS.REJECTED:
+    if post.status in [POSTSTATUS.REJECTED, POSTSTATUS.SPAM]:
         abort(410)
     elif post.status == POSTSTATUS.DRAFT:
         if post.edit_key not in session.get('userkeys', []):
@@ -183,7 +190,7 @@ def confirm_email(hashid, key):
     # and update post.datetime to utcnow() so it'll show on top of the stack
     # This function expects key to be email_verify_key, not edit_key like the others
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
-    if post.status == POSTSTATUS.REJECTED:
+    if post.status in [POSTSTATUS.REJECTED, POSTSTATUS.SPAM]:
         abort(410)
     elif post.status in [POSTSTATUS.CONFIRMED, POSTSTATUS.REVIEWED]:
         flash("This job listing has already been confirmed and published", "interactive")
@@ -265,9 +272,12 @@ def editjob(hashid, key, form=None, post=None, validated=False):
         form_words = get_word_bag(u' '.join((form_description, form_perks, form_how_to_apply)))
 
         similar = False
-        for oldpost in JobPost.query.filter(JobPost.email_domain == form_email_domain).filter(
+        for oldpost in JobPost.query.filter(db.or_(
+            db.and_(
+                JobPost.email_domain == form_email_domain,
                 JobPost.status.in_([POSTSTATUS.CONFIRMED, POSTSTATUS.REVIEWED,
-                    POSTSTATUS.WITHDRAWN, POSTSTATUS.REJECTED])).filter(
+                    POSTSTATUS.WITHDRAWN, POSTSTATUS.REJECTED])),
+            JobPost.status == POSTSTATUS.SPAM)).filter(
                 JobPost.datetime > datetime.utcnow() - agelimit).all():
             if oldpost.id != post.id:
                 if oldpost.words:

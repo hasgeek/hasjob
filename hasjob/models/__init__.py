@@ -18,6 +18,7 @@ class POSTSTATUS:
     REJECTED = 4  # Reviewed and rejected as inappropriate
     WITHDRAWN = 5  # Withdrawn by owner
     FLAGGED = 6  # Flagged by users for review
+    SPAM = 7  # Marked as spam
 
 
 class USERLEVEL:

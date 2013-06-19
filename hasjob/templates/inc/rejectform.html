@@ -4,6 +4,7 @@
   <input type="hidden" name="form.id" value="rejectform"/>
   {{ rejectform.hidden_tag() }}
   {{ renderfield(rejectform.reason) }}
-  <input type="submit" value="Reject"/>
+  <button type="submit" name="submit" value="reject">Reject</button>
+  <button type="spam" name="submit" value="spam">Spam</button>
 </form>
 {% if ajaxreg %}{{ ajaxform("rejectform") }}{% endif %}

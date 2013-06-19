@@ -667,7 +667,7 @@ footer {
   font-weight: bold;
 }
 
-#sheet input[type="submit"], #sheet a.btn, #guide input[type="submit"], #guide a.btn {
+#sheet input[type="submit"], #sheet a.btn, #sheet button, #guide input[type="submit"], #guide a.btn, #guide button {
   height: 27px;
   border: 1px solid #b7b7b7;
   font-family: ff-meta-web-pro-1, ff-meta-web-pro-2, arial, sans-serif;
@@ -689,7 +689,7 @@ footer {
   color: #444;
   vertical-align: text-bottom;
 }
-#sheet input[type="submit"]:hover, #sheet a.btn:hover, #guide input[type="submit"]:hover, #guide a.btn:hover {
+#sheet input[type="submit"]:hover, #sheet a.btn:hover, #sheet button:hover, #guide input[type="submit"]:hover, #guide a.btn:hover, #guide button:hover {
   background: #d6d6d6;
   background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #d6d6d6), color-stop(100%, #c6c6c6));
   background-image: -webkit-linear-gradient(#d6d6d6, #c6c6c6);

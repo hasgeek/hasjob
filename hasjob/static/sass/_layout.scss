@@ -333,7 +333,7 @@ footer {
 }
 
 #sheet, #guide {
-    input[type="submit"], a.btn {
+    input[type="submit"], a.btn, button {
         height: 27px;
         border: 1px solid $color-outline;
         font-family: $font-button;

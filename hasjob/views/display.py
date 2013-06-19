@@ -230,7 +230,7 @@ def logoimage(hashid):
     if not post.company_logo:
         # If there's no logo (perhaps it was deleted), don't try to show one
         abort(404)
-    if post.status == POSTSTATUS.REJECTED:
+    if post.status in [POSTSTATUS.REJECTED, POSTSTATUS.SPAM]:
         # Don't show logo if post has been rejected. Could be spam
         abort(410)
     return redirect(uploaded_logos.url(post.company_logo))
