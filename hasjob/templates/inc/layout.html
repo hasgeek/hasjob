@@ -51,7 +51,7 @@
       <div class="header-content">
         <div id="site-title"><a href="{{ url_for('index') }}"><span class="has">Has</span><span class="geek">Geek</span> <span class="jobs">Job Board</span> <small class="has">β</small></a></div>
         <form id="search" action="{{ url_for('search') }}">
-          <input type="text" placeholder="Find a job..." name="q"/>
+          <input type="text" placeholder="Find a job..." name="q" value="{{ request.args.q }}"/>
           <input type="submit" value="Go"/>
         </form>
         {% block header %}{% endblock %}
