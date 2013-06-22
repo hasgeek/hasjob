@@ -4,7 +4,7 @@ Flask-WTF
 Flask-Mail
 Flask-Assets
 Flask-Uploads
-PIL
+Pillow
 pytz
 markdown
 tweepy
