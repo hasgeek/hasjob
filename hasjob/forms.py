@@ -128,6 +128,8 @@ class ListingForm(Form):
 
     def validate_poster_email(form, field):
         email_domain = get_email_domain(field.data)
+        if not email_domain:
+            raise ValidationError(u"That doesn’t appear to be a valid email address")
         try:
             dns.resolver.query(email_domain, 'MX')
         except dns.resolver.NXDOMAIN:
