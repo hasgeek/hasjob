@@ -8,6 +8,6 @@ You are welcome to post a new listing which complies with our [Terms of Service]
 
 The [HasGeek Job Board][jb] is a service of [HasGeek][hg]. Write to us at support@hasgeek.com if you have suggestions or questions on this service.
 
-[tos]: http://jobs.hasgeek.com/tos
-[jb]: http://jobs.hasgeek.com
-[hg]: http://hasgeek.com
+[tos]: https://jobs.hasgeek.com/tos
+[jb]: https://jobs.hasgeek.com
+[hg]: https://hasgeek.com
