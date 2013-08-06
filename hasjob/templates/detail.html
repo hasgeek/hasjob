@@ -142,7 +142,7 @@
 <script type="text/javascript">
   $(function() {
     jQuery.getJSON(
-      '//urls.api.twitter.com/1/urls/count.json?url={{ request.url|urlquote }}&callback=?',
+      '//cdn.api.twitter.com/1/urls/count.json?url={{ request.url|urlquote }}&callback=?',
       function (data) {
         if (data.count>0) {
           $("#tweet-count").html('('+data.count+')');
