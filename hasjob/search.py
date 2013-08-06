@@ -2,6 +2,7 @@ import os.path
 from flask.ext.sqlalchemy import models_committed
 import time
 from whoosh import fields, index
+from whoosh.store import LockError
 from whoosh.qparser import QueryParser
 from whoosh.analysis import StemmingAnalyzer
 
@@ -12,6 +13,7 @@ INDEXABLE = (models.JobType, models.JobCategory, models.JobPost)
 search_schema = fields.Schema(title=fields.TEXT(stored=True),
                               content=fields.TEXT(analyzer=StemmingAnalyzer()),
                               idref=fields.ID(stored=True, unique=True))
+
 
 # For search results
 def ob_from_idref(idref):
@@ -58,9 +60,13 @@ def on_models_committed(sender, changes):
         ix = index.open_dir(app.config['SEARCH_INDEX_PATH'])
         try:
             writer = ix.writer()
-        except:
+        except LockError:
             time.sleep(1)
-            writer = ix.writer()
+            try:
+                writer = ix.writer()
+            except LockError:
+                time.sleep(5)
+                writer = ix.writer()
         for model, change in changes:
             if isinstance(model, INDEXABLE):
                 mapping = model.search_mapping()
