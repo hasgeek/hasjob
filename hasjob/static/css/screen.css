@@ -1133,9 +1133,8 @@ header .stickie {
 }
 .stickie .count {
   bottom: 0.25em;
-  text-align: center;
   left: 0.5em;
-  right: 0.5em;
+  bottom: 0.25em;
 }
 .stickie .sticky {
   text-indent: -10000px;
