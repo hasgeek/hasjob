@@ -52,7 +52,7 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None):
     return render_template('index.html', posts=posts, grouped=grouped, now=now,
                            newlimit=newlimit, jobtype=type, jobcategory=category,
                            md5sum=md5sum, domain=domain, employer_name=employer_name,
-                           adminmode=lastuser.has_permission('siteadmin'))
+                           siteadmin=lastuser.has_permission('siteadmin'))
 
 
 @app.route('/type/<slug>')
