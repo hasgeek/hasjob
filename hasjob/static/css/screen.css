@@ -1101,7 +1101,7 @@ header .stickie {
   top: 0.25em;
   right: 0.5em;
 }
-.stickie .location, .stickie .company {
+.stickie .location, .stickie .company, .stickie .count {
   font-size: 90%;
   color: #816894;
   font-family: "Walter Turncoat", sans-serif;
@@ -1130,6 +1130,12 @@ header .stickie {
   position: absolute;
   left: 0.5em;
   bottom: 0.25em;
+}
+.stickie .count {
+  bottom: 0.25em;
+  text-align: center;
+  left: 0.5em;
+  right: 0.5em;
 }
 .stickie .sticky {
   text-indent: -10000px;

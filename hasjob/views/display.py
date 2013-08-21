@@ -12,7 +12,7 @@ from flask import (
     url_for,
     )
 
-from hasjob import app
+from hasjob import app, lastuser
 from hasjob.models import JobCategory, JobPost, JobType, POSTSTATUS
 from hasjob.search import do_search
 from hasjob.views import newlimit
@@ -51,7 +51,8 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None):
 
     return render_template('index.html', posts=posts, grouped=grouped, now=now,
                            newlimit=newlimit, jobtype=type, jobcategory=category,
-                           md5sum=md5sum, domain=domain, employer_name=employer_name)
+                           md5sum=md5sum, domain=domain, employer_name=employer_name,
+                           adminmode=lastuser.has_permission('siteadmin'))
 
 
 @app.route('/type/<slug>')

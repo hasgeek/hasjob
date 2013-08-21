@@ -73,6 +73,7 @@
               <span class="headline">{{ post.headline }}</span>
               <span class="company">{{ post.company_name }}</span>
               {%- if now - post.datetime < newlimit %}<span class="new">New!</span>{% endif %}
+              {%- if adminmode %}<span class="count">{{ post.viewcounts.applied }}/{{ post.viewcounts.all }}</span>{% endif %}
             </a>
           </li>
         {%- else -%}
@@ -89,6 +90,7 @@
               <span class="headline">{{ post.headline }}</span>
               <span class="company">{{ post.company_name }}</span>
               {%- if now - post.datetime < newlimit %}<span class="new">New!</span>{% endif %}
+              {%- if adminmode %}<span class="count">{{ post.viewcounts.applied }}/{{ post.viewcounts.all }}</span>{% endif %}
             </a>
             {%- for post in group[1:] -%}
               <div class="stickie grouped under">
@@ -98,6 +100,7 @@
                 <span class="headline">{{ post.headline }}</span>
                 <span class="company">{{ post.company_name }}</span>
                 {%- if now - post.datetime < newlimit %}<span class="new">New!</span>{% endif %}
+                {%- if adminmode %}<span class="count">{{ post.viewcounts.applied }}/{{ post.viewcounts.all }}</span>{% endif %}
               </div>
             {%- endfor %}
           </li>
@@ -113,6 +116,7 @@
             <span class="headline">{{ post.headline }}</span>
   		      <span class="company">{{ post.company_name }}</span>
   		      {%- if now - post.datetime < newlimit %}<span class="new">New!</span>{% endif %}
+            {%- if adminmode %}<span class="count">{{ post.viewcounts.applied }}/{{ post.viewcounts.all }}</span>{% endif %}
           </a>
         </li>
       {%- else -%}

@@ -63,7 +63,7 @@
         top: 0.25em;
         right: 0.5em;
     }
-    .location, .company {
+    .location, .company, .count {
         font-size: 90%;
         color: $color-stickie-location;
         font-family: $font-stickie-location;
@@ -92,6 +92,12 @@
         position: absolute;
         left: 0.5em;
         bottom: 0.25em;
+    }
+    .count {
+        bottom: 0.25em;
+        text-align: center;
+        left: 0.5em;
+        right: 0.5em;
     }
     .sticky {
         text-indent: -10000px;
