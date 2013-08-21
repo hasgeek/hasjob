@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from markdown import markdown
 from difflib import SequenceMatcher
 
+from sqlalchemy.exc import IntegrityError
 from flask import (
     abort,
     flash,
@@ -16,6 +17,7 @@ from flask import (
     Markup,
     )
 from flask.ext.mail import Message
+from baseframe import cache
 from coaster import get_email_domain, md5sum
 from hasjob import app, forms, mail, lastuser
 from hasjob.models import (
@@ -29,6 +31,7 @@ from hasjob.models import (
     ReportCode,
     UserJobView,
     unique_hash,
+    viewcounts_by_id,
     )
 from hasjob.twitter import tweet
 from hasjob.uploads import uploaded_logos
@@ -49,6 +52,7 @@ def jobdetail(hashid):
         jobview = UserJobView.query.get((g.user.id, post.id))
         if jobview is None:
             jobview = UserJobView(user=g.user, jobpost=post)
+            cache.delete_memoized(viewcounts_by_id, post.id)
             db.session.add(jobview)
             db.session.commit()
     else:
@@ -84,10 +88,15 @@ def revealjob(hashid):
     jobview = UserJobView.query.get((g.user.id, post.id))
     if jobview is None:
         jobview = UserJobView(user=g.user, jobpost=post, applied=True)
+        cache.delete_memoized(viewcounts_by_id, post.id)
         db.session.add(jobview)
-        db.session.commit()
+        try:
+            db.session.commit()
+        except IntegrityError:
+            pass  # User double-clicked. Ignore.
     elif not jobview.applied:
         jobview.applied = True
+        cache.delete_memoized(viewcounts_by_id, post.id)
         db.session.commit()
     if request.is_xhr:
         return scrubemail(unicode(escape(post.how_to_apply)), ('z', 'y'))

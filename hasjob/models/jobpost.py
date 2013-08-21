@@ -1,5 +1,6 @@
 from datetime import datetime
 from werkzeug import cached_property
+from baseframe import cache
 from coaster.sqlalchemy import TimestampMixin
 from hasjob.models import agelimit, db, POSTSTATUS
 from hasjob.models.jobtype import JobType
@@ -90,12 +91,17 @@ class JobPost(db.Model):
                 'idref': u'%s/%s' % (self.idref, self.id),
                 }
 
-    @cached_property
+    @cached_property  # For multiple accesses in a single request
     def viewcounts(self):
-        return {
-            'all': UserJobView.query.filter_by(jobpost=self).count(),
-            'applied': UserJobView.query.filter_by(jobpost=self, applied=True).count()
-            }
+        return viewcounts_by_id(self.id)
+
+
+@cache.memoize(timeout=86400)
+def viewcounts_by_id(jobpost_id):
+    return {
+        'all': UserJobView.query.filter_by(jobpost_id=jobpost_id).count(),
+        'applied': UserJobView.query.filter_by(jobpost_id=jobpost_id, applied=True).count()
+        }
 
 
 class UserJobView(TimestampMixin, db.Model):
