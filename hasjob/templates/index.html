@@ -144,14 +144,14 @@
           Sorry, no jobs listed.
         </li>
       {%- endfor %}
-      {%- if not g.user -%}
-        <li id="loginformore" class="stickie">
-          <a href="{{ url_for('login') }}">
-            Want to see the rest? Login or sign up.
-          </a>
-        </li>
-      {%- endif -%}
     {%- endif %}
+    {%- if not g.user -%}
+      <li id="loginformore" class="stickie">
+        <a href="{{ url_for('login') }}">
+          Want to see the rest? Login or sign up.
+        </a>
+      </li>
+    {%- endif -%}
   </ul>
 {% endblock %}
 {% block footerscripts %}
