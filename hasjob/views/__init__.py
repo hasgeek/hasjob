@@ -1,5 +1,5 @@
-from datetime import timedelta
 from hasjob import app
+
 
 @app.route('/type/')
 @app.route('/category/')
@@ -7,10 +7,9 @@ from hasjob import app
 @app.route('/edit/')
 @app.route('/confirm/')
 @app.route('/withdraw/')
-
-
 def root_paths():
     return redirect(url_for('index'), code=302)
+
 
 ALLOWED_TAGS = [
     'strong',
@@ -22,7 +21,6 @@ ALLOWED_TAGS = [
     'br',
     'a',
 ]
-newlimit = timedelta(days=1)
 
 
 from hasjob.views.display import *

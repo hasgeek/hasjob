@@ -1225,7 +1225,7 @@ header .stickie {
   bottom: 10px;
 }
 
-#newpost, #filtered, #nojobs, #stickiead {
+#newpost, #filtered, #nojobs, #stickiead, #loginformore {
   font-family: "Walter Turncoat", sans-serif;
   background-color: #f6f6f6;
   -webkit-transition-property: background-color;

@@ -13,9 +13,8 @@ from flask import (
     )
 
 from hasjob import app, lastuser
-from hasjob.models import JobCategory, JobPost, JobType, POSTSTATUS
+from hasjob.models import JobCategory, JobPost, JobType, POSTSTATUS, newlimit
 from hasjob.search import do_search
-from hasjob.views import newlimit
 from hasjob.views.helper import getposts, getallposts
 from hasjob.uploads import uploaded_logos
 
@@ -98,7 +97,7 @@ def feed(basequery=None, type=None, category=None, md5sum=None, domain=None):
         title = category.title
     elif md5sum or domain:
         title = u"Jobs at a single employer"
-    posts = list(getposts(basequery))
+    posts = list(getposts(basequery, showall=True))
     if posts:  # Can't do this unless posts is a list
         updated = posts[0].datetime.isoformat() + 'Z'
         if md5sum:
@@ -215,7 +214,7 @@ def sitemap():
                       '    <loc>%s</loc>\n' % url_for('browse_by_category', slug=item.slug, _external=True) + \
                       '  </url>\n'
     # Add live posts to sitemap
-    for post in getposts():
+    for post in getposts(showall=True):
         sitemapxml += '  <url>\n'\
                       '    <loc>%s</loc>\n' % url_for('jobdetail', hashid=post.hashid, _external=True) + \
                       '    <lastmod>%s</lastmod>\n' % (post.datetime.isoformat() + 'Z') + \

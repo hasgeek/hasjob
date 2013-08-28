@@ -3,18 +3,24 @@ from os import path
 import bleach
 from pytz import utc, timezone
 from urllib import quote, quote_plus
-from flask import escape, Markup, request, url_for
+from flask import Markup, request, url_for, g
 
 from hasjob import app
-from hasjob.models import agelimit, db, JobCategory, JobPost, JobType, POSTSTATUS
+from hasjob.models import agelimit, newlimit, db, JobCategory, JobPost, JobType, POSTSTATUS
 from hasjob.utils import scrubemail
 
-def getposts(basequery=None, sticky=False):
+
+def getposts(basequery=None, sticky=False, showall=False):
+    if g.user or showall:
+        useagelimit = agelimit
+    else:
+        useagelimit = newlimit
+
     if basequery is None:
         basequery = JobPost.query
     query = basequery.filter(
-            JobPost.status.in_([POSTSTATUS.CONFIRMED, POSTSTATUS.REVIEWED])).filter(
-            JobPost.datetime > datetime.utcnow() - agelimit)
+        JobPost.status.in_([POSTSTATUS.CONFIRMED, POSTSTATUS.REVIEWED])).filter(
+            JobPost.datetime > datetime.utcnow() - useagelimit)
     if sticky:
         query = query.order_by(db.desc(JobPost.sticky))
     return query.order_by(db.desc(JobPost.datetime))

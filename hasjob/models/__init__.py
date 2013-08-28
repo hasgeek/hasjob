@@ -8,6 +8,7 @@ from hasjob import app
 
 db = SQLAlchemy(app)
 agelimit = timedelta(days=30)
+newlimit = timedelta(days=1)
 
 
 class POSTSTATUS:
