@@ -667,7 +667,7 @@ footer {
   font-weight: bold;
 }
 
-#sheet input[type="submit"], #sheet a.btn, #sheet button, #guide input[type="submit"], #guide a.btn, #guide button {
+input[type="submit"], a.btn, button {
   height: 27px;
   border: 1px solid #b7b7b7;
   font-family: ff-meta-web-pro-1, ff-meta-web-pro-2, arial, sans-serif;
@@ -687,9 +687,9 @@ footer {
   font-weight: bold;
   text-decoration: none;
   color: #444;
-  vertical-align: text-bottom;
+  vertical-align: baseline;
 }
-#sheet input[type="submit"]:hover, #sheet a.btn:hover, #sheet button:hover, #guide input[type="submit"]:hover, #guide a.btn:hover, #guide button:hover {
+input[type="submit"]:hover, a.btn:hover, button:hover {
   background: #d6d6d6;
   background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #d6d6d6), color-stop(100%, #c6c6c6));
   background-image: -webkit-linear-gradient(#d6d6d6, #c6c6c6);
@@ -697,8 +697,9 @@ footer {
   background-image: -o-linear-gradient(#d6d6d6, #c6c6c6);
   background-image: linear-gradient(#d6d6d6, #c6c6c6);
 }
-#sheet a.btn, #guide a.btn {
-  padding: 3px 5px 2px;
+
+a.btn {
+  padding: 3px 5px 0px;
 }
 
 #company-info {

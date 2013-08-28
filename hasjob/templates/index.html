@@ -145,14 +145,13 @@
         </li>
       {%- endfor %}
     {%- endif %}
-    {%- if not g.user -%}
-      <li id="loginformore" class="stickie">
-        <a href="{{ url_for('login') }}">
-          Want to see the rest? Login or sign up.
-        </a>
-      </li>
-    {%- endif -%}
   </ul>
+  {%- if not g.user -%}
+    <div class="flash"><div class="flashmessage">
+      You are only seeing jobs listed in the last 24 hours. To see everything,
+      <a class="btn" href="{{ url_for('login') }}">Login with Twitter or Google</a>
+    </div></div>
+  {%- endif -%}
 {% endblock %}
 {% block footerscripts %}
 <script type="text/javascript">

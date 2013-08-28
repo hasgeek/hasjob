@@ -332,30 +332,29 @@ footer {
     }
 }
 
-#sheet, #guide {
-    input[type="submit"], a.btn, button {
-        height: 27px;
-        border: 1px solid $color-outline;
-        font-family: $font-button;
-        font-size: 14px;
-        @include border-radius(3px);
-        padding: 0 12px;
-        background: #e6e6e6;
-        @include background-image(linear-gradient(#e6e6e6, #d6d6d6));
-        font-weight: bold;
-        text-decoration: none;
-        color: #444;
-        vertical-align: text-bottom;
-        &:hover {
-            //text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
-            background: #d6d6d6;
-            @include background-image(linear-gradient(#d6d6d6, #c6c6c6));
-            //color: #fff;
-        }
+input[type="submit"], a.btn, button {
+    height: 27px;
+    border: 1px solid $color-outline;
+    font-family: $font-button;
+    font-size: 14px;
+    @include border-radius(3px);
+    padding: 0 12px;
+    background: #e6e6e6;
+    @include background-image(linear-gradient(#e6e6e6, #d6d6d6));
+    font-weight: bold;
+    text-decoration: none;
+    color: #444;
+    // vertical-align: text-bottom;
+    vertical-align: baseline;
+    &:hover {
+        //text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
+        background: #d6d6d6;
+        @include background-image(linear-gradient(#d6d6d6, #c6c6c6));
+        //color: #fff;
     }
-    a.btn {
-        padding: 3px 5px 2px;
-    }
+}
+a.btn {
+    padding: 3px 5px 0px;
 }
 
 #company-info {
