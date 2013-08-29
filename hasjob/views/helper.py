@@ -20,7 +20,9 @@ def getposts(basequery=None, sticky=False, showall=False):
         basequery = JobPost.query
     query = basequery.filter(
         JobPost.status.in_([POSTSTATUS.CONFIRMED, POSTSTATUS.REVIEWED])).filter(
-            JobPost.datetime > datetime.utcnow() - useagelimit)
+            db.or_(
+                db.and_(JobPost.sticky == True, JobPost.datetime > datetime.utcnow() - agelimit),
+                db.and_(JobPost.sticky == False, JobPost.datetime > datetime.utcnow() - useagelimit)))
     if sticky:
         query = query.order_by(db.desc(JobPost.sticky))
     return query.order_by(db.desc(JobPost.datetime))
