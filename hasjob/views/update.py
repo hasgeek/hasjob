@@ -309,6 +309,7 @@ def editjob(hashid, key, form=None, post=None, validated=False):
             post.how_to_apply = form_how_to_apply
             post.company_name = form.company_name.data
             post.company_url = form.company_url.data
+            post.fullname = form.poster_name.data
             post.email = form.poster_email.data
             post.email_domain = form_email_domain
             post.md5sum = md5sum(post.email)
@@ -351,6 +352,7 @@ def editjob(hashid, key, form=None, post=None, validated=False):
         form.job_how_to_apply.data = post.how_to_apply
         form.company_name.data = post.company_name
         form.company_url.data = post.company_url
+        form.poster_name.data = post.fullname
         form.poster_email.data = post.email
         form.hr_contact.data = int(post.hr_contact or False)
 
@@ -362,9 +364,10 @@ def newjob():
     form = forms.ListingForm()
     form.job_type.choices = [(ob.id, ob.title) for ob in JobType.query.filter_by(public=True).order_by('seq')]
     form.job_category.choices = [(ob.id, ob.title) for ob in JobCategory.query.filter_by(public=True).order_by('seq')]
-    #if request.method == 'POST' and request.form.get('form.id') == 'newheadline':
-        # POST request from the main page's Post a Job box.
-        #form.csrf_token.data = form.generate_csrf_token(session)
+    if request.method == 'GET' or (request.method == 'POST' and request.form.get('form.id') == 'newheadline'):
+        if g.user:
+            form.poster_name.data = g.user.fullname
+            form.poster_email.data = g.user.email
     if request.method == 'POST' and request.form.get('form.id') != 'newheadline' and form.validate():
         # POST request from new job page, with successful validation
         # Move it to the editjob page for handling here forward

@@ -39,8 +39,19 @@
       {{ renderfield(form.company_logo, "small") }}
       {% if not no_removelogo %}{{ renderfield(form.company_logo_remove, "small") }}{% endif %}
       {{ renderfield(form.company_url, "small") }}
-      {% if not no_email %}{{ renderfield(form.poster_email, "small") }}{% endif %}
       {{ renderfield(form.hr_contact, "widelist") }}
+      <p>
+        <strong>Warning:</strong> Many recruiters will ignore your preference and contact you anyway.
+        DO NOT reveal phone numbers or your own email address. Use an alias such as jobs@ or hr@ that
+        you can filter to ignore pesky recruiters
+      </p>
+      {%- if not no_email %}
+        </div>
+        <div class="section">
+          <h2>A little about yourself</h2>
+          {{ renderfield(form.poster_name, "small") }}
+          {{ renderfield(form.poster_email, "small") }}
+      {%- endif %}
       <input type="submit" value="Review your job listing &rarr;"/>
     </div>
   </form>

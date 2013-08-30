@@ -61,6 +61,8 @@ def newid():
 
 
 EMAIL_RE = re.compile(r'\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}\b', re.I)
+# From http://www.codinghorror.com/blog/2008/10/the-problem-with-urls.html
+URL_RE = re.compile(r'\(?\bhttp://[-A-Za-z0-9+&@#/%?=~_()|!:,.;]*[-A-Za-z0-9+&@#/%=~_()|]')
 
 
 def scrubemail(data, rot13=False, css_junk=None):

@@ -1,26 +1,21 @@
 # -*- coding: utf-8 -*-
 
 import re
-import dns.resolver
 from flask import g, request
-from baseframe.forms import Form
+from baseframe.forms import Form, ValidEmailDomain
 from wtforms import TextField, TextAreaField, RadioField, FileField, BooleanField, ValidationError, validators
 from wtforms.fields.html5 import EmailField
-from coaster import get_email_domain
+from coaster import getbool
 
 from .uploads import process_image, UploadNotAllowed
 
 from . import app
-from .utils import simplify_text, EMAIL_RE
+from .utils import simplify_text, EMAIL_RE, URL_RE
 
 QUOTES_RE = re.compile(ur'[\'"`‘’“”′″‴]+')
 
 CAPS_RE = re.compile('[A-Z]')
 SMALL_RE = re.compile('[a-z]')
-
-
-def boolint(value):
-    return bool(int(value))
 
 
 def optional_url(form, field):
@@ -58,13 +53,9 @@ class ListingForm(Form):
     job_how_to_apply = TextAreaField("How do people apply for this job?",
         description=u'Example: "Send a resume to kumar@company.com". '
                     u"Don’t worry about spambots seeing your email address. "
-                    u"We’ll secure it",
+                    u"We’ll secure it. You must include contact information here "
+                    u"or candidates will be unable to contact you",
         validators=[validators.Required(u"HasGeek does not offer screening services. Please specify how candidates may apply")])
-    hr_contact = RadioField(u"Is it okay for recruiters and other "
-        u"intermediaries to contact you about this listing?", coerce=boolint,
-        description=u"We’ll display a notice to this effect on the listing",
-        default=0,
-        choices=[(0, u"No, it is NOT OK"), (1, u"Yes, recruiters may contact me")])
     company_name = TextField("Name",
         description=u"The name of the organization where the position is. "
                     u"No intermediaries or unnamed stealth startups. Use your own real name if the company isn’t named "
@@ -80,14 +71,29 @@ class ListingForm(Form):
     company_url = TextField("URL",
         description=u"Example: http://www.google.com",
         validators=[optional_url])
+    poster_name = TextField("Name",
+        description=u"This is your name, for our records. Will not be revealed to applicants",
+        validators=[validators.Required("We need your name")])
     poster_email = EmailField("Email",
         description=u"This is where we’ll send your confirmation email. "
                     u"Use your company email id: "
                     u"listings are classified by your email domain. "
-                    u"Your full email address will not be revealed to applicants.",
+                    u"Your email address will not be revealed to applicants",
         validators=[validators.Required("We need to confirm your email address before the job can be listed"),
             validators.Length(min=5, max=80, message="%(max)d characters maximum"),
-            validators.Email("That does not appear to be a valid email address")])
+            validators.Email("That does not appear to be a valid email address"),
+            ValidEmailDomain()])
+    hr_contact = RadioField(u"Is it okay for recruiters and other "
+        u"intermediaries to contact you about this listing?", coerce=getbool,
+        description=u"We’ll display a notice to this effect on the listing",
+        default=0,
+        choices=[(0, u"No, it is NOT OK"), (1, u"Yes, recruiters may contact me")])
+
+    def validate_company_name(form, field):
+        caps = len(CAPS_RE.findall(field.data))
+        small = len(SMALL_RE.findall(field.data))
+        if small == 0 or caps / float(small) > 0.8:
+            raise ValidationError("Surely your company isn't named in uppercase?")
 
     def validate_company_logo(form, field):
         if not request.files['company_logo']:
@@ -118,6 +124,11 @@ class ListingForm(Form):
         if QUOTES_RE.search(field.data) is not None:
             raise ValidationError(u"Don’t use quotes in the location name")
 
+        caps = len(CAPS_RE.findall(field.data))
+        small = len(SMALL_RE.findall(field.data))
+        if small == 0 or caps / float(small) > 0.5:
+            raise ValidationError("Surely this location isn't named in uppercase?")
+
     def validate_job_description(form, field):
         if EMAIL_RE.search(field.data) is not None:
             raise ValidationError(u"Contact information should be in the How to Apply section below, not here")
@@ -126,18 +137,14 @@ class ListingForm(Form):
         if EMAIL_RE.search(field.data) is not None:
             raise ValidationError(u"Contact information should be in the How to Apply section below, not here")
 
+    def validate_job_how_to_apply(form, field):
+        if EMAIL_RE.search(field.data) is None and URL_RE.search(field.data) is None:
+            raise ValidationError(u"You must provide an email address or URL for the applicant to contact you at")
+
     def validate_poster_email(form, field):
-        email_domain = get_email_domain(field.data)
-        if not email_domain:
-            raise ValidationError(u"That doesn’t appear to be a valid email address")
-        try:
-            dns.resolver.query(email_domain, 'MX')
-        except dns.resolver.NXDOMAIN:
-            raise ValidationError(u"That domain does not exist")
-        except dns.resolver.NoAnswer:
-            raise ValidationError(u"That email address does not exist")
-        except (dns.resolver.Timeout, dns.resolver.NoNameservers):
-            pass
+        username, domain = field.data.lower().split('@', 1)
+        if username in ['jobs', 'mail', 'info', 'hr', 'contact', 'support', 'postmaster', 'webmaster', 'abuse', 'root']:
+            raise ValidationError(u"Provide your own email address, not an alias")
 
 
 class ConfirmForm(Form):
