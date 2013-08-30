@@ -143,7 +143,8 @@ class ListingForm(Form):
 
     def validate_poster_email(form, field):
         username, domain = field.data.lower().split('@', 1)
-        if username in ['jobs', 'mail', 'info', 'hr', 'contact', 'support', 'postmaster', 'webmaster', 'abuse', 'root']:
+        if username in ['jobs', 'mail', 'info', 'hr', 'contact', 'support',
+                'postmaster', 'webmaster', 'abuse', 'root', 'letstalk', 'talktous', 'hello']:
             raise ValidationError(u"Provide your own email address, not an alias")
 
 
