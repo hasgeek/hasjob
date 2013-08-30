@@ -54,7 +54,10 @@ def jobdetail(hashid):
             jobview = UserJobView(user=g.user, jobpost=post)
             cache.delete_memoized(viewcounts_by_id, post.id)
             db.session.add(jobview)
-            db.session.commit()
+            try:
+                db.session.commit()
+            except IntegrityError:
+                pass  # User opened two tabs at once? We don't really know
     else:
         jobview = None
     reportform = forms.ReportForm()
