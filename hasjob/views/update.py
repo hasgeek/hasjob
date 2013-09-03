@@ -57,6 +57,7 @@ def jobdetail(hashid):
             try:
                 db.session.commit()
             except IntegrityError:
+                db.session.rollback()
                 pass  # User opened two tabs at once? We don't really know
     else:
         jobview = None
@@ -96,6 +97,7 @@ def revealjob(hashid):
         try:
             db.session.commit()
         except IntegrityError:
+            db.session.rollback()
             pass  # User double-clicked. Ignore.
     elif not jobview.applied:
         jobview.applied = True
