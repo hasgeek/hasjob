@@ -275,6 +275,7 @@ def editjob(hashid, key, form=None, post=None, validated=False):
         abort(403)
     # Don't allow email address to be changed once its confirmed
     if request.method == 'POST' and post.status >= POSTSTATUS.PENDING:
+        form.poster_name.data = post.fullname
         form.poster_email.data = post.email
     if request.method == 'POST' and (validated or form.validate()):
         form_description = bleach.linkify(bleach.clean(form.job_description.data, tags=ALLOWED_TAGS))
