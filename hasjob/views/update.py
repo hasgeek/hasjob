@@ -275,7 +275,7 @@ def editjob(hashid, key, form=None, post=None, validated=False):
         abort(403)
     # Don't allow email address to be changed once its confirmed
     if request.method == 'POST' and post.status >= POSTSTATUS.PENDING:
-        form.poster_name.data = post.fullname
+        del form.poster_name
         form.poster_email.data = post.email
     if request.method == 'POST' and (validated or form.validate()):
         form_description = bleach.linkify(bleach.clean(form.job_description.data, tags=ALLOWED_TAGS))
@@ -313,11 +313,13 @@ def editjob(hashid, key, form=None, post=None, validated=False):
             post.how_to_apply = form_how_to_apply
             post.company_name = form.company_name.data
             post.company_url = form.company_url.data
-            post.fullname = form.poster_name.data
-            post.email = form.poster_email.data
-            post.email_domain = form_email_domain
-            post.md5sum = md5sum(post.email)
             post.hr_contact = form.hr_contact.data
+            # Allow name and email to be set only on new posts
+            if not post.status >= POSTSTATUS.PENDING:
+                post.fullname = form.poster_name.data
+                post.email = form.poster_email.data
+                post.email_domain = form_email_domain
+                post.md5sum = md5sum(post.email)
             # To protect from gaming, don't allow words to be removed in edited listings once the post
             # has been confirmed. Just add the new words.
             if post.status >= POSTSTATUS.CONFIRMED:
