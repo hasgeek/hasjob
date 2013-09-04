@@ -2,7 +2,7 @@
 
 import re
 from flask import g, request
-from baseframe.forms import Form, ValidEmailDomain
+from baseframe.forms import Form, ValidEmailDomain, RichTextField
 from wtforms import TextField, TextAreaField, RadioField, FileField, BooleanField, ValidationError, validators
 from wtforms.fields.html5 import EmailField
 from coaster import getbool
@@ -44,9 +44,10 @@ class ListingForm(Form):
         validators=[validators.Required(u"If this job doesn’t have a fixed location, use “Anywhere”"),
             validators.Length(min=3, max=80, message="%(max)d characters maximum")])
     job_relocation_assist = BooleanField("Relocation assistance available")
-    job_description = TextAreaField("Description",
+    job_description = RichTextField("Description",
         description=u"Our apologies for the mismatched font you see here. We’re (still) working on it",
-        validators=[validators.Required("A description of the job is required")])
+        validators=[validators.Required("A description of the job is required")],
+        tinymce_options={'convert_urls': True})
     job_perks = BooleanField("Job perks are available")
     job_perks_description = TextAreaField("Describe job perks",
         description=u"Stock options, free lunch, free conference passes, etc")

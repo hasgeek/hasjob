@@ -32,7 +32,7 @@
   <!--[if IE]>
       <link href="{{ url_for('static', filename='css/ie.css') }}?v=3" media="screen, projection" rel="stylesheet" type="text/css" />
   <![endif]-->
-  <script src="{{ url_for('static', filename='js/libs/modernizr-1.6.min.js') }}"></script>
+  <script src="{{ url_for('baseframe.static', filename='js/modernizr.min.js') }}"></script>
 
   <!-- Feed and search -->
   <link rel="alternate" type="application/atom+xml" title="All jobs – {{ config['SITE_TITLE']|e }}" href="{{ url_for('feed') }}" />

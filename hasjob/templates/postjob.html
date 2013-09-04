@@ -78,7 +78,7 @@
   $(function() {
   	$('textarea.tinymce').tinymce({
       // Location of TinyMCE script
-      script_url : '{{ url_for("static", filename="js/libs/tiny_mce/tiny_mce.js") }}',
+      script_url : '{{ url_for("baseframe.static", filename="js/tiny_mce/tiny_mce.js") }}',
 
       // General options
       theme : "advanced",
