@@ -40,4 +40,3 @@ def init_for(env):
     uploads_configure()
     mail.init_app(app)
     lastuser.init_app(app)
-
