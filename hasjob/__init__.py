@@ -30,9 +30,8 @@ from hasjob.models import db
 # Configure the app
 def init_for(env):
     coaster.app.init_app(app, env)
-    baseframe.init_app(app, requires=['baseframe.js',
-        'jquery.ui', 'jquery.range-slider', 'jquery.textarea-expander', 'jquery.form',
-        'jquery.oembed', 'jquery.tinymce', 'baseframe-networkbar', 'hasjob'
+    baseframe.init_app(app, requires=['baseframe.js', 'jquery.textarea-expander', 
+        'jquery.tinymce', 'jquery.form', 'jquery.oembed', 'baseframe-networkbar', 'hasjob'
         ])
     from hasjob.search import configure as search_configure
     from hasjob.uploads import configure as uploads_configure
