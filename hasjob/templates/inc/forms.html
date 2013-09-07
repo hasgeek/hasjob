@@ -7,8 +7,10 @@
     <div class="label">&nbsp;</div><div class="control checkbox">{% if widget_css_class %}{{ field(class=widget_css_class) }}{% else %}{{ field }}{% endif %} {{ field.label }}</div>
   {% else %}
     {% if not nolabeldesc %}<div class="label">{{ field.label }}</div>{% endif %}
-    <div class="control">{% if autofocus %}{% if widget_css_class %}{{ field(autofocus="autofocus", class=widget_css_class) }}{% else %}{{ field(autofocus="autofocus") }}{% endif %}{% else %}{% if widget_css_class %}{{ field(class=widget_css_class) }}{% else %}{{ field }}{% endif %}{% endif %}{% if not nolabeldesc %}{% if field.widget.html_tag not in ['ul', 'ol'] %}<br/>{% endif %}
-      <span class="description">{{ field.description }}</span>{% endif %}</div>
+    <div class="control"><div>{% if autofocus %}{% if widget_css_class %}{{ field(autofocus="autofocus", class=widget_css_class) }}{% else %}{{ field(autofocus="autofocus") }}{% endif %}{% else %}{% if widget_css_class %}{{ field(class=widget_css_class) }}{% else %}{{ field }}{% endif %}{% endif %}</div>
+    {% if not nolabeldesc %}
+      <span class="description">{{ field.description }}</span>
+    {% endif %}</div>
   {% endif %}
 </div>
 {% endmacro %}

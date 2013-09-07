@@ -45,7 +45,7 @@ class ListingForm(Form):
             validators.Length(min=3, max=80, message="%(max)d characters maximum")])
     job_relocation_assist = BooleanField("Relocation assistance available")
     job_description = RichTextField("Description",
-        description=u"Our apologies for the mismatched font you see here. We’re (still) working on it",
+        description=u"Don’t just describe the job, tell a compelling story for why someone should work for you",
         validators=[validators.Required("A description of the job is required")],
         tinymce_options={'convert_urls': True})
     job_perks = BooleanField("Job perks are available")
