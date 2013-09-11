@@ -18,7 +18,7 @@ from hasjob.search import do_search
 from hasjob.views.helper import getposts, getallposts
 from hasjob.uploads import uploaded_logos
 
-webmail_domains = set(['gmail.com', 'yahoo.com', 'yahoo.co.in', 'hotmail.com', 'outlook.com', 'aol.com'])
+webmail_domains = set(['gmail.com', 'yahoo.com', 'yahoo.co.in', 'hotmail.com', 'outlook.com', 'aol.com', 'live.com'])
 
 
 @app.route('/')
