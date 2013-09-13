@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 
 import re
-from flask import g, request
-from baseframe.forms import Form, ValidEmailDomain, RichTextField
+from flask import g, request, Markup
+from baseframe.forms import Form, ValidEmailDomain, RichTextField, MarkdownField
 from wtforms import TextField, TextAreaField, RadioField, FileField, BooleanField, ValidationError, validators
 from wtforms.fields.html5 import EmailField
 from coaster import getbool
 
 from .uploads import process_image, UploadNotAllowed
 
-from . import app
+from . import app, lastuser
 from .utils import simplify_text, EMAIL_RE, URL_RE
 
 QUOTES_RE = re.compile(ur'[\'"`‘’“”′″‴]+')
@@ -51,12 +51,11 @@ class ListingForm(Form):
     job_perks = BooleanField("Job perks are available")
     job_perks_description = TextAreaField("Describe job perks",
         description=u"Stock options, free lunch, free conference passes, etc")
-    job_how_to_apply = TextAreaField("How do people apply for this job?",
-        description=u'Example: "Send a resume to kumar@company.com". '
-                    u"Don’t worry about spambots seeing your email address. "
-                    u"We’ll secure it. You must include contact information here "
-                    u"or candidates will be unable to contact you",
-        validators=[validators.Required(u"HasGeek does not offer screening services. Please specify how candidates may apply")])
+    job_how_to_apply = TextAreaField("What should a candidate submit when applying for this job?",
+         description=u'Example: "Include your LinkedIn and GitHub profiles." '
+                     u"We now require candidates to apply through the job board only. "
+                     u"DO NOT include any contact information here.",
+         validators=[validators.Required(u"HasGeek does not offer screening services. Please specify how candidates may apply")])
     company_name = TextField("Name",
         description=u"The name of the organization where the position is. "
                     u"No intermediaries or unnamed stealth startups. Use your own real name if the company isn’t named "
@@ -132,27 +131,54 @@ class ListingForm(Form):
 
     def validate_job_description(form, field):
         if EMAIL_RE.search(field.data) is not None:
-            raise ValidationError(u"Contact information should be in the How to Apply section below, not here")
+            raise ValidationError(u"Do not include contact information in the listing")
 
     def validate_job_perks_description(form, field):
         if EMAIL_RE.search(field.data) is not None:
-            raise ValidationError(u"Contact information should be in the How to Apply section below, not here")
+            raise ValidationError(u"Do not include contact information in the listing")
 
     def validate_job_how_to_apply(form, field):
-        if EMAIL_RE.search(field.data) is None and URL_RE.search(field.data) is None:
-            raise ValidationError(u"You must provide an email address or URL for the applicant to contact you at")
+        if EMAIL_RE.search(field.data) is not None or URL_RE.search(field.data) is not None:
+            raise ValidationError(u"Do not include contact information in the listing")
 
     def validate_poster_email(form, field):
         username, domain = field.data.lower().split('@', 1)
         if username in ['jobs', 'mail', 'info', 'hr', 'contact', 'support',
-                'postmaster', 'webmaster', 'abuse', 'root', 'letstalk', 'talktous', 'hello']:
+                'postmaster', 'webmaster', 'abuse', 'root', 'letstalk', 'talktous', 'hello',
+                'career', 'careers', 'careersindia', 'liketowork']:
             raise ValidationError(u"Provide your own email address, not an alias")
+
+
+class ApplicationForm(Form):
+    apply_email = RadioField("Email", validators=[validators.Required("Pick an email address")],
+        description="Add new email addresses from your profile")
+    apply_phone = TextField("Phone", validators=[validators.Required("Specify a phone number")],
+        description="A phone number the employer can reach you at")
+    apply_message = RichTextField("Job application",
+        validators=[validators.Required("You need to say something about yourself")],
+        description="Please provide all details the employer has requested")
+
+    def __init__(self, *args, **kwargs):
+        super(ApplicationForm, self).__init__(*args, **kwargs)
+        self.apply_email.choices = []
+        if g.user:
+            self.apply_email.description = Markup(
+                'Add new email addresses from <a href="{}" target="_blank">your profile</a>'.format(
+                    g.user.profile_url))
+            self.apply_email.choices = [(e, e) for e in lastuser.user_emails(g.user)]
+            if not self.apply_email.choices:
+                self.apply_email.choices = [
+                    ('', Markup('<em>You have not verified your email address</em>'))
+                ]
+
+
+class ProcessApplicationForm(Form):
+    pass  # Only for CSRF
 
 
 class ConfirmForm(Form):
     terms_accepted = BooleanField("I accept the terms of service",
         validators=[validators.Required("You must accept the terms of service to publish this listing")])
-    #promocode = TextField("Promo code")
 
 
 class WithdrawForm(Form):

@@ -1,7 +1,7 @@
 HasGeek Job Board -- beta
 =========================
 
-Code for HasGeek's job board at http://jobs.hasgeek.com/
+Code for HasGeek's job board at https://jobs.hasgeek.com/
 
 You are welcome to contribute a patch or use this code to run your own job
 board under the terms of the BSD license, but please design your own UI.
@@ -12,7 +12,7 @@ to install all the requirements listed in `requirements.txt` using
 `easy_install` or `pip`. Copy `settings-sample.py` to `settings.py`, edit as
 necessary, and start the server with:
 
-    $ python website.py
+    $ python runserver.py
 
 WSGI is recommended for production. Enable `mod_wsgi` in Apache and make a
 `VirtualHost` with:

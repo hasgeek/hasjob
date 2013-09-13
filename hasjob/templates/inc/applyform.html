@@ -1,0 +1,27 @@
+{% from "inc/forms.html" import renderfield, ajaxform %}
+<form id="applyform" {%- if jobview and not jobview.applied %} class="hidden" {% endif -%} method="POST" action="{{ url_for('applyjob', hashid=post.hashid) }}">
+  <input type="hidden" name="_charset_"/>
+  <input type="hidden" name="form.id" value="applyform"/>
+  {{ applyform.hidden_tag() }}
+  <div class="field small">
+    <div class="label">
+      <label for="apply_name">Name</label>
+    </div>
+    <div class="control">
+      <div><input type="text" value="{{ g.user.fullname }}" disabled /></div>
+      <span class="description">You may edit your name from <a href="{{ g.user.profile_url }}" target="_blank">your profile</a></span>
+    </div>
+  </div>
+  {{ renderfield(applyform.apply_email, "small") }}
+  {{ renderfield(applyform.apply_phone, "small") }}
+  {{ renderfield(applyform.apply_message, "wide", widget_css_class="tinymce") }}
+  <input type="submit" value="Apply" />
+  <span class="loading hidden">Submitting...</span>
+</form>
+{% if ajaxreg %}
+  {{ ajaxform("applyform") }}
+  <script type="text/javascript">
+    radioHighlight('apply_email', 'selected');
+    {% include "inc/tinymce.js" %}
+  </script>
+{% endif %}

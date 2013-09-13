@@ -22,6 +22,14 @@
       target: '#{{ formid }}',
       replaceTarget: true,
     });
+    $('#{{ formid }} button, #{{ formid }} input[type="submit"]').click(function() {
+      $('#{{ formid }}').find('.loading').removeClass('hidden');
+      if (tinymce !== undefined) {
+        $(tinymce.get()).each(function(i, el) {
+          el.save();
+        });
+      };
+    });
   });
 </script>
 {%- endmacro %}

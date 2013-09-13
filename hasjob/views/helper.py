@@ -7,7 +7,7 @@ from flask import Markup, request, url_for, g
 
 from hasjob import app
 from hasjob.models import agelimit, newlimit, db, JobCategory, JobPost, JobType, POSTSTATUS
-from hasjob.utils import scrubemail
+from hasjob.utils import scrubemail, redactemail
 
 
 def getposts(basequery=None, sticky=False, showall=False):
@@ -49,9 +49,9 @@ def url_from_ob(ob):
     if isinstance(ob, JobPost):
         return url_for('jobdetail', hashid=ob.hashid)
     elif isinstance(ob, JobType):
-        return url_for('browse_by_type', slug=ob.slug)
+        return url_for('browse_by_type', name=ob.name)
     elif isinstance(ob, JobCategory):
-        return url_for('browse_by_category', slug=ob.slug)
+        return url_for('browse_by_category', name=ob.name)
 
 
 @app.template_filter('shortdate')
@@ -98,6 +98,11 @@ def urlquoteplus(data):
 @app.template_filter('scrubemail')
 def scrubemail_filter(data, css_junk=''):
     return Markup(scrubemail(unicode(bleach.linkify(bleach.clean(data))), rot13=True, css_junk=css_junk))
+
+
+@app.template_filter('hideemail')
+def hideemail_filter(data, message='[redacted]'):
+    return redactemail(data, message)
 
 
 @app.template_filter('usessl')

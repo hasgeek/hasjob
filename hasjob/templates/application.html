@@ -1,0 +1,59 @@
+{% extends "inc/layout.html" %}
+{% block title %}{{ job_application.user.fullname }} &mdash; {{ post.headline }}{% endblock %}
+
+{% block content %}
+<div id="sheet">
+  <div class="section first">
+    <h1>{{ post.headline }}</h1>
+    {% if post.company_logo %}<img class="post-company-logo" alt="Logo" src="{{ url_for('logoimage', hashid=post.hashid) }}"/>{% endif %}
+    <p class="post-date">Posted {{ post.datetime|longdate }}</p>
+    <p id="company-info">
+      <span class="post-company-name">{{ post.company_name }}</span><br/>
+      <span class="post-location">{{ post.location }}{% if post.relocation_assist %}
+        <em>(relocation assistance available)</em>{% endif %}</span><br/>
+      {%- if post.company_url -%}
+        <span class="post-company-url">
+          <a href="{{ post.company_url }}" target="_blank" rel="nofollow">{{ post.company_url|cleanurl }}</a>
+        </span>
+      {%- endif %}
+    </p>
+    <p id="post-meta">
+      <a href="{{ url_for('jobdetail', hashid=post.hashid) }}">&larr; Return to listing</a>
+    </p>
+  </div>
+  <div class="section">
+    <h2>{{ job_application.user.fullname }}</h2>
+    {{ job_application.message|safe }}
+  </div>
+  <div class="section">
+    <form id="process_application_form" method="POST" action="{{ url_for('process_application', hashid=post.hashid, application=job_application.hashid) }}">
+      <input type="hidden" name="_charset_"/>
+      <input type="hidden" name="form.id" value="process_application_form"/>
+      {{ process_application_form.hidden_tag() }}
+      {%- if job_application.is_pending() or job_application.is_opened() or job_application.is_ignored() %}
+        <p>
+          <button type="submit" name="action" value="connect">Make connection</button>
+          {% if not job_application.is_ignored() %}<button type="submit" name="action" value="ignore">Ignore candidate</button>{% endif %}
+          <button type="submit" name="action" value="flag">Report spam</button>
+        </p>
+        <p>
+          The candidate will be notified if you make a connection.
+          Spam reports are manually processed.
+        </p>
+      {%- elif job_application.is_flagged() %}
+        <p>
+          You have flagged this application as spam.
+        </p>
+        <p>
+          <button type="submit" name="action" value="unflag">Report not spam</button>
+        </p>
+      {%- elif job_application.is_connected() %}
+        <p>
+          <strong>Email:</strong> {{ job_application.email }}<br>
+          <strong>Phone:</strong> {{ job_application.phone }}
+        </p>
+      {%- endif %}
+    </form>        
+  </div>
+</div>
+{% endblock %}

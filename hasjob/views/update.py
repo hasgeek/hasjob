@@ -2,6 +2,8 @@ import bleach
 from datetime import datetime, timedelta
 from markdown import markdown
 from difflib import SequenceMatcher
+from html2text import html2text
+from premailer import transform as email_transform
 
 from sqlalchemy.exc import IntegrityError
 from flask import (
@@ -13,7 +15,6 @@ from flask import (
     request,
     url_for,
     session,
-    escape,
     Markup,
     )
 from flask.ext.mail import Message
@@ -28,14 +29,16 @@ from hasjob.models import (
     JobPost,
     JobPostReport,
     POSTSTATUS,
+    EMPLOYER_RESPONSE,
     ReportCode,
     UserJobView,
+    JobApplication,
     unique_hash,
     viewcounts_by_id,
     )
 from hasjob.twitter import tweet
 from hasjob.uploads import uploaded_logos
-from hasjob.utils import get_word_bag, scrubemail
+from hasjob.utils import get_word_bag, redactemail
 from hasjob.views import ALLOWED_TAGS
 from hasjob.views.display import webmail_domains
 
@@ -65,6 +68,13 @@ def jobdetail(hashid):
     reportform.report_code.choices = [(ob.id, ob.title) for ob in ReportCode.query.filter_by(public=True).order_by('seq')]
     rejectform = forms.RejectForm()
     stickyform = forms.StickyForm(obj=post)
+    applyform = None  # User isn't allowed to apply unless non-None
+    if g.user:
+        job_application = JobApplication.query.filter_by(user=g.user, jobpost=post).first()
+        if not job_application:
+            applyform = forms.ApplicationForm()
+    else:
+        job_application = None
     if reportform.validate_on_submit():
         report = JobPostReport(post=post, reportcode_id=reportform.report_code.data)
         report.ipaddr = request.environ['REMOTE_ADDR']
@@ -77,7 +87,11 @@ def jobdetail(hashid):
             flash("Thanks! This job listing has been flagged for review.", "interactive")
     elif request.method == 'POST' and request.is_xhr:
         return render_template('inc/reportform.html', reportform=reportform, ajaxreg=True)
-    return render_template('detail.html', post=post, reportform=reportform, rejectform=rejectform, siteadmin=lastuser.has_permission('siteadmin'), webmail_domains=webmail_domains, jobview=jobview, stickyform=stickyform)
+    return render_template('detail.html', post=post, reportform=reportform, rejectform=rejectform,
+        stickyform=stickyform, applyform=applyform, job_application=job_application,
+        webmail_domains=webmail_domains, jobview=jobview,
+        siteadmin=lastuser.has_permission('siteadmin')
+        )
 
 
 @app.route('/reveal/<hashid>')
@@ -104,9 +118,135 @@ def revealjob(hashid):
         cache.delete_memoized(viewcounts_by_id, post.id)
         db.session.commit()
     if request.is_xhr:
-        return scrubemail(unicode(escape(post.how_to_apply)), ('z', 'y'))
+        return redactemail(post.how_to_apply)
     else:
         return redirect(url_for('jobdetail', hashid=post.hashid), 303)
+
+
+@app.route('/apply/<hashid>', methods=['POST'])
+@lastuser.requires_login
+def applyjob(hashid):
+    """
+    Apply to a job
+    """
+    post = JobPost.query.filter_by(hashid=hashid).first_or_404()
+    job_application = JobApplication.query.filter_by(user=g.user, jobpost=post).first()
+    if job_application:
+        flashmsg = "You have already applied to this job. You may not apply again"
+        if request.is_xhr:
+            return u'<p><strong>{}</strong></p>'.format(flashmsg)
+        else:
+            flash(flashmsg, 'interactive')
+            return redirect(url_for('jobdetail', hashid=post.hashid), 303)
+    else:
+        applyform = forms.ApplicationForm()
+        if applyform.validate_on_submit():
+            if g.user.blocked:
+                flashmsg = "Your account has been blocked from applying to jobs"
+            else:
+                job_application = JobApplication(user=g.user, jobpost=post,
+                    email=applyform.apply_email.data,
+                    phone=applyform.apply_phone.data,
+                    message=applyform.apply_message.data)
+                db.session.add(job_application)
+                # TODO: Mail this to employer
+
+                db.session.commit()
+                email_html = email_transform(
+                    render_template('apply_email.html',
+                        post=post, job_application=job_application,
+                        archive_url=url_for('view_application',
+                            hashid=post.hashid, application=job_application.hashid,
+                            _external=True)),
+                    base_url=request.url_root)
+                email_text = html2text(email_html)
+                flashmsg = "Your application has been sent to the employer"
+
+                msg = Message(subject="Job Application: {fullname}".format(fullname=job_application.user.fullname),
+                    recipients=[post.email])
+                msg.body = email_text
+                msg.html = email_html
+                mail.send(msg)
+
+            if request.is_xhr:
+                return u'<p><strong>{}</strong></p>'.format(flashmsg)
+            else:
+                flash(flashmsg, 'interactive')
+                return redirect(url_for('jobdetail', hashid=post.hashid), 303)
+
+        if request.is_xhr:
+            return render_template('inc/applyform.html', post=post, applyform=applyform, ajaxreg=True)
+        else:
+            return redirect(url_for('jobdetail', hashid=post.hashid), 303)
+
+
+@app.route('/view/<hashid>/<application>')
+def view_application(hashid, application):
+    post = JobPost.query.filter_by(hashid=hashid).first_or_404()
+    if post.user and post.user != g.user:
+        if not g.user:
+            return redirect(url_for('login'))
+        else:
+            abort(403)
+    job_application = JobApplication.query.filter_by(hashid=application, jobpost=post).first_or_404()
+    process_application_form = forms.ProcessApplicationForm()
+
+    return render_template('application.html', post=post, job_application=job_application,
+        process_application_form=process_application_form,
+        ajaxreg=True)
+
+
+@app.route('/apply/<hashid>/<application>', methods=['POST'])
+def process_application(hashid, application):
+    post = JobPost.query.filter_by(hashid=hashid).first_or_404()
+    if post.user and post.user != g.user:
+        if not g.user:
+            return redirect(url_for('login'))
+        else:
+            abort(403)
+    job_application = JobApplication.query.filter_by(hashid=application, jobpost=post).first_or_404()
+    process_application_form = forms.ProcessApplicationForm()
+    flashmsg = ''
+
+    if process_application_form.validate_on_submit():
+        if request.form.get('action') == 'connect' and job_application.can_connect():
+            email_html = email_transform(
+                render_template('connect_email.html',
+                    post=post, job_application=job_application,
+                    archive_url=url_for('view_application',
+                        hashid=post.hashid, application=job_application.hashid,
+                        _external=True)),
+                base_url=request.url_root)
+            email_text = html2text(email_html)
+            flashmsg = "We emailed the candidate on your behalf to make a connection"
+            msg = Message(subject="Job Connection: {name}".format(name=post.company_name),
+                sender=(post.fullname, post.email),
+                recipients=[job_application.email],
+                cc=[post.email],
+                reply_to=(post.fullname, post.email))
+            msg.body = email_text
+            msg.html = email_html
+            mail.send(msg)
+
+            job_application.response = EMPLOYER_RESPONSE.CONNECTED
+            db.session.commit()
+        elif request.form.get('action') == 'ignore' and job_application.can_ignore():
+            job_application.response = EMPLOYER_RESPONSE.IGNORED
+            db.session.commit()
+        elif request.form.get('action') == 'flag' and job_application.can_report():
+            job_application.response = EMPLOYER_RESPONSE.FLAGGED
+            db.session.commit()
+        elif request.form.get('action') == 'unflag' and job_application.is_flagged():
+            job_application.response = EMPLOYER_RESPONSE.PENDING
+            db.session.commit()
+
+    if flashmsg:
+        if request.is_xhr:
+            return u'<p><strong>{}</strong></p>'.format(flashmsg)
+        else:
+            flash(flashmsg, 'interactive')
+
+    return redirect(url_for('view_application', hashid=post.hashid, application=job_application.hashid), 303)
 
 
 @app.route('/sticky/<hashid>', methods=['POST'])
@@ -245,7 +385,6 @@ def confirm_email(hashid, key):
 
 @app.route('/withdraw/<hashid>/<key>', methods=('GET', 'POST'))
 def withdraw(hashid, key):
-    # TODO: Support for withdrawing job posts
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
     form = forms.WithdrawForm()
     if key != post.edit_key:
@@ -381,7 +520,8 @@ def newjob():
         # Move it to the editjob page for handling here forward
         post = JobPost(hashid=unique_hash(JobPost),
                        ipaddr=request.environ['REMOTE_ADDR'],
-                       useragent=request.user_agent.string)
+                       useragent=request.user_agent.string,
+                       user=g.user)
         db.session.add(post)
         return editjob(post.hashid, post.edit_key, form, post, validated=True)
     elif request.method == 'POST' and request.form.get('form.id') != 'newheadline':

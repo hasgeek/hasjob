@@ -51,8 +51,8 @@
       {%- endif %}
     </p>
     <p id="post-meta">
-      <a href="{{ url_for('browse_by_type', slug=post.type.slug) }}">{{ post.type.title }}</a> /
-      <a href="{{ url_for('browse_by_category', slug=post.category.slug) }}">{{ post.category.title }}</a>
+      <a href="{{ url_for('browse_by_type', name=post.type.name) }}">{{ post.type.title }}</a> /
+      <a href="{{ url_for('browse_by_category', name=post.category.name) }}">{{ post.category.title }}</a>
       {%- if post.email_domain in webmail_domains %}
         / <a href="{{ url_for('browse_by_email', md5sum=post.md5sum) }}">All jobs by {{ post.company_name }}</a>
       {%- else %}
@@ -108,11 +108,11 @@
   <div class="section" id="apply-info">
     <h2>Apply for this position</h2>
     <p id="apply-info-para">
-      {% if post.is_draft() %}{# Always show when in draft state #}
-        {{ post.how_to_apply|scrubemail(('z', 'y')) }}
+      {%- if post.is_draft() %}{# Always show when in draft state #}
+        {{ post.how_to_apply|hideemail }}
       {%- elif g.user %}
         {% if jobview.applied %}{# User has already hit the reveal button #}
-          {{ post.how_to_apply|scrubemail(('z', 'y')) }}
+          {{ post.how_to_apply|hideemail }}
         {%- else %}
           <a class="btn" id="reveal-button" href="{{ url_for('revealjob', hashid=post.hashid) }}">Show instructions</a>
         {%- endif %}
@@ -123,19 +123,34 @@
       {%- endif %}
     </p>
   </div>
-  {% if post.hr_contact is not none %}{# Don't display notice on old listings #}
+  {%- if not post.is_draft() and g.user and applyform %}
+    <div class="section">
+      {% include "inc/applyform.html" %}
+    </div>
+  {%- elif job_application %}
+    <div class="section">
+      <h3>You have applied for this position</h3>
+      <p>
+        <strong>Name:</strong> {{ job_application.user.fullname }}<br>
+        <strong>Email:</strong> {{ job_application.email }}<br>
+        <strong>Phone:</strong> {{ job_application.phone }}
+      </p>
+      {{ job_application.message|safe }}
+    </div>
+  {%- endif %}
+  {%- if post.hr_contact is not none %}{# Don't display notice on old listings #}
     <div class="section" id="recruiter-notice">
-    {% if post.hr_contact %}
+    {%- if post.hr_contact %}
       <p>
         It is <strong>OK</strong> for recruiters, HR consultants, and other intermediaries to contact this employer.
       </p>
-    {% else %}
+    {%- else %}
       <p>
         It is <strong>NOT OK</strong> for recruiters, HR consultants, and other intermediaries to contact this employer.
       </p>
-    {% endif %}
+    {%- endif %}
     </div>
-  {% endif %}
+  {%- endif %}
 </div>
 {% endblock %}
 {% block footerscripts %}
@@ -203,6 +218,9 @@
       $.ajax($(this).attr('href')).done(function(html) {
         $("#apply-info-para").html(html);
         unrot13();
+        {%- if applyform %}
+          $("#applyform").removeClass('hidden');
+        {%- endif %}
       })
       .fail(function(msg){
         $(this).removeAttr("disabled");
@@ -210,8 +228,20 @@
       return false;
     });
   });
+  {%- if applyform %}
+    $(function() {
+      radioHighlight('apply_email', 'selected');
+    });
+  {%- endif %}
 </script>
 {{ ajaxform('reportform') }}
 {{ ajaxform('rejectform') }}
 {{ ajaxform('stickyform') }}
+{% if applyform %}
+  {{ ajaxform('applyform') }}
+  {% assets "js_tinymce" %}<script src="{{ ASSET_URL }}" type="text/javascript"></script>{% endassets %}
+  <script type="text/javascript">
+    {% include "inc/tinymce.js" %}
+  </script>
+{% endif %}
 {% endblock %}

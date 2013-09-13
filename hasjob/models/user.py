@@ -9,4 +9,4 @@ __all__ = ['User']
 class User(UserBase, db.Model):
     __tablename__ = 'user'
 
-    reviewed_posts = db.relationship('JobPost', backref='reviewer')
+    blocked = db.Column(db.Boolean, nullable=False, default=False)

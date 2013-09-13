@@ -54,11 +54,11 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None):
                            siteadmin=lastuser.has_permission('siteadmin'))
 
 
-@app.route('/type/<slug>')
-def browse_by_type(slug):
-    if slug == 'all':
+@app.route('/type/<name>')
+def browse_by_type(name):
+    if name == 'all':
         return redirect(url_for('index'))
-    ob = JobType.query.filter_by(slug=slug).first_or_404()
+    ob = JobType.query.filter_by(name=name).first_or_404()
     basequery = JobPost.query.filter_by(type_id=ob.id)
     return index(basequery=basequery, type=ob)
 
@@ -71,11 +71,11 @@ def browse_by_domain(domain):
     return index(basequery=basequery, domain=domain)
 
 
-@app.route('/category/<slug>')
-def browse_by_category(slug):
-    if slug == 'all':
+@app.route('/category/<name>')
+def browse_by_category(name):
+    if name == 'all':
         return redirect(url_for('index'))
-    ob = JobCategory.query.filter_by(slug=slug).first_or_404()
+    ob = JobCategory.query.filter_by(name=name).first_or_404()
     basequery = JobPost.query.filter_by(category_id=ob.id)
     return index(basequery=basequery, category=ob)
 
@@ -108,20 +108,20 @@ def feed(basequery=None, type=None, category=None, md5sum=None, domain=None):
         content_type='application/atom+xml; charset=utf-8')
 
 
-@app.route('/type/<slug>/feed')
-def feed_by_type(slug):
-    if slug == 'all':
+@app.route('/type/<name>/feed')
+def feed_by_type(name):
+    if name == 'all':
         return redirect(url_for('feed'))
-    ob = JobType.query.filter_by(slug=slug).first_or_404()
+    ob = JobType.query.filter_by(name=name).first_or_404()
     basequery = JobPost.query.filter_by(type_id=ob.id)
     return feed(basequery=basequery, type=ob)
 
 
-@app.route('/category/<slug>/feed')
-def feed_by_category(slug):
-    if slug == 'all':
+@app.route('/category/<name>/feed')
+def feed_by_category(name):
+    if name == 'all':
         return redirect(url_for('feed'))
-    ob = JobCategory.query.filter_by(slug=slug).first_or_404()
+    ob = JobCategory.query.filter_by(name=name).first_or_404()
     basequery = JobPost.query.filter_by(category_id=ob.id)
     return feed(basequery=basequery, category=ob)
 
@@ -206,12 +206,12 @@ def sitemap():
     # Add job type pages to sitemap
     for item in JobType.query.all():
         sitemapxml += '  <url>\n'\
-                      '    <loc>%s</loc>\n' % url_for('browse_by_type', slug=item.slug, _external=True) + \
+                      '    <loc>%s</loc>\n' % url_for('browse_by_type', name=item.name, _external=True) + \
                       '  </url>\n'
     # Add job category pages to sitemap
     for item in JobCategory.query.all():
         sitemapxml += '  <url>\n'\
-                      '    <loc>%s</loc>\n' % url_for('browse_by_category', slug=item.slug, _external=True) + \
+                      '    <loc>%s</loc>\n' % url_for('browse_by_category', name=item.name, _external=True) + \
                       '  </url>\n'
     # Add live posts to sitemap
     for post in getposts(showall=True):

@@ -65,6 +65,18 @@ EMAIL_RE = re.compile(r'\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}\b', re.I)
 URL_RE = re.compile(r'\(?\bhttp://[-A-Za-z0-9+&@#/%?=~_()|!:,.;]*[-A-Za-z0-9+&@#/%=~_()|]')
 
 
+def redactemail(data, message=u'[redacted]'):
+    """
+    Remove email addresses from the given text, replacing with a redacted message.
+
+    >>> redactemail(u"Send email to test@example.com and you are all set.")
+    u'Send email to [redacted] and you are all set.'
+    >>> redactemail(u"Send email to test@example.com and you are all set.", '[hidden]')
+    u'Send email to [hidden] and you are all set.'
+    """
+    return EMAIL_RE.sub(message, data)
+
+
 def scrubemail(data, rot13=False, css_junk=None):
     """
     Convert email addresses in text into HTML links,

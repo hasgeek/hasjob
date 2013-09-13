@@ -1,0 +1,13 @@
+{% extends "inc/email_layout.html" %}
+
+{% block title %}Job Connection: {{ post.company_name }}{% endblock %}
+
+{% block preview -%}
+  {{ job_application.user.fullname }}, meet {{ post.fullname or post.company_name }}
+{%- endblock %}
+
+{% block content -%}
+<p>
+  <strong>{{ job_application.user.fullname }}</strong>, meet <strong>{{ post.fullname or post.company_name }}</strong> regarding your application for <a href="{{ url_for('jobdetail', hashid=post.hashid, _external=True) }}" target="_blank">{{ post.headline }}</a>. You can also reply to this email to initiate a conversation.
+</p>
+{%- endblock %}
