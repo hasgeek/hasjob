@@ -47,6 +47,10 @@
         <p>
           <button type="submit" name="action" value="unflag">Report not spam</button>
         </p>
+      {%- elif job_application.is_spam() %}
+        <p>
+          An administrator flagged this application as spam.
+        </p>
       {%- elif job_application.is_connected() %}
         <p>
           <strong>Email:</strong> {{ job_application.email }}<br>

@@ -1,16 +1,19 @@
 # -*- coding: utf-8 -*-
 
 import re
+from difflib import SequenceMatcher
+
 from flask import g, request, Markup
-from baseframe.forms import Form, ValidEmailDomain, RichTextField, MarkdownField
+from baseframe.forms import Form, ValidEmailDomain, RichTextField
 from wtforms import TextField, TextAreaField, RadioField, FileField, BooleanField, ValidationError, validators
 from wtforms.fields.html5 import EmailField
 from coaster import getbool
 
+from .models import JobApplication, EMPLOYER_RESPONSE
 from .uploads import process_image, UploadNotAllowed
 
 from . import app, lastuser
-from .utils import simplify_text, EMAIL_RE, URL_RE
+from .utils import simplify_text, EMAIL_RE, URL_RE, get_word_bag
 
 QUOTES_RE = re.compile(ur'[\'"`‘’“”′″‴]+')
 
@@ -170,6 +173,20 @@ class ApplicationForm(Form):
                 self.apply_email.choices = [
                     ('', Markup('<em>You have not verified your email address</em>'))
                 ]
+
+    def validate_apply_message(form, field):
+        words = get_word_bag(field.data)
+        form.words = words
+        similar = False
+        for oldapp in JobApplication.query.filter_by(response=EMPLOYER_RESPONSE.SPAM).all():
+            if oldapp.words:
+                s = SequenceMatcher(None, words, oldapp.words)
+                if s.ratio() > 0.8:
+                    similar = True
+                    break
+
+        if similar:
+            raise ValidationError("Your application is very similar to one previously identified as spam")
 
 
 class ProcessApplicationForm(Form):

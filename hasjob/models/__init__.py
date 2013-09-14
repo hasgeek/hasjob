@@ -29,6 +29,7 @@ class EMPLOYER_RESPONSE(LabeledEnum):
     IGNORED = (2, u"Ignored")      # Dismissed as not interesting
     CONNECTED = (3, u"Connected")  # Make a connection between both
     FLAGGED = (4, u"Flagged")      # Employer reported a spammer
+    SPAM = (5, u"Spam")            # Admin marked this as spam
 
 
 from hasjob.models.jobcategory import *

@@ -147,10 +147,9 @@ def applyjob(hashid):
                 job_application = JobApplication(user=g.user, jobpost=post,
                     email=applyform.apply_email.data,
                     phone=applyform.apply_phone.data,
-                    message=applyform.apply_message.data)
+                    message=applyform.apply_message.data,
+                    words=applyform.words)
                 db.session.add(job_application)
-                # TODO: Mail this to employer
-
                 db.session.commit()
                 email_html = email_transform(
                     render_template('apply_email.html',
@@ -183,7 +182,8 @@ def applyjob(hashid):
 @app.route('/view/<hashid>/<application>')
 def view_application(hashid, application):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
-    if post.user and post.user != g.user:
+    # Transition code until we force all employers to login before posting
+    if post.user and (post.user != g.user or not lastuser.has_permission('siteadmin')):
         if not g.user:
             return redirect(url_for('login'))
         else:

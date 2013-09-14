@@ -30,8 +30,7 @@ class JobPost(BaseMixin, db.Model):
     relocation_assist = db.Column(db.Boolean, default=False, nullable=False)
     description = db.Column(db.UnicodeText, nullable=False)
     perks = db.Column(db.UnicodeText, nullable=False)
-    # how_to_apply is deprecated but we are keeping the column to preserve past data
-    how_to_apply = db.Column(db.UnicodeText, nullable=False, default=u'')
+    how_to_apply = db.Column(db.UnicodeText, nullable=False)
     hr_contact = db.Column(db.Boolean, nullable=True)
 
     # Company details
@@ -134,6 +133,8 @@ class JobApplication(BaseMixin, db.Model):
     message = db.Column(db.UnicodeText, nullable=False)
     #: Employer's response
     response = db.Column(db.Integer, nullable=False, default=EMPLOYER_RESPONSE.PENDING)
+    #: Bag of words, for spam analysis
+    words = db.Column(db.UnicodeText, nullable=True)
 
     def __init__(self, **kwargs):
         super(JobApplication, self).__init__(**kwargs)
@@ -155,6 +156,9 @@ class JobApplication(BaseMixin, db.Model):
     def is_flagged(self):
         return self.response == EMPLOYER_RESPONSE.FLAGGED
 
+    def is_spam(self):
+        return self.response == EMPLOYER_RESPONSE.SPAM
+
     def can_connect(self):
         return self.response in (EMPLOYER_RESPONSE.PENDING, EMPLOYER_RESPONSE.OPENED, EMPLOYER_RESPONSE.IGNORED)
 
@@ -163,7 +167,6 @@ class JobApplication(BaseMixin, db.Model):
 
     def can_report(self):
         return self.response in (EMPLOYER_RESPONSE.PENDING, EMPLOYER_RESPONSE.OPENED, EMPLOYER_RESPONSE.IGNORED)
-
 
 
 def unique_hash(model=JobPost):
