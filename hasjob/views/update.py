@@ -183,7 +183,7 @@ def applyjob(hashid):
 def view_application(hashid, application):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
     # Transition code until we force all employers to login before posting
-    if post.user and (post.user != g.user or not lastuser.has_permission('siteadmin')):
+    if post.user and (post.user != g.user and not lastuser.has_permission('siteadmin')):
         if not g.user:
             return redirect(url_for('login'))
         else:
