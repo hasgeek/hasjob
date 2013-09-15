@@ -99,7 +99,8 @@ class JobPost(BaseMixin, db.Model):
 def viewcounts_by_id(jobpost_id):
     return {
         'all': UserJobView.query.filter_by(jobpost_id=jobpost_id).count(),
-        'applied': UserJobView.query.filter_by(jobpost_id=jobpost_id, applied=True).count()
+        'opened': UserJobView.query.filter_by(jobpost_id=jobpost_id, applied=True).count(),
+        'applied': JobApplication.query.filter_by(jobpost_id=jobpost_id).count()
         }
 
 
