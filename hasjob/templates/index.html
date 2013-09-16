@@ -114,7 +114,7 @@
                   {%- if siteadmin %} {{ post.viewcounts.applied }}/{{ post.viewcounts.opened }}/{{ post.viewcounts.all }}{% endif -%}
                   </span>
                 {%- else %}
-                  {%- if siteadmin %}<span class="count">{{ post.viewcounts.applied }}/{{ post.viewcounts.opened }}/{{ post.viewcounts.opened }}/{{ post.viewcounts.all }}</span>{% endif %}
+                  {%- if siteadmin %}<span class="count">{{ post.viewcounts.applied }}/{{ post.viewcounts.opened }}/{{ post.viewcounts.all }}</span>{% endif %}
                 {%- endif %}
               </div>
             {%- endfor %}
