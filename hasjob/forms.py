@@ -155,7 +155,9 @@ class ListingForm(Form):
 class ApplicationForm(Form):
     apply_email = RadioField("Email", validators=[validators.Required("Pick an email address")],
         description="Add new email addresses from your profile")
-    apply_phone = TextField("Phone", validators=[validators.Required("Specify a phone number")],
+    apply_phone = TextField("Phone",
+        validators=[validators.Required("Specify a phone number"),
+            validators.Length(min=1, max=15, message="%(max)d characters maximum")],
         description="A phone number the employer can reach you at")
     apply_message = RichTextField("Job application",
         validators=[validators.Required("You need to say something about yourself")],
