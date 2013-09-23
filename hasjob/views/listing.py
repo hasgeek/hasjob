@@ -40,7 +40,7 @@ from hasjob.twitter import tweet
 from hasjob.uploads import uploaded_logos
 from hasjob.utils import get_word_bag, redactemail
 from hasjob.views import ALLOWED_TAGS
-from hasjob.views.display import webmail_domains
+from hasjob.views.index import webmail_domains
 
 
 @app.route('/view/<hashid>', methods=('GET', 'POST'))

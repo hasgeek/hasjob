@@ -134,12 +134,12 @@ def feed_by_email(md5sum):
     return feed(basequery=basequery, md5sum=md5sum)
 
 
-@app.route('/at/<domain>')
+@app.route('/at/<domain>/feed')
 def feed_by_domain(domain):
     if not domain:
         abort(404)
     basequery = JobPost.query.filter_by(email_domain=domain)
-    return index(basequery=basequery, domain=domain)
+    return feed(basequery=basequery, domain=domain)
 
 
 @app.route('/archive')
