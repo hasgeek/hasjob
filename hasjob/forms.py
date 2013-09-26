@@ -55,9 +55,10 @@ class ListingForm(Form):
     job_perks_description = TextAreaField("Describe job perks",
         description=u"Stock options, free lunch, free conference passes, etc")
     job_how_to_apply = TextAreaField("What should a candidate submit when applying for this job?",
-         description=u'Example: "Include your LinkedIn and GitHub profiles." '
+         description=u"Example: “Include your LinkedIn and GitHub profiles.” "
                      u"We now require candidates to apply through the job board only. "
-                     u"DO NOT include any contact information here.",
+                     u"DO NOT include any contact information here. Candidates CANNOT "
+                     u"attach resumes or other documents, so do not ask for that",
          validators=[validators.Required(u"HasGeek does not offer screening services. Please specify how candidates may apply")])
     company_name = TextField("Name",
         description=u"The name of the organization where the position is. "
