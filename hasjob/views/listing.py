@@ -73,6 +73,7 @@ def jobdetail(hashid):
         job_application = JobApplication.query.filter_by(user=g.user, jobpost=post).first()
         if not job_application:
             applyform = forms.ApplicationForm()
+            applyform.apply_phone.data = g.user.phone
     else:
         job_application = None
     if reportform.validate_on_submit():

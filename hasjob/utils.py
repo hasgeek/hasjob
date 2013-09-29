@@ -63,6 +63,7 @@ def newid():
 EMAIL_RE = re.compile(r'\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}\b', re.I)
 # From http://www.codinghorror.com/blog/2008/10/the-problem-with-urls.html
 URL_RE = re.compile(r'\(?\bhttp://[-A-Za-z0-9+&@#/%?=~_()|!:,.;]*[-A-Za-z0-9+&@#/%=~_()|]')
+PHONE_DETECT_RE = re.compile('([0-9][ .()_-]*){8,13}')
 
 
 def redactemail(data, message=u'[redacted]'):

@@ -13,7 +13,7 @@ from .models import JobApplication, EMPLOYER_RESPONSE
 from .uploads import process_image, UploadNotAllowed
 
 from . import app, lastuser
-from .utils import simplify_text, EMAIL_RE, URL_RE, get_word_bag
+from .utils import simplify_text, EMAIL_RE, URL_RE, PHONE_DETECT_RE, get_word_bag
 
 QUOTES_RE = re.compile(ur'[\'"`‘’“”′″‴]+')
 
@@ -190,6 +190,12 @@ class ApplicationForm(Form):
 
         if similar:
             raise ValidationError("Your application is very similar to one previously identified as spam")
+
+        # Check for email and phone numbers in the message
+        # Prepare text by replacing non-breaking spaces with spaces (for phone numbers)
+        phone_search_text = field.data.replace('&nbsp;', ' ').replace('&#160;', ' ').replace(u'\xa0', ' ')
+        if EMAIL_RE.search(field.data) is not None or PHONE_DETECT_RE.search(phone_search_text) is not None:
+            raise ValidationError("Do not include your email address or phone number in the application")
 
 
 class ProcessApplicationForm(Form):

@@ -14,7 +14,7 @@ lastuser.init_usermanager(UserManager(db, User))
 @app.route('/login')
 @lastuser.login_handler
 def login():
-    return {'scope': 'id email organizations'}
+    return {'scope': 'id email phone organizations'}
 
 
 @app.route('/logout')
