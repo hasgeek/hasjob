@@ -192,8 +192,9 @@ class ApplicationForm(Form):
             raise ValidationError("Your application is very similar to one previously identified as spam")
 
         # Check for email and phone numbers in the message
-        # Prepare text by replacing non-breaking spaces with spaces (for phone numbers)
-        phone_search_text = field.data.replace('&nbsp;', ' ').replace('&#160;', ' ').replace(u'\xa0', ' ')
+        # Prepare text by replacing non-breaking spaces with spaces (for phone numbers) and removing URLs.
+        # URLs may contain numbers that are not phone numbers.
+        phone_search_text = URL_RE.sub('', field.data.replace('&nbsp;', ' ').replace('&#160;', ' ').replace(u'\xa0', ' '))
         if EMAIL_RE.search(field.data) is not None or PHONE_DETECT_RE.search(phone_search_text) is not None:
             raise ValidationError("Do not include your email address or phone number in the application")
 
