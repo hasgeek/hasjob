@@ -192,6 +192,7 @@ class ApplicationForm(Form):
             raise ValidationError("Your application is very similar to one previously identified as spam")
 
         # Check for email and phone numbers in the message
+
         # Prepare text by replacing non-breaking spaces with spaces (for phone numbers) and removing URLs.
         # URLs may contain numbers that are not phone numbers.
         phone_search_text = URL_RE.sub('', field.data.replace('&nbsp;', ' ').replace('&#160;', ' ').replace(u'\xa0', ' '))
