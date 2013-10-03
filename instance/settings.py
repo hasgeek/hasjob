@@ -10,7 +10,7 @@ SQLALCHEMY_DATABASE_URI = 'sqlite:///'
 #: Secret key
 SECRET_KEY = 'make this something random'
 #: Timezone
-TIMEZONE = 'Asia/Calcutta'
+TIMEZONE = 'Asia/Kolkata'
 #: Upload path
 UPLOADED_LOGOS_DEST = '/tmp/uploads'
 #: Search index path
