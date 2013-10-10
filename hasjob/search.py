@@ -2,7 +2,7 @@ import os.path
 from flask.ext.sqlalchemy import models_committed
 import time
 from whoosh import fields, index
-from whoosh.store import LockError
+from whoosh.index import LockError
 from whoosh.qparser import QueryParser
 from whoosh.analysis import StemmingAnalyzer
 
