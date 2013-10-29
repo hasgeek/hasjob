@@ -19,7 +19,6 @@ dnspython
 html2text
 premailer
 bitlyapi
-Flask-Script
 https://github.com/hasgeek/coaster/zipball/master
 https://github.com/hasgeek/flask-lastuser/zipball/master
 https://github.com/hasgeek/baseframe/zipball/master
