@@ -220,7 +220,7 @@ def process_application(hashid, application):
                 base_url=request.url_root)
             email_text = html2text(email_html)
             flashmsg = "We emailed the candidate on your behalf to make a connection"
-            msg = Message(subject="Job Connection: {name}".format(name=post.company_name),
+            msg = Message(subject=u"Job Connection: {name}".format(name=post.company_name),
                 sender=(post.fullname or post.company_name, post.email),
                 recipients=[job_application.email],
                 cc=[post.email],
