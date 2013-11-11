@@ -169,7 +169,7 @@ class ApplicationForm(Form):
         self.apply_email.choices = []
         if g.user:
             self.apply_email.description = Markup(
-                'Add new email addresses from <a href="{}" target="_blank">your profile</a>'.format(
+                u'Add new email addresses from <a href="{}" target="_blank">your profile</a>'.format(
                     g.user.profile_url))
             self.apply_email.choices = [(e, e) for e in lastuser.user_emails(g.user)]
             if not self.apply_email.choices:

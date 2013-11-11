@@ -162,7 +162,7 @@ def applyjob(hashid):
                 email_text = html2text(email_html)
                 flashmsg = "Your application has been sent to the employer"
 
-                msg = Message(subject="Job Application: {fullname}".format(fullname=job_application.user.fullname),
+                msg = Message(subject=u"Job Application: {fullname}".format(fullname=job_application.user.fullname),
                     recipients=[post.email])
                 msg.body = email_text
                 msg.html = email_html
