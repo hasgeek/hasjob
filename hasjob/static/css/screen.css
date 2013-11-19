@@ -343,6 +343,9 @@ header #pitch {
 #site-title .jobs {
   color: #f0a40c;
 }
+#site-title .subtitle {
+  font-size: 70%;
+}
 #site-title a, #site-title a:hover, #site-title a:focus, #site-title a:active, #site-title a:visited {
   text-decoration: none;
   border-bottom: 5px solid transparent;

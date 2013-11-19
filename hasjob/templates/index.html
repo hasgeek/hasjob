@@ -11,13 +11,6 @@
 {%- if domain %}<link rel="alternate" type="application/atom+xml" title="Jobs at {{ employer_name }} – {{ config['SITE_TITLE'] }}" href="{{ url_for('feed_by_domain', domain=domain) }}" />{% endif -%}
 {% endblock %}
 
-{% block header %}
-  <p id="pitch">
-    HasGeek reaches out to thousands of developers via events, blogs and discussion groups.
-    Job listings made here reach the entire network. <a href="{{ url_for('newjob')|usessl }}">Post a job &rarr;</a>
-  </p>
-{% endblock %}
-
 {% block content %}
   {# {% include "inc/logo.html" %} #}
   <ul id="stickie-area">

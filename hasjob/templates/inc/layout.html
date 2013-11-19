@@ -47,7 +47,10 @@
     <header>
       {{ networkbar(siteid='jobs', login=true, baseclass=none, containerclass='header-content') }}
       <div class="header-content">
-        <div id="site-title"><a href="{{ url_for('index') }}"><span class="has">Has</span><span class="geek">Geek</span> <span class="jobs">Job Board</span> <small class="has">β</small></a></div>
+        <div id="site-title">
+          <a href="{{ url_for('index') }}"><span class="has">Hasjob</span></a>
+          <span class="subtitle geek">The HasGeek Job Board</span>
+        </div>
         <form id="search" action="{{ url_for('search') }}">
           <input type="text" placeholder="Find a job..." name="q" value="{{ request.args.q }}"/>
           <input type="submit" value="Go"/>
