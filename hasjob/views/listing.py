@@ -62,6 +62,7 @@ def jobdetail(hashid):
             except IntegrityError:
                 db.session.rollback()
                 pass  # User opened two tabs at once? We don't really know
+            viewcounts_by_id(post.id)  # Re-populate cache
     else:
         jobview = None
     reportform = forms.ReportForm()
@@ -114,10 +115,12 @@ def revealjob(hashid):
         except IntegrityError:
             db.session.rollback()
             pass  # User double-clicked. Ignore.
+        viewcounts_by_id(post.id)  # Re-populate cache
     elif not jobview.applied:
         jobview.applied = True
         cache.delete_memoized(viewcounts_by_id, post.id)
         db.session.commit()
+        viewcounts_by_id(post.id) # Re-populate cache
     if request.is_xhr:
         return redactemail(post.how_to_apply)
     else:
