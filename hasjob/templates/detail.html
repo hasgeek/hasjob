@@ -83,7 +83,7 @@
         </li>
         {% if siteadmin %}
         <li>
-          <a id="sidebar-reject" href="#reject">Reject this</a>
+          <a class="sidebar-blank" id="sidebar-reject" href="#reject">Reject this</a>
           <div class="popup-box" id="reject">
             <a class="close-popup" href="#">&#10005;</a>
             <h2>What’s wrong with it?</h2>
@@ -91,11 +91,14 @@
           </div>
         </li>
         <li>
-          <a id="sidebar-sticky" href="#makesticky">Make sticky</a>
+          <a class="sidebar-blank" id="sidebar-sticky" href="#makesticky">Make sticky</a>
           <div class="popup-box" id="makesticky">
             <a class="close-popup" href="#">&#10005;</a>
             {% include "inc/stickyform.html" %}
           </div>
+        </li>
+        <li>
+          <a class="sidebar-blank" href="#" onclick="return false;">{{ post.viewcounts.applied }} &middot; {{ post.viewcounts.opened }} &middot; {{ post.viewcounts.all }}</a>
         </li>
         {% endif %}
       </ul>

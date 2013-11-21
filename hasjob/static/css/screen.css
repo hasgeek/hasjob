@@ -760,6 +760,9 @@ a.btn {
   background: transparent url('../img/flag.png?1343882941') no-repeat 15px center;
   padding-left: 40px;
 }
+#detail-sidebar ul li .sidebar-blank {
+  padding-left: 40px !important;
+}
 #detail-sidebar .popup-box {
   background: white;
   border: 1px solid #afafaf;
