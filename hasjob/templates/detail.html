@@ -97,6 +97,8 @@
             {% include "inc/stickyform.html" %}
           </div>
         </li>
+        {% endif %}
+        {% if siteadmin or (g.user and post.user == g.user) %}
         <li>
           <a class="sidebar-blank" href="#" onclick="return false;">{{ post.viewcounts.applied }} &middot; {{ post.viewcounts.opened }} &middot; {{ post.viewcounts.all }}</a>
         </li>

@@ -47,7 +47,7 @@ from hasjob.views.index import webmail_domains
 def jobdetail(hashid):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
     if post.status in [POSTSTATUS.DRAFT, POSTSTATUS.PENDING]:
-        if post.edit_key not in session.get('userkeys', []):
+        if post.edit_key not in session.get('userkeys', []) or (g.user and post.user != g.user):
             abort(403)
     if post.status in [POSTSTATUS.REJECTED, POSTSTATUS.WITHDRAWN, POSTSTATUS.SPAM]:
         abort(410)
@@ -387,11 +387,12 @@ def confirm_email(hashid, key):
     return redirect(url_for('jobdetail', hashid=post.hashid), code=302)
 
 
+@app.route('/withdraw/<hashid>', methods=('GET', 'POST'), defaults={'key': None})
 @app.route('/withdraw/<hashid>/<key>', methods=('GET', 'POST'))
 def withdraw(hashid, key):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
     form = forms.WithdrawForm()
-    if key != post.edit_key:
+    if not ((key is None and g.user is not None and g.user == post.user) or (key == post.edit_key)):
         abort(403)
     if post.status == POSTSTATUS.WITHDRAWN:
         flash("Your job listing has already been withdrawn", "info")
@@ -408,6 +409,7 @@ def withdraw(hashid, key):
     return render_template("withdraw.html", post=post, form=form)
 
 
+@app.route('/edit/<hashid>', methods=('GET', 'POST'), defaults={'key': None})
 @app.route('/edit/<hashid>/<key>', methods=('GET', 'POST'))
 def editjob(hashid, key, form=None, post=None, validated=False):
     if form is None:
@@ -416,7 +418,7 @@ def editjob(hashid, key, form=None, post=None, validated=False):
         form.job_category.choices = [(ob.id, ob.title) for ob in JobCategory.query.filter_by(public=True).order_by('seq')]
     if post is None:
         post = JobPost.query.filter_by(hashid=hashid).first_or_404()
-    if key != post.edit_key:
+    if not ((key is None and g.user is not None and g.user == post.user) or (key == post.edit_key)):
         abort(403)
     # Don't allow email address to be changed once its confirmed
     if request.method == 'POST' and post.status >= POSTSTATUS.PENDING:
@@ -513,6 +515,19 @@ def editjob(hashid, key, form=None, post=None, validated=False):
 @app.route('/new', methods=('GET', 'POST'))
 def newjob():
     form = forms.ListingForm()
+    if not g.user:
+        if request.method == 'POST' and request.form.get('form.id') == 'newheadline':
+            session['headline'] = form.job_headline.data
+        return redirect(url_for('login', next=url_for('newjob'),
+            message=u"Hasjob now requires you to login before listing a job. Please login as yourself."
+                u" We'll add details about your company later"))
+    else:
+        if 'headline' in session:
+            if request.method == 'GET':
+                form.job_headline.data = session.pop('headline')
+            else:
+                session.pop('headline')
+
     form.job_type.choices = [(ob.id, ob.title) for ob in JobType.query.filter_by(public=True).order_by('seq')]
     form.job_category.choices = [(ob.id, ob.title) for ob in JobCategory.query.filter_by(public=True).order_by('seq')]
     if request.method == 'GET' or (request.method == 'POST' and request.form.get('form.id') == 'newheadline'):
