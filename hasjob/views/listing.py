@@ -65,7 +65,13 @@ def jobdetail(hashid):
             viewcounts_by_id(post.id)  # Re-populate cache
     else:
         jobview = None
-    reportform = forms.ReportForm()
+    
+    if g.user:
+        report = JobPostReport.query.filter_by(post=post, user=g.user).first()
+    else:
+        report = None
+
+    reportform = forms.ReportForm(obj=report)
     reportform.report_code.choices = [(ob.id, ob.title) for ob in ReportCode.query.filter_by(public=True).order_by('seq')]
     rejectform = forms.RejectForm()
     stickyform = forms.StickyForm(obj=post)
@@ -78,20 +84,28 @@ def jobdetail(hashid):
     else:
         job_application = None
     if reportform.validate_on_submit():
-        report = JobPostReport(post=post, reportcode_id=reportform.report_code.data)
-        report.ipaddr = request.environ['REMOTE_ADDR']
-        report.useragent = request.user_agent.string
-        db.session.add(report)
-        db.session.commit()
-        if request.is_xhr:
-            return "<p>Thanks! This job listing has been flagged for review.</p>"  # FIXME: Ugh!
+        if g.user:
+            if report is None:
+                report = JobPostReport(post=post, user=g.user)
+            report.reportcode_id = reportform.report_code.data
+            report.ipaddr = request.environ['REMOTE_ADDR']
+            report.useragent = request.user_agent.string
+            db.session.add(report)
+            db.session.commit()
+            if request.is_xhr:
+                return "<p>Thanks! This listing has been flagged for review</p>"  # FIXME: Ugh!
+            else:
+                flash("Thanks! This listing has been flagged for review", "interactive")
         else:
-            flash("Thanks! This job listing has been flagged for review.", "interactive")
+            if request.is_xhr:
+                return "<p>You need to be logged in to report a listing</p>"  # FIXME: Ugh!
+            else:
+                flash("You need to be logged in to report a listing", "interactive")
     elif request.method == 'POST' and request.is_xhr:
         return render_template('inc/reportform.html', reportform=reportform, ajaxreg=True)
     return render_template('detail.html', post=post, reportform=reportform, rejectform=rejectform,
         stickyform=stickyform, applyform=applyform, job_application=job_application,
-        webmail_domains=webmail_domains, jobview=jobview,
+        webmail_domains=webmail_domains, jobview=jobview, report=report,
         siteadmin=lastuser.has_permission('siteadmin')
         )
 

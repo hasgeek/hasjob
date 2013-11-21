@@ -392,7 +392,7 @@ a.btn {
         li {
             position: relative;
             border-bottom: 1px solid $color-outline-thin;
-            a, a:link, a:hover, a:focus, a:active, a:visited {
+            & > a, & > a:link, & > a:hover, & > a:focus, & > a:active, & > a:visited {
                 display: block;
                 padding: 1em 2em 1em 1em;
                 text-decoration: none;

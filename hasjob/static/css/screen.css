@@ -739,7 +739,7 @@ a.btn {
   position: relative;
   border-bottom: 1px solid #e8e8e8;
 }
-#detail-sidebar ul li a, #detail-sidebar ul li a:link, #detail-sidebar ul li a:hover, #detail-sidebar ul li a:focus, #detail-sidebar ul li a:active, #detail-sidebar ul li a:visited {
+#detail-sidebar ul li > a, #detail-sidebar ul li > a:link, #detail-sidebar ul li > a:hover, #detail-sidebar ul li > a:focus, #detail-sidebar ul li > a:active, #detail-sidebar ul li > a:visited {
   display: block;
   padding: 1em 2em 1em 1em;
   text-decoration: none;

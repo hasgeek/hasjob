@@ -74,19 +74,23 @@
         <li><a id="sidebar-tweet" target="_blank" href="https://twitter.com/share?url={{ request.url|urlquote }}&amp;counturl={{ request.url|urlquote }}&amp;via=hasjob&amp;related=hasjob:HasGeek%20Job%20Board&amp;text=Job%3A%20{{ post.headline|urlquote }}">Tweet this <span id="tweet-count"></span></a></li>
         {#<li><a id="sidebar-share" href="#share">Share this</a></li>#}
         <li>
-          <a id="sidebar-report" href="#report">Report this</a>
+          <a id="sidebar-report" href="#report">{% if report -%} Reported {%- else -%} Report this {%- endif %}
+            {%- if siteadmin and post.flags %}
+              {%- for report in post.reports() %}
+                &middot; <span title="{{ report.title }}">{{ report.count }}</span>
+              {%- endfor %}
+            {%- endif -%}
+          </a>
           <div class="popup-box" id="report">
             <a class="close-popup" href="#">&#10005;</a>
-            <h2>What’s wrong with it?</h2>
-            {% include "inc/reportform.html" %}
+            {%- if g.user %}
+              <h2>What’s wrong with it?</h2>
+              {% include "inc/reportform.html" %}
+            {%- else %}
+              <p>You need to be logged in to report a job listing.</p>
+              <p><a class="btn" href="{{ url_for('login') }}">Login with Twitter or Google</a></p>
+            {%- endif %}
           </div>
-          {%- if siteadmin and post.flags %}
-            <a class="sidebar-blank" href="#" onclick="return false;">
-              {%- for report in post.reports() %}
-                <span title="{{ report.title }}">{{ report.count }}</span>{% if not loop.last %} &middot; {% endif %}
-              {%- endfor %}
-            </a>
-          {%- endif %}
         </li>
         {%- if siteadmin %}
         <li>
@@ -107,7 +111,7 @@
         {%- endif %}
         {%- if siteadmin or (g.user and post.user == g.user) %}
         <li>
-          <a class="sidebar-blank" href="#" onclick="return false;">{{ post.viewcounts.applied }} &middot; {{ post.viewcounts.opened }} &middot; {{ post.viewcounts.all }}</a>
+          <a class="sidebar-blank" href="#" onclick="return false;">Stats &middot; <span title="Applied">{{ post.viewcounts.applied }}</span> &middot; <span title="Opened form">{{ post.viewcounts.opened }}</span> &middot; <span title="Viewed">{{ post.viewcounts.all }}</span></a>
         </li>
         {%- endif %}
       </ul>
