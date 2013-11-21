@@ -94,6 +94,14 @@ class JobPost(BaseMixin, db.Model):
     def viewcounts(self):
         return viewcounts_by_id(self.id)
 
+    def reports(self):
+        if not self.flags:
+            return []
+        counts = {}
+        for flag in self.flags:
+            counts[flag.reportcode] = counts.setdefault(flag.reportcode, 0) + 1
+        return [{'count': i[2], 'title': i[1]} for i in sorted([(k.seq, k.title, v) for k, v in counts.items()])]
+
 
 @cache.memoize(timeout=86400)
 def viewcounts_by_id(jobpost_id):

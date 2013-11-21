@@ -80,8 +80,15 @@
             <h2>What’s wrong with it?</h2>
             {% include "inc/reportform.html" %}
           </div>
+          {%- if siteadmin and post.flags %}
+            <a class="sidebar-blank" href="#" onclick="return false;">
+              {%- for report in post.reports() %}
+                <span title="{{ report.title }}">{{ report.count }}</span>{% if not loop.last %} &middot; {% endif %}
+              {%- endfor %}
+            </a>
+          {%- endif %}
         </li>
-        {% if siteadmin %}
+        {%- if siteadmin %}
         <li>
           <a class="sidebar-blank" id="sidebar-reject" href="#reject">Reject this</a>
           <div class="popup-box" id="reject">
@@ -97,12 +104,12 @@
             {% include "inc/stickyform.html" %}
           </div>
         </li>
-        {% endif %}
-        {% if siteadmin or (g.user and post.user == g.user) %}
+        {%- endif %}
+        {%- if siteadmin or (g.user and post.user == g.user) %}
         <li>
           <a class="sidebar-blank" href="#" onclick="return false;">{{ post.viewcounts.applied }} &middot; {{ post.viewcounts.opened }} &middot; {{ post.viewcounts.all }}</a>
         </li>
-        {% endif %}
+        {%- endif %}
       </ul>
       <div id="banner">
         <a href="https://droidcon.in/2013/" target="_blank" title="Droidcon India 2013"><img src="{{
