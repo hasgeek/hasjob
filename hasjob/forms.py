@@ -145,13 +145,6 @@ class ListingForm(Form):
         if EMAIL_RE.search(field.data) is not None or URL_RE.search(field.data) is not None:
             raise ValidationError(u"Do not include contact information in the listing")
 
-    def validate_poster_email(form, field):
-        username, domain = field.data.lower().split('@', 1)
-        if username in ['jobs', 'mail', 'info', 'hr', 'contact', 'support',
-                'postmaster', 'webmaster', 'abuse', 'root', 'letstalk', 'talktous', 'hello',
-                'career', 'careers', 'careersindia', 'liketowork']:
-            raise ValidationError(u"Provide your own email address, not an alias")
-
 
 class ApplicationForm(Form):
     apply_email = RadioField("Email", validators=[validators.Required("Pick an email address")],
