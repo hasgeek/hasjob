@@ -126,6 +126,8 @@ def viewcounts_by_id(jobpost_id):
 
 def viewstats_helper(jobpost_id, batchsize, limit, daybatch=False):
     post = JobPost.query.get(jobpost_id)
+    if not post.datetime:
+        return {}
     viewed = UserJobView.query.filter_by(jobpost_id=jobpost_id).all()
     opened = [v for v in viewed if v.applied == True]
     applied = db.session.query(JobApplication.created_at).filter_by(jobpost_id=jobpost_id).all()
