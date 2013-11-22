@@ -124,7 +124,7 @@ def viewcounts_by_id(jobpost_id):
         }
 
 
-def viewstats_helper(jobpost_id, batchsize, limit, daybatch=False):
+def viewstats_helper(jobpost_id, interval, limit, daybatch=False):
     post = JobPost.query.get(jobpost_id)
     if not post.datetime:
         return {}
@@ -136,13 +136,13 @@ def viewstats_helper(jobpost_id, batchsize, limit, daybatch=False):
     now = datetime.utcnow()
     delta = now - post.datetime
     if daybatch:
-        batches, remainder = divmod(delta.days, batchsize)
+        batches, remainder = divmod(delta.days, interval)
         if delta.seconds:
             remainder = True
     else:
-        batches, remainder = divmod(int(delta.total_seconds()), batchsize)
+        batches, remainder = divmod(int(delta.total_seconds()), interval)
 
-    if remainder:
+    if remainder or batches == 0:
         batches += 1
 
     cviewed = batches * [0]
@@ -162,9 +162,9 @@ def viewstats_helper(jobpost_id, batchsize, limit, daybatch=False):
                 sourcedate = post.datetime
             itemdelta = sourcedate - post.datetime
             if daybatch:
-                clist[int(itemdelta.days // batchsize)] += 1
+                clist[int(itemdelta.days // interval)] += 1
             else:
-                clist[int(int(itemdelta.total_seconds()) // batchsize)] += 1
+                clist[int(int(itemdelta.total_seconds()) // interval)] += 1
 
     if limit and batches > limit:
         cviewed = cviewed[:limit]
