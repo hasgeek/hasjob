@@ -94,6 +94,18 @@ class JobPost(BaseMixin, db.Model):
     def viewcounts(self):
         return viewcounts_by_id(self.id)
 
+    @cached_property  # For multiple accesses in a single request
+    def viewstats(self):
+        now = datetime.utcnow()
+        delta = now - self.datetime
+        if delta.days < 3:  # Less than three days
+            if delta.seconds < 21600:  # Less than 6 hours
+                return 'q', viewstats_by_id_qhour(self.id)
+            else:
+                return 'h', viewstats_by_id_hour(self.id)
+        else:
+            return 'd', viewstats_by_id_day(self.id)
+
     def reports(self):
         if not self.flags:
             return []
@@ -106,10 +118,78 @@ class JobPost(BaseMixin, db.Model):
 @cache.memoize(timeout=86400)
 def viewcounts_by_id(jobpost_id):
     return {
-        'all': UserJobView.query.filter_by(jobpost_id=jobpost_id).count(),
+        'viewed': UserJobView.query.filter_by(jobpost_id=jobpost_id).count(),
         'opened': UserJobView.query.filter_by(jobpost_id=jobpost_id, applied=True).count(),
         'applied': JobApplication.query.filter_by(jobpost_id=jobpost_id).count()
         }
+
+
+def viewstats_helper(jobpost_id, batchsize, limit, daybatch=False):
+    post = JobPost.query.get(jobpost_id)
+    viewed = UserJobView.query.filter_by(jobpost_id=jobpost_id).all()
+    opened = [v for v in viewed if v.applied == True]
+    applied = db.session.query(JobApplication.created_at).filter_by(jobpost_id=jobpost_id).all()
+
+    # Now batch them by size
+    now = datetime.utcnow()
+    delta = now - post.datetime
+    if daybatch:
+        batches, remainder = divmod(delta.days, batchsize)
+        if delta.seconds:
+            remainder = True
+    else:
+        batches, remainder = divmod(int(delta.total_seconds()), batchsize)
+
+    if remainder:
+        batches += 1
+
+    cviewed = batches * [0]
+    copened = batches * [0]
+    capplied = batches * [0]
+
+    for clist, source, attr in [
+            (cviewed, viewed, 'created_at'),
+            (copened, opened, 'updated_at'),
+            (capplied, applied, 'created_at')]:
+        for item in source:
+            sourcedate = getattr(item, attr)
+            if sourcedate < post.datetime:
+                # This happens when the user creates a listing when logged in. Their 'viewed' date will be
+                # for the draft, whereas the confirmed listing's datetime will be later. There should
+                # be just one instance of this.
+                sourcedate = post.datetime
+            itemdelta = sourcedate - post.datetime
+            if daybatch:
+                clist[int(itemdelta.days // batchsize)] += 1
+            else:
+                clist[int(int(itemdelta.total_seconds()) // batchsize)] += 1
+
+    if limit and batches > limit:
+        cviewed = cviewed[:limit]
+        copened = copened[:limit]
+        capplied = capplied[:limit]
+
+    return {
+        'max': max([max(cviewed), max(copened), max(capplied)]),
+        'viewed': cviewed,
+        'opened': copened,
+        'applied': capplied,
+        }
+
+
+@cache.memoize(timeout=900)
+def viewstats_by_id_qhour(jobpost_id):
+    return viewstats_helper(jobpost_id, 900, 24)
+
+
+@cache.memoize(timeout=3600)
+def viewstats_by_id_hour(jobpost_id):
+    return viewstats_helper(jobpost_id, 3600, 72)
+
+
+@cache.memoize(timeout=86400)
+def viewstats_by_id_day(jobpost_id):
+    return viewstats_helper(jobpost_id, 1, 30, daybatch=True)
 
 
 class UserJobView(TimestampMixin, db.Model):

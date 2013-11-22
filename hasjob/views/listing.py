@@ -35,6 +35,9 @@ from hasjob.models import (
     JobApplication,
     unique_hash,
     viewcounts_by_id,
+    viewstats_by_id_qhour,
+    viewstats_by_id_hour,
+    viewstats_by_id_day,
     )
 from hasjob.twitter import tweet
 from hasjob.uploads import uploaded_logos
@@ -56,6 +59,9 @@ def jobdetail(hashid):
         if jobview is None:
             jobview = UserJobView(user=g.user, jobpost=post)
             cache.delete_memoized(viewcounts_by_id, post.id)
+            cache.delete_memoized(viewstats_by_id_qhour, post.id)
+            cache.delete_memoized(viewstats_by_id_hour, post.id)
+            cache.delete_memoized(viewstats_by_id_day, post.id)
             db.session.add(jobview)
             try:
                 db.session.commit()
@@ -123,6 +129,9 @@ def revealjob(hashid):
     if jobview is None:
         jobview = UserJobView(user=g.user, jobpost=post, applied=True)
         cache.delete_memoized(viewcounts_by_id, post.id)
+        cache.delete_memoized(viewstats_by_id_qhour, post.id)
+        cache.delete_memoized(viewstats_by_id_hour, post.id)
+        cache.delete_memoized(viewstats_by_id_day, post.id)
         db.session.add(jobview)
         try:
             db.session.commit()
@@ -133,6 +142,9 @@ def revealjob(hashid):
     elif not jobview.applied:
         jobview.applied = True
         cache.delete_memoized(viewcounts_by_id, post.id)
+        cache.delete_memoized(viewstats_by_id_qhour, post.id)
+        cache.delete_memoized(viewstats_by_id_hour, post.id)
+        cache.delete_memoized(viewstats_by_id_day, post.id)
         db.session.commit()
         viewcounts_by_id(post.id) # Re-populate cache
     if request.is_xhr:

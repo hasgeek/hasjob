@@ -226,8 +226,8 @@ button {
 }
 
 .hidden {
-  display: none;
-  visibility: hidden;
+  display: none !important;
+  visibility: hidden !important;
 }
 
 .visuallyhidden {
@@ -859,6 +859,10 @@ a.btn {
 
 #banner-bottom {
   margin: 2em 0 1em 0;
+}
+
+#statsline {
+  margin: 1em 0;
 }
 
 #search {

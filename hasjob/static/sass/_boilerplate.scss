@@ -74,7 +74,7 @@ button {  width: auto; overflow: visible; }
 .ie7 img { -ms-interpolation-mode: bicubic; }
 
 .ir { display: block; text-indent: -999em; overflow: hidden; background-repeat: no-repeat; text-align: left; direction: ltr; }
-.hidden { display: none; visibility: hidden; }
+.hidden { display: none !important; visibility: hidden !important; }
 .visuallyhidden { position: absolute !important; clip: rect(1px 1px 1px 1px);  clip: rect(1px, 1px, 1px, 1px); }
 .invisible { visibility: hidden; }
 .clearfix:before, .clearfix:after {  content: "\0020"; display: block; height: 0; visibility: hidden;	 }
