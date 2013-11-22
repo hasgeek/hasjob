@@ -214,7 +214,8 @@ class JobApplication(BaseMixin, db.Model):
     user = db.relationship(User)
     #: Job listing they applied to
     jobpost_id = db.Column(None, db.ForeignKey('jobpost.id'))
-    jobpost = db.relationship(JobPost)
+    jobpost = db.relationship(JobPost,
+        backref=db.backref('applications', order_by='desc(JobApplication.created_at)', cascade='all, delete-orphan'))
     #: User's email address
     email = db.Column(db.Unicode(80), nullable=False)
     #: User's phone number

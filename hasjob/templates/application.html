@@ -21,9 +21,27 @@
       <a href="{{ url_for('jobdetail', hashid=post.hashid) }}">&larr; Return to listing</a>
     </p>
   </div>
-  <div class="section">
-    <h2>{{ job_application.user.fullname }}</h2>
-    {{ job_application.message|safe }}
+  <div class="section columns">
+    <div id="detailed-info">
+      <h2>{{ job_application.user.fullname }}</h2>
+      <p class="post-date">Applied {{ job_application.created_at|longdate }}</p>
+      {{ job_application.message|safe }}
+    </div>
+    <div id="detail-sidebar">
+      {%- if siteadmin or (g.user and g.user == post.user) %}
+        <ul>
+          {%- for appl in post.applications %}
+            <li><a href="{{ url_for('view_application', hashid=post.hashid, application=appl.hashid) }}">
+              {%- if appl == job_application -%}
+                <strong>{{ appl.user.fullname }}</strong>
+              {%- else -%}
+                {{ appl.user.fullname }}
+              {%- endif -%}
+            </a></li>
+          {%- endfor %}
+        </ul>
+      {%- endif %}
+    </div>
   </div>
   <div class="section">
     <form id="process_application_form" method="POST" action="{{ url_for('process_application', hashid=post.hashid, application=job_application.hashid) }}">
