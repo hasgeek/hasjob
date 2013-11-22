@@ -162,11 +162,9 @@ def viewstats_helper(jobpost_id, batchsize, limit, daybatch=False):
                 sourcedate = post.datetime
             itemdelta = sourcedate - post.datetime
             if daybatch:
-                cindex = int(itemdelta.days // batchsize)
+                clist[int(itemdelta.days // batchsize)] += 1
             else:
-                cindex = int(int(itemdelta.total_seconds()) // batchsize)
-            if cindex < len(clist):
-                clist[cindex] += 1
+                clist[int(int(itemdelta.total_seconds()) // batchsize)] += 1
 
     if limit and batches > limit:
         cviewed = cviewed[:limit]
