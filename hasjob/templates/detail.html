@@ -269,13 +269,13 @@
     $(function() {
       $("#statsline").removeClass('hidden').sparkline(
         {{ stats.viewed|tojson }},
-        {type: 'line', chartRangeMin: 0, chartRangeMax: {{ max }}, lineColor: '#f0a40c', fillColor: false, tooltipSuffix: ' viewed', height: '2em'}
+        {type: 'line', chartRangeMin: 0, chartRangeMax: {{ max }}, lineColor: '#f0a40c', fillColor: false, tooltipSuffix: ' viewed', height: '2em', width: {{ stats.length|tojson }} * 4}
       ).sparkline(
         {{ stats.opened|tojson }},
         {type: 'line', chartRangeMin: 0, chartRangeMax: {{ max }}, lineColor: '#df5e0e', fillColor: false, tooltipSuffix: ' opened', composite: true}
       ).sparkline(
         {{ stats.applied|tojson }},
-        {type: 'bar', chartRangeMin: 0, chartRangeMax: {{ max }}, barColor: '#816894', tooltipSuffix: ' applied', composite: true}
+        {type: 'bar', chartRangeMin: 0, chartRangeMax: {{ max }}, barColor: '#816894', tooltipSuffix: ' applied', barWidth: 3, barSpacing: 1, composite: true}
       );
     });
   </script>

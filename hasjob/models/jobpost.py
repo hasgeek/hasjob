@@ -98,7 +98,7 @@ class JobPost(BaseMixin, db.Model):
     def viewstats(self):
         now = datetime.utcnow()
         delta = now - self.datetime
-        if delta.days < 3:  # Less than three days
+        if delta.days < 2:  # Less than two days
             if delta.seconds < 21600:  # Less than 6 hours
                 return 'q', viewstats_by_id_qhour(self.id)
             else:
@@ -171,6 +171,7 @@ def viewstats_helper(jobpost_id, batchsize, limit, daybatch=False):
 
     return {
         'max': max([max(cviewed), max(copened), max(capplied)]),
+        'length': max([len(cviewed), len(copened), len(capplied)]),
         'viewed': cviewed,
         'opened': copened,
         'applied': capplied,
@@ -184,7 +185,7 @@ def viewstats_by_id_qhour(jobpost_id):
 
 @cache.memoize(timeout=3600)
 def viewstats_by_id_hour(jobpost_id):
-    return viewstats_helper(jobpost_id, 3600, 72)
+    return viewstats_helper(jobpost_id, 3600, 48)
 
 
 @cache.memoize(timeout=86400)
