@@ -33,7 +33,7 @@
         {{ response_form.hidden_tag() }}
         {%- if job_application.is_new() or job_application.is_pending() or job_application.is_ignored() %}
           <p>
-            <button id="appl-reply" name="action" value="reply">Accept...</button>
+            <button id="appl-reply" name="action" value="reply">Respond...</button>
             <button id="appl-reject" name="action" value="reject">Reject...</button>
             {% if not job_application.is_ignored() %}<button type="submit" name="action" value="ignore">Ignore candidate</button>{% endif %}
             <button type="submit" name="action" value="flag">Report spam</button>
