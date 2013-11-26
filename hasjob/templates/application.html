@@ -73,7 +73,7 @@
       </form>
       <div id="appl-response" class="hidden">
         <p>
-          <strong>From:</strong> {{ post.fullname or post.company_name }} <span id="appl-noreply">&lt;{{ config['MAIL_SENDER'] }}&gt;</span><span id="appl-yesreply" class="hidden">&lt;{{ post.email }}&gt;</span><br>
+          <strong>From:</strong> {{ post.fullname or post.company_name }} (via {{ config['SITE_TITLE'] }}) <span id="appl-noreply">&lt;{{ config['MAIL_SENDER'] }}&gt;</span><span id="appl-yesreply" class="hidden">&lt;{{ post.email }}&gt;</span><br>
           <strong>To:</strong> {{ job_application.user.fullname }}<br>
           <strong>Subject:</strong> Regarding your job application for {{ post.headline }}
         </p>

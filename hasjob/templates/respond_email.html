@@ -4,9 +4,9 @@
 
 {% block preview -%}
   {%- if job_application.is_replied() %}
-    {{ post.fullname or post.company_name }} has responded to your application for {{ post.headline }}
+    {{ post.fullname or post.company_name }} has responded to your application for <a href="{{ url_for('jobdetail', hashid=post.hashid) }}">{{ post.headline }}</a>
   {%- elif job_application.is_rejected() %}
-    {{ post.fullname or post.company_name }} has declined your application for {{ post.headline }}
+    {{ post.fullname or post.company_name }} has declined your application for <a href="{{ url_for('jobdetail', hashid=post.hashid) }}">{{ post.headline }}</a>
   {%- endif %}
 {%- endblock %}
 
@@ -15,4 +15,9 @@
     <em>{{ self.preview() }}:</em>
   </p>
   {{ job_application.response_message|safe }}
+  <hr>
+  <p>
+    <em>Your application on {{ job_application.created_at|longdate }}:</em>
+  </p>
+  {{ job_application.message|safe }}
 {%- endblock %}

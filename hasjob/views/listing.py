@@ -191,7 +191,7 @@ def applyjob(hashid):
                 email_text = html2text(email_html)
                 flashmsg = "Your application has been sent to the employer"
 
-                msg = Message(subject=u"Job Application: {fullname}".format(fullname=job_application.user.fullname),
+                msg = Message(subject=u"Job application: {fullname}".format(fullname=job_application.user.fullname),
                     recipients=[post.email])
                 msg.body = email_text
                 msg.html = email_html
@@ -277,12 +277,16 @@ def process_application(hashid, application):
 
                 if job_application.is_replied():
                     msg = Message(subject=u"Regarding your job application for {headline}".format(headline=post.headline),
-                        sender=(post.fullname or post.company_name, post.email),
+                        sender=(u'{sender} (via {site})'.format(
+                            sender=post.fullname or post.company_name,
+                            site=app.config['SITE_TITLE']), post.email),
                         recipients=[job_application.email],
                         bcc=[post.email])
                 else:
                     msg = Message(subject=u"Regarding your job application for {headline}".format(headline=post.headline),
-                        sender=(post.fullname or post.company_name, app.config['MAIL_SENDER']),
+                        sender=(u'{sender} (via {site})'.format(
+                            sender=post.fullname or post.company_name,
+                            site=app.config['SITE_TITLE']), app.config['MAIL_SENDER']),
                         bcc=[job_application.email, post.email])
                 msg.body = email_text
                 msg.html = email_html
