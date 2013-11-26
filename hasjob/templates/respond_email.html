@@ -1,0 +1,18 @@
+{% extends "inc/email_layout.html" %}
+
+{% block title %}Regarding your job application for {{ post.headline }}{% endblock %}
+
+{% block preview -%}
+  {%- if job_application.is_replied() %}
+    {{ post.fullname or post.company_name }} has responded to your application for {{ post.headline }}
+  {%- elif job_application.is_rejected() %}
+    {{ post.fullname or post.company_name }} has declined your application for {{ post.headline }}
+  {%- endif %}
+{%- endblock %}
+
+{% block content -%}
+  <p>
+    <em>{{ self.preview() }}:</em>
+  </p>
+  {{ job_application.response_message|safe }}
+{%- endblock %}

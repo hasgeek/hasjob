@@ -515,7 +515,7 @@ footer {
   padding-left: 2em;
   padding-right: 0;
 }
-#sheet p.post-date {
+#sheet .post-date {
   margin-top: 0.5em;
   font-size: 80%;
   color: #666;
@@ -640,8 +640,11 @@ footer {
   clear: both;
 }
 #sheet textarea {
-  width: 90%;
+  width: 100%;
   height: 10em;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
 }
 #sheet textarea, #sheet input[type="text"], #sheet input[type="password"], #sheet input[type="email"], #sheet input[type="url"], #sheet select {
   padding: 5px;
@@ -701,8 +704,26 @@ input[type="submit"]:hover, a.btn:hover, button:hover {
   background-image: linear-gradient(#d6d6d6, #c6c6c6);
 }
 
+button:disabled {
+  color: #999;
+}
+
+button:disabled:hover {
+  background-color: inherit;
+  background: #e6e6e6;
+  background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #e6e6e6), color-stop(100%, #d6d6d6));
+  background-image: -webkit-linear-gradient(#e6e6e6, #d6d6d6);
+  background-image: -moz-linear-gradient(#e6e6e6, #d6d6d6);
+  background-image: -o-linear-gradient(#e6e6e6, #d6d6d6);
+  background-image: linear-gradient(#e6e6e6, #d6d6d6);
+}
+
 a.btn {
   padding: 3px 5px 0px;
+}
+
+hr {
+  border-top: 1px solid #e8e8e8;
 }
 
 #company-info {

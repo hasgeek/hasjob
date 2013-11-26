@@ -41,7 +41,7 @@
       h1{
         {#/*@editable*/#} color:#202020 !important;
         display:block;
-        {#/*@editable*/#} font-family:Helvetica;
+        {#/*@editable*/#} font-family:sans-serif;
         {#/*@editable*/#} font-size:26px;
         {#/*@editable*/#} font-style:normal;
         {#/*@editable*/#} font-weight:bold;
@@ -57,7 +57,7 @@
       h2{
         {#/*@editable*/#} color:#404040 !important;
         display:block;
-        {#/*@editable*/#} font-family:Helvetica;
+        {#/*@editable*/#} font-family:sans-serif;
         {#/*@editable*/#} font-size:20px;
         {#/*@editable*/#} font-style:normal;
         {#/*@editable*/#} font-weight:bold;
@@ -73,7 +73,7 @@
       h3{
         {#/*@editable*/#} color:#606060 !important;
         display:block;
-        {#/*@editable*/#} font-family:Helvetica;
+        {#/*@editable*/#} font-family:sans-serif;
         {#/*@editable*/#} font-size:16px;
         {#/*@editable*/#} font-style:italic;
         {#/*@editable*/#} font-weight:normal;
@@ -89,7 +89,7 @@
       h4{
         {#/*@editable*/#} color:#808080 !important;
         display:block;
-        {#/*@editable*/#} font-family:Helvetica;
+        {#/*@editable*/#} font-family:sans-serif;
         {#/*@editable*/#} font-size:14px;
         {#/*@editable*/#} font-style:italic;
         {#/*@editable*/#} font-weight:normal;
@@ -111,7 +111,7 @@
 
       .preheaderContent{
         {#/*@editable*/#} color:#808080;
-        {#/*@editable*/#} font-family:Helvetica;
+        {#/*@editable*/#} font-family:sans-serif;
         {#/*@editable*/#} font-size:10px;
         {#/*@editable*/#} line-height:125%;
         {#/*@editable*/#} text-align:left;
@@ -131,7 +131,7 @@
 
       .headerContent{
         {#/*@editable*/#} color:#505050;
-        {#/*@editable*/#} font-family:Helvetica;
+        {#/*@editable*/#} font-family:sans-serif;
         {#/*@editable*/#} font-size:20px;
         {#/*@editable*/#} font-weight:bold;
         {#/*@editable*/#} line-height:100%;
@@ -164,7 +164,7 @@
 
       .bodyContent{
         {#/*@editable*/#} color:#505050;
-        {#/*@editable*/#} font-family:Helvetica;
+        {#/*@editable*/#} font-family:sans-serif;
         {#/*@editable*/#} font-size:14px;
         {#/*@editable*/#} line-height:150%;
         padding-top:20px;
@@ -218,7 +218,7 @@
 
       .footerContent{
         {#/*@editable*/#} color:#808080;
-        {#/*@editable*/#} font-family:Helvetica;
+        {#/*@editable*/#} font-family:sans-serif;
         {#/*@editable*/#} font-size:10px;
         {#/*@editable*/#} line-height:150%;
         padding-top:20px;
@@ -335,7 +335,7 @@
                                     <table border="0" cellpadding="0" cellspacing="0" width="100%" id="templateHeader">
                                         <tr>
                                             <td valign="top" class="headerContent">
-                                              <h1>HasGeek Job Board</h1>
+                                              <h1>{{ config['SITE_TITLE'] }}</h1>
                                             </td>
                                         </tr>
                                     </table>
@@ -362,7 +362,7 @@
                                     <table border="0" cellpadding="0" cellspacing="0" width="100%" id="templateFooter">
                                         <tr>
                                             <td valign="top" class="footerContent" style="padding-top:0;">
-                                                <em>Copyright &copy; 2011-2013 HasGeek Media LLP, All rights reserved.</em>
+                                                <em>Hasjob is a service of <a href="https://hasgeek.com/">HasGeek</a>.</em>
                                             </td>
                                         </tr>
                                         <tr>

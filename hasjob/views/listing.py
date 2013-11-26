@@ -209,21 +209,37 @@ def applyjob(hashid):
             return redirect(url_for('jobdetail', hashid=post.hashid), 303)
 
 
+@app.route('/manage/<hashid>', methods=('GET', 'POST'), defaults={'key': None})
+@app.route('/manage/<hashid>/<key>', methods=('GET', 'POST'))
+def managejob(hashid, key):
+    # Candidate management interface
+    post = JobPost.query.filter_by(hashid=hashid).first_or_404()
+    if not ((key is None and g.user is not None and g.user == post.user) or (key == post.edit_key)):
+        abort(403)
+    # TODO: Landing page for candidate management
+    pass
+
+
 @app.route('/view/<hashid>/<application>')
 def view_application(hashid, application):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
     # Transition code until we force all employers to login before posting
     if post.user and (post.user != g.user and not lastuser.has_permission('siteadmin')):
         if not g.user:
-            return redirect(url_for('login'))
+            return redirect(url_for('login', message=u"You need to be logged in to view candidate applications on Hasjob."))
         else:
             abort(403)
     job_application = JobApplication.query.filter_by(hashid=application, jobpost=post).first_or_404()
-    process_application_form = forms.ProcessApplicationForm()
+    if job_application.response == EMPLOYER_RESPONSE.NEW:
+        # If the application is pending, mark it as opened.
+        # However, don't do this if the user is a siteadmin, unless they also own the post.
+        if g.user == post.user or not lastuser.has_permission('siteadmin'):
+            job_application.response = EMPLOYER_RESPONSE.PENDING
+            db.session.commit()
+    response_form = forms.ApplicationResponseForm()
 
     return render_template('application.html', post=post, job_application=job_application,
-        process_application_form=process_application_form,
-        ajaxreg=True)
+        response_form=response_form)
 
 
 @app.route('/apply/<hashid>/<application>', methods=['POST'])
@@ -235,31 +251,44 @@ def process_application(hashid, application):
         else:
             abort(403)
     job_application = JobApplication.query.filter_by(hashid=application, jobpost=post).first_or_404()
-    process_application_form = forms.ProcessApplicationForm()
+    response_form = forms.ApplicationResponseForm()
     flashmsg = ''
 
-    if process_application_form.validate_on_submit():
-        if request.form.get('action') == 'connect' and job_application.can_connect():
-            email_html = email_transform(
-                render_template('connect_email.html',
-                    post=post, job_application=job_application,
-                    archive_url=url_for('view_application',
-                        hashid=post.hashid, application=job_application.hashid,
-                        _external=True)),
-                base_url=request.url_root)
-            email_text = html2text(email_html)
-            flashmsg = "We emailed the candidate on your behalf to make a connection"
-            msg = Message(subject=u"Job Connection: {name}".format(name=post.company_name),
-                sender=(post.fullname or post.company_name, post.email),
-                recipients=[job_application.email],
-                cc=[post.email],
-                reply_to=(post.fullname, post.email))
-            msg.body = email_text
-            msg.html = email_html
-            mail.send(msg)
+    if response_form.validate_on_submit():
+        if (request.form.get('action') == 'reply' and job_application.can_reply()) or (
+            request.form.get('action') == 'reject' and job_application.can_reject()):
+            if not response_form.response_message.data:
+                flashmsg = "You need to write a message to the candidate."
+            else:
+                if request.form.get('action') == 'reply':
+                    job_application.response = EMPLOYER_RESPONSE.REPLIED
+                else:
+                    job_application.response = EMPLOYER_RESPONSE.REJECTED
+                job_application.response_message = response_form.response_message.data
 
-            job_application.response = EMPLOYER_RESPONSE.CONNECTED
-            db.session.commit()
+                email_html = email_transform(
+                    render_template('respond_email.html',
+                        post=post, job_application=job_application,
+                        archive_url=url_for('view_application',
+                            hashid=post.hashid, application=job_application.hashid,
+                            _external=True)),
+                    base_url=request.url_root)
+                email_text = html2text(email_html)
+
+                if job_application.is_replied():
+                    msg = Message(subject=u"Regarding your job application for {headline}".format(headline=post.headline),
+                        sender=(post.fullname or post.company_name, post.email),
+                        recipients=[job_application.email],
+                        bcc=[post.email])
+                else:
+                    msg = Message(subject=u"Regarding your job application for {headline}".format(headline=post.headline),
+                        sender=(post.fullname or post.company_name, app.config['MAIL_SENDER']),
+                        bcc=[job_application.email, post.email])
+                msg.body = email_text
+                msg.html = email_html
+                mail.send(msg)
+                flashmsg = "We sent your message to the candidate and copied you."
+                db.session.commit()
         elif request.form.get('action') == 'ignore' and job_application.can_ignore():
             job_application.response = EMPLOYER_RESPONSE.IGNORED
             db.session.commit()
@@ -267,7 +296,7 @@ def process_application(hashid, application):
             job_application.response = EMPLOYER_RESPONSE.FLAGGED
             db.session.commit()
         elif request.form.get('action') == 'unflag' and job_application.is_flagged():
-            job_application.response = EMPLOYER_RESPONSE.PENDING
+            job_application.response = EMPLOYER_RESPONSE.NEW
             db.session.commit()
 
     if flashmsg:

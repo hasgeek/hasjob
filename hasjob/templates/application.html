@@ -26,6 +26,65 @@
       <h2>{{ job_application.user.fullname }}</h2>
       <p class="post-date">Applied {{ job_application.created_at|longdate }}</p>
       {{ job_application.message|safe }}
+      <hr>
+      <form id="response_form" method="POST" action="{{ url_for('process_application', hashid=post.hashid, application=job_application.hashid) }}">
+        <input type="hidden" name="_charset_"/>
+        <input type="hidden" name="form.id" value="process_application_form"/>
+        {{ response_form.hidden_tag() }}
+        {%- if job_application.is_new() or job_application.is_pending() or job_application.is_ignored() %}
+          <p>
+            <button id="appl-reply" name="action" value="reply">Accept...</button>
+            <button id="appl-reject" name="action" value="reject">Reject...</button>
+            {% if not job_application.is_ignored() %}<button type="submit" name="action" value="ignore">Ignore candidate</button>{% endif %}
+            <button type="submit" name="action" value="flag">Report spam</button>
+          </p>
+          <p id="appl-instructions">
+            {%- if job_application.is_ignored() %}
+              You have ignored this candidate.
+            {%- endif %}
+            Respond to the candidate to see their contact information.
+            Rejected candidates will receive a message, but your contact information
+            will not be shared. Spam reports are manually processed.
+          </p>
+        {%- elif job_application.is_flagged() %}
+          <p>
+            <button type="submit" name="action" value="unflag">Report not spam</button>
+          </p>
+          <p>
+            You have flagged this application as spam.
+          </p>
+        {%- elif job_application.is_spam() %}
+          <p>
+            An administrator flagged this application as spam.
+          </p>
+        {%- elif job_application.is_replied() %}
+          <p>
+            <strong>Email:</strong> {{ job_application.email }}<br>
+            <strong>Phone:</strong> {{ job_application.phone }}
+          </p>
+          {%- if job_application.response_message %}
+            {{ job_application.response_message|safe }}
+          {%- endif %}
+        {%- elif job_application.is_rejected() %}
+          {%- if job_application.response_message %}
+            {{ job_application.response_message|safe }}
+          {%- endif %}
+        {%- endif %}
+      </form>
+      <div id="appl-response" class="hidden">
+        <p>
+          <strong>From:</strong> {{ post.fullname or post.company_name }} <span id="appl-noreply">&lt;{{ config['MAIL_SENDER'] }}&gt;</span><span id="appl-yesreply" class="hidden">&lt;{{ post.email }}&gt;</span><br>
+          <strong>To:</strong> {{ job_application.user.fullname }}<br>
+          <strong>Subject:</strong> Regarding your job application for {{ post.headline }}
+        </p>
+        <p id="appl-responded" class="hidden">
+          <em>{{ post.fullname }} has responded to your application for {{ post.headline }}:</em>
+        </p>
+        <p id="appl-rejected" class="hidden">
+          <em>{{ post.fullname }} has declined your application for {{ post.headline }}:</em>
+        </p>
+        {% include "inc/replyform.html" %}
+      </div>
     </div>
     <div id="detail-sidebar">
       {%- if siteadmin or (g.user and g.user == post.user) %}
@@ -37,45 +96,68 @@
               {%- else -%}
                 {{ appl.user.fullname }}
               {%- endif -%}
+              <br><span class="post-date">{{ appl.created_at|shortdate }} &middot;
+              {%- if appl.is_new() %} <strong>{{ appl.status }}</strong>{% else %} {{ appl.status }}{% endif %}
+              </span>
             </a></li>
           {%- endfor %}
         </ul>
       {%- endif %}
     </div>
   </div>
-  <div class="section">
-    <form id="process_application_form" method="POST" action="{{ url_for('process_application', hashid=post.hashid, application=job_application.hashid) }}">
-      <input type="hidden" name="_charset_"/>
-      <input type="hidden" name="form.id" value="process_application_form"/>
-      {{ process_application_form.hidden_tag() }}
-      {%- if job_application.is_pending() or job_application.is_opened() or job_application.is_ignored() %}
-        <p>
-          <button type="submit" name="action" value="connect">Make connection</button>
-          {% if not job_application.is_ignored() %}<button type="submit" name="action" value="ignore">Ignore candidate</button>{% endif %}
-          <button type="submit" name="action" value="flag">Report spam</button>
-        </p>
-        <p>
-          The candidate will be notified if you make a connection.
-          Spam reports are manually processed.
-        </p>
-      {%- elif job_application.is_flagged() %}
-        <p>
-          You have flagged this application as spam.
-        </p>
-        <p>
-          <button type="submit" name="action" value="unflag">Report not spam</button>
-        </p>
-      {%- elif job_application.is_spam() %}
-        <p>
-          An administrator flagged this application as spam.
-        </p>
-      {%- elif job_application.is_connected() %}
-        <p>
-          <strong>Email:</strong> {{ job_application.email }}<br>
-          <strong>Phone:</strong> {{ job_application.phone }}
-        </p>
-      {%- endif %}
-    </form>        
-  </div>
 </div>
+{% endblock %}
+{% block footerscripts %}
+  {% assets "js_tinymce" %}<script src="{{ ASSET_URL }}" type="text/javascript"></script>{% endassets %}
+  <script type="text/javascript">
+    {% include "inc/tinymce.js" %}
+    $(function() {
+      $("#appl-response").hide().removeClass('hidden');
+
+      $("#appl-reply").click(function(e) {
+        $("#appl-instructions").hide();
+        $("#appl-noreply").addClass('hidden');
+        $("#appl-yesreply").removeClass('hidden');
+        $("#appl-responded").removeClass('hidden');
+        $("#appl-rejected").addClass('hidden');
+        $("#appl-response").fadeIn({
+          complete: function() {
+            // This doesn't work. We don't know why.
+            tinymce.execCommand('mceFocus', false, 'response_message');
+          }
+        });
+        $("#response_form").find('button').attr('disabled', 'disabled');
+        $("#appl-send").val('reply');
+        e.preventDefault();
+        return false;
+      });
+
+      $("#appl-reject").click(function(e) {
+        $("#appl-instructions").hide();
+        $("#appl-noreply").removeClass('hidden');
+        $("#appl-yesreply").addClass('hidden');
+        $("#appl-responded").addClass('hidden');
+        $("#appl-rejected").removeClass('hidden');
+        $("#appl-response").fadeIn({
+          complete: function() {
+            // This doesn't work. We don't know why.
+            tinymce.execCommand('mceFocus', false, 'response_message');
+          }
+        });        
+        $("#response_form").find('button').attr('disabled', 'disabled');
+        $("#appl-send").val('reject');
+        e.preventDefault();
+        return false;
+      });
+
+      $("#appl-cancel").click(function(e) {
+        $("#appl-response").hide();
+        $("#appl-instructions").fadeIn();
+        $("#response_form").find('button').removeAttr('disabled');
+        $("#appl-send").val('');
+        e.preventDefault();
+        return false;
+      });
+    });
+  </script>
 {% endblock %}

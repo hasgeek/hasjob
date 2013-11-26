@@ -25,8 +25,11 @@ SEARCH_INDEX_PATH = '/tmp/search'
 #: DEFAULT_MAIL_SENDER : default None
 MAIL_FAIL_SILENTLY = False
 MAIL_SERVER = 'localhost'
-DEFAULT_MAIL_SENDER = ('Job Board', 'test@example.com')
+# Mail sender for crash reports and other automated mail
+DEFAULT_MAIL_SENDER = 'Hasjob <test@example.com>'
 MAIL_DEFAULT_SENDER = DEFAULT_MAIL_SENDER
+# Mail sender for job application responses (email address only)
+MAIL_SENDER = 'test@example.com'
 #: Logging: recipients of error emails
 ADMINS = []
 #: Log file

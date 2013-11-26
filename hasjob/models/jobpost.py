@@ -224,8 +224,10 @@ class JobApplication(BaseMixin, db.Model):
     phone = db.Column(db.Unicode(80), nullable=False)
     #: User's message
     message = db.Column(db.UnicodeText, nullable=False)
-    #: Employer's response
-    response = db.Column(db.Integer, nullable=False, default=EMPLOYER_RESPONSE.PENDING)
+    #: Employer's response code
+    response = db.Column(db.Integer, nullable=False, default=EMPLOYER_RESPONSE.NEW)
+    #: Employer's response message
+    response_message = db.Column(db.UnicodeText, nullable=True)
     #: Bag of words, for spam analysis
     words = db.Column(db.UnicodeText, nullable=True)
 
@@ -234,17 +236,21 @@ class JobApplication(BaseMixin, db.Model):
         if self.hashid is None:
             self.hashid = unique_long_hash()
 
+    @property
+    def status(self):
+        return EMPLOYER_RESPONSE[self.response]
+
+    def is_new(self):
+        return self.response == EMPLOYER_RESPONSE.NEW
+
     def is_pending(self):
         return self.response == EMPLOYER_RESPONSE.PENDING
-
-    def is_opened(self):
-        return self.response == EMPLOYER_RESPONSE.OPENED
 
     def is_ignored(self):
         return self.response == EMPLOYER_RESPONSE.IGNORED
 
-    def is_connected(self):
-        return self.response == EMPLOYER_RESPONSE.CONNECTED
+    def is_replied(self):
+        return self.response == EMPLOYER_RESPONSE.REPLIED
 
     def is_flagged(self):
         return self.response == EMPLOYER_RESPONSE.FLAGGED
@@ -252,14 +258,21 @@ class JobApplication(BaseMixin, db.Model):
     def is_spam(self):
         return self.response == EMPLOYER_RESPONSE.SPAM
 
-    def can_connect(self):
-        return self.response in (EMPLOYER_RESPONSE.PENDING, EMPLOYER_RESPONSE.OPENED, EMPLOYER_RESPONSE.IGNORED)
+    def is_rejected(self):
+        return self.response == EMPLOYER_RESPONSE.REJECTED
+
+    def can_reply(self):
+        return self.response in (EMPLOYER_RESPONSE.NEW, EMPLOYER_RESPONSE.PENDING, EMPLOYER_RESPONSE.IGNORED)
+
+    def can_reject(self):
+        return self.response in (EMPLOYER_RESPONSE.NEW, EMPLOYER_RESPONSE.PENDING, EMPLOYER_RESPONSE.IGNORED)
 
     def can_ignore(self):
-        return self.response in (EMPLOYER_RESPONSE.PENDING, EMPLOYER_RESPONSE.OPENED)
+        return self.response in (EMPLOYER_RESPONSE.NEW, EMPLOYER_RESPONSE.PENDING)
 
     def can_report(self):
-        return self.response in (EMPLOYER_RESPONSE.PENDING, EMPLOYER_RESPONSE.OPENED, EMPLOYER_RESPONSE.IGNORED)
+        return self.response in (EMPLOYER_RESPONSE.NEW, EMPLOYER_RESPONSE.PENDING,
+            EMPLOYER_RESPONSE.IGNORED, EMPLOYER_RESPONSE.REJECTED)
 
 
 def unique_hash(model=JobPost):

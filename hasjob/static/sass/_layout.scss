@@ -188,7 +188,7 @@ footer {
         padding-left: 2em;
         padding-right: 0;
     }
-    p.post-date {
+    .post-date {
         margin-top: 0.5em;
         font-size: 80%;
         color: #666; //$color-title-jobs;
@@ -303,8 +303,9 @@ footer {
         margin-bottom: 1em;
     }
     textarea {
-        width: 90%;
+        width: 100%;
         height: 10em;
+        @include box-sizing(border-box);
     }
 
     textarea, input[type="text"], input[type="password"], input[type="email"], input[type="url"], select {
@@ -356,8 +357,22 @@ input[type="submit"], a.btn, button {
         //color: #fff;
     }
 }
+button:disabled {
+    color: #999;
+}
+
+button:disabled:hover {
+    background-color: inherit;
+    background: #e6e6e6;
+    @include background-image(linear-gradient(#e6e6e6, #d6d6d6));
+}
+
 a.btn {
     padding: 3px 5px 0px;
+}
+
+hr {
+    border-top: 1px solid $color-outline-thin;
 }
 
 #company-info {

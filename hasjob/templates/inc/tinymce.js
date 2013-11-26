@@ -76,7 +76,7 @@ $(function() {
     theme_advanced_path : false,
 
     valid_elements : "p,br,strong/b,em/i,ul,ol,li,a[!href|title|target]",
-    width: "730",
+    width: "100%",
     height: "400",
     // Content CSS
     content_css : "{{ url_for('static', filename='css/editor.css')|e }}"

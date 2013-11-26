@@ -24,12 +24,13 @@ class POSTSTATUS:
 
 
 class EMPLOYER_RESPONSE(LabeledEnum):
-    PENDING = (0, u"Pending")      # No response yet
-    OPENED = (1, u"Opened")        # Response was undone (currently only un-flagged)
-    IGNORED = (2, u"Ignored")      # Dismissed as not interesting
-    CONNECTED = (3, u"Connected")  # Make a connection between both
-    FLAGGED = (4, u"Flagged")      # Employer reported a spammer
-    SPAM = (5, u"Spam")            # Admin marked this as spam
+    NEW = (0, u"New")            # New application
+    PENDING = (1, u"Pending")    # Employer viewed on website
+    IGNORED = (2, u"Ignored")    # Dismissed as not worth responding to
+    REPLIED = (3, u"Replied")    # Employer replied to candidate
+    FLAGGED = (4, u"Flagged")    # Employer reported a spammer
+    SPAM = (5, u"Spam")          # Admin marked this as spam
+    REJECTED = (6, u"Rejected")  # Employer rejected candidate with a message
 
 
 from hasjob.models.jobcategory import *

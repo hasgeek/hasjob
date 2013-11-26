@@ -193,8 +193,8 @@ class ApplicationForm(Form):
             raise ValidationError("Do not include your email address or phone number in the application")
 
 
-class ProcessApplicationForm(Form):
-    pass  # Only for CSRF
+class ApplicationResponseForm(Form):
+    response_message = RichTextField("")
 
 
 class ConfirmForm(Form):
