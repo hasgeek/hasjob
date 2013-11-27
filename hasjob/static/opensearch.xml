@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/">
-  <ShortName>HasGeek Job Search</ShortName>
-  <Description>Search for jobs at the HasGeek Job Board</Description>
+  <ShortName>Hasjob Search</ShortName>
+  <Description>Search for jobs at Hasjob</Description>
   <Url type="text/html" method="get"
-       template="https://jobs.hasgeek.com/search?q={searchTerms}"/>
+       template="https://hasjob.co/search?q={searchTerms}"/>
   <Developer>HasGeek</Developer>
   <Language>en-us</Language>
   <OutputEncoding>UTF-8</OutputEncoding>

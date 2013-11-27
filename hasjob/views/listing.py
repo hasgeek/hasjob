@@ -355,7 +355,7 @@ def rejectjob(hashid):
         else:
             flashmsg = "This job listing has been rejected."
             post.status = POSTSTATUS.REJECTED
-            msg = Message(subject="About your job listing on the HasGeek Job Board",
+            msg = Message(subject="About your job listing on Hasjob",
                 recipients=[post.email])
             msg.body = render_template("reject_email.md", post=post)
             msg.html = markdown(msg.body)
@@ -386,7 +386,7 @@ def confirm(hashid):
     if 'form.id' in request.form and form.validate_on_submit():
         # User has accepted terms of service. Now send email and/or wait for payment
         if not post.email_sent:
-            msg = Message(subject="Confirmation of your job listing at the HasGeek Job Board",
+            msg = Message(subject="Confirmation of your job listing at Hasjob",
                 recipients=[post.email])
             msg.body = render_template("confirm_email.md", post=post)
             msg.html = markdown(msg.body)

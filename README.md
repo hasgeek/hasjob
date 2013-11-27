@@ -1,7 +1,7 @@
-HasGeek Job Board -- beta
-=========================
+Hasjob
+======
 
-Code for HasGeek's job board at https://jobs.hasgeek.com/
+Code for Hasjob, HasGeek's job board at https://hasjob.co/
 
 You are welcome to contribute a patch or use this code to run your own job
 board under the terms of the BSD license, but please design your own UI.
