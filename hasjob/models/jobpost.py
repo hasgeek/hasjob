@@ -216,8 +216,6 @@ class JobApplication(BaseMixin, db.Model):
     user = db.relationship(User)
     #: Job listing they applied to
     jobpost_id = db.Column(None, db.ForeignKey('jobpost.id'))
-    jobpost = db.relationship(JobPost,
-        backref=db.backref('applications', order_by='desc(JobApplication.created_at)', cascade='all, delete-orphan'))
     #: User's email address
     email = db.Column(db.Unicode(80), nullable=False)
     #: User's phone number
@@ -273,6 +271,20 @@ class JobApplication(BaseMixin, db.Model):
     def can_report(self):
         return self.response in (EMPLOYER_RESPONSE.NEW, EMPLOYER_RESPONSE.PENDING,
             EMPLOYER_RESPONSE.IGNORED, EMPLOYER_RESPONSE.REJECTED)
+
+
+JobApplication.jobpost = db.relationship(JobPost,
+    backref=db.backref('applications', order_by=(
+        db.case(value=JobApplication.response, whens={
+            EMPLOYER_RESPONSE.NEW: 0,
+            EMPLOYER_RESPONSE.PENDING: 1,
+            EMPLOYER_RESPONSE.IGNORED: 2,
+            EMPLOYER_RESPONSE.REPLIED: 3,
+            EMPLOYER_RESPONSE.REJECTED: 4,
+            EMPLOYER_RESPONSE.FLAGGED: 5,
+            EMPLOYER_RESPONSE.SPAM: 6
+            }),
+        db.desc(JobApplication.created_at)), cascade='all, delete-orphan'))
 
 
 def unique_hash(model=JobPost):
