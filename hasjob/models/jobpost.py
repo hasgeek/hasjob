@@ -1,11 +1,12 @@
 from datetime import datetime
 from werkzeug import cached_property
+from coaster.sqlalchemy import timestamp_columns
 from baseframe import cache
-from hasjob.models import agelimit, db, POSTSTATUS, EMPLOYER_RESPONSE, BaseMixin, TimestampMixin
-from hasjob.models.jobtype import JobType
-from hasjob.models.jobcategory import JobCategory
-from hasjob.models.user import User
-from hasjob.utils import random_long_key, random_hash_key
+from . import agelimit, db, POSTSTATUS, EMPLOYER_RESPONSE, BaseMixin, TimestampMixin
+from .jobtype import JobType
+from .jobcategory import JobCategory
+from .user import User
+from ..utils import random_long_key, random_hash_key
 
 
 class JobPost(BaseMixin, db.Model):
@@ -58,6 +59,13 @@ class JobPost(BaseMixin, db.Model):
     reviewer = db.relationship(User, primaryjoin=reviewer_id == User.id, backref="reviewed_posts")
     review_datetime = db.Column(db.DateTime, nullable=True)
     review_comments = db.Column(db.Unicode(250), nullable=True)
+
+    admins = db.relationship(User, secondary=lambda: jobpost_admin_table)
+
+    def admin_is(self, user):
+        if user is None:
+            return False
+        return user == self.user or user in self.admins
 
     def is_draft(self):
         return self.status == POSTSTATUS.DRAFT
@@ -193,6 +201,13 @@ def viewstats_by_id_hour(jobpost_id):
 @cache.memoize(timeout=86400)
 def viewstats_by_id_day(jobpost_id):
     return viewstats_helper(jobpost_id, 1, 30, daybatch=True)
+
+
+jobpost_admin_table = db.Table('jobpost_admin', db.Model.metadata,
+    *(timestamp_columns + (
+    db.Column('user_id', None, db.ForeignKey('user.id'), primary_key=True),
+    db.Column('jobpost_id', None, db.ForeignKey('jobpost.id'), primary_key=True)
+    )))
 
 
 class UserJobView(TimestampMixin, db.Model):

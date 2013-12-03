@@ -87,7 +87,7 @@
       </div>
     </div>
     <div id="detail-sidebar">
-      {%- if siteadmin or (g.user and g.user == post.user) %}
+      {%- if siteadmin or post.admin_is(g.user) %}
         <ul>
           {%- for appl in post.applications %}
             <li><a href="{{ url_for('view_application', hashid=post.hashid, application=appl.hashid) }}">

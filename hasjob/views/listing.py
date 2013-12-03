@@ -50,7 +50,7 @@ from hasjob.views.index import webmail_domains
 def jobdetail(hashid):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
     if post.status in [POSTSTATUS.DRAFT, POSTSTATUS.PENDING]:
-        if post.edit_key not in session.get('userkeys', []) or (g.user and post.user != g.user):
+        if post.edit_key not in session.get('userkeys', []) or (g.user and not post.admin_is(g.user)):
             abort(403)
     if post.status in [POSTSTATUS.REJECTED, POSTSTATUS.WITHDRAWN, POSTSTATUS.SPAM]:
         abort(410)
@@ -214,7 +214,7 @@ def applyjob(hashid):
 def managejob(hashid, key):
     # Candidate management interface
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
-    if not ((key is None and g.user is not None and g.user == post.user) or (key == post.edit_key)):
+    if not ((key is None and post.admin_is(g.user)) or (key == post.edit_key)):
         abort(403)
     # TODO: Landing page for candidate management
     pass
@@ -224,7 +224,7 @@ def managejob(hashid, key):
 def view_application(hashid, application):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
     # Transition code until we force all employers to login before posting
-    if post.user and (post.user != g.user and not lastuser.has_permission('siteadmin')):
+    if post.user and not (post.admin_is(g.user) or lastuser.has_permission('siteadmin')):
         if not g.user:
             return redirect(url_for('login', message=u"You need to be logged in to view candidate applications on Hasjob."))
         else:
@@ -233,7 +233,7 @@ def view_application(hashid, application):
     if job_application.response == EMPLOYER_RESPONSE.NEW:
         # If the application is pending, mark it as opened.
         # However, don't do this if the user is a siteadmin, unless they also own the post.
-        if g.user == post.user or not lastuser.has_permission('siteadmin'):
+        if post.admin_is(g.user) or not lastuser.has_permission('siteadmin'):
             job_application.response = EMPLOYER_RESPONSE.PENDING
             db.session.commit()
     response_form = forms.ApplicationResponseForm()
@@ -245,7 +245,7 @@ def view_application(hashid, application):
 @app.route('/apply/<hashid>/<application>', methods=['POST'])
 def process_application(hashid, application):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
-    if post.user and post.user != g.user:
+    if post.user and not post.admin_is(g.user):
         if not g.user:
             return redirect(url_for('login'))
         else:
@@ -451,7 +451,7 @@ def confirm_email(hashid, key):
 def withdraw(hashid, key):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
     form = forms.WithdrawForm()
-    if not ((key is None and g.user is not None and g.user == post.user) or (key == post.edit_key)):
+    if not ((key is None and g.user is not None and post.admin_is(g.user)) or (key == post.edit_key)):
         abort(403)
     if post.status == POSTSTATUS.WITHDRAWN:
         flash("Your job listing has already been withdrawn", "info")
@@ -477,7 +477,7 @@ def editjob(hashid, key, form=None, post=None, validated=False):
         form.job_category.choices = [(ob.id, ob.title) for ob in JobCategory.query.filter_by(public=True).order_by('seq')]
     if post is None:
         post = JobPost.query.filter_by(hashid=hashid).first_or_404()
-    if not ((key is None and g.user is not None and g.user == post.user) or (key == post.edit_key)):
+    if not ((key is None and g.user is not None and post.admin_is(g.user)) or (key == post.edit_key)):
         abort(403)
     # Don't allow email address to be changed once its confirmed
     if request.method == 'POST' and post.status >= POSTSTATUS.PENDING:
