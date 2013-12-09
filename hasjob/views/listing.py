@@ -239,7 +239,7 @@ def view_application(hashid, application):
     response_form = forms.ApplicationResponseForm()
 
     return render_template('application.html', post=post, job_application=job_application,
-        response_form=response_form)
+        response_form=response_form, siteadmin=lastuser.has_permission('siteadmin'))
 
 
 @app.route('/apply/<hashid>/<application>', methods=['POST'])
