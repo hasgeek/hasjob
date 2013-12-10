@@ -167,14 +167,31 @@
         return false;
       });
 
+      var cookie_id = 'status_filters_{{ post.hashid }}';
+
+      $.cookie.json = true;
+      var existing = $.cookie(cookie_id);
+
       var status_filter = function() {
         $('#applicant-list li').hide();
+        var checked = [];
         $('input.status_filter:checked').each(function(e) {
           $('#applicant-list li.status_' + $(this).val()).show();
+          checked.push($(this).val());
         });
+        existing = checked;
+        $.cookie(cookie_id, checked);
       };
 
       $('label.status_filter').click(status_filter);
+
+      if(existing) {
+        $('input.status_filter').attr('checked', null);
+        for(i in existing) {
+          $('input.status_filter[value=' + existing[i] + ']').attr('checked', 'checked');
+        }
+        status_filter();
+      }
 
 
     });
