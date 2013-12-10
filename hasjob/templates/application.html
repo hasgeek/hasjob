@@ -96,7 +96,7 @@
             </label>
           {%- endfor %}
         </p>
-        <ul id="applicant-list" style="height: 100%; max-height: 100px; overflow-y: auto;">
+        <ul id="applicant-list" style="height: 100%; max-height: 500px; overflow-y: auto;">
           {%- for appl in post.applications %}
             <li class="status_{{ appl.status|lower }}"><a href="{{ url_for('view_application', hashid=post.hashid, application=appl.hashid) }}">
               {%- if appl == job_application -%}
