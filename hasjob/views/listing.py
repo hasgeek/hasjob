@@ -427,7 +427,8 @@ def confirm_email(hashid, key):
                     JobPost.status > POSTSTATUS.PENDING).filter(
                         JobPost.datetime > datetime.utcnow() - timedelta(days=1)).count()
                 if post_count > app.config['THROTTLE_LIMIT']:
-                    flash(u"We've received too many listings from %s in the last 24 hours. Please try again in a few hours."
+                    flash(u"We have received too many listings with %s addresses in the last 24 hours. "
+                        "Listings are rate-limited per domain, so yours was not confirmed for now. Please try confirming again in a few hours."
                         % post.email_domain, category='info')
                     return redirect(url_for('index'))
             post.email_verified = True
