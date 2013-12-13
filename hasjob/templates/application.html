@@ -87,7 +87,7 @@
       </div>
     </div>
     <div id="detail-sidebar">
-      {%- if siteadmin or post.admin_is(g.user) %}
+      {%- if post.admin_is(g.user) %}
         <h3>Filters</h3>
         <p>
           {%- for status in statuses %}
