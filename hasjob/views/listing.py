@@ -277,19 +277,25 @@ def process_application(hashid, application):
                     base_url=request.url_root)
                 email_text = html2text(email_html)
 
+                sender_name = u'{sender} (via {site})'.format(
+                    sender=g.user.fullname if post.admin_is(g.user) else post.fullname or post.company_name,
+                    site=app.config['SITE_TITLE'])
+                sender_email = g.user.email if post.admin_is(g.user) else post.email
+                cc_emails = [post.email] + [admin.email for admin in post.admins]
+                try:
+                    cc_emails.remove(sender_email)
+                except ValueError:
+                    pass
+
                 if job_application.is_replied():
                     msg = Message(subject=u"Regarding your job application for {headline}".format(headline=post.headline),
-                        sender=(u'{sender} (via {site})'.format(
-                            sender=post.fullname or post.company_name,
-                            site=app.config['SITE_TITLE']), post.email),
+                        sender=(sender_name, sender_email),
                         recipients=[job_application.email],
-                        bcc=[post.email])
+                        cc=cc_emails)
                 else:
                     msg = Message(subject=u"Regarding your job application for {headline}".format(headline=post.headline),
-                        sender=(u'{sender} (via {site})'.format(
-                            sender=post.fullname or post.company_name,
-                            site=app.config['SITE_TITLE']), app.config['MAIL_SENDER']),
-                        bcc=[job_application.email, post.email])
+                        sender=(sender_name, app.config['MAIL_SENDER']),
+                        bcc=list(set([job_application.email, sender_email, post.email])))
                 msg.body = email_text
                 msg.html = email_html
                 mail.send(msg)

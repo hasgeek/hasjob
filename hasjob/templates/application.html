@@ -73,15 +73,15 @@
       </form>
       <div id="appl-response" class="hidden">
         <p>
-          <strong>From:</strong> {{ post.fullname or post.company_name }} (via {{ config['SITE_TITLE'] }}) <span id="appl-noreply">&lt;{{ config['MAIL_SENDER'] }}&gt;</span><span id="appl-yesreply" class="hidden">&lt;{{ post.email }}&gt;</span><br>
+          <strong>From:</strong> {{ g.user.fullname if post.admin_is(g.user) else post.fullname or post.company_name }} (via {{ config['SITE_TITLE'] }}) <span id="appl-noreply">&lt;{{ config['MAIL_SENDER'] }}&gt;</span><span id="appl-yesreply" class="hidden">&lt;{{ g.user.email if post.admin_is(g.user) else post.email }}&gt;</span><br>
           <strong>To:</strong> {{ job_application.user.fullname }}<br>
           <strong>Subject:</strong> Regarding your job application for {{ post.headline }}
         </p>
         <p id="appl-responded" class="hidden">
-          <em>{{ post.fullname }} has responded to your application for {{ post.headline }}:</em>
+          <em>{{ g.user.fullname if post.admin_is(g.user) else post.fullname or post.company_name }} has responded to your application for {{ post.headline }}:</em>
         </p>
         <p id="appl-rejected" class="hidden">
-          <em>{{ post.fullname }} has declined your application for {{ post.headline }}:</em>
+          <em>{{ g.user.fullname if post.admin_is(g.user) else post.fullname or post.company_name }} has declined your application for {{ post.headline }}:</em>
         </p>
         {% include "inc/replyform.html" %}
       </div>
