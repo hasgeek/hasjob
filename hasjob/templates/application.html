@@ -60,7 +60,8 @@
         {%- elif job_application.is_replied() %}
           <p>
             <strong>Email:</strong> {{ job_application.email }}<br>
-            <strong>Phone:</strong> {{ job_application.phone }}
+            <strong>Phone:</strong> {{ job_application.phone }}<br>
+            <strong>Replied by:</strong> {{ job_application.replied_by.fullname }} &lt;{{ job_application.replied_by.email }}&gt;
           </p>
           {%- if job_application.response_message %}
             {{ job_application.response_message|safe }}

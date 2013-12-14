@@ -299,6 +299,7 @@ def process_application(hashid, application):
                 msg.body = email_text
                 msg.html = email_html
                 mail.send(msg)
+                job_application.replied_by_id = g.user.id
                 flashmsg = "We sent your message to the candidate and copied you."
                 db.session.commit()
         elif request.form.get('action') == 'ignore' and job_application.can_ignore():
