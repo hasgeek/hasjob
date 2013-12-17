@@ -244,7 +244,7 @@ class JobApplication(BaseMixin, db.Model):
     #: Bag of words, for spam analysis
     words = db.Column(db.UnicodeText, nullable=True)
     #: Admin who replied for this listing
-    replied_by_id = db.Column(None, db.ForeignKey('user.id'), default=None)
+    replied_by_id = db.Column(None, db.ForeignKey('user.id'), nullable=True)
     replied_by = db.relationship(User, foreign_keys=replied_by_id)
 
     def __init__(self, **kwargs):
