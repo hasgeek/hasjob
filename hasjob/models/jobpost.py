@@ -228,7 +228,7 @@ class JobApplication(BaseMixin, db.Model):
     hashid = db.Column(db.String(40), nullable=False, unique=True)
     #: User who applied for this listing
     user_id = db.Column(None, db.ForeignKey('user.id'))
-    user = db.relationship(User)
+    user = db.relationship(User, foreign_keys=user_id)
     #: Job listing they applied to
     jobpost_id = db.Column(None, db.ForeignKey('jobpost.id'))
     #: User's email address
@@ -243,6 +243,9 @@ class JobApplication(BaseMixin, db.Model):
     response_message = db.Column(db.UnicodeText, nullable=True)
     #: Bag of words, for spam analysis
     words = db.Column(db.UnicodeText, nullable=True)
+    #: Admin who replied for this listing
+    replied_by_id = db.Column(None, db.ForeignKey('user.id'), nullable=True)
+    replied_by = db.relationship(User, foreign_keys=replied_by_id)
 
     def __init__(self, **kwargs):
         super(JobApplication, self).__init__(**kwargs)

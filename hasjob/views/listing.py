@@ -277,22 +277,23 @@ def process_application(hashid, application):
                     base_url=request.url_root)
                 email_text = html2text(email_html)
 
+                sender_name = u'{sender} (via {site})'.format(
+                    sender=g.user.fullname if post.admin_is(g.user) else post.fullname or post.company_name,
+                    site=app.config['SITE_TITLE'])
+
                 if job_application.is_replied():
                     msg = Message(subject=u"Regarding your job application for {headline}".format(headline=post.headline),
-                        sender=(u'{sender} (via {site})'.format(
-                            sender=post.fullname or post.company_name,
-                            site=app.config['SITE_TITLE']), post.email),
+                        sender=(sender_name, post.email),
                         recipients=[job_application.email],
                         bcc=[post.email])
                 else:
                     msg = Message(subject=u"Regarding your job application for {headline}".format(headline=post.headline),
-                        sender=(u'{sender} (via {site})'.format(
-                            sender=post.fullname or post.company_name,
-                            site=app.config['SITE_TITLE']), app.config['MAIL_SENDER']),
+                        sender=(sender_name, app.config['MAIL_SENDER']),
                         bcc=[job_application.email, post.email])
                 msg.body = email_text
                 msg.html = email_html
                 mail.send(msg)
+                job_application.replied_by = g.user
                 flashmsg = "We sent your message to the candidate and copied you."
                 db.session.commit()
         elif request.form.get('action') == 'ignore' and job_application.can_ignore():
