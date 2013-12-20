@@ -4,7 +4,7 @@ import re
 from difflib import SequenceMatcher
 
 from flask import g, request, Markup
-from baseframe.forms import Form, ValidEmailDomain, RichTextField
+from baseframe.forms import Form, ValidEmailDomain, RichTextField, HiddenMultiField
 from wtforms import TextField, TextAreaField, RadioField, FileField, BooleanField, ValidationError, validators
 from wtforms.fields.html5 import EmailField
 from coaster import getbool
@@ -57,9 +57,10 @@ class ListingForm(Form):
     job_how_to_apply = TextAreaField("What should a candidate submit when applying for this job?",
          description=u"Example: “Include your LinkedIn and GitHub profiles.” "
                      u"We now require candidates to apply through the job board only. "
-                     u"DO NOT include any contact information here. Candidates CANNOT "
+                     u"Do not include any contact information here. Candidates CANNOT "
                      u"attach resumes or other documents, so do not ask for that",
-         validators=[validators.Required(u"HasGeek does not offer screening services. Please specify how candidates may apply")])
+         validators=[validators.Required(u"HasGeek does not offer screening services. "
+                                         u"Please specify what candidates should submit")])
     company_name = TextField("Name",
         description=u"The name of the organization where the position is. "
                     u"No intermediaries or unnamed stealth startups. Use your own real name if the company isn’t named "
@@ -75,23 +76,30 @@ class ListingForm(Form):
     company_url = TextField("URL",
         description=u"Example: http://www.google.com",
         validators=[optional_url])
-    poster_name = TextField("Name",
-        description=u"This is your name, for our records. Will not be revealed to applicants",
-        validators=[validators.Required("We need your name")])
-    poster_email = EmailField("Email",
-        description=u"This is where we’ll send your confirmation email. "
-                    u"Use your company email id: "
-                    u"listings are classified by your email domain. "
-                    u"Your email address will not be revealed to applicants",
-        validators=[validators.Required("We need to confirm your email address before the job can be listed"),
-            validators.Length(min=5, max=80, message="%(max)d characters maximum"),
-            validators.Email("That does not appear to be a valid email address"),
-            ValidEmailDomain()])
     hr_contact = RadioField(u"Is it okay for recruiters and other "
         u"intermediaries to contact you about this listing?", coerce=getbool,
         description=u"We’ll display a notice to this effect on the listing",
         default=0,
         choices=[(0, u"No, it is NOT OK"), (1, u"Yes, recruiters may contact me")])
+    # Deprecated 2013-11-20
+    # poster_name = TextField("Name",
+    #     description=u"This is your name, for our records. Will not be revealed to applicants",
+    #     validators=[validators.Required("We need your name")])
+    poster_email = EmailField("Email",
+        description=u"This is where we’ll send your confirmation email and all job applications. "
+                    u"We recommend using a shared email address such as jobs@your-company.com. "
+                    u"Listings are classified by your email domain. "
+                    u"Your email address will not be revealed to applicants until you respond",
+        validators=[validators.Required("We need to confirm your email address before the job can be listed"),
+            validators.Length(min=5, max=80, message="%(max)d characters maximum"),
+            validators.Email("That does not appear to be a valid email address"),
+            ValidEmailDomain()])
+    collaborators = HiddenMultiField(u"Collaborators",
+        description=u"If someone is helping you evaluate candidates, type their names here. "
+                    u"They must have a HasGeek account. They will not receive email notifications "
+                    u"— use a shared email address above for that — but they will be able to respond "
+                    u"to candidates who apply")
+
 
     def validate_company_name(form, field):
         caps = len(CAPS_RE.findall(field.data))

@@ -316,7 +316,7 @@ footer {
         @include border-radius(3px);
     }
 
-    textarea, input[type="text"], input[type="password"], input[type="email"], input[type="url"] {
+    textarea, input[type="text"], input[type="password"], input[type="email"], input[type="url"], .select2-container-multi .select2-choices {
         @include box-shadow(0 1px 0 rgba(0, 0, 0, 0.1), 0 1px 0 rgba(255, 255, 255, 0.5) inset);
         //-webkit-box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1), 0 1px 0 rgba(255, 255, 255, 0.5) inset;
         //   -moz-box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1), 0 1px 0 rgba(255, 255, 255, 0.5) inset;
@@ -601,6 +601,28 @@ h3 {
 
 iframe {
     max-width: 100%;
+}
+
+// Select2 styling
+#sheet {
+    ul.select2-choices {
+        margin-top: 0;
+        margin-bottom: 0;
+    }
+
+    .select2-container-multi .select2-choices .select2-search-field input {
+        padding: 5px;
+        border: 0;
+        @include box-shadow(none);
+    }
+
+    .select2-container-multi .select2-choices {
+        border: 1px solid $color-outline;
+        @include border-radius(3px);
+        @include box-shadow(0 1px 0 rgba(0, 0, 0, 0.1), 0 1px 0 rgba(255, 255, 255, 0.5) inset);
+        margin-bottom: 5px;
+    }
+
 }
 
 #sheet #pay-slider {

@@ -24,6 +24,7 @@ from hasjob import app, forms, mail, lastuser
 from hasjob.models import (
     agelimit,
     db,
+    User,
     JobCategory,
     JobType,
     JobPost,
@@ -238,7 +239,7 @@ def view_application(hashid, application):
             db.session.commit()
     response_form = forms.ApplicationResponseForm()
 
-    statuses = set([application.status for application in post.applications])
+    statuses = set([app.status for app in post.applications])
 
     return render_template('application.html', post=post, job_application=job_application,
         response_form=response_form, statuses=statuses)
@@ -486,7 +487,7 @@ def editjob(hashid, key, form=None, post=None, validated=False):
         abort(403)
     # Don't allow email address to be changed once its confirmed
     if request.method == 'POST' and post.status >= POSTSTATUS.PENDING:
-        del form.poster_name
+        # del form.poster_name  # Deprecated 2013-11-20
         form.poster_email.data = post.email
     if request.method == 'POST' and (validated or form.validate()):
         form_description = bleach.linkify(bleach.clean(form.job_description.data, tags=ALLOWED_TAGS))
@@ -525,9 +526,23 @@ def editjob(hashid, key, form=None, post=None, validated=False):
             post.company_name = form.company_name.data
             post.company_url = form.company_url.data
             post.hr_contact = form.hr_contact.data
+
+            if form.collaborators.data:
+                post.admins = []
+                userdata = lastuser.getuser_by_userids(form.collaborators.data)
+                for userinfo in userdata:
+                    if userinfo['type'] == 'user':
+                        user = User.query.filter_by(userid=userinfo['buid']).first()
+                        if not user:
+                            # New user on Hasjob. Don't set username right now. It's not relevant
+                            # until first login and we don't want to deal with conflicts
+                            user = User(userid=userinfo['buid'], fullname=userinfo['title'])
+                            db.session.add(user)
+                        post.admins.append(user)
+
             # Allow name and email to be set only on new posts
             if not post.status >= POSTSTATUS.PENDING:
-                post.fullname = form.poster_name.data
+                # post.fullname = form.poster_name.data  # Deprecated 2013-11-20
                 post.email = form.poster_email.data
                 post.email_domain = form_email_domain
                 post.md5sum = md5sum(post.email)
@@ -569,11 +584,14 @@ def editjob(hashid, key, form=None, post=None, validated=False):
         form.job_how_to_apply.data = post.how_to_apply
         form.company_name.data = post.company_name
         form.company_url.data = post.company_url
-        form.poster_name.data = post.fullname
+        # form.poster_name.data = post.fullname  # Deprecated 2013-11-20
         form.poster_email.data = post.email
         form.hr_contact.data = int(post.hr_contact or False)
+        form.collaborators.data = [u.userid for u in post.admins]
 
-    return render_template('postjob.html', form=form, no_email=post.status > POSTSTATUS.DRAFT)
+    return render_template('postjob.html', form=form, no_email=post.status > POSTSTATUS.DRAFT,
+        getuser_autocomplete=lastuser.endpoint_url(lastuser.getuser_autocomplete_endpoint),
+        getuser_userids=lastuser.endpoint_url(lastuser.getuser_userids_endpoint))
 
 
 @app.route('/new', methods=('GET', 'POST'))
@@ -596,7 +614,7 @@ def newjob():
     form.job_category.choices = [(ob.id, ob.title) for ob in JobCategory.query.filter_by(public=True).order_by('seq')]
     if request.method == 'GET' or (request.method == 'POST' and request.form.get('form.id') == 'newheadline'):
         if g.user:
-            form.poster_name.data = g.user.fullname
+            # form.poster_name.data = g.user.fullname  # Deprecated 2013-11-20
             form.poster_email.data = g.user.email
     if request.method == 'POST' and request.form.get('form.id') != 'newheadline' and form.validate():
         # POST request from new job page, with successful validation
@@ -615,4 +633,6 @@ def newjob():
     # 1. GET request, page loaded for the first time
     # 2. POST request from main page's Post a Job box
     # 3. POST request from this page, with errors
-    return render_template('postjob.html', form=form, no_removelogo=True)
+    return render_template('postjob.html', form=form, no_removelogo=True,
+        getuser_autocomplete=lastuser.endpoint_url(lastuser.getuser_autocomplete_endpoint),
+        getuser_userids=lastuser.endpoint_url(lastuser.getuser_userids_endpoint))

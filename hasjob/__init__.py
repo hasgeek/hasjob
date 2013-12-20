@@ -31,7 +31,7 @@ from hasjob.models import db
 def init_for(env):
     coaster.app.init_app(app, env)
     baseframe.init_app(app, requires=['jquery.textarea-expander', 
-        'jquery.tinymce', 'jquery.form', 'jquery.cookie', 'jquery.sparkline', 'baseframe-networkbar', 'hasjob'
+        'jquery.tinymce', 'jquery.form', 'jquery.cookie', 'select2', 'jquery.sparkline', 'baseframe-networkbar', 'hasjob'
         ])
     app.assets.register('js_tinymce', assets.require('tiny_mce.js>=3.5.0,<4.0.0'))
     from hasjob.search import configure as search_configure

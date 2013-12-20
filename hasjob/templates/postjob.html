@@ -34,47 +34,92 @@
       {{ renderfield(form.job_how_to_apply, "wide") }}
     </div>
     <div class="section">
-      <h2>Tell us about your company</h2>
+      <h2>Next, tell us about your company</h2>
       {{ renderfield(form.company_name, "small") }}
       {{ renderfield(form.company_logo, "small") }}
       {% if not no_removelogo %}{{ renderfield(form.company_logo_remove, "small") }}{% endif %}
       {{ renderfield(form.company_url, "small") }}
+      {%- if not no_email %}
+        {#{{ renderfield(form.poster_name, "small") }}-#} {# Deprecated 2013-11-20 -#}
+        {{ renderfield(form.poster_email, "small") }}
+      {%- endif %}
+      {{ renderfield(form.collaborators, "wide") }}
       {{ renderfield(form.hr_contact, "widelist") }}
       <p>
         <strong>Warning:</strong> Many recruiters will ignore your preference and contact you anyway.
         Do not reveal your phone number in the listing. If you receive an email, please report it
         and we will block their account
       </p>
-      {%- if not no_email %}
-        </div>
-        <div class="section">
-          <h2>A little about yourself</h2>
-          {{ renderfield(form.poster_name, "small") }}
-          {{ renderfield(form.poster_email, "small") }}
-      {%- endif %}
       <input type="submit" value="Review your job listing &rarr;"/>
     </div>
   </form>
 </div>
 {% endblock %}
 {% block footerscripts %}
-{% assets "js_tinymce" %}<script src="{{ ASSET_URL }}" type="text/javascript"></script>{% endassets %}
-<script type="text/javascript">
-  $(function() {
-    if (! $("#job_perks").is(":checked")) {
-      $("#field-job_perks_description").hide();
-    };
-    $("#job_perks").click(function() {
-      if ($(this).is(":checked")) {
-        $("#field-job_perks_description").slideDown();
-      } else {
-        $("#field-job_perks_description").slideUp();
+  {% assets "js_tinymce" %}<script src="{{ ASSET_URL }}" type="text/javascript"></script>{% endassets %}
+  <script type="text/javascript">
+    $(function() {
+      if (! $("#job_perks").is(":checked")) {
+        $("#field-job_perks_description").hide();
       };
+      $("#job_perks").click(function() {
+        if ($(this).is(":checked")) {
+          $("#field-job_perks_description").slideDown();
+        } else {
+          $("#field-job_perks_description").slideUp();
+        };
+      });
+      radioHighlight('job_type', 'selected');
+      radioHighlight('job_category', 'selected');
+      radioHighlight('hr_contact', 'selected');
     });
-    radioHighlight('job_type', 'selected');
-    radioHighlight('job_category', 'selected');
-    radioHighlight('hr_contact', 'selected');
-  });
-  {% include "inc/tinymce.js" %}
-</script>
+    {% include "inc/tinymce.js" %}
+
+    $("#collaborators").select2({
+      placeholder: "Search for a user",
+      multiple: true,
+      minimumInputLength: 2,
+      ajax: {
+        url: {{ getuser_autocomplete|tojson }},
+        dataType: "jsonp",
+        data: function(term, page) {
+          return {
+            q: term
+          };
+        },
+        results: function(data, page) {
+          var rdata = [];
+          if (data.status == 'ok') {
+            for (var i=0; i < data.users.length; i++) {
+              rdata.push({
+                id: data.users[i].buid, text: data.users[i].label
+              });
+            };
+          };
+          return {more: false, results: rdata};
+        }
+      },
+      initSelection: function(element, callback) {
+        var val = $(element).val();
+        if (val != '') {
+          var qs = '?userid=' + val.replace(/,/g, '&userid=');
+          $.ajax({{ getuser_userids|tojson }} + qs, {
+            accepts: "application/json",
+            dataType: "jsonp",
+          }).done(function(data) {
+            $(element).val('');  // Clear it in preparation for incoming data
+            var rdata = [];
+            if (data.status == 'ok') {
+              for (var i=0; i < data.results.length; i++) {
+                rdata.push({
+                  id: data.results[i].buid, text: data.results[i].label
+                });
+              };
+            };
+            callback(rdata);
+          });
+        }
+      }
+    });
+  </script>
 {% endblock %}
