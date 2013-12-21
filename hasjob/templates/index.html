@@ -1,7 +1,7 @@
 {% extends "inc/layout.html" %}
 {% block titletags -%}
-  <title>{{ config['SITE_TITLE'] }}</title>
-  <meta name="DC.title" content="{{ config['SITE_TITLE'] }}"/>
+  <title>{%if title %}{{ title }} &mdash; {% endif %}{{ config['SITE_TITLE'] }}</title>
+  <meta name="DC.title" content="{%if title %}{{ title }} &mdash; {% endif %}{{ config['SITE_TITLE'] }}"/>
 {%- endblock %}
 
 {% block pageheaders %}

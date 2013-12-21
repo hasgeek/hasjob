@@ -22,7 +22,7 @@ webmail_domains = set(['gmail.com', 'yahoo.com', 'yahoo.co.in', 'hotmail.com', '
 
 
 @app.route('/')
-def index(basequery=None, type=None, category=None, md5sum=None, domain=None):
+def index(basequery=None, type=None, category=None, md5sum=None, domain=None, title=None):
     now = datetime.utcnow()
     posts = list(getposts(basequery, sticky=True))
     if posts:
@@ -49,7 +49,7 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None):
         grouped = None
 
     return render_template('index.html', posts=posts, grouped=grouped, now=now,
-                           newlimit=newlimit, jobtype=type, jobcategory=category,
+                           newlimit=newlimit, jobtype=type, jobcategory=category, title=title,
                            md5sum=md5sum, domain=domain, employer_name=employer_name,
                            siteadmin=lastuser.has_permission('siteadmin'))
 
@@ -60,7 +60,7 @@ def browse_by_type(name):
         return redirect(url_for('index'))
     ob = JobType.query.filter_by(name=name).first_or_404()
     basequery = JobPost.query.filter_by(type_id=ob.id)
-    return index(basequery=basequery, type=ob)
+    return index(basequery=basequery, type=ob, title=ob.title)
 
 
 @app.route('/at/<domain>')
@@ -68,7 +68,7 @@ def browse_by_domain(domain):
     if not domain:
         abort(404)
     basequery = JobPost.query.filter_by(email_domain=domain)
-    return index(basequery=basequery, domain=domain)
+    return index(basequery=basequery, domain=domain, title=domain)
 
 
 @app.route('/category/<name>')
@@ -77,7 +77,7 @@ def browse_by_category(name):
         return redirect(url_for('index'))
     ob = JobCategory.query.filter_by(name=name).first_or_404()
     basequery = JobPost.query.filter_by(category_id=ob.id)
-    return index(basequery=basequery, category=ob)
+    return index(basequery=basequery, category=ob, title=ob.title)
 
 
 @app.route('/by/<md5sum>')
