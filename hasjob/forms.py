@@ -4,7 +4,7 @@ import re
 from difflib import SequenceMatcher
 
 from flask import g, request, Markup
-from baseframe.forms import Form, ValidEmailDomain, RichTextField, HiddenMultiField
+from baseframe.forms import Form, ValidEmailDomain, ValidUrl, RichTextField, HiddenMultiField
 from wtforms import TextField, TextAreaField, RadioField, FileField, BooleanField, ValidationError, validators
 from wtforms.fields.html5 import EmailField
 from coaster import getbool
@@ -49,7 +49,8 @@ class ListingForm(Form):
     job_relocation_assist = BooleanField("Relocation assistance available")
     job_description = RichTextField("Description",
         description=u"Don’t just describe the job, tell a compelling story for why someone should work for you",
-        validators=[validators.Required("A description of the job is required")],
+        validators=[validators.Required("A description of the job is required"),
+            ValidUrl()],
         tinymce_options={'convert_urls': True})
     job_perks = BooleanField("Job perks are available")
     job_perks_description = TextAreaField("Describe job perks",
@@ -162,7 +163,8 @@ class ApplicationForm(Form):
             validators.Length(min=1, max=15, message="%(max)d characters maximum")],
         description="A phone number the employer can reach you at")
     apply_message = RichTextField("Job application",
-        validators=[validators.Required("You need to say something about yourself")],
+        validators=[validators.Required("You need to say something about yourself"),
+            ValidUrl()],
         description="Please provide all details the employer has requested")
 
     def __init__(self, *args, **kwargs):
