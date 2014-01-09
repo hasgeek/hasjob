@@ -1,6 +1,7 @@
 import os.path
 from flask.ext.sqlalchemy import models_committed
 import time
+from sqlalchemy.exc import ProgrammingError
 from whoosh import fields, index
 from whoosh.index import LockError
 from whoosh.qparser import QueryParser
@@ -101,9 +102,12 @@ def configure():
         writer = ix.writer()
         # Index everything since this is the first time
         for model in [models.JobType, models.JobCategory, models.JobPost]:
-            for ob in model.query.all():
-                mapping = ob.search_mapping()
-                public = mapping.pop('public')
-                if public:
-                    writer.add_document(**mapping)
+            try:
+                for ob in model.query.all():
+                    mapping = ob.search_mapping()
+                    public = mapping.pop('public')
+                    if public:
+                        writer.add_document(**mapping)
+            except ProgrammingError:
+                pass  # The table doesn't exist yet. This is really a new installation.
         writer.commit()
