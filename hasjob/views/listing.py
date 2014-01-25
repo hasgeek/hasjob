@@ -20,7 +20,7 @@ from flask import (
 from flask.ext.mail import Message
 from baseframe import cache
 from coaster import get_email_domain, md5sum
-from hasjob import app, forms, mail, lastuser
+from hasjob import app, forms, mail, lastuser, docspad
 from hasjob.models import (
     agelimit,
     db,
@@ -45,7 +45,7 @@ from hasjob.uploads import uploaded_logos
 from hasjob.utils import get_word_bag, redactemail
 from hasjob.views import ALLOWED_TAGS
 from hasjob.views.index import webmail_domains
-
+from upload_docspad import view_doc
 
 @app.route('/view/<hashid>', methods=('GET', 'POST'))
 def jobdetail(hashid):
@@ -175,28 +175,37 @@ def applyjob(hashid):
             if g.user.blocked:
                 flashmsg = "Your account has been blocked from applying to jobs"
             else:
-                job_application = JobApplication(user=g.user, jobpost=post,
-                    email=applyform.apply_email.data,
-                    phone=applyform.apply_phone.data,
-                    message=applyform.apply_message.data,
-                    words=applyform.words)
-                db.session.add(job_application)
-                db.session.commit()
-                email_html = email_transform(
-                    render_template('apply_email.html',
-                        post=post, job_application=job_application,
-                        archive_url=url_for('view_application',
-                            hashid=post.hashid, application=job_application.hashid,
-                            _external=True)),
-                    base_url=request.url_root)
-                email_text = html2text(email_html)
-                flashmsg = "Your application has been sent to the employer"
+                try:
+                    if applyform.apply_document.data:
+                        docId = docspad.upload(applyform.apply_document.data)
+                        sessionId = docspad.get_session(docId)
+                        applyform.apply_message.data += "<br />View the document uploaded by applicant at " + \
+                                                        request.host + url_for("view_doc", sessionId=sessionId)
 
-                msg = Message(subject=u"Job application: {fullname}".format(fullname=job_application.user.fullname),
-                    recipients=[post.email])
-                msg.body = email_text
-                msg.html = email_html
-                mail.send(msg)
+                    job_application = JobApplication(user=g.user, jobpost=post,
+                        email=applyform.apply_email.data,
+                        phone=applyform.apply_phone.data,
+                        message=applyform.apply_message.data,
+                        words=applyform.words)
+                    db.session.add(job_application)
+                    db.session.commit()
+                    email_html = email_transform(
+                        render_template('apply_email.html',
+                            post=post, job_application=job_application,
+                            archive_url=url_for('view_application',
+                                hashid=post.hashid, application=job_application.hashid,
+                                _external=True)),
+                        base_url=request.url_root)
+                    email_text = html2text(email_html)
+                    flashmsg = "Your application has been sent to the employer"
+
+                    msg = Message(subject=u"Job application: {fullname}".format(fullname=job_application.user.fullname),
+                        recipients=[post.email])
+                    msg.body = email_text
+                    msg.html = email_html
+                    mail.send(msg)
+                except Exception as e:
+                    flashmsg = "Unable to upload file. Try again!"
 
             if request.is_xhr:
                 return u'<p><strong>{}</strong></p>'.format(flashmsg)

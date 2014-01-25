@@ -162,8 +162,8 @@ class ApplicationForm(Form):
             validators.Length(min=1, max=15, message="%(max)d characters maximum")],
         description="A phone number the employer can reach you at")
     apply_message = RichTextField("Job application",
-        validators=[validators.Required("You need to say something about yourself")],
         description="Please provide all details the employer has requested")
+    apply_document = FileField("Upload PDF")
 
     def __init__(self, *args, **kwargs):
         super(ApplicationForm, self).__init__(*args, **kwargs)
@@ -179,6 +179,8 @@ class ApplicationForm(Form):
                 ]
 
     def validate_apply_message(form, field):
+        if not (field.data or form.apply_document.data):
+            raise ValidationError("You need to say something about yourself. You can upload a document for the same too!")
         words = get_word_bag(field.data)
         form.words = words
         similar = False
