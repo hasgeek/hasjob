@@ -1,6 +1,6 @@
 import json
 from hasjob import app
-from flask import render_template, request, Response, g
+from flask import render_template, request, Response, g, abort
 from hasjob import docspad
 
 @app.route("/upload_using_docspad", methods=["POST"])
@@ -15,7 +15,8 @@ def upload():
             print e.message
             return Response(status=400, mimetype='application/json',response=json.dumps({'error':'Unable to upload file.'}))
     else:
-        return Response(status=401)
+        abort(401)
+
 @app.route("/view_doc/<sessionId>", methods=["GET"])
 def view(sessionId):
     return render_template("view_doc.html", sessionId = sessionId)
