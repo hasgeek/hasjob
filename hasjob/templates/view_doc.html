@@ -1,10 +1,11 @@
 {% extends "inc/layout.html" %}
 {% block title %} View Document - Powered by Docspad {% endblock %}
 {% block content %}
-<div id="sheet">
-    <div class="section columns">
-    <iframe style="width:100%;height:700px;" src="http://proxy.docspad.com/{{ sessionId }}/index.html" />
+    <div id="sheet">
+    {% if converted == True %}
+        <div class="section columns">
+            <iframe style="width:100%;height:700px;" src="http://proxy.docspad.com/{{ sessionId }}/index.html" />
+        </div>
+    {% endif %}
     </div>
-</div>
-
 {% endblock %}

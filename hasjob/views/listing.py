@@ -647,4 +647,17 @@ def newjob():
 
 @app.route("/view_doc/<sessionId>", methods=["GET"])
 def view_doc(sessionId):
-    return render_template("view_doc.html", sessionId = sessionId)
+    docId = sessionId.split("-")[0]
+    try:
+        status = docspad.get_status(docId)
+        converted = False
+        if status['conversion_status'] == 'COMPLETED' and status['file_status'] == 'PRESENT':
+            return render_template("view_doc.html", sessionId = sessionId, converted = True)
+        elif status['conversion_status'] == 'QUEUED':
+            flash("The document has been queued for conversion. Please try again later")
+            return render_template("view_doc.html", sessionId = sessionId, converted = False)
+        else:
+            flash("The document seems to have been deleted")
+            return render_template("view_doc.html", sessionId = sessionId, converted = False)
+    except:
+        abort(400)
