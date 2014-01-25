@@ -175,8 +175,8 @@ def applyjob(hashid):
                 flashmsg = "Your account has been blocked from applying to jobs"
             else:
                 try:
-                    if applyform.apply_document.data:
-                        docId = docspad.upload(applyform.apply_document.data)
+                    if 'apply_document' in request.files:
+                        docId = docspad.upload(request.files['apply_document'])
                         sessionId = docspad.get_session(docId)
                         applyform.apply_message.data += "<br />View the document uploaded by applicant at " + \
                                                         request.host + url_for("view_doc", sessionId=sessionId)
@@ -204,6 +204,7 @@ def applyjob(hashid):
                     msg.html = email_html
                     mail.send(msg)
                 except Exception as e:
+                    app.log_exception(e)
                     flashmsg = "Unable to upload file. Try again!"
 
             if request.is_xhr:
