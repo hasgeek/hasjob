@@ -177,9 +177,8 @@ def applyjob(hashid):
                 try:
                     if 'apply_document' in request.files:
                         docId = docspad.upload(request.files['apply_document'])
-                        sessionId = docspad.get_session(docId)
                         applyform.apply_message.data += "<br />View the document uploaded by applicant at " + \
-                                                        request.host + url_for("view_doc", sessionId=sessionId)
+                                                        request.host + url_for("view_doc", docId=docId)
 
                     job_application = JobApplication(user=g.user, jobpost=post,
                         email=applyform.apply_email.data,
@@ -646,19 +645,19 @@ def newjob():
         getuser_autocomplete=lastuser.endpoint_url(lastuser.getuser_autocomplete_endpoint),
         getuser_userids=lastuser.endpoint_url(lastuser.getuser_userids_endpoint))
 
-@app.route("/view_doc/<sessionId>", methods=["GET"])
-def view_doc(sessionId):
-    docId = sessionId.split("-")[0]
+@app.route("/view_doc/<docId>", methods=["GET"])
+def view_doc(docId):
     try:
         status = docspad.get_status(docId)
-        converted = False
         if status['conversion_status'] == 'COMPLETED' and status['file_status'] == 'PRESENT':
+            sessionId = docspad.get_session(docId)
             return render_template("view_doc.html", sessionId = sessionId, converted = True)
         elif status['conversion_status'] == 'QUEUED':
             flash("The document has been queued for conversion. Please try again later")
-            return render_template("view_doc.html", sessionId = sessionId, converted = False)
+            return render_template("view_doc.html", sessionId = "", converted = False)
         else:
             flash("The document seems to have been deleted")
-            return render_template("view_doc.html", sessionId = sessionId, converted = False)
-    except:
+            return render_template("view_doc.html", sessionId = "", converted = False)
+    except Exception as e:
+        app.log_exception(e)
         abort(400)
