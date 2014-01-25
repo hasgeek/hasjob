@@ -30,4 +30,3 @@ from hasjob.views.listing import *
 from hasjob.views.admin import *
 from hasjob.views.static import *
 from hasjob.views.login import *
-from hasjob.views.upload_docspad import *

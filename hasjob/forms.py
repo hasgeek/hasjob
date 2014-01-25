@@ -163,7 +163,7 @@ class ApplicationForm(Form):
         description="A phone number the employer can reach you at")
     apply_message = RichTextField("Job application",
         description="Please provide all details the employer has requested")
-    apply_document = FileField("Upload PDF")
+    apply_document = FileField("Upload PDF through Docspad")
 
     def __init__(self, *args, **kwargs):
         super(ApplicationForm, self).__init__(*args, **kwargs)

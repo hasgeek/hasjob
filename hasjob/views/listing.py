@@ -45,7 +45,6 @@ from hasjob.uploads import uploaded_logos
 from hasjob.utils import get_word_bag, redactemail
 from hasjob.views import ALLOWED_TAGS
 from hasjob.views.index import webmail_domains
-from upload_docspad import view_doc
 
 @app.route('/view/<hashid>', methods=('GET', 'POST'))
 def jobdetail(hashid):
@@ -645,3 +644,7 @@ def newjob():
     return render_template('postjob.html', form=form, no_removelogo=True,
         getuser_autocomplete=lastuser.endpoint_url(lastuser.getuser_autocomplete_endpoint),
         getuser_userids=lastuser.endpoint_url(lastuser.getuser_userids_endpoint))
+
+@app.route("/view_doc/<sessionId>", methods=["GET"])
+def view_doc(sessionId):
+    return render_template("view_doc.html", sessionId = sessionId)
