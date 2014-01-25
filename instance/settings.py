@@ -73,3 +73,6 @@ LASTUSER_SERVER = 'https://auth.hasgeek.com/'
 LASTUSER_CLIENT_ID = ''
 #: LastUser client secret
 LASTUSER_CLIENT_SECRET = ''
+
+# Consumer key for uploading and accessing documents on Docspad
+DOCSPAD_CONSUMER_KEY=''

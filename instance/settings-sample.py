@@ -50,3 +50,6 @@ PERIODIC_KEY = ''
 #: Throttle limit for email domain
 THROTTLE_LIMIT = 5
 SUPPORT_EMAIL = 'person@example.com'
+
+# Consumer key for uploading and accessing documents on Docspad
+DOCSPAD_CONSUMER_KEY=''
