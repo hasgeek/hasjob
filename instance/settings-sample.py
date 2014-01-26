@@ -53,3 +53,6 @@ SUPPORT_EMAIL = 'person@example.com'
 
 # Consumer key for uploading and accessing documents on Docspad
 DOCSPAD_CONSUMER_KEY=''
+
+# Upload directory for temporary storing files (until they are forwarded to docspad)
+TMP_UPLOAD_DIR = '/tmp'
