@@ -177,8 +177,9 @@ def applyjob(hashid):
                 try:
                     if 'apply_document' in request.files:
                         docId = docspad.upload(request.files['apply_document'])
-                        applyform.apply_message.data += "<br />View the document uploaded by applicant at " + \
-                                                        request.host + url_for("view_doc", docId=docId)
+                        rel_doc_view_url = url_for("view_doc", docId=docId)
+                        doc_view_url = request.host + rel_doc_view_url
+                        applyform.apply_message.data += "<hr />To view the document uploaded by the candidate, follow <a href='"+ rel_doc_view_url + "'>"+ doc_view_url + "</a>"
 
                     job_application = JobApplication(user=g.user, jobpost=post,
                         email=applyform.apply_email.data,
