@@ -165,7 +165,7 @@ class ApplicationForm(Form):
     apply_message = RichTextField("Job application",
         validators=[validators.Required("You need to say something about yourself.")],
         description="Please provide all details the employer has requested")
-    apply_document = FileField("Upload resume through Docspad",
+    apply_document = FileField("Upload resume",
         validators=[validators.Required("You need to upload your Resume.")],
         description="Supported formats : pdf,doc,docx")
 
