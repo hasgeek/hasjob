@@ -8,6 +8,7 @@ from baseframe.forms import Form, ValidEmailDomain, RichTextField, HiddenMultiFi
 from wtforms import TextField, TextAreaField, RadioField, FileField, BooleanField, ValidationError, validators
 from wtforms.fields.html5 import EmailField
 from coaster import getbool
+from werkzeug import secure_filename
 
 from .models import JobApplication, EMPLOYER_RESPONSE
 from .uploads import process_image, UploadNotAllowed
@@ -162,8 +163,11 @@ class ApplicationForm(Form):
             validators.Length(min=1, max=15, message="%(max)d characters maximum")],
         description="A phone number the employer can reach you at")
     apply_message = RichTextField("Job application",
+        validators=[validators.Required("You need to say something about yourself.")],
         description="Please provide all details the employer has requested")
-    apply_document = FileField("Upload PDF through Docspad")
+    apply_document = FileField("Upload resume through Docspad",
+        validators=[validators.Required("You need to upload your Resume.")],
+        description="Supported formats : pdf,doc,docx")
 
     def __init__(self, *args, **kwargs):
         super(ApplicationForm, self).__init__(*args, **kwargs)
@@ -179,8 +183,6 @@ class ApplicationForm(Form):
                 ]
 
     def validate_apply_message(form, field):
-        if not (field.data or form.apply_document.data):
-            raise ValidationError("You need to say something about yourself. You can upload a document for the same too!")
         words = get_word_bag(field.data)
         form.words = words
         similar = False
@@ -201,6 +203,13 @@ class ApplicationForm(Form):
         phone_search_text = URL_RE.sub('', field.data.replace('&nbsp;', ' ').replace('&#160;', ' ').replace(u'\xa0', ' '))
         if EMAIL_RE.search(field.data) is not None or PHONE_DETECT_RE.search(phone_search_text) is not None:
             raise ValidationError("Do not include your email address or phone number in the application")
+
+    def validate_apply_document(self, field):
+        if field.data:
+            filename = secure_filename(field.data.filename.lower())
+            extension = filename.split(".")[-1]
+            if not extension in ('pdf', 'doc', 'docx'):
+                raise ValidationError("Unsupported file format.")
 
 
 class ApplicationResponseForm(Form):
