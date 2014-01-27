@@ -53,8 +53,9 @@ class ListingForm(Form):
             AllUrlsValid()],
         tinymce_options={'convert_urls': True})
     job_perks = BooleanField("Job perks are available")
-    job_perks_description = TextAreaField("Describe job perks",
-        description=u"Stock options, free lunch, free conference passes, etc")
+    job_perks_description = RichTextField("Describe job perks",
+        description=u"Stock options, free lunch, free conference passes, etc",
+        validators=[AllUrlsValid()])
     job_how_to_apply = TextAreaField("What should a candidate submit when applying for this job?",
          description=u"Example: “Include your LinkedIn and GitHub profiles.” "
                      u"We now require candidates to apply through the job board only. "
