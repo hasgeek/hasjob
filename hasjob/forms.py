@@ -4,7 +4,7 @@ import re
 from difflib import SequenceMatcher
 
 from flask import g, request, Markup
-from baseframe.forms import Form, ValidEmailDomain, RichTextField, HiddenMultiField
+from baseframe.forms import Form, ValidEmailDomain, AllUrlsValid, RichTextField, HiddenMultiField
 from wtforms import TextField, TextAreaField, RadioField, FileField, BooleanField, ValidationError, validators
 from wtforms.fields.html5 import EmailField
 from coaster import getbool
@@ -49,11 +49,13 @@ class ListingForm(Form):
     job_relocation_assist = BooleanField("Relocation assistance available")
     job_description = RichTextField("Description",
         description=u"Don’t just describe the job, tell a compelling story for why someone should work for you",
-        validators=[validators.Required("A description of the job is required")],
+        validators=[validators.Required("A description of the job is required"),
+            AllUrlsValid()],
         tinymce_options={'convert_urls': True})
     job_perks = BooleanField("Job perks are available")
-    job_perks_description = TextAreaField("Describe job perks",
-        description=u"Stock options, free lunch, free conference passes, etc")
+    job_perks_description = RichTextField("Describe job perks",
+        description=u"Stock options, free lunch, free conference passes, etc",
+        validators=[AllUrlsValid()])
     job_how_to_apply = TextAreaField("What should a candidate submit when applying for this job?",
          description=u"Example: “Include your LinkedIn and GitHub profiles.” "
                      u"We now require candidates to apply through the job board only. "
@@ -75,7 +77,7 @@ class ListingForm(Form):
     company_logo_remove = BooleanField("Remove existing logo")
     company_url = TextField("URL",
         description=u"Example: http://www.google.com",
-        validators=[optional_url])
+        validators=[optional_url, AllUrlsValid()])
     hr_contact = RadioField(u"Is it okay for recruiters and other "
         u"intermediaries to contact you about this listing?", coerce=getbool,
         description=u"We’ll display a notice to this effect on the listing",
@@ -162,7 +164,8 @@ class ApplicationForm(Form):
             validators.Length(min=1, max=15, message="%(max)d characters maximum")],
         description="A phone number the employer can reach you at")
     apply_message = RichTextField("Job application",
-        validators=[validators.Required("You need to say something about yourself")],
+        validators=[validators.Required("You need to say something about yourself"),
+            AllUrlsValid()],
         description="Please provide all details the employer has requested")
 
     def __init__(self, *args, **kwargs):
