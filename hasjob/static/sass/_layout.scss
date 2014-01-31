@@ -170,6 +170,7 @@ footer {
     }
     padding: 1em 0;
     border: 1px solid $color-sheet-border;
+    word-wrap: break-word;
     @include border-radius(4px);
     //@include single-box-shadow($color-shadow, 0, 2px, 10px);
     @include box-shadow(0 2px 10px $color-shadow, 0 0 10px rgba(0, 0, 0, 0.1) inset);

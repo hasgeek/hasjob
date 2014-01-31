@@ -483,6 +483,7 @@ footer {
   margin-bottom: 2em;
   padding: 1em 0;
   border: 1px solid #afafaf;
+  word-wrap: break-word;
   -webkit-border-radius: 4px;
   -moz-border-radius: 4px;
   -ms-border-radius: 4px;
