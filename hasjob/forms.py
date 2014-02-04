@@ -69,7 +69,7 @@ class ListingForm(Form):
                     u"yet. We do not accept listings from third parties such as recruitment consultants. Such listings "
                     u"may be removed without notice",
         validators=[validators.Required(u"This is required. Posting any name other than that of the actual organization is a violation of the ToS"),
-            validators.Length(min=5, max=80, message="%(max)d characters maximum")])
+            validators.Length(min=4, max=80, message="The name must be within %(min)d to %(max)d characters")])
     company_logo = FileField("Logo",
         description=u"Optional — Your company logo will appear at the top of your listing. "
                     u"170px wide is optimal. We’ll resize automatically if it’s wider",
@@ -104,10 +104,11 @@ class ListingForm(Form):
 
 
     def validate_company_name(form, field):
-        caps = len(CAPS_RE.findall(field.data))
-        small = len(SMALL_RE.findall(field.data))
-        if small == 0 or caps / float(small) > 0.8:
-            raise ValidationError("Surely your company isn't named in uppercase?")
+        if len(field.data) > 5:
+            caps = len(CAPS_RE.findall(field.data))
+            small = len(SMALL_RE.findall(field.data))
+            if small == 0 or caps / float(small) > 0.8:
+                raise ValidationError("Surely your company isn't named in uppercase?")
 
     def validate_company_logo(form, field):
         if not request.files['company_logo']:
