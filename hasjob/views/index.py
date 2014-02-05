@@ -246,16 +246,7 @@ def search():
     return render_template('search.html', results=results, now=now, newlimit=newlimit)
 
 
-# This is a hack to update all the jobid with the respective geoid
-@app.route('/wholesale/update/geoid')
-def wholesale():
-    if wholesale_update():
-        return Response("Updated geoid for all locations in jobpost.\n",content_type='text/plain;chatset=utf-8')
-    else:
-        return Response("Was not able to update geoid for locations in jobpost.\n",content_type='text/plain;chatset=utf-8')
-
-
 @app.route('/in/<location>')
 def location_search(location):
-    
-    return render_template('loc_search.html', location=location)
+    # Need to add a proper template
+    return render_template('loc_search.html', results=results, location=location)

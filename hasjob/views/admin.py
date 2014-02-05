@@ -22,6 +22,15 @@ def delete_index(key):
     else:
         abort(403)
 
+"""
+# This is a hack to update all the jobid with the respective geoid
+@app.route('/admin/update-geoid')
+def wholesale():
+    if wholesale_update():
+        return Response("Updated geoid for all locations in jobpost.\n",content_type='text/plain;chatset=utf-8')
+    else:
+        return Response("Was not able to update geoid for locations in jobpost.\n",content_type='text/plain;chatset=utf-8')
+"""
 
 @app.route('/admin/update-md5sum/<key>')
 def update_md5sum(key):
