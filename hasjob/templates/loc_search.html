@@ -1,0 +1,14 @@
+{% extends "inc/layout.html" %}
+{% block title %}Search results{% endblock %}
+{% block content %}
+<ul id="stickie-area">
+  <li id="filtered" class="stickie">
+    <a href="{{ url_for('index') }}">
+      <span class="filtered">
+        You are viewing search results for location
+        “{{ location }}”. View all jobs?
+      </span>
+    </a>
+  </li>
+</ul>
+{% endblock %}

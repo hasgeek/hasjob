@@ -39,3 +39,4 @@ from hasjob.models.jobtype import *
 from hasjob.models.reportcode import *
 from hasjob.models.jobpost import *
 from hasjob.models.user import *
+from hasjob.models.geoname import *

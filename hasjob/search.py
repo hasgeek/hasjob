@@ -8,12 +8,30 @@ from whoosh.qparser import QueryParser
 from whoosh.analysis import StemmingAnalyzer
 
 from hasjob import models, app
+from hasjob.models import db,JobType,GeoName
 
 
 INDEXABLE = (models.JobType, models.JobCategory, models.JobPost)
 search_schema = fields.Schema(title=fields.TEXT(stored=True),
                               content=fields.TEXT(analyzer=StemmingAnalyzer()),
                               idref=fields.ID(stored=True, unique=True))
+
+
+# This is a hack to update all the jobid with the respective geoid
+def wholesale_update():
+    count = 0
+    for post in JobPost.query.all():
+        pars_locations = list()
+        pars_locations = GeoName.get_geoid(post.location)
+        if len(pars_locations) > 0:
+            post.geoid = ";".join(pars_locations)
+            count += 1
+    
+    db.session.commit()
+    if count > 0:
+        return True
+    else:
+        return False
 
 
 # For search results
