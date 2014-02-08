@@ -63,7 +63,9 @@ $(function() {
 
     // General options
     theme : "advanced",
-    plugins : "typekit",
+    {% if config['TYPEKIT_CODE'] -%}
+      plugins : "typekit",
+    {%- endif %}
 
     // Theme options
     theme_advanced_buttons1 : "bold,italic,|,bullist,numlist,|,link,unlink",
