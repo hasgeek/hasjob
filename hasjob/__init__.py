@@ -11,7 +11,8 @@ from ._version import __version__
 
 # First, make an app and config it
 
-app = Flask(__name__, instance_relative_config=True)
+app = Flask(__name__, instance_relative_config=True, static_folder=None)
+app.static_folder = 'static'
 mail = Mail()
 lastuser = Lastuser()
 
@@ -30,7 +31,13 @@ from hasjob.models import db
 # Configure the app
 def init_for(env):
     coaster.app.init_app(app, env)
-    baseframe.init_app(app, requires=['jquery.textarea-expander', 
+    if app.config.get('SERVER_NAME'):
+        subdomain = 'static'
+    else:
+        subdomain = None
+    app.add_url_rule('/static/<path:filename>', endpoint='static',
+        view_func=app.send_static_file, subdomain=subdomain)
+    baseframe.init_app(app, static_subdomain=subdomain, requires=['jquery.textarea-expander',
         'jquery.tinymce', 'jquery.form', 'jquery.cookie', 'select2', 'jquery.sparkline', 'baseframe-networkbar', 'hasjob'
         ])
     app.assets.register('js_tinymce', assets.require('tiny_mce.js>=3.5.0,<4.0.0'))
