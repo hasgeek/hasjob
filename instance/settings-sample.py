@@ -10,7 +10,7 @@ SQLALCHEMY_DATABASE_URI = 'sqlite:///test.db'
 SECRET_KEY = 'make this something random'
 #: Timezone
 TIMEZONE = 'Asia/Kolkata'
-#: Server host name
+#: Server host name (and port if not 80/443)
 SERVER_NAME = 'hasjob.local'
 #: Upload path
 UPLOADED_LOGOS_DEST = '/tmp/uploads'
