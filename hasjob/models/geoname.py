@@ -68,7 +68,7 @@ def add_geo(geonames):
             continue
 
 
-def response_format(geonames:
+def response_format(geonames):
     # currently returns only 1 geoid per location
     result = list()
     for i in geonames:
@@ -94,7 +94,7 @@ def loc_request(name='',formatted=True,maxRows=1,lang='en',username='demo',style
             return response_format(response.json()["geonames"])
         except KeyError, e:
             print response.json()["status"]
-            return list()
+            return response_format(list())
     else:
         return list()
 

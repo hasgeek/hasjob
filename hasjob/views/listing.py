@@ -32,6 +32,7 @@ from hasjob.models import (
     POSTSTATUS,
     EMPLOYER_RESPONSE,
     ReportCode,
+    UserJobView,
     insert_geotag,
     JobApplication,
     unique_hash,
