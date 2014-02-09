@@ -32,7 +32,7 @@ from hasjob.models import (
     POSTSTATUS,
     EMPLOYER_RESPONSE,
     ReportCode,
-    UserJobView,
+    insert_geotag,
     JobApplication,
     unique_hash,
     viewcounts_by_id,
@@ -563,6 +563,8 @@ def editjob(hashid, key, form=None, post=None, validated=False):
                 if form.company_logo_remove.data:
                     post.company_logo = None
 
+
+            insert_geotag(post.id,post.location)
             db.session.commit()
             userkeys = session.get('userkeys', [])
             userkeys.append(post.edit_key)
@@ -628,7 +630,7 @@ def newjob():
     elif request.method == 'POST' and request.form.get('form.id') != 'newheadline':
         # POST request from new job page, with errors
         flash("Please correct the indicated errors", category='interactive')
-
+    
     # Render page. Execution reaches here under three conditions:
     # 1. GET request, page loaded for the first time
     # 2. POST request from main page's Post a Job box
