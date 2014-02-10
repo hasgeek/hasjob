@@ -10,14 +10,29 @@ Don't copy ours. We will like you better if you contribute a patch.
 This code runs on [Python][] with the [Flask][] microframework. You will need
 to install all the requirements listed in `requirements.txt` using
 `easy_install` or `pip`. Copy `settings-sample.py` to `settings.py`, edit as
-necessary, and start the server with:
+necessary, and finish configuration with:
+
+    $ python manage.py db create
+    $ python manage.py configure
+
+To run the server in development mode:
 
     $ python runserver.py
 
-WSGI is recommended for production. Enable `mod_wsgi` in Apache and make a
+WSGI is recommended for production. For Apache: enable `mod_wsgi` and make a
 `VirtualHost` with:
 
     WSGIScriptAlias / /path/to/website.wsgi
+
+For Nginx, run website.py under uWSGI and proxy to it:
+
+    location / {
+        include uwsgi_params; # Include common uWSGI settings here
+        uwsgi_pass 127.0.0.1:8093;
+        uwsgi_param UWSGI_CHDIR /path/to/hasjob/git/repo/folder;
+        uwsgi_param UWSGI_MODULE website;
+    }
+
 
 [Python]: http://python.org/
 [Flask]: http://flask.pocoo.org/

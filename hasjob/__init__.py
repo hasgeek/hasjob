@@ -41,9 +41,7 @@ def init_for(env):
         'jquery.tinymce', 'jquery.form', 'jquery.cookie', 'select2', 'jquery.sparkline', 'baseframe-networkbar', 'hasjob'
         ])
     app.assets.register('js_tinymce', assets.require('tiny_mce.js>=3.5.0,<4.0.0'))
-    from hasjob.search import configure as search_configure
     from hasjob.uploads import configure as uploads_configure
-    search_configure()
     uploads_configure()
     mail.init_app(app)
     lastuser.init_app(app)

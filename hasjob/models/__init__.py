@@ -33,9 +33,9 @@ class EMPLOYER_RESPONSE(LabeledEnum):
     REJECTED = (6, u"Rejected")  # Employer rejected candidate with a message
 
 
+from hasjob.models.user import *
 from hasjob.models.jobcategory import *
 from hasjob.models.jobpostreport import *
 from hasjob.models.jobtype import *
 from hasjob.models.reportcode import *
 from hasjob.models.jobpost import *
-from hasjob.models.user import *
