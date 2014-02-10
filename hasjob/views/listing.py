@@ -440,7 +440,7 @@ def confirm_email(hashid, key):
             db.session.commit()
             if app.config['TWITTER_ENABLED']:
                 try:
-                    tweet(post.headline, url_for('jobdetail', hashid=post.hashid,
+                    tweet.delay(post.headline, url_for('jobdetail', hashid=post.hashid,
                         _external=True), post.location)
                     flash("Congratulations! Your job listing has been published and tweeted",
                           "interactive")

@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from flask import Flask
+from flask.ext.rq import RQ
 from flask.ext.mail import Mail
 from flask.ext.lastuser import Lastuser
 from baseframe import baseframe, assets, Version
@@ -31,6 +32,7 @@ from hasjob.models import db
 # Configure the app
 def init_for(env):
     coaster.app.init_app(app, env)
+    RQ(app)
     if app.config.get('SERVER_NAME'):
         subdomain = 'static'
     else:
