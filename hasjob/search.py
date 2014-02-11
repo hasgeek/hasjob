@@ -8,7 +8,7 @@ from whoosh.qparser import QueryParser
 from whoosh.analysis import StemmingAnalyzer
 
 from hasjob import models, app
-from hasjob.models import db,JobType,GeoName
+from hasjob.models import db, JobType, loc_request, GeoJobView, JobPost
 
 
 INDEXABLE = (models.JobType, models.JobCategory, models.JobPost)
@@ -129,3 +129,12 @@ def configure():
             except ProgrammingError:
                 pass  # The table doesn't exist yet. This is really a new installation.
         writer.commit()
+
+def loc_jobs(location):
+    geo_id_1 = loc_request(location)
+    temp_list = GeoJobView.query.filter(GeoJobView.geo_id.in_(geo_id_1)).all()
+    jobpost_id_1 = [i.jobpost_id for i in temp_list]
+    result = list()
+    for i in jobpost_id_1:
+        result.append(models.JobPost.query.get(int(i)))
+    return result

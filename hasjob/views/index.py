@@ -14,7 +14,7 @@ from flask import (
 
 from hasjob import app, lastuser
 from hasjob.models import JobCategory, JobPost, JobType, POSTSTATUS, newlimit
-from hasjob.search import do_search
+from hasjob.search import do_search,loc_jobs
 from hasjob.views.helper import getposts, getallposts
 from hasjob.uploads import uploaded_logos
 
@@ -248,5 +248,8 @@ def search():
 
 @app.route('/in/<location>')
 def location_search(location):
-    # Need to add a proper template
-    return render_template('loc_search.html', results=results, location=location)
+    now = datetime.utcnow()
+    results = sorted(loc_jobs(location),
+        key=lambda r: getattr(r, 'datetime', now))
+    results.reverse()
+    return render_template('loc_search.html', results=results, now=now, newlimit=newlimit,location=location)

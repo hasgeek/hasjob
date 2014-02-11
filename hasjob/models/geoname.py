@@ -1,49 +1,48 @@
-from hasjob.models import db,JobPost
-import re,requests
+from hasjob.models import db, JobPost
+import re, requests
 
 
 class GeoName(db.Model):
     __tablename__ = 'geoname'
     idref = 'geo'
-    
-    geonameid = db.Column(db.Integer,primary_key=True,nullable=True) 
-    name = db.Column(db.String(200),nullable=True) 
-    asciiname = db.Column(db.String(200),nullable=True) 
-    alternatenames = db.Column(db.String(5000),nullable=True) 
-    latitude = db.Column(db.String(100),nullable=True) 
-    longitude = db.Column(db.String(100),nullable=True) 
-    feature_class = db.Column(db.String(1),nullable=True) 
-    feature_code = db.Column(db.String(10),nullable=True) 
-    country_code = db.Column(db.String(2),nullable=True) 
-    cc2 = db.Column(db.String(60),nullable=True) 
-    admin1_code = db.Column(db.String(20),nullable=True) 
-    admin2_code = db.Column(db.String(80),nullable=True) 
-    admin3_code = db.Column(db.String(20),nullable=True) 
-    admin4_code = db.Column(db.String(20),nullable=True) 
-    population = db.Column(db.Integer,nullable=True) 
-    elevation = db.Column(db.Integer,nullable=True) 
-    dem = db.Column(db.Integer,nullable=True) 
-    timezone = db.Column(db.String(40),nullable=True) 
-    modification_date = db.Column(db.Date(),nullable=True) 
 
-    
+    geonameid = db.Column(db.Integer, primary_key=True, nullable=True)
+    name = db.Column(db.String(200), nullable=True)
+    asciiname = db.Column(db.String(200), nullable=True)
+    alternatenames = db.Column(db.String(5000), nullable=True)
+    latitude = db.Column(db.String(100), nullable=True)
+    longitude = db.Column(db.String(100), nullable=True)
+    feature_class = db.Column(db.String(1), nullable=True)
+    feature_code = db.Column(db.String(10), nullable=True)
+    country_code = db.Column(db.String(2), nullable=True)
+    cc2 = db.Column(db.String(60), nullable=True)
+    admin1_code = db.Column(db.String(20), nullable=True)
+    admin2_code = db.Column(db.String(80), nullable=True)
+    admin3_code = db.Column(db.String(20), nullable=True)
+    admin4_code = db.Column(db.String(20), nullable=True)
+    population = db.Column(db.Integer, nullable=True)
+    elevation = db.Column(db.Integer, nullable=True)
+    dem = db.Column(db.Integer, nullable=True)
+    timezone = db.Column(db.String(40), nullable=True)
+    modification_date = db.Column(db.Date(), nullable=True)
+
     def __repr__(self):
-        return "<Geoname %s %s >" % (self.geonameid, self.title)
+        return "<Geoname %s %s>" % (self.geonameid, self.name)
 
 
 class GeoJobView(db.Model):
     __tablename__ = 'geoview'
-    id = db.Column(db.Integer,primary_key=True,nullable=False)
+    id = db.Column(db.Integer, primary_key=True, nullable=False)
     jobpost_id = db.Column(None, db.ForeignKey('jobpost.id'))
     jobpost = db.relationship(JobPost)
     geo_id = db.Column(None, db.ForeignKey('geoname.geonameid'))
     geo = db.relationship(GeoName)
 
 
-def add_geoview(jobpost_id,geoid):
+def add_geoview(jobpost_id, geoid):
     count = GeoJobView.query.count() + 1
     for i in geoid:
-        temp = GeoJobView(id = count)
+        temp = GeoJobView(id=count)
         count += 1
         temp.jobpost_id = jobpost_id
         temp.geo_id = i
@@ -53,12 +52,13 @@ def add_geoview(jobpost_id,geoid):
 def add_geo(geonames):
     for i in geonames:
         id = i["geonameId"]
-        count = GeoName.query.filter_by(geonameid=id).count
+        count = GeoName.query.filter_by(geonameid=id).count()
         if count == 0:
             temp = GeoName(geonameid=id)
             temp.name = i["name"]
-            alt_list = [ x["lang"] for x in i["alternatenames"] ]
-            temp.alternatenames = ";".join(alt_list)
+            if "alternateNames" in i:
+                alt_list = [x["name"] for x in i["alternateNames"]]
+                temp.alternatenames = ";".join(alt_list)
             temp.latitude = i["lat"]
             temp.longitude = i["lng"]
             temp.country_code = i["countryCode"]
@@ -72,28 +72,27 @@ def response_format(geonames):
     # currently returns only 1 geoid per location
     result = list()
     for i in geonames:
-        result.append(geonames[i]["geonameId"])
+        result.append(i["geonameId"])
 
     return result
 
 
-def loc_request(name='',formatted=True,maxRows=1,lang='en',username='demo',style='full'):
+def loc_request(name='', formatted=True, maxRows=1, lang='en', username='thanmaim', style='full'):
     base = 'http://api.geonames.org/searchJSON'
-    uri = base + '?formatted='+ str(formatted).lower()
-    uri += '&q=' + name 
+    uri = base + '?formatted=' + str(formatted).lower()
+    uri += '&q=' + name
     uri += '&maxRows=' + str(maxRows)
     uri += '&lang=' + lang
     uri += '&username=' + username
     uri += '&style=' + style
-    headers = {'Accept' : 'application/json'}
-    print uri
+    headers = {'Accept': 'application/json'}
     response = requests.get(uri)
     if response.status_code == 200:
         try:
-            add_geo(response.json()["geonames"])
-            return response_format(response.json()["geonames"])
+            geonames = response.json()["geonames"]
+            add_geo(geonames)
+            return response_format(geonames)
         except KeyError, e:
-            print response.json()["status"]
             return response_format(list())
     else:
         return list()
@@ -103,9 +102,9 @@ def loc_request(name='',formatted=True,maxRows=1,lang='en',username='demo',style
 # What has to be done for Anywhere
 def text2location(text=''):
     SPLIT_RE = re.compile(" ?, ?| or | ?/ ?")
-    loc_list = re.split(SPLIT_RE,text)
+    loc_list = re.split(SPLIT_RE, text)
     loc_list.append(text)
-    loc_list = filter(None,loc_list)
+    loc_list = filter(None, loc_list)
     return loc_list
 
 
@@ -117,7 +116,6 @@ def get_geoid(text=''):
     return geoid
 
 
-def insert_geotag(jobpost_id,location):
+def insert_geotag(jobpost_id, location):
     geoid_list = get_geoid(location)
-    add_geoview(jobpost_id,geoid_list)
-
+    add_geoview(jobpost_id, geoid_list)

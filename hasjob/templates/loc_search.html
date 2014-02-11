@@ -5,10 +5,33 @@
   <li id="filtered" class="stickie">
     <a href="{{ url_for('index') }}">
       <span class="filtered">
-        You are viewing search results for location
+        You are viewing search results for
         “{{ location }}”. View all jobs?
       </span>
     </a>
   </li>
+  {%- for result in results -%}
+  <li class="stickie{% if result.idref in ['type', 'category'] %} special{% endif %}">
+    <a href="{{ result|urlfor }}">
+      {% if result.idref == 'type' %}
+        Job Type: {{ result.title }}
+      {% elif result.idref == 'category' %}
+        Job Category: {{ result.title }}
+      {% elif result.idref == 'post' %}
+        <span class="location">{{ result.location }}</span>
+        <span class="date">{{ result.datetime|shortdate }}</span>
+        <span class="headline">{{ result.headline }}</span>
+        <span class="company">{{ result.company_name }}</span>
+        {%- if now - result.datetime < newlimit %}<span class="new">New!</span>{% endif %}
+      {% endif %}
+    </a>
+  </li>
+  {%- else -%}
+  <li id="nojobs" class="stickie">
+    <span class="filtered">
+      No jobs found.
+    </span>
+  </li>
+  {% endfor %}
 </ul>
 {% endblock %}
