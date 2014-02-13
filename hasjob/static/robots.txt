@@ -1,0 +1,4 @@
+Disallow: /edit/*
+Disallow: /confirm/*
+Disallow: /withdraw/*
+Disallow: /admin/*

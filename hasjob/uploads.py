@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from PIL import Image
 from StringIO import StringIO
 from os.path import splitext

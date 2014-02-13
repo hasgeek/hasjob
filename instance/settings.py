@@ -11,6 +11,8 @@ SQLALCHEMY_DATABASE_URI = 'sqlite:///'
 SECRET_KEY = 'make this something random'
 #: Timezone
 TIMEZONE = 'Asia/Kolkata'
+#: Static resource subdomain (defaults to 'static')
+STATIC_SUBDOMAIN = 'static'
 #: Upload path
 UPLOADED_LOGOS_DEST = '/tmp/uploads'
 #: Search index path

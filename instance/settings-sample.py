@@ -12,6 +12,8 @@ SECRET_KEY = 'make this something random'
 TIMEZONE = 'Asia/Kolkata'
 #: Server host name (and port if not 80/443)
 SERVER_NAME = 'hasjob.local'
+#: Static resource subdomain (defaults to 'static')
+STATIC_SUBDOMAIN = 'static'
 #: Upload path
 UPLOADED_LOGOS_DEST = '/tmp/uploads'
 #: Search index path

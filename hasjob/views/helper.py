@@ -5,9 +5,9 @@ from pytz import utc, timezone
 from urllib import quote, quote_plus
 from flask import Markup, request, url_for, g
 
-from hasjob import app
-from hasjob.models import agelimit, newlimit, db, JobCategory, JobPost, JobType, POSTSTATUS
-from hasjob.utils import scrubemail, redactemail
+from .. import app
+from ..models import agelimit, newlimit, db, JobCategory, JobPost, JobType, POSTSTATUS, BoardJobPost
+from ..utils import scrubemail, redactemail
 
 
 def getposts(basequery=None, sticky=False, showall=False):
@@ -18,11 +18,16 @@ def getposts(basequery=None, sticky=False, showall=False):
 
     if basequery is None:
         basequery = JobPost.query
+
     query = basequery.filter(
         JobPost.status.in_([POSTSTATUS.CONFIRMED, POSTSTATUS.REVIEWED])).filter(
             db.or_(
                 db.and_(JobPost.sticky == True, JobPost.datetime > datetime.utcnow() - agelimit),
                 db.and_(JobPost.sticky == False, JobPost.datetime > datetime.utcnow() - useagelimit)))
+
+    if g.board:
+        query = query.join(JobPost.postboards).filter(BoardJobPost.board == g.board)
+
     if sticky:
         query = query.order_by(db.desc(JobPost.sticky))
     return query.order_by(db.desc(JobPost.datetime))

@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from datetime import datetime
 try:
     from collections import OrderedDict
@@ -22,6 +24,7 @@ webmail_domains = set(['gmail.com', 'yahoo.com', 'yahoo.co.in', 'hotmail.com', '
     'live.com', 'yopmail.com'])
 
 
+@app.route('/', subdomain='<subdomain>')
 @app.route('/')
 def index(basequery=None, type=None, category=None, md5sum=None, domain=None, title=None):
     now = datetime.utcnow()
@@ -55,6 +58,7 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None, ti
                            siteadmin=lastuser.has_permission('siteadmin'))
 
 
+@app.route('/type/<name>', subdomain='<subdomain>')
 @app.route('/type/<name>')
 def browse_by_type(name):
     if name == 'all':
@@ -64,6 +68,7 @@ def browse_by_type(name):
     return index(basequery=basequery, type=ob, title=ob.title)
 
 
+@app.route('/at/<domain>', subdomain='<subdomain>')
 @app.route('/at/<domain>')
 def browse_by_domain(domain):
     if not domain:
@@ -72,6 +77,7 @@ def browse_by_domain(domain):
     return index(basequery=basequery, domain=domain, title=domain)
 
 
+@app.route('/category/<name>', subdomain='<subdomain>')
 @app.route('/category/<name>')
 def browse_by_category(name):
     if name == 'all':
@@ -81,6 +87,7 @@ def browse_by_category(name):
     return index(basequery=basequery, category=ob, title=ob.title)
 
 
+@app.route('/by/<md5sum>', subdomain='<subdomain>')
 @app.route('/by/<md5sum>')
 def browse_by_email(md5sum):
     if not md5sum:
@@ -89,6 +96,7 @@ def browse_by_email(md5sum):
     return index(basequery=basequery, md5sum=md5sum)
 
 
+@app.route('/feed', subdomain='<subdomain>')
 @app.route('/feed')
 def feed(basequery=None, type=None, category=None, md5sum=None, domain=None):
     title = "All jobs"
@@ -109,6 +117,7 @@ def feed(basequery=None, type=None, category=None, md5sum=None, domain=None):
         content_type='application/atom+xml; charset=utf-8')
 
 
+@app.route('/type/<name>/feed', subdomain='<subdomain>')
 @app.route('/type/<name>/feed')
 def feed_by_type(name):
     if name == 'all':
@@ -118,6 +127,7 @@ def feed_by_type(name):
     return feed(basequery=basequery, type=ob)
 
 
+@app.route('/category/<name>/feed', subdomain='<subdomain>')
 @app.route('/category/<name>/feed')
 def feed_by_category(name):
     if name == 'all':
@@ -127,6 +137,7 @@ def feed_by_category(name):
     return feed(basequery=basequery, category=ob)
 
 
+@app.route('/by/<md5sum>/feed', subdomain='<subdomain>')
 @app.route('/by/<md5sum>/feed')
 def feed_by_email(md5sum):
     if not md5sum:
@@ -135,6 +146,7 @@ def feed_by_email(md5sum):
     return feed(basequery=basequery, md5sum=md5sum)
 
 
+@app.route('/at/<domain>/feed', subdomain='<subdomain>')
 @app.route('/at/<domain>/feed')
 def feed_by_domain(domain):
     if not domain:
@@ -200,6 +212,7 @@ def archive():
         min=min, max=max, sortarchive=sortarchive)
 
 
+@app.route('/sitemap.xml', subdomain='<subdomain>')
 @app.route('/sitemap.xml')
 def sitemap():
     sitemapxml = '<?xml version="1.0" encoding="UTF-8"?>\n'\
@@ -225,6 +238,7 @@ def sitemap():
     return Response(sitemapxml, content_type='text/xml; charset=utf-8')
 
 
+@app.route('/logo/<hashid>', subdomain='<subdomain>')
 @app.route('/logo/<hashid>')
 def logoimage(hashid):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
@@ -237,6 +251,7 @@ def logoimage(hashid):
     return redirect(uploaded_logos.url(post.company_logo))
 
 
+@app.route('/search', subdomain='<subdomain>')
 @app.route('/search')
 def search():
     now = datetime.utcnow()

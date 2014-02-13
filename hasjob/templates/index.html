@@ -1,4 +1,4 @@
-{% extends "inc/layout.html" %}
+{% extends "layout.html" %}
 {% block titletags -%}
   <title>{%if title %}{{ title }} &mdash; {% endif %}{{ config['SITE_TITLE'] }}</title>
   <meta name="DC.title" content="{%if title %}{{ title }} &mdash; {% endif %}{{ config['SITE_TITLE'] }}"/>
@@ -12,7 +12,14 @@
 {% endblock %}
 
 {% block content %}
-  {# {% include "inc/logo.html" %} #}
+  {%- if g.board %}
+    <div class="flash">
+      <div class="flashmessage">
+        <h2>{{ g.board.title }}</h2>
+        {{ g.board.description|safe }}
+      </div>
+    </div>
+  {%- endif %}
   <ul id="stickie-area">
     {% if jobtype or jobcategory %}
       <li id="filtered" class="stickie">

@@ -5,9 +5,10 @@ from difflib import SequenceMatcher
 
 from flask import g, request, Markup
 from baseframe.forms import Form, ValidEmailDomain, AllUrlsValid, RichTextField, HiddenMultiField
-from wtforms import TextField, TextAreaField, RadioField, FileField, BooleanField, ValidationError, validators
+from wtforms import (TextField, TextAreaField, RadioField, FileField, BooleanField,
+    ValidationError, validators)
 from wtforms.fields.html5 import EmailField
-from coaster import getbool
+from coaster.utils import getbool
 
 from .models import JobApplication, EMPLOYER_RESPONSE
 from .uploads import process_image, UploadNotAllowed
@@ -229,3 +230,20 @@ class RejectForm(Form):
 
 class StickyForm(Form):
     sticky = BooleanField("Make this sticky?")
+
+
+class NewBoardForm(Form):
+    """
+    Create a new board.
+    """
+    board = RadioField(u"Organization", validators=[validators.Required("Select an organization")],
+        description=u"Select the organization you’d like to create a board for")
+
+
+class BoardForm(Form):
+    """
+    Edit a board.
+    """
+    description = RichTextField("Description",
+        validators=[validators.Required("A description of the job board is required"),
+            AllUrlsValid()])

@@ -47,6 +47,7 @@ from hasjob.views import ALLOWED_TAGS
 from hasjob.views.index import webmail_domains
 
 
+@app.route('/view/<hashid>', methods=('GET', 'POST'), subdomain='<subdomain>')
 @app.route('/view/<hashid>', methods=('GET', 'POST'))
 def jobdetail(hashid):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
@@ -117,6 +118,7 @@ def jobdetail(hashid):
         )
 
 
+@app.route('/reveal/<hashid>', subdomain='<subdomain>')
 @app.route('/reveal/<hashid>')
 @lastuser.requires_login
 def revealjob(hashid):
@@ -154,6 +156,7 @@ def revealjob(hashid):
         return redirect(url_for('jobdetail', hashid=post.hashid), 303)
 
 
+@app.route('/apply/<hashid>', methods=['POST'], subdomain='<subdomain>')
 @app.route('/apply/<hashid>', methods=['POST'])
 @lastuser.requires_login
 def applyjob(hashid):
@@ -210,6 +213,8 @@ def applyjob(hashid):
             return redirect(url_for('jobdetail', hashid=post.hashid), 303)
 
 
+@app.route('/manage/<hashid>', methods=('GET', 'POST'), defaults={'key': None}, subdomain='<subdomain>')
+@app.route('/manage/<hashid>/<key>', methods=('GET', 'POST'), subdomain='<subdomain>')
 @app.route('/manage/<hashid>', methods=('GET', 'POST'), defaults={'key': None})
 @app.route('/manage/<hashid>/<key>', methods=('GET', 'POST'))
 def managejob(hashid, key):
@@ -221,6 +226,7 @@ def managejob(hashid, key):
     pass
 
 
+@app.route('/view/<hashid>/<application>', subdomain='<subdomain>')
 @app.route('/view/<hashid>/<application>')
 def view_application(hashid, application):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
@@ -245,6 +251,7 @@ def view_application(hashid, application):
         response_form=response_form, statuses=statuses)
 
 
+@app.route('/apply/<hashid>/<application>', methods=['POST'], subdomain='<subdomain>')
 @app.route('/apply/<hashid>/<application>', methods=['POST'])
 def process_application(hashid, application):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
@@ -316,6 +323,7 @@ def process_application(hashid, application):
     return redirect(url_for('view_application', hashid=post.hashid, application=job_application.hashid), 303)
 
 
+@app.route('/sticky/<hashid>', methods=['POST'], subdomain='<subdomain>')
 @app.route('/sticky/<hashid>', methods=['POST'])
 @lastuser.requires_permission('siteadmin')
 def stickyjob(hashid):
@@ -337,6 +345,7 @@ def stickyjob(hashid):
         return redirect(url_for('jobdetail', hashid=post.hashid), 303)
 
 
+@app.route('/reject/<hashid>', methods=('GET', 'POST'), subdomain='<subdomain>')
 @app.route('/reject/<hashid>', methods=('GET', 'POST'))
 @lastuser.requires_permission('siteadmin')
 def rejectjob(hashid):
@@ -366,7 +375,6 @@ def rejectjob(hashid):
             mail.send(msg)
         db.session.commit()
         if request.is_xhr:
-
             return "<p>%s</p>" % flashmsg
         else:
             flash(flashmsg, "interactive")
@@ -375,6 +383,7 @@ def rejectjob(hashid):
     return redirect(url_for('jobdetail', hashid=post.hashid))
 
 
+@app.route('/confirm/<hashid>', methods=('GET', 'POST'), subdomain='<subdomain>')
 @app.route('/confirm/<hashid>', methods=('GET', 'POST'))
 def confirm(hashid):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
@@ -405,6 +414,7 @@ def confirm(hashid):
     return render_template('confirm.html', post=post, form=form)
 
 
+@app.route('/confirm/<hashid>/<key>', subdomain='<subdomain>')
 @app.route('/confirm/<hashid>/<key>')
 def confirm_email(hashid, key):
     # If post is in pending state and email key is correct, convert to published
@@ -452,6 +462,8 @@ def confirm_email(hashid, key):
     return redirect(url_for('jobdetail', hashid=post.hashid), code=302)
 
 
+@app.route('/withdraw/<hashid>', methods=('GET', 'POST'), defaults={'key': None}, subdomain='<subdomain>')
+@app.route('/withdraw/<hashid>/<key>', methods=('GET', 'POST'), subdomain='<subdomain>')
 @app.route('/withdraw/<hashid>', methods=('GET', 'POST'), defaults={'key': None})
 @app.route('/withdraw/<hashid>/<key>', methods=('GET', 'POST'))
 def withdraw(hashid, key):
@@ -474,6 +486,8 @@ def withdraw(hashid, key):
     return render_template("withdraw.html", post=post, form=form)
 
 
+@app.route('/edit/<hashid>', methods=('GET', 'POST'), defaults={'key': None}, subdomain='<subdomain>')
+@app.route('/edit/<hashid>/<key>', methods=('GET', 'POST'), subdomain='<subdomain>')
 @app.route('/edit/<hashid>', methods=('GET', 'POST'), defaults={'key': None})
 @app.route('/edit/<hashid>/<key>', methods=('GET', 'POST'))
 def editjob(hashid, key, form=None, post=None, validated=False):
@@ -594,6 +608,7 @@ def editjob(hashid, key, form=None, post=None, validated=False):
         getuser_userids=lastuser.endpoint_url(lastuser.getuser_userids_endpoint))
 
 
+@app.route('/new', methods=('GET', 'POST'), subdomain='<subdomain>')
 @app.route('/new', methods=('GET', 'POST'))
 def newjob():
     form = forms.ListingForm()

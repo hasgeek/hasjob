@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
-from flask import Response, redirect, flash
+from flask import g, Response, redirect, flash
 from flask.ext.lastuser.sqlalchemy import UserManager
 from coaster.views import get_next_url
 
-from hasjob import app, lastuser
-from hasjob.models import db, User
-
+from .. import app, lastuser
+from ..signals import signal_login, signal_logout
+from ..models import db, User, Board
 
 lastuser.init_usermanager(UserManager(db, User))
 
@@ -21,13 +21,15 @@ def login():
 @lastuser.logout_handler
 def logout():
     flash(u"You are now logged out", category='info')
+    signal_logout.send(app, user=g.user)
     return get_next_url()
 
 
 @app.route('/login/redirect')
 @lastuser.auth_handler
 def lastuserauth():
-    # Save the user object
+    Board.update_from_user(g.user, db.session, make_user_profiles=False, make_org_profiles=False)
+    signal_login.send(app, user=g.user)
     db.session.commit()
     return redirect(get_next_url())
 
@@ -35,7 +37,7 @@ def lastuserauth():
 @app.route('/login/notify', methods=['POST'])
 @lastuser.notification_handler
 def lastusernotify(user):
-    # Save the user object
+    Board.update_from_user(user, db.session, make_user_profiles=False, make_org_profiles=False)
     db.session.commit()
 
 

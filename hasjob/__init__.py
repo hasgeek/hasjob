@@ -34,7 +34,7 @@ def init_for(env):
     coaster.app.init_app(app, env)
     RQ(app)
     if app.config.get('SERVER_NAME'):
-        subdomain = 'static'
+        subdomain = app.config.get('STATIC_SUBDOMAIN', 'static')
     else:
         subdomain = None
     app.add_url_rule('/static/<path:filename>', endpoint='static',
