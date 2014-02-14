@@ -135,11 +135,16 @@
     </div>
   </div>
   <div class="section" id="apply-info">
+    {%- if g.kiosk %}
+      <img align="right" src="https://chart.googleapis.com/chart?chs=150x150&cht=qr&chl={{ url_for('jobdetail', hashid=post.hashid, subdomain=None, _external=True) }}&choe=UTF-8"/>
+    {%- endif %}
     <h2>Apply for this position</h2>
     {%- if g.kiosk %}
       <p>
         You can’t apply from this kiosk. Open this link on your phone or computer:
-        <strong>{{ url_for('jobdetail', hashid=post.hashid, subdomain=None, _external=True) }}</strong>
+        {%- with len = post.hashid|length %}
+          {{ url_for('jobdetail', hashid=post.hashid, subdomain=None, _external=True)[:-len] }}<strong>{{ post.hashid }}</strong>
+        {%- endwith %}
       </p>
     {%- else %}
       <p id="apply-info-para">
