@@ -73,25 +73,27 @@
         <li><a id="sidebar-email" href="mailto:?subject=Job%3A%20{{ post.headline|urlquote }}&amp;body={{ request.url|urlquote }}">Email this</a></li>
         <li><a id="sidebar-tweet" target="_blank" href="https://twitter.com/share?url={{ request.url|urlquote }}&amp;counturl={{ request.url|urlquote }}&amp;via=hasjob&amp;related=hasjob:HasGeek%20Job%20Board&amp;text=Job%3A%20{{ post.headline|urlquote }}">Tweet this <span id="tweet-count"></span></a></li>
         {#<li><a id="sidebar-share" href="#share">Share this</a></li>#}
-        <li>
-          <a id="sidebar-report" href="#report">{% if report -%} Reported {%- else -%} Report this {%- endif %}
-            {%- if siteadmin and post.flags %}
-              {%- for report in post.reports() %}
-                &middot; <span title="{{ report.title }}">{{ report.count }}</span>
-              {%- endfor %}
-            {%- endif -%}
-          </a>
-          <div class="popup-box" id="report">
-            <a class="close-popup" href="#">&#10005;</a>
-            {%- if g.user %}
-              <h2>What’s wrong with it?</h2>
-              {% include "inc/reportform.html" %}
-            {%- else %}
-              <p>You need to be logged in to report a listing.</p>
-              <p><a class="btn" href="{{ url_for('login') }}">Login with Twitter or Google</a></p>
-            {%- endif %}
-          </div>
-        </li>
+        {%- if not g.kiosk %}
+          <li>
+            <a id="sidebar-report" href="#report">{% if report -%} Reported {%- else -%} Report this {%- endif %}
+              {%- if siteadmin and post.flags %}
+                {%- for report in post.reports() %}
+                  &middot; <span title="{{ report.title }}">{{ report.count }}</span>
+                {%- endfor %}
+              {%- endif -%}
+            </a>
+            <div class="popup-box" id="report">
+              <a class="close-popup" href="#">&#10005;</a>
+              {%- if g.user %}
+                <h2>What’s wrong with it?</h2>
+                {% include "inc/reportform.html" %}
+              {%- else %}
+                <p>You need to be logged in to report a listing.</p>
+                <p><a class="btn" href="{{ url_for('login') }}">Login with Twitter or Google</a></p>
+              {%- endif %}
+            </div>
+          </li>
+        {%- endif %}
         {%- if siteadmin %}
         <li>
           <a class="sidebar-blank" id="sidebar-reject" href="#reject">Reject this</a>
@@ -134,21 +136,28 @@
   </div>
   <div class="section" id="apply-info">
     <h2>Apply for this position</h2>
-    <p id="apply-info-para">
-      {%- if post.is_draft() %}{# Always show when in draft state #}
-        {{ post.how_to_apply|hideemail }}
-      {%- elif g.user %}
-        {% if jobview.applied %}{# User has already hit the reveal button #}
+    {%- if g.kiosk %}
+      <p>
+        You can’t apply from this kiosk. Open this link on your phone or computer:
+        <strong>{{ url_for('jobdetail', hashid=post.hashid, subdomain=None, _external=True) }}</strong>
+      </p>
+    {%- else %}
+      <p id="apply-info-para">
+        {%- if post.is_draft() %}{# Always show when in draft state #}
           {{ post.how_to_apply|hideemail }}
+        {%- elif g.user %}
+          {% if jobview.applied %}{# User has already hit the reveal button #}
+            {{ post.how_to_apply|hideemail }}
+          {%- else %}
+            <a class="btn" id="reveal-button" href="{{ url_for('revealjob', hashid=post.hashid) }}">Show instructions</a>
+          {%- endif %}
         {%- else %}
-          <a class="btn" id="reveal-button" href="{{ url_for('revealjob', hashid=post.hashid) }}">Show instructions</a>
+          <a class="btn" href="{{ url_for('revealjob', hashid=post.hashid) }}">Login with Twitter or Google</a>
+          to see instructions on how to apply.
+          Your identity will not be revealed to the employer.
         {%- endif %}
-      {%- else %}
-        <a class="btn" href="{{ url_for('revealjob', hashid=post.hashid) }}">Login with Twitter or Google</a>
-        to see instructions on how to apply.
-        Your identity will not be revealed to the employer.
-      {%- endif %}
-    </p>
+      </p>
+    {%- endif %}
   </div>
   {%- if not post.is_draft() and g.user and applyform %}
     <div class="section">

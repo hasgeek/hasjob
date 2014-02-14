@@ -49,15 +49,17 @@
         </a>
       </li>
     {%- else -%}
-      <li id="newpost" class="stickie">
-        <form action="{{ url_for('newjob')|usessl }}" method="POST">
-          <input type="hidden" name="_charset_"/>
-          <input type="hidden" name="form.id" value="newheadline"/>
-          <label id="newpost_title" for="newpost_headline">Post a job:</label>
-          <textarea id="newpost_headline" name="job_headline" class="expand">Awesome Coder wanted at Awesome Company</textarea>
-          <div id="newpost_details"><input type="submit" value="Add details &rarr;"/></div>
-        </form>
-      </li>
+      {%- if not g.kiosk %}
+        <li id="newpost" class="stickie">
+          <form action="{{ url_for('newjob')|usessl }}" method="POST">
+            <input type="hidden" name="_charset_"/>
+            <input type="hidden" name="form.id" value="newheadline"/>
+            <label id="newpost_title" for="newpost_headline">Post a job:</label>
+            <textarea id="newpost_headline" name="job_headline" class="expand">Awesome Coder wanted at Awesome Company</textarea>
+            <div id="newpost_details"><input type="submit" value="Add details &rarr;"/></div>
+          </form>
+        </li>
+      {%- endif %}
 {#-      <li id="stickiead" class="stickie">
         <a href="http://metarefresh.in/2014/" target="_blank"><img src="{{ url_for('static', filename='img/banner.png') }}"></a>
       </li> #}

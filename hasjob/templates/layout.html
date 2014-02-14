@@ -45,7 +45,9 @@
 <body>
   <div id="container" class="container">
     <header>
-      {{ networkbar(siteid='hasjob', login=true, baseclass=none, containerclass='header-content') }}
+      {%- if not g.kiosk %}
+        {{ networkbar(siteid='hasjob', login=true, baseclass=none, containerclass='header-content') }}
+      {%- endif %}
       <div class="header-content">
         <div id="site-title">
           <a href="{{ url_for('index') }}"><span class="has">Hasjob</span></a>

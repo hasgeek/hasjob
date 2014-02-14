@@ -12,6 +12,7 @@ from flask import (
     request,
     Response,
     url_for,
+    g
     )
 
 from hasjob import app, lastuser
@@ -34,8 +35,8 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None, ti
     else:
         employer_name = u'a single employer'
 
-    if basequery is None and posts:
-        # Group posts by email_domain on index page only
+    if basequery is None and posts and not g.kiosk:
+        # Group posts by email_domain on index page only, when not in kiosk mode
         grouped = OrderedDict()
         for post in posts:
             if post.sticky:
