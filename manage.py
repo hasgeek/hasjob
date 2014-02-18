@@ -4,7 +4,7 @@ from coaster.manage import init_manager
 
 from hasjob.models import db
 from hasjob import app, init_for
-from hasjob.search import configure as search_configure
+from hasjob.search import configure_once as search_configure
 
 
 def configure(env='dev'):

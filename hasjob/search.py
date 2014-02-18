@@ -1,5 +1,8 @@
+# -*- coding: utf-8 -*-
+
 import os.path
 from flask.ext.sqlalchemy import models_committed
+from flask.ext.rq import job
 import time
 from sqlalchemy.exc import ProgrammingError
 from whoosh import fields, index
@@ -51,39 +54,42 @@ def do_search(query, expand=False):
         return hits
 
 
-def on_models_committed(sender, changes):
-    index_required = False
-    for model, change in changes:
-        if isinstance(model, INDEXABLE):
-            index_required = True
-            break
-    if index_required:
-        ix = index.open_dir(app.config['SEARCH_INDEX_PATH'])
+@job("hasjob-search")
+def update_index(data):
+    ix = index.open_dir(app.config['SEARCH_INDEX_PATH'])
+    try:
+        writer = ix.writer()
+    except LockError:
+        time.sleep(1)
         try:
             writer = ix.writer()
         except LockError:
-            time.sleep(1)
-            try:
-                writer = ix.writer()
-            except LockError:
-                time.sleep(5)
-                writer = ix.writer()
-        for model, change in changes:
-            if isinstance(model, INDEXABLE):
-                mapping = model.search_mapping()
-                public = mapping.pop('public')
-                if public:
-                    if change == 'insert':
-                        writer.add_document(**mapping)
-                    elif change == 'update':
-                        writer.update_document(**mapping)
-                    elif change == 'delete':
-                        writer.delete_by_term('idref', mapping['idref'])
-                else:
-                    writer.delete_by_term('idref', mapping['idref'])
-        writer.commit()
+            time.sleep(5)
+            writer = ix.writer()
+    for change, mapping in data:
+        public = mapping.pop('public')
+        if public:
+            if change == 'insert':
+                writer.add_document(**mapping)
+            elif change == 'update':
+                writer.update_document(**mapping)
+            elif change == 'delete':
+                writer.delete_by_term('idref', mapping['idref'])
+        else:
+            writer.delete_by_term('idref', mapping['idref'])
+    writer.commit()
 
 
+def on_models_committed(sender, changes):
+    data = []
+    for model, change in changes:
+        if isinstance(model, INDEXABLE):
+            data.append([change, model.search_mapping()])
+    if data:
+        update_index.delay(data)
+
+
+@job("hasjob-search")
 def delete_from_index(oblist):
     ix = index.open_dir(app.config['SEARCH_INDEX_PATH'])
     writer = ix.writer()
@@ -93,9 +99,8 @@ def delete_from_index(oblist):
     writer.commit()
 
 
-def configure():
+def configure_once():
     index_path = app.config['SEARCH_INDEX_PATH']
-    models_committed.connect(on_models_committed, sender=app)
     if not os.path.exists(index_path):
         os.mkdir(index_path)
         ix = index.create_in(index_path, search_schema)
@@ -111,3 +116,6 @@ def configure():
             except ProgrammingError:
                 pass  # The table doesn't exist yet. This is really a new installation.
         writer.commit()
+
+def configure():
+    models_committed.connect(on_models_committed, sender=app)

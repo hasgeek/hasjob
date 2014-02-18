@@ -44,6 +44,8 @@ def init_for(env):
         ])
     app.assets.register('js_tinymce', assets.require('tiny_mce.js>=3.5.0,<4.0.0'))
     from hasjob.uploads import configure as uploads_configure
+    from hasjob.search import configure as search_configure
     uploads_configure()
+    search_configure()
     mail.init_app(app)
     lastuser.init_app(app)

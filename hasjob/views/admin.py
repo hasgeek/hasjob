@@ -15,7 +15,7 @@ def delete_index(key):
         now = datetime.utcnow()
         upper_age_limit = timedelta(days=agelimit.days * 2)  # Reasonably large window to clear backlog
         items = JobPost.query.filter(JobPost.datetime > now - upper_age_limit).filter(JobPost.datetime < now - agelimit).all()
-        delete_from_index(items)
+        delete_from_index.delay(items)
         return Response("Removed %d items.\n" % len(items),
                         content_type='text/plain; charset=utf-8')
     else:
