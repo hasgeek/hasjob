@@ -39,7 +39,7 @@ def init_for(env):
         subdomain = None
     app.add_url_rule('/static/<path:filename>', endpoint='static',
         view_func=app.send_static_file, subdomain=subdomain)
-    baseframe.init_app(app, static_subdomain=subdomain, requires=['jquery.textarea-expander',
+    baseframe.init_app(app, requires=['jquery.textarea-expander',
         'jquery.tinymce', 'jquery.form', 'jquery.cookie', 'select2', 'jquery.sparkline', 'baseframe-networkbar', 'hasjob'
         ])
     app.assets.register('js_tinymce', assets.require('tiny_mce.js>=3.5.0,<4.0.0'))
