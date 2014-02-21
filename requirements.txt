@@ -5,6 +5,7 @@ Flask-Mail
 Flask-Assets
 Flask-Uploads
 Flask-RQ
+Flask-Testing
 Pillow
 pytz
 markdown
