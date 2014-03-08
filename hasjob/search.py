@@ -114,7 +114,7 @@ def configure():
         writer.commit()
 
 def loc_jobs(location):
-    geo_id_1 = loc_request(location)
-    temp_list = GeoJobView.query.filter(GeoJobView.geo_id.in_(geo_id_1)).all()
+    geo_id = loc_request(location)
+    temp_list = GeoJobView.query.filter(GeoJobView.geoname_id.in_(geo_id)).all()
     jobpost_id_1 = [i.jobpost_id for i in temp_list]
     return [models.JobPost.query.get(int(j)) for j in jobpost_id_1]
