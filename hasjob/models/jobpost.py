@@ -6,6 +6,7 @@ from . import agelimit, db, POSTSTATUS, EMPLOYER_RESPONSE, BaseMixin, TimestampM
 from .jobtype import JobType
 from .jobcategory import JobCategory
 from .user import User
+from flask import current_app
 from ..utils import random_long_key, random_hash_key
 import re, requests
 
@@ -308,66 +309,48 @@ JobApplication.jobpost = db.relationship(JobPost,
 
 class GeoJobView(db.Model):
     __tablename__ = 'geojobview'
-    id = db.Column(db.Integer, primary_key=True, nullable=False)
     jobpost_id = db.Column(None, db.ForeignKey('jobpost.id'))
     jobpost = db.relationship(JobPost)
-    geo_id = db.Column(db.Integer,nullable=False)
-
-    def __repr__(self):
-        return "<GeoJobView %s %s>" % (self.geonameid, self.name)
+    geoname_id = db.Column(db.Integer,primary_key=True)
 
 
 def add_geoview(jobpost_id, geoid):
-    count = GeoJobView.query.count() + 1
-    for i in geoid:
-        temp = GeoJobView(id=count)
-        count += 1
-        temp.jobpost_id = jobpost_id
-        temp.geo_id = i
-        db.session.add(temp)
+    # number of geoid depends on maxRows
+    # currently requests only 1 row per location
+    for g in geoid:
+        for i in g:
+            temp = GeoJobView(geoname_id=i,
+                jobpost_id=jobpost_id)
+            db.session.add(temp)
 
 
 def insert_geotag(jobpost_id, location):
-    geoid_list = get_geoid(location)
-    add_geoview(jobpost_id, geoid_list)
+    add_geoview(jobpost_id, [loc_request(i) for i in text2location(location)])
 
 
-def get_geoid(text=''):
-    loc_list = text2location(text)
-    geoid = list()
-    for i in loc_list:
-        geoid += loc_request(i)
-    return geoid
-
-
+SPLIT_RE = re.compile(" ?, ?| or | ?/ ?")
 # Right now using a simple parser
 # What has to be done for Anywhere
 def text2location(text=''):
-    SPLIT_RE = re.compile(" ?, ?| or | ?/ ?")
     loc_list = re.split(SPLIT_RE, text)
     loc_list.append(text)
-    loc_list = filter(None, loc_list)
-    return loc_list
+    return filter(None, loc_list)
 
 
-def loc_request(name='', formatted=True, maxRows=1, lang='en', username='thanmaim', style='full'):
-    base = 'http://api.geonames.org/searchJSON'
-    uri = base + '?formatted=' + str(formatted).lower()
-    uri += '&q=' + name
-    uri += '&maxRows=' + str(maxRows)
-    uri += '&lang=' + lang
-    uri += '&username=' + username
-    uri += '&style=' + style
-    headers = {'Accept': 'application/json'}
-    response = requests.get(uri)
+# Formatted=True, maxRows=1, lang='en', username=current_app., style='full'
+def loc_request(name='', headers={'Accept': 'application/json'}):
+    param = {'formatted': 'True', 'q': name,
+        'maxRows': current_app.config.get('GEONAME_MAXROWS'),
+        'lang': 'en', 'username': current_app.config.get('GEONAME_USERNAME'),
+        'style': 'full'}
+    response = requests.get(current_app.config.get('GEONAME_BASE'),
+        params=param, headers=headers)
     if response.status_code == 200:
-        try:
-            geonames = response.json()["geonames"]
-            return [g['geonameId'] for g in geonames]
-        except KeyError, e:
-            return response_format(list())
+        geonames = response.json().get('geonames',[])
+        return [g for g in [g.get('geonameId') for g in geonames] 
+            if g is not None]
     else:
-        return list()
+        return []
 
 
 def unique_hash(model=JobPost):
