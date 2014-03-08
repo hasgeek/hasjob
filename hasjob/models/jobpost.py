@@ -7,6 +7,7 @@ from .jobtype import JobType
 from .jobcategory import JobCategory
 from .user import User
 from ..utils import random_long_key, random_hash_key
+import re, requests
 
 
 class JobPost(BaseMixin, db.Model):
@@ -303,6 +304,70 @@ JobApplication.jobpost = db.relationship(JobPost,
             EMPLOYER_RESPONSE.SPAM: 6
             }),
         db.desc(JobApplication.created_at)), cascade='all, delete-orphan'))
+
+
+class GeoJobView(db.Model):
+    __tablename__ = 'geojobview'
+    id = db.Column(db.Integer, primary_key=True, nullable=False)
+    jobpost_id = db.Column(None, db.ForeignKey('jobpost.id'))
+    jobpost = db.relationship(JobPost)
+    geo_id = db.Column(db.Integer,nullable=False)
+
+    def __repr__(self):
+        return "<GeoJobView %s %s>" % (self.geonameid, self.name)
+
+
+def add_geoview(jobpost_id, geoid):
+    count = GeoJobView.query.count() + 1
+    for i in geoid:
+        temp = GeoJobView(id=count)
+        count += 1
+        temp.jobpost_id = jobpost_id
+        temp.geo_id = i
+        db.session.add(temp)
+
+
+def insert_geotag(jobpost_id, location):
+    geoid_list = get_geoid(location)
+    add_geoview(jobpost_id, geoid_list)
+
+
+def get_geoid(text=''):
+    loc_list = text2location(text)
+    geoid = list()
+    for i in loc_list:
+        geoid += loc_request(i)
+    return geoid
+
+
+# Right now using a simple parser
+# What has to be done for Anywhere
+def text2location(text=''):
+    SPLIT_RE = re.compile(" ?, ?| or | ?/ ?")
+    loc_list = re.split(SPLIT_RE, text)
+    loc_list.append(text)
+    loc_list = filter(None, loc_list)
+    return loc_list
+
+
+def loc_request(name='', formatted=True, maxRows=1, lang='en', username='thanmaim', style='full'):
+    base = 'http://api.geonames.org/searchJSON'
+    uri = base + '?formatted=' + str(formatted).lower()
+    uri += '&q=' + name
+    uri += '&maxRows=' + str(maxRows)
+    uri += '&lang=' + lang
+    uri += '&username=' + username
+    uri += '&style=' + style
+    headers = {'Accept': 'application/json'}
+    response = requests.get(uri)
+    if response.status_code == 200:
+        try:
+            geonames = response.json()["geonames"]
+            return [g['geonameId'] for g in geonames]
+        except KeyError, e:
+            return response_format(list())
+    else:
+        return list()
 
 
 def unique_hash(model=JobPost):
