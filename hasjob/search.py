@@ -16,23 +16,6 @@ search_schema = fields.Schema(title=fields.TEXT(stored=True),
                               content=fields.TEXT(analyzer=StemmingAnalyzer()),
                               idref=fields.ID(stored=True, unique=True))
 
-"""
-# This is a hack to update all the jobid with the respective geoid
-def wholesale_update():
-    count = 0
-    for post in JobPost.query.all():
-        pars_locations = GeoName.get_geoid(post.location)
-        if len(pars_locations) > 0:
-            post.geoid = ";".join(pars_locations)
-            count += 1
-    
-    db.session.commit()
-    if count > 0:
-        return True
-    else:
-        return False
-"""
-
 
 # For search results
 def ob_from_idref(idref):
@@ -134,7 +117,4 @@ def loc_jobs(location):
     geo_id_1 = loc_request(location)
     temp_list = GeoJobView.query.filter(GeoJobView.geo_id.in_(geo_id_1)).all()
     jobpost_id_1 = [i.jobpost_id for i in temp_list]
-    result = list()
-    for i in jobpost_id_1:
-        result.append(models.JobPost.query.get(int(i)))
-    return result
+    return [models.JobPost.query.get(int(j)) for j in jobpost_id_1]
