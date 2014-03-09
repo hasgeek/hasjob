@@ -73,3 +73,10 @@ LASTUSER_SERVER = 'https://auth.hasgeek.com/'
 LASTUSER_CLIENT_ID = ''
 #: LastUser client secret
 LASTUSER_CLIENT_SECRET = ''
+#: Geo details
+#: Base URL
+GEONAME_BASE = 'http://api.geonames.org/searchJSON'
+#: Geo Username
+GEONAME_USERNAME = 'thanmaim'
+#: Geo Max Rows
+GEONAME_MAXROWS = 1
