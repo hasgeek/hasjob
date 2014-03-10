@@ -3,9 +3,9 @@
 {% block title %}{{ post.headline }}{% endblock %}
 {% block description %}{{ post.company_name }}, {{ post.location }}, {{ post.type.title }}, {{ post.category.title }}{% endblock %}
 {% block pageheaders %}
-  {% if post.is_old() %}
-  <meta name="robots" content="nofollow" />
-  {% endif %}
+  {%- if post.is_old() %}
+    <meta name="robots" content="nofollow" />
+  {%- endif %}
 {% endblock %}
 {% block content %}
 {% if post.is_draft() %}
