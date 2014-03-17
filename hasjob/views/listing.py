@@ -619,6 +619,9 @@ def newjob():
             message=u"Hasjob now requires you to login before listing a job. Please login as yourself."
                 u" We'll add details about your company later"))
     else:
+        if g.user.blocked:
+            flash("Your account has been blocked from listing jobs", category='info')
+            return redirect(url_for('index'), code=303)
         if 'headline' in session:
             if request.method == 'GET':
                 form.job_headline.data = session.pop('headline')
