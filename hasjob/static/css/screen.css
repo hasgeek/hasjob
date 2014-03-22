@@ -553,34 +553,34 @@ footer {
 #sheet div.field.small div.label label {
   font-weight: bold;
 }
-#sheet div.field.widelist div.label {
+#sheet div.field.widelist div.label, #sheet div.field.horizlist div.label {
   padding-bottom: 0.2em;
 }
-#sheet div.field.widelist div.label label {
+#sheet div.field.widelist div.label label, #sheet div.field.horizlist div.label label {
   font-weight: bold;
 }
 #sheet div.field.small div.control {
   float: left;
   width: 35em;
 }
-#sheet div.field.widelist div.control ul, #sheet div.field.small div.control ul {
+#sheet div.field.widelist div.control ul, #sheet div.field.small div.control ul, #sheet div.field.horizlist div.control ul {
   -moz-column-count: 2;
   list-style: none;
   margin: 0;
 }
-#sheet div.field.widelist div.control ul li, #sheet div.field.small div.control ul li {
-  padding: 0.2em 0.5em;
-  -webkit-border-radius: 4px;
-  -moz-border-radius: 4px;
-  -ms-border-radius: 4px;
-  -o-border-radius: 4px;
-  border-radius: 4px;
+#sheet div.field.widelist div.control ul li, #sheet div.field.small div.control ul li, #sheet div.field.horizlist div.control ul li {
+  padding: 0.2em 0;
 }
-#sheet div.field.widelist div.control ul li label, #sheet div.field.small div.control ul li label {
+#sheet div.field.widelist div.control ul li label, #sheet div.field.small div.control ul li label, #sheet div.field.horizlist div.control ul li label {
   padding-left: 0.5em;
 }
-#sheet div.field.widelist div.control ul li.selected, #sheet div.field.small div.control ul li.selected {
+#sheet div.field.widelist div.control ul li.selected, #sheet div.field.small div.control ul li.selected, #sheet div.field.horizlist div.control ul li.selected {
   font-weight: bold;
+}
+#sheet div.field.horizlist div.control ul li {
+  display: inline;
+  padding-left: 0;
+  padding-right: 1em;
 }
 #sheet div.field.check div.label {
   display: none;
@@ -672,6 +672,40 @@ footer {
   width: 95%;
   font-size: 120%;
   font-weight: bold;
+}
+#sheet .slider-left, #sheet .slider-middle, #sheet .slider-right {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+}
+#sheet .slider-left, #sheet .slider-right {
+  width: 15%;
+}
+#sheet .slider-left input[type="text"], #sheet .slider-right input[type="text"] {
+  width: 100%;
+  height: 32px;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+#sheet .slider-left {
+  padding-right: 1.5em;
+}
+#sheet .slider-right {
+  padding-left: 1.5em;
+}
+#sheet .slider-middle {
+  width: 70%;
+  margin-top: 7px;
+}
+#sheet .margin-collapse {
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+#sheet .margin-collapse div.field {
+  margin-top: 0;
+  margin-bottom: 0;
 }
 
 input[type="submit"], a.btn, button {
@@ -1016,6 +1050,11 @@ iframe {
   width: 92%;
   padding-top: 40px;
   margin-bottom: 40px;
+}
+
+.floatleft {
+  float: left;
+  padding-right: 1em;
 }
 
 /* Spam protection */

@@ -31,6 +31,7 @@ from hasjob.models import (
     JobPostReport,
     POSTSTATUS,
     EMPLOYER_RESPONSE,
+    PAY_TYPE,
     ReportCode,
     UserJobView,
     JobApplication,
@@ -541,6 +542,22 @@ def editjob(hashid, key, form=None, post=None, validated=False):
             post.company_url = form.company_url.data
             post.hr_contact = form.hr_contact.data
 
+            post.pay_type = form.job_pay_type.data
+            if post.pay_type != PAY_TYPE.NOCASH:
+                post.pay_currency = form.job_pay_currency.data
+                post.pay_cash_min = form.job_pay_cash_min.data  # TODO: Sanitize
+                post.pay_cash_max = form.job_pay_cash_max.data  # TODO: Sanitize
+            else:
+                post.pay_currency = None
+                post.pay_cash_min = None
+                post.pay_cash_max = None
+            if form.job_pay_equity.data:
+                post.pay_equity_min = form.job_pay_equity_min.data  # TODO: Sanitize
+                post.pay_equity_max = form.job_pay_equity_max.data  # TODO: Sanitize
+            else:
+                post.pay_equity_min = None
+                post.pay_equity_max = None
+
             if form.collaborators.data:
                 post.admins = []
                 userdata = lastuser.getuser_by_userids(form.collaborators.data)
@@ -602,6 +619,14 @@ def editjob(hashid, key, form=None, post=None, validated=False):
         form.poster_email.data = post.email
         form.hr_contact.data = int(post.hr_contact or False)
         form.collaborators.data = [u.userid for u in post.admins]
+
+        form.job_pay_type.data = post.pay_type
+        form.job_pay_currency.data = post.pay_currency
+        form.job_pay_cash_min.data = post.pay_cash_min
+        form.job_pay_cash_max.data = post.pay_cash_max
+        form.job_pay_equity.data = bool(post.pay_equity_min and post.pay_equity_max)
+        form.job_pay_equity_min.data = post.pay_equity_min
+        form.job_pay_equity_max.data = post.pay_equity_max
 
     return render_template('postjob.html', form=form, no_email=post.status > POSTSTATUS.DRAFT,
         getuser_autocomplete=lastuser.endpoint_url(lastuser.getuser_autocomplete_endpoint),

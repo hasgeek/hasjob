@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import re
+from decimal import Decimal
 from difflib import SequenceMatcher
 
 from flask import g, request, Markup
@@ -10,7 +11,7 @@ from wtforms import (TextField, TextAreaField, RadioField, FileField, BooleanFie
 from wtforms.fields.html5 import EmailField
 from coaster.utils import getbool
 
-from .models import JobApplication, EMPLOYER_RESPONSE
+from .models import JobApplication, EMPLOYER_RESPONSE, PAY_TYPE
 from .uploads import process_image, UploadNotAllowed
 
 from . import app, lastuser
@@ -35,6 +36,20 @@ def optional_url(form, field):
         return validator(form, field)
 
 
+class ListingPayCurrencyField(RadioField):
+    """
+    A custom field to get around the annoying pre-validator.
+    """
+    def pre_validate(self, form):
+        if form.job_pay_type.data in (PAY_TYPE.ONETIME, PAY_TYPE.RECURRING):
+            if not self.data:
+                raise ValueError("Pick one")
+            else:
+                return super(ListingPayCurrencyField, self).pre_validate(form)
+        else:
+            self.data = None
+
+
 class ListingForm(Form):
     """Form for new job posts"""
     job_headline = TextField("Headline",
@@ -57,6 +72,14 @@ class ListingForm(Form):
     job_perks_description = RichTextField("Describe job perks",
         description=u"Stock options, free lunch, free conference passes, etc",
         validators=[AllUrlsValid()])
+    job_pay_type = RadioField("What does this job pay?", coerce=int,
+        choices=PAY_TYPE.items())
+    job_pay_currency = ListingPayCurrencyField("Currency", choices=[("INR", "INR"), ("USD", "USD"), ("EUR", "EUR")])
+    job_pay_cash_min = TextField("Minimum")
+    job_pay_cash_max = TextField("Maximum")
+    job_pay_equity = BooleanField("Equity compensation is available")
+    job_pay_equity_min = TextField("Minimum")
+    job_pay_equity_max = TextField("Maximum")
     job_how_to_apply = TextAreaField("What should a candidate submit when applying for this job?",
          description=u"Example: “Include your LinkedIn and GitHub profiles.” "
                      u"We now require candidates to apply through the job board only. "
@@ -157,6 +180,81 @@ class ListingForm(Form):
         if EMAIL_RE.search(field.data) is not None or URL_RE.search(field.data) is not None:
             raise ValidationError(u"Do not include contact information in the listing")
 
+    def validate_job_pay_cash_min(form, field):
+        if form.job_pay_type.data != PAY_TYPE.NOCASH:
+            if not field.data:
+                raise ValidationError("Please specify what this job pays")
+            data = field.data
+            if not data[0].isdigit():
+                data = data[1:]  # Remove currency symbol
+            data = data.replace(',', '')  # Remove thousands separator
+            if data.isdigit():
+                field.data = int(data)
+            else:
+                raise ValidationError("Unrecognised value %s" % field.data)
+        else:
+            field.data = None
+
+    def validate_job_pay_cash_max(form, field):
+        if form.job_pay_type.data != PAY_TYPE.NOCASH:
+            data = field.data
+            if data:
+                if not data[0].isdigit():
+                    data = data[1:]  # Remove currency symbol
+                data = data.replace(',', '')  # Remove thousands separator
+            if data and data.isdigit():
+                field.data = int(data)
+            else:
+                raise ValidationError("Unrecognised value %s" % field.data)
+        else:
+            field.data = None
+
+    def validate_job_pay_equity_min(form, field):
+        if form.job_pay_equity.data:
+            if not field.data:
+                raise ValidationError("Please specify what this job pays")
+            data = field.data
+            if not data[-1].isdigit():
+                data = field.data[:-1]  # Remove % symbol
+            data = data.replace(',', '')  # Remove thousands separator
+            field.data = Decimal(data)
+        else:
+            field.data = None
+
+    def validate_job_pay_equity_max(form, field):
+        if form.job_pay_type.data != PAY_TYPE.NOCASH:
+            data = field.data
+            if data:
+                if not data[-1].isdigit():
+                    data = field.data[:-1]  # Remove % symbol
+                data = data.replace(',', '')  # Remove thousands separator
+                field.data = Decimal(data)
+            else:
+                raise ValidationError("Unrecognised value %s" % field.data)
+
+    def validate(self, extra_validators=None):
+        success = super(ListingForm, self).validate(extra_validators)
+        if success:
+            # Check for cash pay range
+            if self.job_pay_type.data in (PAY_TYPE.ONETIME, PAY_TYPE.RECURRING):
+                if self.job_pay_cash_min.data == 0:
+                    if self.job_pay_cash_max.data == 10000000:
+                        self.job_pay_cash_max.errors.append(u"Please select a range")
+                        success = False
+                else:
+                    if self.job_pay_cash_max.data > self.job_pay_cash_min.data * 4:
+                        self.job_pay_cash_max.errors.append(u"Please select a narrower range")
+                        success = False
+            if self.job_pay_equity.data:
+                if self.job_pay_equity_min.data == 0:
+                    if self.job_pay_equity_max.data == 100:
+                        self.job_pay_equity_max.errors.append(u"Please select a range")
+                        success = False
+                else:
+                    if self.job_pay_equity_max.data > self.job_pay_equity_min.data * 4:
+                        self.job_pay_equity_max.errors.append(u"Please select a narrower range")
+                        success = False
+        return success
 
 class ApplicationForm(Form):
     apply_email = RadioField("Email", validators=[validators.Required("Pick an email address")],

@@ -34,6 +34,14 @@ class JobPost(BaseMixin, db.Model):
     how_to_apply = db.Column(db.UnicodeText, nullable=False)
     hr_contact = db.Column(db.Boolean, nullable=True)
 
+    # Compensation details
+    pay_type = db.Column(db.SmallInteger, nullable=True)  # Value in models.PAY_TYPE
+    pay_currency = db.Column(db.CHAR(3), nullable=True)
+    pay_cash_min = db.Column(db.Integer, nullable=True)
+    pay_cash_max = db.Column(db.Integer, nullable=True)
+    pay_equity_min = db.Column(db.Numeric, nullable=True)
+    pay_equity_max = db.Column(db.Numeric, nullable=True)
+
     # Company details
     company_name = db.Column(db.Unicode(80), nullable=False)
     company_logo = db.Column(db.Unicode(255), nullable=True)
@@ -80,6 +88,9 @@ class JobPost(BaseMixin, db.Model):
 
     def is_old(self):
         return self.datetime <= datetime.utcnow() - agelimit
+
+    def pay_type_label(self):
+        return PAY_TYPE.get(self.pay_type)
 
     def search_mapping(self):
         """

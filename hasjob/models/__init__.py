@@ -33,6 +33,12 @@ class EMPLOYER_RESPONSE(LabeledEnum):
     REJECTED = (6, u"Rejected")  # Employer rejected candidate with a message
 
 
+class PAY_TYPE(LabeledEnum):
+    NOCASH =  (0, u"Nothing")
+    ONETIME =   (1, u"One-time")
+    RECURRING = (2, u"Recurring")
+
+
 from .user import *
 from .jobcategory import *
 from .jobpostreport import *
