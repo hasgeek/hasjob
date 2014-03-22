@@ -234,9 +234,11 @@ footer {
             float: left;
             width: 35em;
         }
+        &.widelist div.control ul, &.small div.control ul {
+            -moz-column-count: 2;  // Only in Mozilla. WebKit/Blink still buggy
+        }
         &.widelist div.control, &.small div.control, &.horizlist div.control {
             ul {
-                -moz-column-count: 2;
                 list-style: none;
                 margin: 0;
                 li {

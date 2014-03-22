@@ -563,8 +563,10 @@ footer {
   float: left;
   width: 35em;
 }
-#sheet div.field.widelist div.control ul, #sheet div.field.small div.control ul, #sheet div.field.horizlist div.control ul {
+#sheet div.field.widelist div.control ul, #sheet div.field.small div.control ul {
   -moz-column-count: 2;
+}
+#sheet div.field.widelist div.control ul, #sheet div.field.small div.control ul, #sheet div.field.horizlist div.control ul {
   list-style: none;
   margin: 0;
 }
