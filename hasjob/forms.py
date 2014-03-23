@@ -211,18 +211,6 @@ class ListingForm(Form):
 
     def validate_job_pay_equity_min(form, field):
         if form.job_pay_equity.data:
-            if not field.data:
-                raise ValidationError("Please specify what this job pays")
-            data = field.data
-            if not data[-1].isdigit():
-                data = field.data[:-1]  # Remove % symbol
-            data = data.replace(',', '')  # Remove thousands separator
-            field.data = Decimal(data)
-        else:
-            field.data = None
-
-    def validate_job_pay_equity_max(form, field):
-        if form.job_pay_type.data != PAY_TYPE.NOCASH:
             data = field.data
             if data:
                 if not data[-1].isdigit():
@@ -231,6 +219,23 @@ class ListingForm(Form):
                 field.data = Decimal(data)
             else:
                 raise ValidationError("Unrecognised value %s" % field.data)
+        else:
+            # Discard submission if equity checkbox is unchecked
+            field.data = None
+
+    def validate_job_pay_equity_max(form, field):
+        if form.job_pay_equity.data:
+            data = field.data
+            if data:
+                if not data[-1].isdigit():
+                    data = field.data[:-1]  # Remove % symbol
+                data = data.replace(',', '')  # Remove thousands separator
+                field.data = Decimal(data)
+            else:
+                raise ValidationError("Unrecognised value %s" % field.data)
+        else:
+            # Discard submission if equity checkbox is unchecked
+            field.data = None
 
     def validate(self, extra_validators=None):
         success = super(ListingForm, self).validate(extra_validators)
