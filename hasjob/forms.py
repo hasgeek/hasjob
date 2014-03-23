@@ -241,8 +241,17 @@ class ListingForm(Form):
                     if self.job_pay_cash_max.data == 10000000:
                         self.job_pay_cash_max.errors.append(u"Please select a range")
                         success = False
+                    else:
+                        self.job_pay_cash_min.errors.append(u"Please specify a minimum non-zero pay")
+                        success = False
                 else:
-                    if self.job_pay_cash_max.data > self.job_pay_cash_min.data * 4:
+                    if (self.job_pay_type.data == PAY_TYPE.RECURRING
+                            and self.job_pay_currency.data == 'INR'
+                            and self.job_pay_cash_min.data < 60000):
+                        self.job_pay_cash_min.errors.append(
+                            u"That’s rather low. Did you specify monthly pay instead of annual pay? Multiply by 12")
+                        success = False
+                    elif self.job_pay_cash_max.data > self.job_pay_cash_min.data * 4:
                         self.job_pay_cash_max.errors.append(u"Please select a narrower range")
                         success = False
             if self.job_pay_equity.data:

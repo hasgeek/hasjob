@@ -710,6 +710,35 @@ footer {
   margin-bottom: 0;
 }
 
+div.alert {
+  position: relative;
+  background-color: #f0a40c;
+  color: black;
+  margin: 1em 0;
+  padding: 0.5em 1em;
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  -ms-border-radius: 3px;
+  -o-border-radius: 3px;
+  border-radius: 3px;
+}
+
+#nopay-alert.alert:before, #recurring-alert:before {
+  content: "";
+  display: block;
+  position: absolute;
+  top: -19px;
+  left: 2.5em;
+  width: 0;
+  height: 0;
+  border: 10px solid transparent;
+  border-bottom-color: #f0a40c;
+}
+
+#recurring-alert.alert:before {
+  left: 15em;
+}
+
 input[type="submit"], a.btn, button {
   height: 27px;
   border: 1px solid #b7b7b7;

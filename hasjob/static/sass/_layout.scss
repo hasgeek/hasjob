@@ -374,6 +374,31 @@ footer {
     }
 }
 
+div.alert {
+    position: relative;
+    background-color: $color-title-jobs;
+    color: black;
+    margin: 1em 0;
+    padding: 0.5em 1em;
+    @include border-radius(3px);
+}
+
+#nopay-alert.alert:before, #recurring-alert:before {
+    content: "";
+    display: block;
+    position: absolute;
+    top: -19px;
+    left: 2.5em;
+    width: 0;
+    height: 0;
+    border: 10px solid transparent;
+    border-bottom-color: $color-title-jobs;
+}
+
+#recurring-alert.alert:before {
+    left: 15em;
+}
+
 input[type="submit"], a.btn, button {
     height: 27px;
     border: 1px solid $color-outline;

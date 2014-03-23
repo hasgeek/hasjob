@@ -39,10 +39,13 @@
           {{ renderfield(form.job_pay_currency, "horizlist") }}
         </div>
       </div>
+      <div id="nopay-alert" class="alert hidden">
+        We’ll let candidates know there is no cash compensation
+      </div>
       <div id="field-cashslider" class="clearfix">
-        <p>
+        <div id="recurring-alert" class="alert hidden">
           For recurring pay (a salary), please specify an <strong>annual</strong> range
-        </p>
+        </div>
         {% for error in form.job_pay_cash_min.errors %}<div class="error">{{ error }}</div>{% endfor %}
         {% for error in form.job_pay_cash_max.errors %}<div class="error">{{ error }}</div>{% endfor %}
         <div class="slider-left">{{ form.job_pay_cash_min }}</div>
@@ -271,14 +274,23 @@
         currency_options($(this));
       })
       // Set initial state of pay currency
+      $(".alert.hidden").hide().removeClass('hidden');
       switch($("input[type=radio][name=job_pay_type]:checked").val()) {
-        case undefined:
         case '0':
+          $("#nopay-alert").show();
+        case undefined:
           $("#field-job_pay_currency").hide();
           $("#field-cashslider").hide();
           break;
         case '1':
+          $("#nopay-alert").hide();
+          $("#recurring-alert").hide();
+          $("#field-job_pay_currency").show();
+          $("#field-cashslider").show();
+          break;
         case '2':
+          $("#nopay-alert").hide();
+          $("#recurring-alert").show();
           $("#field-job_pay_currency").show();
           $("#field-cashslider").show();
           break;
@@ -287,11 +299,20 @@
       $("input[type=radio][name=job_pay_type]").on('change', function() {
         switch($(this).val()) {
           case '0':
+            $("#nopay-alert").slideDown();
+            $("#recurring-alert").slideUp();
             $("#field-job_pay_currency").hide();
             $("#field-cashslider").slideUp();
             break;
           case '1':
+            $("#nopay-alert").slideUp();
+            $("#recurring-alert").slideUp();
+            $("#field-job_pay_currency").show();
+            $("#field-cashslider").slideDown();
+            break;
           case '2':
+            $("#nopay-alert").slideUp();
+            $("#recurring-alert").slideDown();
             $("#field-job_pay_currency").show();
             $("#field-cashslider").slideDown();
             break;
