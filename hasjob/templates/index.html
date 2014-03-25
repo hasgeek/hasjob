@@ -92,7 +92,7 @@
               <span class="location">{{ post.location }}</span>
               <span class="date">{{ post.datetime|shortdate }}</span>
               <span class="headline">{{ post.headline }}</span>
-              {% if siteadmin %} {{ post.viewcounts.applied }}/{{ post.viewcounts.opened }}/{{ post.viewcounts.viewed }} &middot; {{ post.pay_label() }}{% endif %}
+              {% if siteadmin %}<span class="count">{{ post.viewcounts.applied }}/{{ post.viewcounts.opened }}/{{ post.viewcounts.viewed }} &middot; {{ post.pay_label() }}</span>{% endif %}
               <span class="company">{{ post.company_name }}</span>
               {% if now - post.datetime < newlimit -%}
                 <span class="new">New!</span>
