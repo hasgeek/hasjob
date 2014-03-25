@@ -801,7 +801,7 @@ hr {
   color: #816894;
 }
 
-#apply-info {
+#apply-info, #flash-messages, #guide {
   line-height: 1.5;
 }
 
@@ -867,7 +867,7 @@ hr {
   -webkit-box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
   -moz-box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
-  /* creates the smaller  triangle */
+  /* creates the smaller triangle */
 }
 #detail-sidebar .popup-box .close-popup {
   display: none;
@@ -932,11 +932,11 @@ hr {
   border-left-color: white;
 }
 
-#report, #reject, #makesticky {
+#report, #reject, #makesticky, #moderate {
   display: none;
 }
 
-#report:target, #reject:target, #makesticky:target {
+#report:target, #reject:target, #makesticky:target, #moderate:target {
   display: block;
 }
 

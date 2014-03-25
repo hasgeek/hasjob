@@ -447,7 +447,7 @@ hr {
     color: $color-title-geek;
 }
 
-#apply-info {
+#apply-info, #flash-messages, #guide {
     line-height: 1.5;
 }
 
@@ -553,7 +553,7 @@ hr {
             border-left-color: $color-sheet-border;
         }
 
-        /* creates the smaller  triangle */
+        /* creates the smaller triangle */
         &:after {
             content: "";
             display: block; /* reduce the damage in FF3.0 */
@@ -568,11 +568,11 @@ hr {
     }
 }
 
-#report, #reject, #makesticky {
+#report, #reject, #makesticky, #moderate {
     display: none;
 }
 
-#report:target, #reject:target, #makesticky:target {
+#report:target, #reject:target, #makesticky:target, #moderate:target {
     display: block;
 }
 

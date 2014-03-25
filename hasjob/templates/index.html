@@ -76,10 +76,10 @@
               <span class="company">{{ post.company_name }}</span>
               {%- if now - post.datetime < newlimit -%}
                 <span class="new">New!
-                {%- if siteadmin %} {{ post.viewcounts.applied }}/{{ post.viewcounts.opened }}/{{ post.viewcounts.viewed }}{% endif -%}
+                {%- if siteadmin %} {{ post.viewcounts.applied }}/{{ post.viewcounts.opened }}/{{ post.viewcounts.viewed }} {{ post.pay_label() }}{% endif -%}
                 </span>
               {%- else %}
-                {%- if siteadmin %}<span class="count">{{ post.viewcounts.applied }}/{{ post.viewcounts.opened }}/{{ post.viewcounts.viewed }}</span>{% endif %}
+                {%- if siteadmin %}<span class="count">{{ post.viewcounts.applied }}/{{ post.viewcounts.opened }}/{{ post.viewcounts.viewed }} {{ post.pay_label() }}</span>{% endif %}
               {%- endif %}
             </a>
           </li>
@@ -98,10 +98,10 @@
               <span class="company">{{ post.company_name }}</span>
               {%- if now - post.datetime < newlimit -%}
                 <span class="new">New!
-                {%- if siteadmin %} {{ post.viewcounts.applied }}/{{ post.viewcounts.opened }}/{{ post.viewcounts.viewed }}{% endif -%}
+                {%- if siteadmin %} {{ post.viewcounts.applied }}/{{ post.viewcounts.opened }}/{{ post.viewcounts.viewed }} {{ post.pay_label() }}{% endif -%}
                 </span>
               {%- else %}
-                {%- if siteadmin %}<span class="count">{{ post.viewcounts.applied }}/{{ post.viewcounts.opened }}/{{ post.viewcounts.viewed }}</span>{% endif %}
+                {%- if siteadmin %}<span class="count">{{ post.viewcounts.applied }}/{{ post.viewcounts.opened }}/{{ post.viewcounts.viewed }} {{ post.pay_label() }}</span>{% endif %}
               {%- endif %}
             </a>
             {%- for post in group[1:] -%}
@@ -113,10 +113,10 @@
                 <span class="company">{{ post.company_name }}</span>
                 {%- if now - post.datetime < newlimit -%}
                   <span class="new">New!
-                  {%- if siteadmin %} {{ post.viewcounts.applied }}/{{ post.viewcounts.opened }}/{{ post.viewcounts.viewed }}{% endif -%}
+                  {%- if siteadmin %} {{ post.viewcounts.applied }}/{{ post.viewcounts.opened }}/{{ post.viewcounts.viewed }} {{ post.pay_label() }}{% endif -%}
                   </span>
                 {%- else %}
-                  {%- if siteadmin %}<span class="count">{{ post.viewcounts.applied }}/{{ post.viewcounts.opened }}/{{ post.viewcounts.viewed }}</span>{% endif %}
+                  {%- if siteadmin %}<span class="count">{{ post.viewcounts.applied }}/{{ post.viewcounts.opened }}/{{ post.viewcounts.viewed }} {{ post.pay_label() }}</span>{% endif %}
                 {%- endif %}
               </div>
             {%- endfor %}
@@ -134,10 +134,10 @@
             <span class="company">{{ post.company_name }}</span>
               {%- if now - post.datetime < newlimit -%}
                 <span class="new">New!
-                {%- if siteadmin %} {{ post.viewcounts.applied }}/{{ post.viewcounts.opened }}/{{ post.viewcounts.viewed }}{% endif -%}
+                {%- if siteadmin %} {{ post.viewcounts.applied }}/{{ post.viewcounts.opened }}/{{ post.viewcounts.viewed }} {{ post.pay_label() }}{% endif -%}
                 </span>
               {%- else %}
-                {%- if siteadmin %}<span class="count">{{ post.viewcounts.applied }}/{{ post.viewcounts.opened }}/{{ post.viewcounts.viewed }}</span>{% endif %}
+                {%- if siteadmin %}<span class="count">{{ post.viewcounts.applied }}/{{ post.viewcounts.opened }}/{{ post.viewcounts.viewed }} {{ post.pay_label() }}</span>{% endif %}
               {%- endif %}
           </a>
         </li>

@@ -6,6 +6,8 @@ This is regarding your job listing on Hasjob titled "**{{ post.headline }}**". U
 
 You are welcome to post a new listing which complies with our [Terms of Service][tos].
 
+-----
+
 [Hasjob][jb] is a service of [HasGeek][hg]. Write to us at support@hasgeek.com if you have suggestions or questions on this service.
 
 [tos]: https://hasjob.co/tos

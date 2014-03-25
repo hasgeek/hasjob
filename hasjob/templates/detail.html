@@ -8,7 +8,7 @@
   {%- endif %}
 {% endblock %}
 {% block content %}
-{% if post.is_draft() %}
+{% if post.is_unpublished() %}
 <div id="guide">
   <div class="guidecontent">
     <h2>Review this listing</h2>
@@ -27,6 +27,15 @@
     <p>
       Previous viewers of this listing flagged it for review by a moderator.
       A review is currently pending.
+    </p>
+  </div>
+</div>
+{% elif post.is_moderated() %}
+<div id="guide">
+  <div class="guidecontent">
+    <p>
+      This listing has been marked by a moderator as carrying potentially inaccurate or incomplete
+      information. Please proceed with caution.
     </p>
   </div>
 </div>
@@ -99,27 +108,45 @@
             </div>
           </li>
         {%- endif %}
+        {%- if post.admin_is(g.user) %}
+          <li>
+            <a id="sidebar-edit" class="sidebar-blank" href="{{ url_for('editjob', hashid=post.hashid) }}">Edit this</a>
+          </li>
+        {%- endif %}
         {%- if siteadmin %}
-        <li>
-          <a class="sidebar-blank" id="sidebar-reject" href="#reject">Reject this</a>
-          <div class="popup-box" id="reject">
-            <a class="close-popup" href="#">&#10005;</a>
-            <h2>What’s wrong with it?</h2>
-            {% include "inc/rejectform.html" %}
-          </div>
-        </li>
-        <li>
-          <a class="sidebar-blank" id="sidebar-sticky" href="#makesticky">Make sticky</a>
-          <div class="popup-box" id="makesticky">
-            <a class="close-popup" href="#">&#10005;</a>
-            {% include "inc/stickyform.html" %}
-          </div>
-        </li>
+          <li>
+            <a class="sidebar-blank" id="sidebar-reject" href="#reject">Reject this</a>
+            <div class="popup-box" id="reject">
+              <a class="close-popup" href="#">&#10005;</a>
+              <h2>What’s wrong with it?</h2>
+              {% include "inc/rejectform.html" %}
+            </div>
+          </li>
+          <li>
+            <a class="sidebar-blank" id="sidebar-moderate" href="#moderate">Moderate this</a>
+            <div class="popup-box" id="moderate">
+              <a class="close-popup" href="#">&#10005;</a>
+              <h2>What’s wrong with it?</h2>
+              {% include "inc/moderateform.html" %}
+            </div>
+          </li>
+          <li>
+            <a class="sidebar-blank" id="sidebar-sticky" href="#makesticky">Make sticky</a>
+            <div class="popup-box" id="makesticky">
+              <a class="close-popup" href="#">&#10005;</a>
+              {% include "inc/stickyform.html" %}
+            </div>
+          </li>
         {%- endif %}
         {%- if siteadmin or post.admin_is(g.user) %}
-        <li>
-          <a class="sidebar-blank" href="#" onclick="return false;">Stats &middot; <span title="Applied">{{ post.viewcounts.applied }}</span> &middot; <span title="Opened form">{{ post.viewcounts.opened }}</span> &middot; <span title="Viewed">{{ post.viewcounts.viewed }}</span></a>
-        </li>
+          {%- if post.pay_type is not none %}
+            <li>
+              <a class="sidebar-blank" href="#" onclick="return false;">{{ post.pay_label() }}</a>
+            </li>
+          {%- endif %}
+          <li>
+            <a class="sidebar-blank" href="#" onclick="return false;">Stats &middot; <span title="Applied">{{ post.viewcounts.applied }}</span> &middot; <span title="Opened form">{{ post.viewcounts.opened }}</span> &middot; <span title="Viewed">{{ post.viewcounts.viewed }}</span></a>
+          </li>
         {%- endif %}
       </ul>
       {%- if siteadmin or post.admin_is(g.user) %}
@@ -247,6 +274,12 @@
     });
   });
   $(function() {
+    $("#sidebar-moderate").click(function() {
+      $("#moderate").fadeToggle("fast");
+      return false;
+    });
+  });
+  $(function() {
     $("#sidebar-sticky").click(function() {
       $("#makesticky").fadeToggle("fast");
       return false;
@@ -278,6 +311,7 @@
 {{ ajaxform('reportform') }}
 {{ ajaxform('rejectform') }}
 {{ ajaxform('stickyform') }}
+{{ ajaxform('moderateform') }}
 {% if applyform %}
   {{ ajaxform('applyform') }}
   {% assets "js_tinymce" %}<script src="{{ ASSET_URL }}" type="text/javascript"></script>{% endassets %}

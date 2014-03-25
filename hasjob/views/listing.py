@@ -1,6 +1,6 @@
 import bleach
 from datetime import datetime, timedelta
-from markdown import markdown
+from markdown import markdown  # FIXME: coaster.gfm is breaking links, so can't use it
 from difflib import SequenceMatcher
 from html2text import html2text
 from premailer import transform as email_transform
@@ -83,6 +83,7 @@ def jobdetail(hashid):
     reportform = forms.ReportForm(obj=report)
     reportform.report_code.choices = [(ob.id, ob.title) for ob in ReportCode.query.filter_by(public=True).order_by('seq')]
     rejectform = forms.RejectForm()
+    moderateform = forms.ModerateForm()
     stickyform = forms.StickyForm(obj=post)
     applyform = None  # User isn't allowed to apply unless non-None
     if g.user:
@@ -114,7 +115,7 @@ def jobdetail(hashid):
         return render_template('inc/reportform.html', reportform=reportform, ajaxreg=True)
     return render_template('detail.html', post=post, reportform=reportform, rejectform=rejectform,
         stickyform=stickyform, applyform=applyform, job_application=job_application,
-        webmail_domains=webmail_domains, jobview=jobview, report=report,
+        webmail_domains=webmail_domains, jobview=jobview, report=report, moderateform=moderateform,
         siteadmin=lastuser.has_permission('siteadmin')
         )
 
@@ -384,6 +385,37 @@ def rejectjob(hashid):
     return redirect(url_for('jobdetail', hashid=post.hashid))
 
 
+@app.route('/moderate/<hashid>', methods=('GET', 'POST'), subdomain='<subdomain>')
+@app.route('/moderate/<hashid>', methods=('GET', 'POST'))
+@lastuser.requires_permission('siteadmin')
+def moderatejob(hashid):
+    post = JobPost.query.filter_by(hashid=hashid).first_or_404()
+    if post.status in [POSTSTATUS.DRAFT, POSTSTATUS.PENDING]:
+        if post.edit_key not in session.get('userkeys', []):
+            abort(403)
+    if post.status in [POSTSTATUS.REJECTED, POSTSTATUS.WITHDRAWN, POSTSTATUS.SPAM]:
+        abort(410)
+    moderateform = forms.ModerateForm()
+    if moderateform.validate_on_submit():
+        post.closed_datetime = datetime.utcnow()
+        post.review_comments = moderateform.reason.data
+        post.review_datetime = datetime.utcnow()
+        post.reviewer = g.user
+        flashmsg = "This job listing has been moderated."
+        post.status = POSTSTATUS.MODERATED
+        msg = Message(subject="About your job listing on Hasjob",
+            recipients=[post.email])
+        msg.body = render_template("moderate_email.md", post=post)
+        msg.html = markdown(msg.body)
+        mail.send(msg)
+        db.session.commit()
+        if request.is_xhr:
+            return "<p>%s</p>" % flashmsg
+    elif request.method == 'POST' and request.is_xhr:
+        return render_template('inc/rejectform.html', post=post, rejectform=rejectform, ajaxreg=True)
+    return redirect(url_for('jobdetail', hashid=post.hashid))
+
+
 @app.route('/confirm/<hashid>', methods=('GET', 'POST'), subdomain='<subdomain>')
 @app.route('/confirm/<hashid>', methods=('GET', 'POST'))
 def confirm(hashid):
@@ -391,26 +423,25 @@ def confirm(hashid):
     form = forms.ConfirmForm()
     if post.status in [POSTSTATUS.REJECTED, POSTSTATUS.SPAM]:
         abort(410)
-    elif post.status == POSTSTATUS.DRAFT:
-        if post.edit_key not in session.get('userkeys', []):
+    elif post.status in [POSTSTATUS.DRAFT, POSTSTATUS.PENDING]:
+        if not (post.edit_key in session.get('userkeys', []) or post.admin_is(g.user)):
             abort(403)
     else:
         # Any other status: no confirmation required (via this handler)
         return redirect(url_for('jobdetail', hashid=post.hashid), code=302)
     if 'form.id' in request.form and form.validate_on_submit():
         # User has accepted terms of service. Now send email and/or wait for payment
-        if not post.email_sent:
-            msg = Message(subject="Confirmation of your job listing at Hasjob",
-                recipients=[post.email])
-            msg.body = render_template("confirm_email.md", post=post)
-            msg.html = markdown(msg.body)
-            mail.send(msg)
-            post.email_sent = True
-            post.status = POSTSTATUS.PENDING
-            db.session.commit()
+        msg = Message(subject="Confirmation of your job listing at Hasjob",
+            recipients=[post.email])
+        msg.body = render_template("confirm_email.md", post=post)
+        msg.html = markdown(msg.body)
+        mail.send(msg)
+        post.email_sent = True
+        post.status = POSTSTATUS.PENDING
+        db.session.commit()
+
         session.get('userkeys', []).remove(post.edit_key)
         session.modified = True  # Since it won't detect changes to lists
-        session.permanent = True
         return render_template('mailsent.html', post=post)
     return render_template('confirm.html', post=post, form=form)
 
@@ -584,6 +615,9 @@ def editjob(hashid, key, form=None, post=None, validated=False):
             else:
                 prev_words = u''
             post.words = get_word_bag(u' '.join((prev_words, form_description, form_perks, form_how_to_apply)))
+
+            if post.status == POSTSTATUS.MODERATED:
+                post.status = POSTSTATUS.CONFIRMED
 
             if request.files['company_logo']:
                 # The form's validator saved the processed logo in g.company_logo.

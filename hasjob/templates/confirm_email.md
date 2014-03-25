@@ -1,6 +1,6 @@
 Hello,
 
-This is a confirmation email for the job you listed at the HasGeek Job Board.
+This is a confirmation email for the job you listed at Hasjob.
 
 **{{ post.headline|e }}**
 

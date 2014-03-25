@@ -21,6 +21,7 @@ class POSTSTATUS:
     WITHDRAWN = 5  # Withdrawn by owner
     FLAGGED = 6    # Flagged by users for review
     SPAM = 7       # Marked as spam
+    MODERATED = 8  # Moderated, needs edit
 
 
 class EMPLOYER_RESPONSE(LabeledEnum):

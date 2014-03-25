@@ -250,7 +250,11 @@ class ListingForm(Form):
                         self.job_pay_cash_min.errors.append(u"Please specify a minimum non-zero pay")
                         success = False
                 else:
-                    if (self.job_pay_type.data == PAY_TYPE.RECURRING
+                    if self.job_pay_cash_max.data == 10000000:
+                        self.job_pay_cash_max.errors.append(
+                            u"You don’t pay that much. Please provide a realistic figure")
+                        success = False
+                    elif (self.job_pay_type.data == PAY_TYPE.RECURRING
                             and self.job_pay_currency.data == 'INR'
                             and self.job_pay_cash_min.data < 60000):
                         self.job_pay_cash_min.errors.append(
@@ -338,6 +342,10 @@ class ReportForm(Form):
 
 class RejectForm(Form):
     reason = TextField('Reason', validators=[validators.Required(u"Give a reason")])
+
+
+class ModerateForm(Form):
+    reason = TextAreaField('Reason', validators=[validators.Required(u"Give a reason")])
 
 
 class StickyForm(Form):

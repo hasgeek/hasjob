@@ -1,8 +1,10 @@
+# -*- coding: utf-8 -*-
+
 from datetime import datetime
 from werkzeug import cached_property
 from coaster.sqlalchemy import timestamp_columns
 from baseframe import cache
-from . import agelimit, db, POSTSTATUS, EMPLOYER_RESPONSE, BaseMixin, TimestampMixin
+from . import agelimit, db, POSTSTATUS, EMPLOYER_RESPONSE, PAY_TYPE, BaseMixin, TimestampMixin
 from .jobtype import JobType
 from .jobcategory import JobCategory
 from .user import User
@@ -78,6 +80,12 @@ class JobPost(BaseMixin, db.Model):
     def is_draft(self):
         return self.status == POSTSTATUS.DRAFT
 
+    def is_pending(self):
+        return self.status == POSTSTATUS.PENDING
+
+    def is_unpublished(self):
+        return self.status in (POSTSTATUS.DRAFT, POSTSTATUS.PENDING)
+
     def is_listed(self):
         now = datetime.utcnow()
         return (self.status in [POSTSTATUS.CONFIRMED, POSTSTATUS.REVIEWED]) and (
@@ -86,11 +94,83 @@ class JobPost(BaseMixin, db.Model):
     def is_flagged(self):
         return self.status == POSTSTATUS.FLAGGED
 
+    def is_moderated(self):
+        return self.status == POSTSTATUS.MODERATED
+
     def is_old(self):
         return self.datetime <= datetime.utcnow() - agelimit
 
     def pay_type_label(self):
         return PAY_TYPE.get(self.pay_type)
+
+    def pay_label(self):
+        format = lambda number, suffix: str(int(number)) + suffix if int(number) == number else str(round(number, 2)) + suffix
+        def abbreviate(number, indian=False):
+            if indian:
+                if number < 100000:  # < 1 lakh
+                    return format(number / 1000.0, 'k')
+                elif number < 10000000:  # < 1 crore
+                    return format(number / 100000.0, 'L')
+                else:  # >= 1 crore
+                    return format(number / 10000000.0, 'C')
+            else:
+                if number < 1000000:  # < 1 million
+                    return format(number / 1000.0, 'k')
+                elif number < 100000000:  # < 1 billion
+                    return format(number / 1000000.0, 'm')
+                else:  # >= 1 billion
+                    return format(number / 100000000.0, 'b')
+
+        if self.pay_type is None:
+            return u"NA"
+        elif self.pay_type == PAY_TYPE.NOCASH:
+            cash = None
+            suffix = ""
+        else:
+            if self.pay_type == PAY_TYPE.RECURRING:
+                suffix = "pa"
+            else:
+                suffix = ""
+
+            indian = False
+            if self.pay_currency == "INR":
+                indian = True
+                symbol = u"₹"
+            elif self.pay_currency == "USD":
+                symbol = u"$"
+            elif self.pay_currency == "EUR":
+                symbol = u"€"
+            elif self.pay_currency == "GBP":
+                symbol = u"£"
+            else:
+                symbol = u"¤"
+
+            if self.pay_cash_min == self.pay_cash_max:
+                cash = symbol + abbreviate(self.pay_cash_min, indian)
+            else:
+                cash = symbol + abbreviate(self.pay_cash_min, indian) + "-" + abbreviate(self.pay_cash_max, indian)
+
+            if suffix:
+                cash = cash + " " + suffix
+
+        if self.pay_equity_min and self.pay_equity_max:
+            if self.pay_equity_min == self.pay_equity_max:
+                equity = str(self.pay_equity_min) + "%"
+            else:
+                equity = str(self.pay_equity_min) + "-" + str(self.pay_equity_max) + "%"
+        else:
+            equity = None
+
+        if cash:
+            if equity:
+                return ", ".join([cash, equity])
+            else:
+                return cash
+        else:
+            if equity:
+                return equity
+            else:
+                return "Nothing"
 
     def search_mapping(self):
         """
