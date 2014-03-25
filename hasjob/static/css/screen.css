@@ -1225,6 +1225,13 @@ header .stickie {
 .stickie .headline {
   font-family: "McLaren", sans-serif;
 }
+.stickie .count {
+  font-size: 90%;
+  color: #816894;
+  font-family: "Walter Turncoat", sans-serif;
+  display: block;
+  margin-top: 0.5em;
+}
 .stickie .date {
   font-size: 90%;
   color: #816894;
@@ -1233,7 +1240,7 @@ header .stickie {
   top: 0.25em;
   right: 0.5em;
 }
-.stickie .location, .stickie .company, .stickie .count {
+.stickie .location, .stickie .company {
   font-size: 90%;
   color: #816894;
   font-family: "Walter Turncoat", sans-serif;
@@ -1260,11 +1267,6 @@ header .stickie {
   font-family: "Walter Turncoat", sans-serif;
   text-transform: lowercase;
   position: absolute;
-  left: 0.5em;
-  bottom: 0.25em;
-}
-.stickie .count {
-  bottom: 0.25em;
   left: 0.5em;
   bottom: 0.25em;
 }
