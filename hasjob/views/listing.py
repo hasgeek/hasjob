@@ -442,8 +442,11 @@ def confirm(hashid):
         post.status = POSTSTATUS.PENDING
         db.session.commit()
 
-        session.get('userkeys', []).remove(post.edit_key)
-        session.modified = True  # Since it won't detect changes to lists
+        try:
+            session.get('userkeys', []).remove(post.edit_key)
+            session.modified = True  # Since it won't detect changes to lists
+        except ValueError:
+            pass
         return render_template('mailsent.html', post=post)
     return render_template('confirm.html', post=post, form=form)
 
