@@ -84,6 +84,8 @@ def jobdetail(hashid):
     reportform.report_code.choices = [(ob.id, ob.title) for ob in ReportCode.query.filter_by(public=True).order_by('seq')]
     rejectform = forms.RejectForm()
     moderateform = forms.ModerateForm()
+    if request.method == 'GET':
+        moderateform.reason.data = post.review_comments
     stickyform = forms.StickyForm(obj=post)
     applyform = None  # User isn't allowed to apply unless non-None
     if g.user:
@@ -412,7 +414,7 @@ def moderatejob(hashid):
         if request.is_xhr:
             return "<p>%s</p>" % flashmsg
     elif request.method == 'POST' and request.is_xhr:
-        return render_template('inc/rejectform.html', post=post, rejectform=rejectform, ajaxreg=True)
+        return render_template('inc/moderateform.html', post=post, moderateform=moderateform, ajaxreg=True)
     return redirect(url_for('jobdetail', hashid=post.hashid))
 
 

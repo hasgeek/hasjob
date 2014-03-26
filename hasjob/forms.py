@@ -345,7 +345,8 @@ class RejectForm(Form):
 
 
 class ModerateForm(Form):
-    reason = TextAreaField('Reason', validators=[validators.Required(u"Give a reason")])
+    reason = TextAreaField('Reason',
+        validators=[validators.Required(u"Give a reason"), validators.Length(max=250)])
 
 
 class StickyForm(Form):
