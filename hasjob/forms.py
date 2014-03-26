@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import re
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from difflib import SequenceMatcher
 
 from flask import g, request, Markup
@@ -216,7 +216,10 @@ class ListingForm(Form):
                 if not data[-1].isdigit():
                     data = field.data[:-1]  # Remove % symbol
                 data = data.replace(',', '')  # Remove thousands separator
-                field.data = Decimal(data)
+                try:
+                    field.data = Decimal(data)
+                except InvalidOperation:
+                    raise ValidationError("Please enter a percentage between 0% and 100%")
             else:
                 raise ValidationError("Unrecognised value %s" % field.data)
         else:
@@ -230,7 +233,10 @@ class ListingForm(Form):
                 if not data[-1].isdigit():
                     data = field.data[:-1]  # Remove % symbol
                 data = data.replace(',', '')  # Remove thousands separator
-                field.data = Decimal(data)
+                try:
+                    field.data = Decimal(data)
+                except InvalidOperation:
+                    raise ValidationError("Please enter a percentage between 0% and 100%")
             else:
                 raise ValidationError("Unrecognised value %s" % field.data)
         else:
