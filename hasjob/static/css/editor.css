@@ -1,5 +1,6 @@
+@import url("//fonts.googleapis.com/css?family=Walter+Turncoat|McLaren|Source+Sans+Pro:400,600");
 body {
-  font-family: ff-meta-web-pro-1, ff-meta-web-pro-2, arial, sans-serif;
+  font-family: "Source Sans Pro", arial, sans-serif;
   font-size: 100%;
   color: #444;
 }

@@ -31,12 +31,12 @@ hr { display:block; height:1px; border:0; border-top:1px solid #ccc; margin:1em 
 input, select { vertical-align:middle; }
 
 
-body { font:13px/1.231 sans-serif; *font-size:small; }
+body { font:13px/1.5 sans-serif; *font-size:small; }
 select, input, textarea, button { font:99% sans-serif; }
 pre, code, kbd, samp { font-family: monospace, sans-serif; }
 
 body, select, input, textarea {   color: #444; }
-h1,h2,h3,h4,h5,h6 { font-weight: bold; }
+h1,h2,h3,h4,h5,h6 { font-weight: 600; }
 html { overflow-y: scroll; }
 
 a:hover, a:active { outline: none; }
@@ -48,7 +48,7 @@ ol { list-style-type: decimal; }
 
 nav ul, nav li { margin: 0; }
 small { font-size: 85%; }
-strong, th { font-weight: bold; }
+strong, th { font-weight: 600; }
 td, td img { vertical-align: top; }
 sub { vertical-align: sub; font-size: smaller; }
 sup { vertical-align: super; font-size: smaller; }

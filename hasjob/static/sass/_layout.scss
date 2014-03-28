@@ -59,7 +59,9 @@ header {
     float: left;
     padding-right: 0.5em;
     font-size: 30px;
-    font-weight: bold;
+    font-weight: 600;
+    line-height: 1;
+
     .has {
         color: $color-title-has;
     }
@@ -195,7 +197,7 @@ footer {
         color: #666; //$color-title-jobs;
     }
     .post-company-name {
-        font-weight: bold;
+        font-weight: 600;
     }
     .post-company-logo {
         float: right;
@@ -218,13 +220,13 @@ footer {
             width: 5em;
             padding-top: 6px; // Make label align with text in fields
             label {
-                font-weight: bold;
+                font-weight: 600;
             }
         }
         &.widelist div.label, &.horizlist div.label {
             padding-bottom: 0.2em;
             label {
-                font-weight: bold;
+                font-weight: 600;
             }
         }
         &.widelist div.control, &.horizlist div.control {
@@ -248,7 +250,7 @@ footer {
                     }
                 }
                 li.selected {
-                    font-weight: bold;
+                    font-weight: 600;
                 }
             }
         }
@@ -264,7 +266,7 @@ footer {
             float: none;
             clear: left;
             label {
-                font-weight: bold;
+                font-weight: 600;
             }
         }
         &.wide div.control {
@@ -339,7 +341,7 @@ footer {
     #job_headline {
         width: 95%;
         font-size: 120%;
-        font-weight: bold;
+        font-weight: 600;
     }
 
     .slider-left, .slider-middle, .slider-right {
@@ -408,7 +410,7 @@ input[type="submit"], a.btn, button {
     padding: 0 12px;
     background: #e6e6e6;
     @include background-image(linear-gradient(#e6e6e6, #d6d6d6));
-    font-weight: bold;
+    font-weight: 600;
     text-decoration: none;
     color: #444;
     // vertical-align: text-bottom;
@@ -447,15 +449,9 @@ hr {
     color: $color-title-geek;
 }
 
-#apply-info, #flash-messages, #guide {
-    line-height: 1.5;
-}
-
 #detailed-info {
     float: left;
     max-width: 600px;
-    line-height: 1.5;
-    //font-family: "MetaPlus", sans-serif;
     padding-right: 1em;
 }
 
@@ -622,7 +618,7 @@ hr {
         padding: 0 12px;
         background: #e6e6e6;
         @include background-image(linear-gradient(#e6e6e6, #d6d6d6));
-        font-weight: bold;
+        font-weight: 600;
         color: #666;
         width: 40px;
         position: absolute;
