@@ -292,7 +292,7 @@ class ApplicationForm(Form):
         validators=[validators.Required("You need to say something about yourself"),
             AllUrlsValid()],
         description=u"Please provide all details the employer has requested. To add a resume, "
-            u"post it on LinkedIn or host the file on Dropbox and insert the link here.")
+            u"post it on LinkedIn or host the file on Dropbox and insert the link here")
 
     def __init__(self, *args, **kwargs):
         super(ApplicationForm, self).__init__(*args, **kwargs)

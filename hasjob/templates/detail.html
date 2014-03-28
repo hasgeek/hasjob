@@ -197,7 +197,7 @@
     {%- endif %}
   </div>
   {%- if not post.is_draft() and g.user and applyform %}
-    <div class="section">
+    <div id="apply-section" class="section {%- if jobview and not jobview.applied %} hidden {%- endif -%}">
       {% include "inc/applyform.html" %}
     </div>
   {%- elif job_application %}
@@ -293,7 +293,7 @@
         $("#apply-info-para").html(html);
         unrot13();
         {%- if applyform %}
-          $("#applyform").removeClass('hidden');
+          $("#apply-section").removeClass('hidden');
         {%- endif %}
       })
       .fail(function(msg){
