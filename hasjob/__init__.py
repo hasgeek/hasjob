@@ -5,7 +5,7 @@ from flask import Flask
 from flask.ext.rq import RQ
 from flask.ext.mail import Mail
 from flask.ext.lastuser import Lastuser
-from baseframe import baseframe, assets, Version
+from baseframe import baseframe, assets, Version, Bundle
 import coaster.app
 from ._version import __version__
 
@@ -44,6 +44,15 @@ def init_for(env):
         'jquery.nouislider', 'baseframe-networkbar', 'hasjob'
         ])
     app.assets.register('js_tinymce', assets.require('tiny_mce.js>=3.5.0,<4.0.0'))
+    app.assets.register('css_firasans', Bundle(assets.require('firasans.css'), output='css/firasans.css'))
+    if subdomain:
+        # The /_baseframe path has to be under the current domain because TinyMCE
+        # doesn't like loading from a subdomain, but we also need access to /_baseframe
+        # in the subdomain for other assets
+        app.add_url_rule(baseframe.static_url_path + '/<path:filename>',
+            view_func=baseframe.send_static_file,
+            endpoint='baseframe_static', subdomain=subdomain)
+
     from hasjob.uploads import configure as uploads_configure
     from hasjob.search import configure as search_configure
     uploads_configure()

@@ -12,6 +12,7 @@ menu, nav, section, summary, time, mark, audio, video {
   font-size: 100%;
   vertical-align: baseline;
   background: transparent;
+  text-rendering: optimizeLegibility;
 }
 
 article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section {
@@ -257,7 +258,7 @@ button {
 
 /* Background textures by Rüdiger Appel from http://www.3quarks.com/en/BackgroundPattern/ */
 body {
-  font-family: "Source Sans Pro", arial, sans-serif;
+  font-family: "Fira Sans", arial, sans-serif;
   background: url('../img/canvas.jpg?1343882941');
 }
 
@@ -328,7 +329,7 @@ header #pitch {
 }
 
 #site-title {
-  font-family: "Source Sans Pro", arial, sans-serif;
+  font-family: "Fira Sans", arial, sans-serif;
   float: left;
   padding-right: 0.5em;
   font-size: 30px;
@@ -415,7 +416,7 @@ footer {
 .flash, #guide {
   background: white;
   max-width: 860px;
-  font-size: 120%;
+  font-size: 110%;
   position: relative;
   margin-left: auto;
   margin-right: auto;
@@ -477,7 +478,7 @@ footer {
   *zoom: 1;
   background: white;
   max-width: 860px;
-  font-size: 120%;
+  font-size: 110%;
   margin-left: auto;
   margin-right: auto;
   margin-top: 2em;
@@ -631,7 +632,7 @@ footer {
   margin-bottom: 1em;
 }
 #sheet input, #sheet textarea {
-  font-family: "Source Sans Pro", arial, sans-serif;
+  font-family: "Fira Sans", arial, sans-serif;
 }
 #sheet fieldset {
   *zoom: 1;
@@ -743,7 +744,7 @@ div.alert {
 input[type="submit"], a.btn, button {
   height: 27px;
   border: 1px solid #b7b7b7;
-  font-family: "Source Sans Pro", arial, sans-serif;
+  font-family: "Fira Sans", arial, sans-serif;
   font-size: 14px;
   -webkit-border-radius: 3px;
   -moz-border-radius: 3px;
@@ -967,7 +968,7 @@ hr {
 }
 #search input[type="text"] {
   border: 1px solid #b7b7b7;
-  font-family: "Source Sans Pro", arial, sans-serif;
+  font-family: "Fira Sans", arial, sans-serif;
   background: white url('../img/search.png?1343882941') 4px center no-repeat;
   padding-left: 20px;
   padding-right: 43px;
@@ -982,7 +983,7 @@ hr {
 #search input[type="submit"] {
   border: 1px solid #b7b7b7;
   border-left: 0;
-  font-family: "Source Sans Pro", arial, sans-serif;
+  font-family: "Fira Sans", arial, sans-serif;
   -moz-border-radius-topright: 3px;
   -webkit-border-top-right-radius: 3px;
   border-top-right-radius: 3px;
@@ -1412,7 +1413,7 @@ header .stickie {
 #newpost input[type="submit"] {
   height: 27px;
   border: 1px solid #b7b7b7;
-  font-family: "Source Sans Pro", arial, sans-serif;
+  font-family: "Fira Sans", arial, sans-serif;
   font-size: 14px;
   -webkit-border-radius: 3px;
   -moz-border-radius: 3px;

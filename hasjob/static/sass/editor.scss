@@ -1,9 +1,10 @@
 @import "colors";
 @import "fonts";
-@import url("//fonts.googleapis.com/css?family=Walter+Turncoat|McLaren|Source+Sans+Pro:400,600");
+@import url("/static/css/firasans.css");
 
 body {
     font-family: $font-default;
-    font-size: 100%;
+    font-size: 14px;
+    line-height: 1.5;
     color: #444;
 }
