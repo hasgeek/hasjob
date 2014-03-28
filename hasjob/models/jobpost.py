@@ -170,7 +170,7 @@ class JobPost(BaseMixin, db.Model):
             if equity:
                 return equity
             else:
-                return "Nothing"
+                return "No pay"
 
     def search_mapping(self):
         """
