@@ -147,7 +147,8 @@ class ListingForm(Form):
             raise ValidationError("Unsupported file format. We accept JPEG, PNG and GIF")
 
     def validate_job_headline(form, field):
-        # XXX: These validations belong in a config file or in the db, not here.
+        if EMAIL_RE.search(field.data) is not None:
+            raise ValidationError(u"Do not include contact information in the listing")
         if simplify_text(field.data) == 'awesome coder wanted at awesome company':
             raise ValidationError(u"Come on, write your own headline. You aren’t just another run-of-the-mill company, right?")
         caps = len(CAPS_RE.findall(field.data))
