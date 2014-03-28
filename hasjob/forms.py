@@ -291,7 +291,8 @@ class ApplicationForm(Form):
     apply_message = RichTextField("Job application",
         validators=[validators.Required("You need to say something about yourself"),
             AllUrlsValid()],
-        description="Please provide all details the employer has requested")
+        description=u"Please provide all details the employer has requested. To add a resume, "
+            u"post it on LinkedIn or host the file on Dropbox and insert the link here.")
 
     def __init__(self, *args, **kwargs):
         super(ApplicationForm, self).__init__(*args, **kwargs)
