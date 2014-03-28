@@ -27,9 +27,11 @@ webmail_domains = set(['gmail.com', 'yahoo.com', 'yahoo.co.in', 'hotmail.com', '
 
 @app.route('/', subdomain='<subdomain>')
 @app.route('/')
-def index(basequery=None, type=None, category=None, md5sum=None, domain=None, title=None):
+def index(basequery=None, type=None, category=None, md5sum=None, domain=None, title=None, showall=False):
     now = datetime.utcnow()
-    posts = list(getposts(basequery, sticky=True))
+    if g.user or g.kiosk:
+        showall = True
+    posts = list(getposts(basequery, sticky=True, showall=showall))
     if posts:
         employer_name = posts[0].company_name
     else:
@@ -56,6 +58,7 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None, ti
     return render_template('index.html', posts=posts, grouped=grouped, now=now,
                            newlimit=newlimit, jobtype=type, jobcategory=category, title=title,
                            md5sum=md5sum, domain=domain, employer_name=employer_name,
+                           showall=showall,
                            siteadmin=lastuser.has_permission('siteadmin'))
 
 
@@ -75,7 +78,7 @@ def browse_by_domain(domain):
     if not domain:
         abort(404)
     basequery = JobPost.query.filter_by(email_domain=domain)
-    return index(basequery=basequery, domain=domain, title=domain)
+    return index(basequery=basequery, domain=domain, title=domain, showall=True)
 
 
 @app.route('/category/<name>', subdomain='<subdomain>')
@@ -94,7 +97,7 @@ def browse_by_email(md5sum):
     if not md5sum:
         abort(404)
     basequery = JobPost.query.filter_by(md5sum=md5sum)
-    return index(basequery=basequery, md5sum=md5sum)
+    return index(basequery=basequery, md5sum=md5sum, showall=True)
 
 
 @app.route('/feed', subdomain='<subdomain>')
