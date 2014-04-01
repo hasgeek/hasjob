@@ -28,7 +28,7 @@ def logout():
 @app.route('/login/redirect')
 @lastuser.auth_handler
 def lastuserauth():
-    Board.update_from_user(g.user, db.session, make_user_profiles=False, make_org_profiles=False)
+    # Board.update_from_user(g.user, db.session, make_user_profiles=False, make_org_profiles=False)
     signal_login.send(app, user=g.user)
     db.session.commit()
     return redirect(get_next_url())
@@ -37,7 +37,7 @@ def lastuserauth():
 @app.route('/login/notify', methods=['POST'])
 @lastuser.notification_handler
 def lastusernotify(user):
-    Board.update_from_user(user, db.session, make_user_profiles=False, make_org_profiles=False)
+    # Board.update_from_user(user, db.session, make_user_profiles=False, make_org_profiles=False)
     db.session.commit()
 
 
