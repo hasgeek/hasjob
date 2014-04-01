@@ -2,20 +2,19 @@
 
 from pytz import timezone
 from werkzeug import cached_property
-from flask.ext.lastuser.sqlalchemy import ProfileMixin
 from . import db, BaseMixin, BaseNameMixin
 from .jobpost import JobPost
 
 __all__ = ['Board', 'BoardJobPost']
 
 
-class Board(ProfileMixin, BaseNameMixin, db.Model):
+class Board(BaseNameMixin, db.Model):
     """
     Boards show a filtered set of jobs at board-specific URLs.
     """
     __tablename__ = 'board'
-    #: Lastuser organization userid
-    userid = db.Column(db.Unicode(22), nullable=False, unique=True)
+    #: Lastuser organization userid that owns this
+    userid = db.Column(db.Unicode(22), nullable=False, index=True)
     #: Welcome text
     description = db.Column(db.UnicodeText, nullable=False, default=u'')
 
@@ -25,6 +24,13 @@ class Board(ProfileMixin, BaseNameMixin, db.Model):
     @cached_property
     def tz(self):
         return timezone(self.timezone)
+
+    def owner_is(self, user):
+        if user is None:
+            return False
+        if user.userid == self.userid or self.userid in user.organizations_owned_ids():
+            return True
+        return False
 
 
 class BoardJobPost(BaseMixin, db.Model):
