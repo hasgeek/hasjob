@@ -70,6 +70,9 @@ class JobPost(BaseMixin, db.Model):
     review_datetime = db.Column(db.DateTime, nullable=True)
     review_comments = db.Column(db.Unicode(250), nullable=True)
 
+    # Metadata for classification
+    language = db.Column(db.CHAR(2), nullable=True)
+
     admins = db.relationship(User, secondary=lambda: jobpost_admin_table)
 
     def admin_is(self, user):

@@ -46,6 +46,7 @@ from hasjob.uploads import uploaded_logos
 from hasjob.utils import get_word_bag, redactemail
 from hasjob.views import ALLOWED_TAGS
 from hasjob.views.index import webmail_domains
+from hasjob.nlp import identify_language
 
 
 @app.route('/view/<hashid>', methods=('GET', 'POST'), subdomain='<subdomain>')
@@ -620,6 +621,8 @@ def editjob(hashid, key, form=None, post=None, validated=False):
             else:
                 prev_words = u''
             post.words = get_word_bag(u' '.join((prev_words, form_description, form_perks, form_how_to_apply)))
+
+            post.language = identify_language(post)
 
             if post.status == POSTSTATUS.MODERATED:
                 post.status = POSTSTATUS.CONFIRMED
