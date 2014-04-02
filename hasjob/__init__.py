@@ -39,16 +39,14 @@ def init_for(env):
         subdomain = None
     app.add_url_rule('/static/<path:filename>', endpoint='static',
         view_func=app.send_static_file, subdomain=subdomain)
-    baseframe.init_app(app, requires=['jquery.textarea-expander',
-        'jquery.tinymce', 'jquery.form', 'jquery.cookie', 'select2', 'jquery.sparkline',
-        'jquery.nouislider', 'baseframe-networkbar', 'hasjob'
-        ])
+    baseframe.init_app(app, requires=['hasjob'],
+        ext_requires=[('jquery.textarea-expander', 'jquery.tinymce', 'jquery.form', 'jquery.cookie',
+        'select2', 'jquery.sparkline','jquery.nouislider'), 'firasans', 'baseframe-networkbar'])
     app.assets.register('js_tinymce', assets.require('tiny_mce.js>=3.5.0,<4.0.0'))
-    app.assets.register('css_firasans', Bundle(assets.require('firasans.css'), output='css/firasans.css'))
     if subdomain:
         # The /_baseframe path has to be under the current domain because TinyMCE
         # doesn't like loading from a subdomain, but we also need access to /_baseframe
-        # in the subdomain for other assets
+        # in the static subdomain for other assets (potentially obsoleted by ext_requires)
         app.add_url_rule(baseframe.static_url_path + '/<path:filename>',
             view_func=baseframe.send_static_file,
             endpoint='baseframe_static', subdomain=subdomain)

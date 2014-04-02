@@ -24,10 +24,10 @@
   <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Walter+Turncoat|McLaren|Source+Sans+Pro:400,600">
   
   <!-- Stylesheets -->
+  {%- for asset in config.get('ext_css', []) %}
+    <link rel="stylesheet" type="text/css" href="{{ ext_assets(asset) }}" />
+  {%- endfor %}
   {% assets "css_all" -%}
-    <link rel="stylesheet" href="{{ ASSET_URL }}"/>
-  {% endassets -%}
-  {% assets "css_firasans" -%}
     <link rel="stylesheet" href="{{ ASSET_URL }}"/>
   {% endassets -%}
   <!--[if IE]>
@@ -90,6 +90,9 @@
     if (typeof jQuery === 'undefined')
       document.write('<script type="text/javascript" src="{{ url_for("baseframe.static", filename="js/jquery-1.8.3.min.js") }}"><\/script>');
   </script>
+  {%- for asset in config.get('ext_js', []) %}
+    <script type="text/javascript" src="{{ ext_assets(asset) }}"></script>
+  {%- endfor %}
   {% assets "js_all" -%}
     <script type="text/javascript" src="{{ ASSET_URL }}"></script>
   {% endassets -%}
