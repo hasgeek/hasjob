@@ -278,7 +278,11 @@ def viewstats_helper(jobpost_id, interval, limit, daybatch=False):
         capplied = capplied[:limit]
 
     return {
-        'max': max([max(cviewed), max(copened), max(capplied)]),
+        'max': max([
+            max(cviewed) if cviewed else 0,
+            max(copened) if copened else 0,
+            max(capplied) if capplied else 0,
+            ]),
         'length': max([len(cviewed), len(copened), len(capplied)]),
         'viewed': cviewed,
         'opened': copened,
