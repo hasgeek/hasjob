@@ -263,10 +263,14 @@ def viewstats_helper(jobpost_id, interval, limit, daybatch=False):
                 # be just one instance of this.
                 sourcedate = post.datetime
             itemdelta = sourcedate - post.datetime
-            if daybatch:
-                clist[int(itemdelta.days // interval)] += 1
-            else:
-                clist[int(int(itemdelta.total_seconds()) // interval)] += 1
+            try:
+                if daybatch:
+                    clist[int(itemdelta.days // interval)] += 1
+                else:
+                    clist[int(int(itemdelta.total_seconds()) // interval)] += 1
+            except IndexError:
+                # Server time got messed up. Ouch! Ignore for now.
+                pass
 
     if limit and batches > limit:
         cviewed = cviewed[:limit]
