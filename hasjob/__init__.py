@@ -5,7 +5,8 @@ from flask import Flask
 from flask.ext.rq import RQ
 from flask.ext.mail import Mail
 from flask.ext.lastuser import Lastuser
-from baseframe import baseframe, assets, Version, Bundle
+from flask.ext.lastuser.sqlalchemy import UserManager
+from baseframe import baseframe, assets, Version, cache
 import coaster.app
 from ._version import __version__
 
@@ -24,9 +25,8 @@ assets['hasjob.css'][version] = 'css/screen.css'
 
 # Third, after config, import the models and views
 
-import hasjob.models
-import hasjob.views
-from hasjob.models import db
+from . import models, views
+from .models import db
 
 
 # Configure the app
@@ -57,3 +57,5 @@ def init_for(env):
     search_configure()
     mail.init_app(app)
     lastuser.init_app(app)
+    lastuser.init_usermanager(UserManager(db, models.User))
+    lastuser.init_cache(cache)
