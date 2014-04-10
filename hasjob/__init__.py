@@ -58,4 +58,3 @@ def init_for(env):
     mail.init_app(app)
     lastuser.init_app(app)
     lastuser.init_usermanager(UserManager(db, models.User))
-    lastuser.init_cache(cache)
