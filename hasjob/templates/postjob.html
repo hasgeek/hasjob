@@ -69,7 +69,17 @@
       {{ renderfield(form.company_logo, "small") }}
       {% if not no_removelogo %}{{ renderfield(form.company_logo_remove, "small") }}{% endif %}
       {{ renderfield(form.company_url, "small") }}
-      {%- if not no_email %}
+      {%- if no_email %}
+        <div class="field small">
+          <div class="label">
+            <label for="poster_email">Email</label>
+          </div>
+          <div class="control">
+            <div><input id="poster_email" type="text" value="{{ form.poster_email.data }}" disabled /></div>
+            <span class="description">You cannot change the email after confirming the listing</span>
+          </div>
+        </div>
+      {%- else %}
         {#{{ renderfield(form.poster_name, "small") }}-#} {# Deprecated 2013-11-20 -#}
         {{ renderfield(form.poster_email, "small") }}
         {%- if g.user %}
@@ -229,13 +239,30 @@
         };
       });
 
+      var indian_encoder = function(value) {
+        value=value.toString();
+        var afterPoint = '';
+        if(value.indexOf('.') > 0)
+           afterPoint = value.substring(value.indexOf('.'), value.length);
+        value = Math.floor(value);
+        value=value.toString();
+        var lastThree = value.substring(value.length - 3);
+        var otherNumbers = value.substring(0, value.length - 3);
+        if (otherNumbers != '')
+            lastThree = ',' + lastThree;
+        var res = otherNumbers.replace(/\B(?=(\d{2})+(?!\d))/g, ",") + lastThree + afterPoint;
+        return res;
+      }
+
       var currency_options = function(currency) {
         var start = cashslider.val()[0].slice(1).replace(',', ''),
           end = cashslider.val()[1].slice(1).replace(',', ''),
-          prefix = '¤';
+          prefix = '¤',
+          thousand = ',';
         switch(currency.val()) {
           case 'INR':
             prefix = '₹';
+            thousand = '';
             break;
           case 'USD':
           case 'SGD':
@@ -253,17 +280,21 @@
           serialization: {
             lower: [
               new $.noUiSlider.Link({
-                target: $("#job_pay_cash_min")
+                target: function(val) {
+                  $("#job_pay_cash_min").val(val.lastIndexOf('₹', 0) === 0 ? '₹' + indian_encoder(val.substr(1)) : val);
+                }
               })
             ],
             upper: [
               new $.noUiSlider.Link({
-                target: $("#job_pay_cash_max")
+                target: function(val) {
+                  $("#job_pay_cash_max").val(val.lastIndexOf('₹', 0) === 0 ? '₹' + indian_encoder(val.substr(1)) : val);
+                }
               })
             ],
             format: {
               decimals: 0,
-              thousand: ',',
+              thousand: thousand,
               prefix: prefix
             }
           }
