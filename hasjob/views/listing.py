@@ -43,7 +43,7 @@ from hasjob.models import (
     )
 from hasjob.twitter import tweet
 from hasjob.uploads import uploaded_logos
-from hasjob.utils import get_word_bag, redactemail
+from hasjob.utils import get_word_bag, redactemail, random_long_key
 from hasjob.views import ALLOWED_TAGS
 from hasjob.views.index import webmail_domains
 from hasjob.nlp import identify_language
@@ -434,6 +434,9 @@ def confirm(hashid):
         return redirect(url_for('jobdetail', hashid=post.hashid), code=302)
     if 'form.id' in request.form and form.validate_on_submit():
         # User has accepted terms of service. Now send email and/or wait for payment
+        # Also (re-)set the verify key, just in case they changed their email
+        # address and are re-verifying
+        post.email_verify_key = random_long_key()
         msg = Message(subject="Confirmation of your job listing at Hasjob",
             recipients=[post.email])
         msg.body = render_template("confirm_email.md", post=post)
@@ -537,8 +540,14 @@ def editjob(hashid, key, form=None, post=None, validated=False):
         post = JobPost.query.filter_by(hashid=hashid).first_or_404()
     if not ((key is None and g.user is not None and post.admin_is(g.user)) or (key == post.edit_key)):
         abort(403)
+
     # Don't allow email address to be changed once its confirmed
-    if request.method == 'POST' and post.status >= POSTSTATUS.PENDING:
+    if post.status > POSTSTATUS.PENDING:
+        no_email = True
+    else:
+        no_email = False
+
+    if request.method == 'POST' and post.status > POSTSTATUS.PENDING:
         # del form.poster_name  # Deprecated 2013-11-20
         form.poster_email.data = post.email
     if request.method == 'POST' and (validated or form.validate()):
@@ -608,8 +617,8 @@ def editjob(hashid, key, form=None, post=None, validated=False):
                             db.session.add(user)
                         post.admins.append(user)
 
-            # Allow name and email to be set only on new posts
-            if not post.status >= POSTSTATUS.PENDING:
+            # Allow name and email to be set only on non-confirmed posts
+            if not no_email:
                 # post.fullname = form.poster_name.data  # Deprecated 2013-11-20
                 post.email = form.poster_email.data
                 post.email_domain = form_email_domain
@@ -617,7 +626,7 @@ def editjob(hashid, key, form=None, post=None, validated=False):
             # To protect from gaming, don't allow words to be removed in edited listings once the post
             # has been confirmed. Just add the new words.
             if post.status >= POSTSTATUS.CONFIRMED:
-                prev_words = post.words or ''
+                prev_words = post.words or u''
             else:
                 prev_words = u''
             post.words = get_word_bag(u' '.join((prev_words, form_description, form_perks, form_how_to_apply)))
@@ -670,7 +679,7 @@ def editjob(hashid, key, form=None, post=None, validated=False):
         form.job_pay_equity_min.data = post.pay_equity_min
         form.job_pay_equity_max.data = post.pay_equity_max
 
-    return render_template('postjob.html', form=form, no_email=post.status > POSTSTATUS.DRAFT,
+    return render_template('postjob.html', form=form, no_email=no_email,
         getuser_autocomplete=lastuser.endpoint_url(lastuser.getuser_autocomplete_endpoint),
         getuser_userids=lastuser.endpoint_url(lastuser.getuser_userids_endpoint))
 
