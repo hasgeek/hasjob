@@ -276,7 +276,16 @@ class ListingForm(Form):
                         self.job_pay_equity_max.errors.append(u"Please select a range")
                         success = False
                 else:
-                    if self.job_pay_equity_max.data > self.job_pay_equity_min.data * 4:
+                    if self.job_pay_equity_min.data <= Decimal('1.0'):
+                        multiplier = 10
+                    elif self.job_pay_equity_min.data <= Decimal('2.0'):
+                        multiplier = 8
+                    elif self.job_pay_equity_min.data <= Decimal('3.0'):
+                        multiplier = 6
+                    else:
+                        multiplier = 4
+
+                    if self.job_pay_equity_max.data > self.job_pay_equity_min.data * multiplier:
                         self.job_pay_equity_max.errors.append(u"Please select a narrower range")
                         success = False
         return success
