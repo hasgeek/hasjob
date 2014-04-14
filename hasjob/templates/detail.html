@@ -171,6 +171,17 @@
       <img align="right" src="//chart.googleapis.com/chart?chs=150x150&cht=qr&chl={{ url_for('jobdetail', hashid=post.hashid, subdomain=None, _external=True) }}&choe=UTF-8"/>
     {%- endif %}
     <h2>Apply for this position</h2>
+      {%- if not post.pays_cash %}
+        {%- if post.pays_equity %}
+          <p>
+            <em>The employer has indicated that this position only pays in equity.</em>
+          </p>
+        {%- else %}
+          <p>
+            <em>The employer has indicated that this position does not pay.</em>
+          </p>
+        {%- endif %}
+      {%- endif %}
     {%- if g.kiosk %}
       <p>
         You can’t apply from this kiosk. Open this link on your phone or computer:

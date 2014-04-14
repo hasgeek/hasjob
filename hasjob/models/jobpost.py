@@ -75,6 +75,10 @@ class JobPost(BaseMixin, db.Model):
 
     admins = db.relationship(User, secondary=lambda: jobpost_admin_table)
 
+    @classmethod
+    def get(cls, hashid):
+        return cls.query.filter_by(hashid=hashid).one_or_none()
+
     def admin_is(self, user):
         if user is None:
             return False
@@ -105,6 +109,16 @@ class JobPost(BaseMixin, db.Model):
 
     def pay_type_label(self):
         return PAY_TYPE.get(self.pay_type)
+
+    @property
+    def pays_cash(self):
+        if self.pay_type is None:
+            return True
+        return self.pay_type != PAY_TYPE.NOCASH and self.pay_cash_min is not None and self.pay_cash_max is not None
+
+    @property
+    def pays_equity(self):
+        return self.pay_equity_min is not None and self.pay_equity_max is not None
 
     def pay_label(self):
         format = lambda number, suffix: str(int(number)) + suffix if int(number) == number else str(round(number, 2)) + suffix
