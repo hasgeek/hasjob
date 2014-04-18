@@ -20,6 +20,27 @@
   <link rel="icon" href="{{ url_for('static', filename='img/favicon.ico') }}"/>
   <link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.ico') }}"/>
   <link rel="apple-touch-icon" href="{{ url_for('static', filename='img/logo-star.png') }}"/>
+
+  {%- if config.get('LOGNORMAL_API_KEY') %}
+  <script>
+  (function(){
+      var iframe = document.createElement('iframe');
+      iframe.src="javascript:false";
+      (iframe.frameElement || iframe).style.cssText = "width: 0; height: 0; border: 0";
+      var where = document.getElementsByTagName('script')[0];
+      where.parentNode.insertBefore(iframe, where);
+      var doc = iframe.contentWindow.document;
+      doc.open().write('<body onload="'+
+        'var js = document.createElement(\'script\');'+
+        'js.id = \'boomr-if-as\';'+
+        'BOOMR_lstart = new Date().getTime();'+
+        'js.src = \'//lognormal.net/boomerang/{{ config['LOGNORMAL_API_KEY'] }}\';'+
+        'document.body.appendChild(js);">');
+      doc.close();
+    })();
+  </script>
+  {%- endif %}
+
   <!-- Fonts -->
   <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Walter+Turncoat|McLaren|Source+Sans+Pro:400,600">
   

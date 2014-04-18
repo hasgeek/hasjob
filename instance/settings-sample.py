@@ -4,6 +4,10 @@ SITE_TITLE = 'Job Board'
 TYPEKIT_CODE = ''
 #: Google Analytics code UA-XXXXXX-X
 GA_CODE = ''
+#: Asset server (optional)
+ASSET_SERVER = ''
+#: LogNormal API key for page load performance metrics
+LOGNORMAL_API_KEY = ''
 #: Database backend
 SQLALCHEMY_DATABASE_URI = 'sqlite:///test.db'
 #: Secret key
