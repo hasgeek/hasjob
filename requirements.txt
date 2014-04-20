@@ -19,7 +19,6 @@ jsmin
 dnspython
 html2text
 premailer
-bleach
 langid
 Flask-Script==0.5.3
 https://github.com/hasgeek/coaster/zipball/master
