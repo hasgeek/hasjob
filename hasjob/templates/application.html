@@ -76,7 +76,8 @@
       </form>
       <div id="appl-response" class="hidden">
         <p>
-          <strong>From:</strong> {{ g.user.fullname if post.admin_is(g.user) else post.fullname or post.company_name }} (via {{ config['SITE_TITLE'] }}) <span id="appl-noreply">&lt;{{ config['MAIL_SENDER'] }}&gt;</span><span id="appl-yesreply" class="hidden">&lt;{{ post.email }}&gt;</span><br>
+          <strong>From:</strong> {{ g.user.fullname if post.admin_is(g.user) else post.fullname or post.company_name }} (via {{ config['SITE_TITLE'] }}) &lt;{{ config['MAIL_SENDER'] }}&gt;<br>
+          <span id="appl-yesreply" class="hidden"><strong>Reply-To:</strong> {{ g.user.fullname if post.admin_is(g.user) else post.fullname or post.company_name }} &lt;{{ post.email }}&gt;<br></span>
           <strong>To:</strong> {{ job_application.user.fullname }}<br>
           <strong>Subject:</strong> Regarding your job application for {{ post.headline }}
         </p>
@@ -127,7 +128,6 @@
 
       $("#appl-reply").click(function(e) {
         $("#appl-instructions").hide();
-        $("#appl-noreply").addClass('hidden');
         $("#appl-yesreply").removeClass('hidden');
         $("#appl-responded").removeClass('hidden');
         $("#appl-rejected").addClass('hidden');
@@ -145,7 +145,6 @@
 
       $("#appl-reject").click(function(e) {
         $("#appl-instructions").hide();
-        $("#appl-noreply").removeClass('hidden');
         $("#appl-yesreply").addClass('hidden');
         $("#appl-responded").addClass('hidden');
         $("#appl-rejected").removeClass('hidden');

@@ -290,18 +290,20 @@ def process_application(hashid, application):
                     base_url=request.url_root)
                 email_text = html2text(email_html)
 
-                sender_name = u'{sender} (via {site})'.format(
-                    sender=g.user.fullname if post.admin_is(g.user) else post.fullname or post.company_name,
+                sender_name = g.user.fullname if post.admin_is(g.user) else post.fullname or post.company_name
+                sender_formatted = u'{sender} (via {site})'.format(
+                    sender=sender_name,
                     site=app.config['SITE_TITLE'])
 
                 if job_application.is_replied():
                     msg = Message(subject=u"Regarding your job application for {headline}".format(headline=post.headline),
-                        sender=(sender_name, post.email),
+                        sender=(sender_formatted, app.config['MAIL_SENDER']),
+                        reply_to=(sender_name, post.email),
                         recipients=[job_application.email],
                         bcc=[post.email])
                 else:
                     msg = Message(subject=u"Regarding your job application for {headline}".format(headline=post.headline),
-                        sender=(sender_name, app.config['MAIL_SENDER']),
+                        sender=(sender_formatted, app.config['MAIL_SENDER']),
                         bcc=[job_application.email, post.email])
                 msg.body = email_text
                 msg.html = email_html
