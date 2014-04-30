@@ -5,11 +5,24 @@ Code for Hasjob, HasGeek's job board at https://hasjob.co/
 
 You are welcome to contribute a patch or use this code to run your own job
 board under the terms of the BSD license, but please design your own UI.
-Don't copy ours. We will like you better if you contribute a patch.
+Don't copy ours and confuse users into thinking you are affiliated with us.
+We will like you better if you contribute a patch.
 
-This code runs on [Python][] with the [Flask][] microframework. You will need
+Hasjob runs on [Python][] with the [Flask][] microframework. You will need
 to install all the requirements listed in `requirements.txt` using
-`easy_install` or `pip`. Copy `settings-sample.py` to `settings.py`, edit as
+`easy_install` or `pip`:
+
+    $ pip install -r requirements.txt
+
+Hasjob will soon use NLTK to analyse the text of a post, so you will need to
+install NLTK's corpus data. Be warned, this is about 1.8 GB:
+
+    $ python -m nltk.downloader all
+
+If you are using Mac OS X and had trouble installing Numpy, please see the
+instructions here: https://gist.github.com/goldsmith/7262122
+
+Next, Copy `settings-sample.py` to `settings.py`, edit as
 necessary, and finish configuration with:
 
     $ python manage.py db create
