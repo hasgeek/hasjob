@@ -35,9 +35,17 @@ class EMPLOYER_RESPONSE(LabeledEnum):
 
 
 class PAY_TYPE(LabeledEnum):
-    NOCASH =  (0, u"Nothing")
-    ONETIME =   (1, u"One-time")
+    NOCASH    = (0, u"Nothing")
+    ONETIME   = (1, u"One-time")
     RECURRING = (2, u"Recurring")
+
+
+class CANDIDATE_FEEDBACK(LabeledEnum):
+    NORESPONSE =     (0, u"No response")
+    INPROCESS =      (1, u"In process")
+    DID_NOT_GET =    (2, u"Did not get the job")
+    DID_NOT_ACCEPT = (3, u"Got offer, did not accept")
+    GOT_JOB =        (4, u"Got the job")
 
 
 from .user import *

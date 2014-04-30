@@ -363,6 +363,8 @@ class JobApplication(BaseMixin, db.Model):
     replied_by_id = db.Column(None, db.ForeignKey('user.id'), nullable=True)
     replied_by = db.relationship(User, foreign_keys=replied_by_id)
 
+    # candidate_feedback = db.Column(db.Integer, nullable=True)
+
     def __init__(self, **kwargs):
         super(JobApplication, self).__init__(**kwargs)
         if self.hashid is None:
