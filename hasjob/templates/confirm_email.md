@@ -12,8 +12,8 @@ Save this email for the next 30 days while the listing is active. Use these
 links if you need to edit the listing, or if the position has been filled
 and you wish to withdraw it:
 
-* [Edit job listing]({{ url_for('editjob', _external=True, hashid=post.hashid, key=post.edit_key) }})
-* [Withdraw job listing]({{ url_for('withdraw', _external=True, hashid=post.hashid, key=post.edit_key) }})
+* [Edit job listing]({{ url_for('editjob', _external=True, hashid=post.hashid) }})
+* [Withdraw job listing]({{ url_for('withdraw', _external=True, hashid=post.hashid) }})
 
 The [HasGeek Job Board][jb] is a service of [HasGeek][hg]. Write to us at
 info@hasgeek.com if you have suggestions or questions on this service.
