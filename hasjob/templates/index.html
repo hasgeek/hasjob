@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 {% block titletags -%}
-  <title>{%if title %}{{ title }} &mdash; {% endif %}{{ config['SITE_TITLE'] }}</title>
+  <title>{%if title %}{{ title }} &mdash; {% endif %}{% if g.board %}{{ g.board.title }}{% else %}{{ config['SITE_TITLE'] }}{% endif %}</title>
   <meta name="DC.title" content="{%if title %}{{ title }} &mdash; {% endif %}{{ config['SITE_TITLE'] }}"/>
 {%- endblock %}
 
