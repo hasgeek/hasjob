@@ -1,7 +1,12 @@
-@import url("/static/css/firasans.css");
+@import url("https://static.hasgeek.co.in/asset?asset=firasans.css&asset=baseframe-firasans.css");
 body {
-  font-family: "Fira Sans", arial, sans-serif;
-  font-size: 14px;
-  line-height: 1.5;
+  margin: 5px;
+  font-size: 16px;
+  line-height: 24px;
   color: #444;
+}
+
+p, ul, ol, blockquote {
+  margin-top: 0;
+  margin-bottom: 12px;
 }

@@ -1,34 +1,36 @@
-{% extends "layout.html" %}
-{% from "inc/forms.html" import renderfield %}
+{% extends "sheet.html" %}
 {% block title %}{{ post.headline|e }}{% endblock %}
 {% block content %}
-<div id="sheet">
-  <div class="section first">
-    <h1>One last step&hellip;</h1>
-    <p>
-      We sent you an email to confirm your email address.
-      Please click on the link within and your job will
-      be published. The email also contains information
-      on how you may edit or withdraw the job listing.
-    </p>
-  </div>
-  <!-- <div class="section">
-    <p>
-      Does your organization build mobile apps? Please take our
-      <a href="https://survey.hasgeek.com/survey/index?sid=842153&amp;lang=en">survey on intellectual property rights</a>.
-    </p>
-  </div> -->
+  <div class="sheet">
+    <div class="section first">
+      <div class="page-header">
+        <h1>One last step&hellip;</h1>
+      </div>
+      <p>
+        We sent you an email to confirm your email address.
+        Please click on the link within and your job will
+        be published. The email also contains information
+        on how you may edit or withdraw the job listing.
+      </p>
+    </div>
+  {#
+    <!-- <div class="section">
+      <p>
+        Does your organization build mobile apps? Please take our
+        <a href="https://survey.hasgeek.com/survey/index?sid=842153&amp;lang=en">survey on intellectual property rights</a>.
+      </p>
+    </div> -->
 
-  <div class="section">
-    <a href="https://rootconf.in/2014/" title="Rootconf 2014"><img id="banner-bottom" src="{{
-      url_for('static', filename='img/banner.png') }}" width="170" height="156" alt="Rootconf" align="right" /></a>
-    <h2>Meet DevOps professionals in real life</h2>
-    <p>
-      Are you hiring a cloud/infrastructure developer?
-      <a href="https://rootconf.in/2014/">Rootconf</a>, HasGeek’s annual conference on 
-      DevOps and Cloud Infrastructure is this May.
-    </p>
+    <div class="section">
+      <a href="https://rootconf.in/2014/" title="Rootconf 2014"><img id="banner-bottom" src="{{
+        url_for('static', filename='img/banner.png') }}" width="170" height="156" alt="Rootconf" align="right" /></a>
+      <div class="page-header"><h2>Meet DevOps professionals in real life</h2></div>
+      <p>
+        Are you hiring a cloud/infrastructure developer?
+        <a href="https://rootconf.in/2014/">Rootconf</a>, HasGeek’s annual conference on 
+        DevOps and Cloud Infrastructure is this May.
+      </p>
+    </div>
+  #}
   </div>
-
-</div>
 {% endblock %}

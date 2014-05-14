@@ -1,25 +1,22 @@
-{% from "inc/forms.html" import renderfield, ajaxform %}
-<form id="applyform" method="POST" action="{{ url_for('applyjob', hashid=post.hashid) }}">
+{% from "baseframe/forms.html" import renderfield, rendersubmit, ajaxform %}
+<form id="applyform" method="POST" class="form-horizontal" action="{{ url_for('applyjob', hashid=post.hashid) }}">
   <input type="hidden" name="_charset_"/>
   <input type="hidden" name="form.id" value="applyform"/>
   {{ applyform.hidden_tag() }}
-  <div class="field small">
-    <div class="label">
-      <label for="apply_name">Name</label>
-    </div>
-    <div class="control">
-      <div><input type="text" value="{{ g.user.fullname }}" disabled /></div>
-      <span class="description">You may edit your name from <a href="{{ g.user.profile_url }}" target="_blank">your profile</a></span>
+  <div class="form-group">
+    <label class="col-xs-12 col-sm-3 col-md-2 control-label" for="apply_name">Name</label>
+    <div class="col-xs-12 col-sm-9 col-md-10 controls">
+      <input class="form-control" id="apply_name" type="text" value="{{ g.user.fullname }}" disabled />
+      <p class="help-block">You may edit your name from <a href="{{ g.user.profile_url }}" target="_blank">your profile</a></p>
     </div>
   </div>
-  {{ renderfield(applyform.apply_email, "small") }}
-  {{ renderfield(applyform.apply_phone, "small") }}
-  {{ renderfield(applyform.apply_message, "wide", widget_css_class="tinymce") }}
-  <input type="submit" value="Apply" />
-  <span class="loading hidden">Submitting...</span>
+  {{ renderfield(applyform.apply_email) }}
+  {{ renderfield(applyform.apply_phone) }}
+  {{ renderfield(applyform.apply_message, style="wide", widget_css_class="tinymce") }}
+  {{ rendersubmit([(None, "Apply", 'btn-primary')], style='wide') }}
 </form>
 {% if ajaxreg %}
-  {{ ajaxform("applyform") }}
+  {{ ajaxform("applyform", request) }}
   <script type="text/javascript">
     radioHighlight('apply_email', 'selected');
     {% include "inc/tinymce.js" %}

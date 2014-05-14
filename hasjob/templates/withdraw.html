@@ -1,27 +1,27 @@
-{% extends "layout.html" %}
-{% from "inc/forms.html" import renderfield %}
+{% extends "sheet.html" %}
+{% from "baseframe/forms.html" import renderfield %}
 {% block title %}{{ post.headline|e }}{% endblock %}
 {% block content %}
-<div id="sheet">
-  <div class="section first">
-    <h1>Withdraw job listing?</h1>
-    <h2>{{ post.headline }}</h2>
-    <p>
-      Please confirm that you wish to withdraw this job listing.
-      Your listing will be permanently withdrawn and cannot be made
-      available again.
-    </p>
-    <p>
-      You will not be able to re-post this listing or a similar listing
-      until 30 days have passed.
-    </p>
-    <form method="POST">
-      <input type="hidden" name="_charset_"/>
-      <input type="hidden" name="form.id" value="withdrawjob"/>
-      {{ form.hidden_tag() }}
-      {{ renderfield(form.really_withdraw, "check") }}
-      <input type="submit" value="Withdraw job listing"/>
-    </form>
+  <div class="sheet">
+    <div class="section first">
+      <h1>Withdraw job listing?</h1>
+      <h2>{{ post.headline }}</h2>
+      <p>
+        Please confirm that you wish to withdraw this job listing.
+        Your listing will be permanently withdrawn and cannot be made
+        available again.
+      </p>
+      <p>
+        You will not be able to re-post this listing or a similar listing
+        until 30 days have passed.
+      </p>
+      <form method="POST" class="form-horizontal">
+        <input type="hidden" name="_charset_"/>
+        <input type="hidden" name="form.id" value="withdrawjob"/>
+        {{ form.hidden_tag() }}
+        {{ renderfield(form.really_withdraw, style="wide") }}
+        <input type="submit" class="btn btn-danger" value="Withdraw job listing"/>
+      </form>
+    </div>
   </div>
-</div>
 {% endblock %}

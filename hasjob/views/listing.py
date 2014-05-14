@@ -45,7 +45,6 @@ from hasjob.twitter import tweet
 from hasjob.uploads import uploaded_logos
 from hasjob.utils import get_word_bag, redactemail, random_long_key
 from hasjob.views import ALLOWED_TAGS
-from hasjob.views.index import webmail_domains
 from hasjob.nlp import identify_language
 
 
@@ -115,10 +114,10 @@ def jobdetail(hashid):
             else:
                 flash("You need to be logged in to report a listing", "interactive")
     elif request.method == 'POST' and request.is_xhr:
-        return render_template('inc/reportform.html', reportform=reportform, ajaxreg=True)
+        return render_template('inc/reportform.html', reportform=reportform)
     return render_template('detail.html', post=post, reportform=reportform, rejectform=rejectform,
         stickyform=stickyform, applyform=applyform, job_application=job_application,
-        webmail_domains=webmail_domains, jobview=jobview, report=report, moderateform=moderateform,
+        jobview=jobview, report=report, moderateform=moderateform,
         siteadmin=lastuser.has_permission('siteadmin')
         )
 
@@ -213,7 +212,7 @@ def applyjob(hashid):
                 return redirect(url_for('jobdetail', hashid=post.hashid), 303)
 
         if request.is_xhr:
-            return render_template('inc/applyform.html', post=post, applyform=applyform, ajaxreg=True)
+            return render_template('inc/applyform.html', post=post, applyform=applyform)
         else:
             return redirect(url_for('jobdetail', hashid=post.hashid), 303)
 
@@ -386,7 +385,7 @@ def rejectjob(hashid):
         else:
             flash(flashmsg, "interactive")
     elif request.method == 'POST' and request.is_xhr:
-        return render_template('inc/rejectform.html', post=post, rejectform=rejectform, ajaxreg=True)
+        return render_template('inc/rejectform.html', post=post, rejectform=rejectform)
     return redirect(url_for('jobdetail', hashid=post.hashid))
 
 
@@ -417,7 +416,7 @@ def moderatejob(hashid):
         if request.is_xhr:
             return "<p>%s</p>" % flashmsg
     elif request.method == 'POST' and request.is_xhr:
-        return render_template('inc/moderateform.html', post=post, moderateform=moderateform, ajaxreg=True)
+        return render_template('inc/moderateform.html', post=post, moderateform=moderateform)
     return redirect(url_for('jobdetail', hashid=post.hashid))
 
 

@@ -2,9 +2,10 @@
 
 from datetime import datetime
 from werkzeug import cached_property
+from flask import url_for
 from coaster.sqlalchemy import timestamp_columns
 from baseframe import cache
-from . import agelimit, db, POSTSTATUS, EMPLOYER_RESPONSE, PAY_TYPE, BaseMixin, TimestampMixin
+from . import agelimit, db, POSTSTATUS, EMPLOYER_RESPONSE, PAY_TYPE, BaseMixin, TimestampMixin, webmail_domains
 from .jobtype import JobType
 from .jobcategory import JobCategory
 from .user import User
@@ -22,6 +23,7 @@ class JobPost(BaseMixin, db.Model):
     datetime = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)  # Published
     closed_datetime = db.Column(db.DateTime, nullable=True)  # If withdrawn or rejected
     sticky = db.Column(db.Boolean, nullable=False, default=False)
+    pinned = db.synonym('sticky')
 
     # Job description
     headline = db.Column(db.Unicode(100), nullable=False)
@@ -109,6 +111,19 @@ class JobPost(BaseMixin, db.Model):
 
     def pay_type_label(self):
         return PAY_TYPE.get(self.pay_type)
+
+    def url_for(self, action='view', _external=False):
+        if action == 'view':
+            return url_for('jobdetail', hashid=self.hashid, _external=_external)
+        elif action == 'edit':
+            return url_for('editjob', hashid=self.hashid, _external=_external)
+        elif action == 'confirm':
+            return url_for('confirm', hashid=self.hashid, _external=_external)
+        elif action == 'browse':
+            if self.email_domain in webmail_domains:
+                return url_for('browse_by_email', md5sum=self.md5sum, _external=_external)
+            else:
+                return url_for('browse_by_domain', domain=self.email_domain, _external=_external)
 
     @property
     def pays_cash(self):

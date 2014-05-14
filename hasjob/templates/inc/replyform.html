@@ -1,9 +1,9 @@
-{% from "inc/forms.html" import renderfield, ajaxform %}
-<form id="replyform" method="POST" action="{{ url_for('process_application', hashid=post.hashid, application=job_application.hashid) }}">
+{% from "baseframe/forms.html" import renderfield, ajaxform %}
+<form id="replyform" method="POST" class="form-horizontal" action="{{ url_for('process_application', hashid=post.hashid, application=job_application.hashid) }}">
   <input type="hidden" name="_charset_"/>
   <input type="hidden" name="form.id" value="response_form"/>
   {{ response_form.hidden_tag() }}
-  {{ renderfield(response_form.response_message, "wide", widget_css_class="tinymce") }}
-  <button id="appl-send" type="submit" name="action" value="">Send</button>
-  <button id="appl-cancel">Cancel</button>
+  {{ renderfield(response_form.response_message, style="wide", widget_css_class="tinymce", nolabel=true) }}
+  <button id="appl-send" class="btn btn-primary" type="submit" name="action" value="">Send</button>
+  <button id="appl-cancel" class="btn btn-default">Cancel</button>
 </form>

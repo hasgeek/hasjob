@@ -1,10 +1,10 @@
-{% from "inc/forms.html" import renderfield, ajaxform %}
-<form id="rejectform" method="POST" action="{{ url_for('rejectjob', hashid=post.hashid) }}">
+{% from "baseframe/forms.html" import renderfield, ajaxform %}
+<form id="rejectform" method="POST" action="{{ url_for('rejectjob', hashid=post.hashid) }}" class="form-horizontal">
   <input type="hidden" name="_charset_"/>
   <input type="hidden" name="form.id" value="rejectform"/>
   {{ rejectform.hidden_tag() }}
-  {{ renderfield(rejectform.reason) }}
-  <button type="submit" name="submit" value="reject">Reject</button>
-  <button type="submit" name="submit" value="spam">Spam</button>
+  {{ renderfield(rejectform.reason, style="wide", nolabel=true) }}
+  <button type="submit" name="submit" class="btn btn-primary btn-sm" value="reject">Reject</button>
+  <button type="submit" name="submit" class="btn btn-danger btn-sm" value="spam">Spam</button>
 </form>
-{% if ajaxreg %}{{ ajaxform("rejectform") }}{% endif %}
+{{ ajaxform("rejectform", request) }}

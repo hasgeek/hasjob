@@ -1,0 +1,29 @@
+{% macro jobheader(post) %}
+  {%- if post.company_logo %}
+    <div class="row">
+      <div class="col-xs-12 col-sm-3 col-sm-push-9 post-company-logo">
+        <img alt="Logo" src="{{ url_for('logoimage', hashid=post.hashid) }}"/>
+      </div>
+      <div class="col-xs-12 col-sm-9 col-sm-pull-3">
+  {%- endif %}
+    <h1>{{ post.headline }}</h1>
+    <p class="post-date">Posted {{ post.datetime|longdate }}
+      {%- if post.user %} by {{ post.user.pickername }}{% endif %}</p>
+    <p>
+      <a href="{{ post.url_for('browse') }}"><strong>{{ post.company_name }}</strong></a>,
+      {% if post.relocation_assist -%}
+        <span id="post-location" data-toggle="tooltip" data-placement="bottom" title="Relocation assistance available">{{ post.location }} <i class="fa fa-truck fa-flip-horizontal"></i></span>
+      {%- else -%}
+        {{ post.location }}
+      {%- endif %}
+      {%- if post.company_url %}
+        &middot; <a href="{{ post.company_url }}" target="_blank" rel="nofollow">{{ post.company_url|cleanurl }}</a>
+      {%- endif %}
+      &middot; <a href="{{ url_for('browse_by_type', name=post.type.name) }}">{{ post.type.title }}</a>
+      &middot; <a href="{{ url_for('browse_by_category', name=post.category.name) }}">{{ post.category.title }}</a>
+    </p>
+  {%- if post.company_logo %}
+      </div>
+    </div>
+  {%- endif %}
+{% endmacro %}

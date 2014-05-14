@@ -1,0 +1,95 @@
+.sheet
+  .list-group-item
+    a.popup
+      color: inherit
+      display: block
+      margin: -10px -15px
+      padding: 10px 15px
+
+    a.popup:hover, a.popup:focus
+      text-decoration: none
+      background-color: #f5f5f5
+
+.popup-box
+  display: none
+
+.popup-box:target
+  display: block
+
+.close-popup
+  display: inline
+  position: absolute
+  top: 2px
+  right: 4px
+  margin: 0
+  padding: 0
+
+@media screen and (min-width: 768px)
+  .sheet
+    .list-group-item
+      a.popup
+        margin-right: -30px // Replace .list-group-item's padding
+        padding-right: 30px
+
+  .popup-box
+    background: $color-sheet
+    border: 1px solid $color-sheet-border
+    @include border-radius(4px)
+    position: absolute
+    width: 23em
+    right: 105%
+    top: -3.4em
+    margin: 0
+    padding: 1em
+    @include single-box-shadow($color-shadow, 0, 2px, 10px)
+
+    & > *:last-child
+      margin-bottom: 0
+
+    .close-popup
+      display: none
+
+    .no-js & .close-popup
+      display: inline
+
+    h2
+      margin: 0
+
+    form
+      margin-bottom: 0
+
+      ul
+        margin: 0
+        li
+          // padding: 0.25em 0.5em
+          border-bottom: 0
+          @include border-radius(3px)
+          label
+            padding-left: 0.25em
+
+          li.selected
+            background-color: $color-radio-selected
+
+    // Arrow at right pointing to menu item
+    &:before
+      content: ""
+      display: block // reduce the damage in FF3.0
+      position: absolute
+      right: -21px
+      top: 4em
+      width: 0
+      height: 0
+      border: 10px solid transparent
+      border-left-color: $color-sheet-border
+
+    // creates the smaller triangle
+    &:after
+      content: ""
+      display: block // reduce the damage in FF3.0
+      position: absolute
+      right: -20px
+      top: 4em
+      width: 0
+      height: 0
+      border: 10px solid transparent
+      border-left-color: $color-sheet

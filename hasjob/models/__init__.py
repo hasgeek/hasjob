@@ -11,6 +11,9 @@ db = SQLAlchemy(app)
 agelimit = timedelta(days=30)
 newlimit = timedelta(days=1)
 
+webmail_domains = set(['gmail.com', 'yahoo.com', 'yahoo.co.in', 'hotmail.com', 'outlook.com', 'aol.com',
+    'live.com', 'yopmail.com', 'pobox.com'])
+
 
 class POSTSTATUS:
     DRAFT = 0      # Being written

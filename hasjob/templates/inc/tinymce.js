@@ -56,32 +56,43 @@
 $(function() {
   tinymce.init({
     selector: 'textarea.tinymce',
-    {#
-    // Location of TinyMCE script
-    script_url : '{{ url_for("baseframe.static", filename="js/tiny_mce/tiny_mce.js")|e }}',
-    #}
 
     // General options
-    theme : "advanced",
     {% if config['TYPEKIT_CODE'] -%}
       plugins : "typekit",
     {%- endif %}
 
-    // Theme options
-    theme_advanced_buttons1 : "bold,italic,|,bullist,numlist,|,link,unlink",
-    theme_advanced_buttons2 : "",
-    theme_advanced_buttons3 : "",
-    theme_advanced_toolbar_location : "top",
-    theme_advanced_toolbar_align : "left",
-    theme_advanced_statusbar_location : "bottom",
-    theme_advanced_resizing : true,
-    theme_advanced_path : false,
+    // Options (TinyMCE 4)
+    plugins: "autolink autoresize link lists paste searchreplace",
+    toolbar: "bold italic | bullist numlist | link unlink | searchreplace undo redo",
+    statusbar: false,
+    menubar: false,
+    resize: true,
 
-    valid_elements : "p,br,strong/b,em/i,ul,ol,li,a[!href|title|target]",
+    valid_elements: "p,br,strong/b,em/i,ul,ol,li,a[!href|title|target]",
     width: "100%",
     height: "400",
     // Content CSS
-    content_css : "{{ url_for('static', filename='css/editor.css')|e }}"
-    
+    content_css: {% assets filters="cssmin", output="css/editor.packed.css", "css/editor.css" %}{{ ASSET_URL|tojson }}{% endassets %},
+    setup: function(ed) {
+      // This doesn't work well yet
+      // ed.on('init', function(e) {
+      //   $(ed.editorContainer).find('.mce-toolbar-grp').each(function() {
+      //     var edc = $(ed.editorContainer), toolbar = $(this);
+      //     toolbar.affix({
+      //       offset: {
+      //         top: function() {return toolbar.offset().top},
+      //         bottom: function() {return edc.offset().top + edc.outerHeight(true)}
+      //       }
+      //     })
+      //   });
+      // });
+      ed.on('focus', function(e) {
+        $(ed.editorContainer).addClass('active');
+      });
+      ed.on('blur', function(e) {
+        $(ed.editorContainer).removeClass('active');
+      });
+    } // End of setup keyval
   });
 });
