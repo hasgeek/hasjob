@@ -1,0 +1,23 @@
+{% extends "layout.html" -%}
+{% block messages %}{% endblock %}
+{% block basecontent %}
+  <div class="row">
+    <div class="col-md-10 col-md-offset-1 col-xs-12 col-sm-12">
+      {%- for category, msg in get_flashed_messages(with_categories=true) %}
+        <div class="flash flash-{{ category }}"><p>{{ msg }}</p></div>
+      {%- endfor %}
+      <div class="sheet">
+        <div class="section first">
+          {% block headline %}
+            <div class="page-header"><h1>{{ self.title()|e }}</h1></div>
+          {% endblock %}
+          {% block content %}{% endblock %}
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+{% block layoutscripts %}
+  {% assets "js_tinymce" %}<script src="{{ ASSET_URL }}" type="text/javascript"></script>{% endassets %}
+  {% block footerscripts %}{% endblock %}
+{% endblock %}

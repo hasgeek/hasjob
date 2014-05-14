@@ -3,9 +3,9 @@
 {% block basecontent %}
   <div class="row">
     <div class="col-md-10 col-md-offset-1 col-xs-12 col-sm-12">
-        {%- for category, msg in get_flashed_messages(with_categories=true) %}
-          <div class="flash flash-{{ category }}"><p>{{ msg }}</p></div>
-        {%- endfor %}
+      {%- for category, msg in get_flashed_messages(with_categories=true) %}
+        <div class="flash flash-{{ category }}"><p>{{ msg }}</p></div>
+      {%- endfor %}
       {% block content %}{% endblock %}
     </div>
   </div>

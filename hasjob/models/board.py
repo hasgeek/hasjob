@@ -2,6 +2,7 @@
 
 from pytz import timezone
 from werkzeug import cached_property
+from flask import url_for
 from . import db, BaseMixin, BaseNameMixin
 from .jobpost import JobPost
 
@@ -19,7 +20,7 @@ class Board(BaseNameMixin, db.Model):
     description = db.Column(db.UnicodeText, nullable=False, default=u'')
 
     def __repr__(self):
-        return '<Board %s %s "%s">' % (self.userid, self.name, self.title)
+        return '<Board %s "%s">' % (self.name, self.title)
 
     @cached_property
     def tz(self):
@@ -31,6 +32,22 @@ class Board(BaseNameMixin, db.Model):
         if user.userid == self.userid or self.userid in user.organizations_owned_ids():
             return True
         return False
+
+    def permissions(self, user, inherited=None):
+        perms = super(Board, self).permissions(user, inherited)
+        perms.add('view')
+        if user is not None and user.userid == self.userid or self.userid in user.organizations_owned_ids():
+            perms.add('edit')
+            perms.add('delete')
+        return perms
+
+    def url_for(action='view', _external=False):
+        if action == 'view':
+            return url_for('board_view', board=self.name, _external=_external)
+        elif action == 'edit':
+            return url_for('board_edit', board=self.name, _external=_external)
+        elif action == 'delete':
+            return url_for('board_delete', board=self.name, _external=_external)
 
 
 class BoardJobPost(BaseMixin, db.Model):

@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from flask import Flask
+from flask.ext.assets import Bundle
 from flask.ext.rq import RQ
 from flask.ext.mail import Mail
 from flask.ext.lastuser import Lastuser
@@ -35,9 +36,13 @@ def init_for(env):
     RQ(app)
 
     baseframe.init_app(app, requires=['hasjob'],
-        ext_requires=['baseframe-bs3', ('jquery.textarea-expander', 'jquery.cookie',
-        'jquery.sparkline','jquery.nouislider'), ('firasans', 'baseframe-firasans'), 'fontawesome>=4.0.0'])
+        ext_requires=['baseframe-bs3',
+            ('jquery.textarea-expander', 'jquery.cookie', 'jquery.sparkline','jquery.nouislider', 'jquery.tinymce>=4.0.0'),
+            ('firasans', 'baseframe-firasans'),
+            'fontawesome>=4.0.0'])
     app.assets.register('js_tinymce', assets.require('tinymce.js>=4.0.0'))
+    app.assets.register('css_editor', Bundle('css/editor.css',
+        filters=['cssrewrite', 'cssmin'], output='css/editor.packed.css'))
 
     from hasjob.uploads import configure as uploads_configure
     from hasjob.search import configure as search_configure
