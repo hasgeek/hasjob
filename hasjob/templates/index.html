@@ -13,134 +13,127 @@
 
 {% block content %}
   {%- if g.board %}
-    <div class="flash">
-      <div class="flashmessage">
-        <h2>{{ g.board.title }}</h2>
-        {{ g.board.description|safe }}
-      </div>
+    <div class="flash info">
+      {{ g.board.description|safe }}
     </div>
   {%- endif %}
-  <ul id="stickie-area">
-    {% if jobtype or jobcategory %}
-      <li id="filtered" class="stickie">
-        <a href="{{ url_for('index') }}">
-          <span class="filtered">
-            You are viewing
-            {% if jobtype %}{{ jobtype.title.lower() }}{% endif %}
-            {% if jobcategory %}{{ jobcategory.title.lower() }}{% endif %}
-            jobs. View all jobs?
-          </span>
+  <ul id="stickie-area" class="row">
+    {%- if jobtype or jobcategory -%}
+      <li class="col-xs-12 col-md-3 col-sm-4">
+        <a href="{{ url_for('index') }}" class="stickie special">
+          You are viewing
+          {% if jobtype %}{{ jobtype.title.lower() }}{% endif %}
+          {% if jobcategory %}{{ jobcategory.title.lower() }}{% endif %}
+          jobs. View all jobs?
         </a>
       </li>
-    {%- elif domain %}
-      <li id="filtered" class="stickie">
-        <a href="{{ url_for('index') }}">
-          <span class="filtered">
-            You are viewing jobs at {{ domain }}. View all jobs?
-          </span>
+    {%- elif domain -%}
+      <li class="col-xs-12 col-md-3 col-sm-4">
+        <a href="{{ url_for('index') }}" class="stickie special">
+          You are viewing jobs at {{ domain }}. View all jobs?
         </a>
       </li>
-    {%- elif md5sum %}
-      <li id="filtered" class="stickie">
-        <a href="{{ url_for('index') }}">
-          <span class="filtered">
-            You are viewing jobs at {{ employer_name }}. View all jobs?
-          </span>
+    {%- elif md5sum -%}
+      <li class="col-xs-12 col-md-3 col-sm-4">
+        <a href="{{ url_for('index') }}" class="stickie special">
+          You are viewing jobs at {{ employer_name }}. View all jobs?
         </a>
       </li>
     {%- else -%}
-      {%- if not g.kiosk %}
-        <li id="newpost" class="stickie">
-          <form action="{{ url_for('newjob')|usessl }}" method="POST">
+      {%- if not g.kiosk -%}
+        <li class="col-xs-12 col-md-3 col-sm-4">
+          <form id="newpost" action="{{ url_for('newjob')|usessl }}" method="POST" class="stickie special">
             <input type="hidden" name="_charset_"/>
             <input type="hidden" name="form.id" value="newheadline"/>
-            <label id="newpost_title" for="newpost_headline">Post a job:</label>
-            <textarea id="newpost_headline" name="job_headline" class="expand">Awesome Coder wanted at Awesome Company</textarea>
-            <div id="newpost_details"><input type="submit" value="Add details &rarr;"/></div>
+            <label class="annotation top-left" for="newpost_headline">Post a job</label>
+            <textarea id="newpost_headline" name="job_headline" class="expand form-control">Pragmatic programmer wanted at outstanding organisation</textarea>
+            <div id="newpost_details"><input type="submit" class="btn btn-default btn-sm" value="Add details…"/></div>
           </form>
         </li>
-      {%- endif %}
-      <li id="stickiead" class="stickie" style="background-color:#212530; padding: 0 1.2em;">
-        <a href="https://rootconf.in/2014/" target="_blank" style="padding:1em 1em 0.65em 1em;"><img src="{{ url_for('static', filename='img/banner.png') }}"></a>
-      </li>
+      {%- endif -%}
+      {#-<li class="col-xs-12 col-md-3 col-sm-4">
+        <a class="stickie stickiead" style="background-color:#212530;" href="https://rootconf.in/2014/" target="_blank"><img src="{{ url_for('static', filename='img/banner.png') }}"></a>
+      </li>-#}
     {%- endif -%}
     {%- if grouped %}
       {%- for grouping, group in grouped.items() -%}{%- with post = group[0] -%}
         {%- if group|length == 1 -%}
-          <li class="stickie">
-            <a href="{{ url_for('jobdetail', hashid=post.hashid) }}" rel="bookmark">
-              {%- if post.sticky %}<span class="sticky">Sticky!</span>{% endif %}
-              <span class="location">{{ post.location }}</span>
-              <span class="date">{{ post.datetime|shortdate }}</span>
+          <li class="col-xs-12 col-md-3 col-sm-4">
+            <a class="stickie" href="{{ url_for('jobdetail', hashid=post.hashid) }}" rel="bookmark">
+              {%- if post.sticky %}<span class="pinned">Pinned!</span>{% endif %}
+              <span class="annotation top-left">{{ post.location }}</span>
+              <span class="annotation top-right">{{ post.datetime|shortdate }}</span>
               <span class="headline">{{ post.headline }}</span>
-              {% if siteadmin %}<span class="count">{{ post.viewcounts.applied }}/{{ post.viewcounts.opened }}/{{ post.viewcounts.viewed }} &middot; {{ post.pay_label() }}</span>{% endif %}
-              <span class="company">{{ post.company_name }}</span>
+              {% if siteadmin %}<span class="count">{{ post.viewcounts.applied }}&middot;{{ post.viewcounts.opened }}&middot;{{ post.viewcounts.viewed }} &middot; {{ post.pay_label() }}</span>{% endif %}
+              <span class="annotation bottom-right">{{ post.company_name }}</span>
               {% if now - post.datetime < newlimit -%}
-                <span class="new">New!</span>
+                <span class="new annotation bottom-left">New!</span>
               {%- endif %}
             </a>
           </li>
         {%- else -%}
-          <li class="stickie grouped">
-            <a href="
+          <li class="grouped col-xs-12 col-md-3 col-sm-4">
+            <a class="stickie" href="
                 {%- if grouping[0] in ['sd', 'nd'] -%}
                   {{ url_for('browse_by_domain', domain=grouping[1]) }}
                 {%- elif grouping[0] in ['se', 'ne'] -%}
                   {{ url_for('browse_by_email', md5sum=grouping[1]) }}
                 {%- endif -%}">
-              {%- if post.sticky %}<span class="sticky">Sticky!</span>{% endif %}
-              <span class="location">{{ post.location }}</span>
-              <span class="date">{{ post.datetime|shortdate }}</span>
+              {%- if post.pinned %}<span class="pinned">Pinned!</span>{% endif %}
+              <span class="annotation top-left">{{ post.location }}</span>
+              <span class="annotation top-right">{{ post.datetime|shortdate }}</span>
               <span class="headline">{{ post.headline }}</span>
-              {% if siteadmin %}<span class="count">{{ post.viewcounts.applied }}/{{ post.viewcounts.opened }}/{{ post.viewcounts.viewed }} &middot; {{ post.pay_label() }}</span>{% endif %}
-              <span class="company">{{ post.company_name }}</span>
+              {% if siteadmin %}<span class="count">{{ post.viewcounts.applied }}&middot;{{ post.viewcounts.opened }}&middot;{{ post.viewcounts.viewed }} &middot; {{ post.pay_label() }}</span>{% endif %}
+              <span class="annotation bottom-right">{{ post.company_name }}</span>
               {% if now - post.datetime < newlimit -%}
-                <span class="new">New!</span>
+                <span class="new annotation bottom-left">New!</span>
               {%- endif %}
             </a>
             {%- for post in group[1:] -%}
               <div class="stickie grouped under">
-                {%- if post.sticky %}<span class="sticky">Sticky!</span>{% endif %}
-                <span class="location">{{ post.location }}</span>
-                <span class="date">{{ post.datetime|shortdate }}</span>
+                {%- if post.sticky %}<span class="pinned">Pinned!</span>{% endif %}
+                <span class="annotation top-left">{{ post.location }}</span>
+                <span class="annotation top-right">{{ post.datetime|shortdate }}</span>
                 <span class="headline">{{ post.headline }}</span>
-                {% if siteadmin %}<span class="count">{{ post.viewcounts.applied }}/{{ post.viewcounts.opened }}/{{ post.viewcounts.viewed }} &middot; {{ post.pay_label() }}</span>{% endif %}
-                <span class="company">{{ post.company_name }}</span>
+                {% if siteadmin %}<span class="count">{{ post.viewcounts.applied }}&middot;{{ post.viewcounts.opened }}&middot;{{ post.viewcounts.viewed }} &middot; {{ post.pay_label() }}</span>{% endif %}
+                <span class="annotation bottom-right">{{ post.company_name }}</span>
                 {% if now - post.datetime < newlimit -%}
-                  <span class="new">New!</span>
+                  <span class="new annotation bottom-left">New!</span>
                 {%- endif %}
               </div>
-            {%- endfor %}
+            {%- endfor -%}
           </li>
         {%- endif %}
       {%- endwith -%}{%- endfor -%}
     {%- else %}
       {%- for post in posts -%}
-        <li class="stickie">
-          <a href="{{ url_for('jobdetail', hashid=post.hashid) }}" rel="bookmark">
-            {%- if post.sticky %}<span class="sticky">Sticky!</span>{% endif %}
-            <span class="location">{{ post.location }}</span>
-            <span class="date">{{ post.datetime|shortdate }}</span>
+        <li class="col-xs-12 col-md-3 col-sm-4">
+          <a class="stickie" href="{{ url_for('jobdetail', hashid=post.hashid) }}" rel="bookmark">
+            {%- if post.sticky %}<span class="pinned">Pinned!</span>{% endif %}
+            <span class="annotation top-left">{{ post.location }}</span>
+            <span class="annotation top-right">{{ post.datetime|shortdate }}</span>
             <span class="headline">{{ post.headline }}</span>
-            {% if siteadmin %}<span class="count">{{ post.viewcounts.applied }}/{{ post.viewcounts.opened }}/{{ post.viewcounts.viewed }} &middot; {{ post.pay_label() }}</span>{% endif %}
-            <span class="company">{{ post.company_name }}</span>
+            {% if siteadmin %}<span class="count">{{ post.viewcounts.applied }}&middot;{{ post.viewcounts.opened }}&middot;{{ post.viewcounts.viewed }} &middot; {{ post.pay_label() }}</span>{% endif %}
+            <span class="annotation bottom-right">{{ post.company_name }}</span>
             {%- if now - post.datetime < newlimit -%}
-              <span class="new">New!</span>
+              <span class="new annotation bottom-left">New!</span>
             {%- endif %}
           </a>
         </li>
       {%- else -%}
-        <li class="stickie" id="nojobs">
-          Sorry, no jobs listed.
+        <li class="col-xs-12 col-md-3 col-sm-4">
+          <span class="stickie special">Sorry, no jobs listed.</span>
         </li>
       {%- endfor %}
-    {%- endif %}
+    {%- endif -%}
   </ul>
   {%- if not showall -%}
-    <div class="flash"><div class="flashmessage">
-      You are only seeing jobs listed in the last 24 hours. To see everything,
-      <a class="btn" href="{{ url_for('login') }}">Login with Twitter or Google</a>
-    </div></div>
+    <div class="flash info">
+      <p>
+        You are only seeing jobs listed in the last 24 hours. To see everything,
+        <a class="btn btn-primary btn-sm" href="{{ url_for('login') }}">Login with Twitter or Google</a>
+      </p>
+    </div>
   {%- endif -%}
 {% endblock %}
 {% block footerscripts %}

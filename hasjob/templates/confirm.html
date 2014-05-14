@@ -1,27 +1,26 @@
-{% extends "layout.html" %}
-{% from "inc/forms.html" import renderfield %}
+{% extends "sheet.html" %}
+{% from "baseframe/forms.html" import renderfield %}
 {% block title %}{{ post.headline|e }}{% endblock %}
 {% block content %}
-{% if post.is_draft %}
-<div id="sheet">
-  <div class="section first">
-    <h1>Confirm your listing</h1>
-    <h2>Terms of service</h2>
-    {% include "inc/tos.html" %}
-    <form method="POST">
-      <input type="hidden" name="_charset_"/>
-      <input type="hidden" name="form.id" value="confirmjob"/>
-      {{ form.hidden_tag() }}
-      {{ renderfield(form.terms_accepted, "check") }}
-      <input type="submit" value="Accept terms and publish"/>
-    </form>
-  </div>
-</div>
-{% else %}
-<div class="flash">
-  <div class="flashmessage">
-    Nothing to confirm. <a href="{{ url_for('detail', post.hashid) }}">See the listing</a>?
-  </div>
-</div>
-{% endif %}
+  {% if post.is_draft %}
+    <div class="sheet">
+      <div class="section first">
+        <div class="page-header">
+          <h1>Terms of service</h1>
+        </div>
+        {% include "inc/tos.html" %}
+        <form method="POST" class="form-horizontal">
+          <input type="hidden" name="_charset_"/>
+          <input type="hidden" name="form.id" value="confirmjob"/>
+          {{ form.hidden_tag() }}
+          {{ renderfield(form.terms_accepted, style="wide") }}
+          <input type="submit" class="btn btn-primary" value="Accept terms and publish"/>
+        </form>
+      </div>
+    </div>
+  {% else %}
+    <div class="flash">
+        <p>Nothing to confirm. <a href="{{ url_for('detail', post.hashid) }}">See the listing</a>?</p>
+    </div>
+  {% endif %}
 {% endblock %}

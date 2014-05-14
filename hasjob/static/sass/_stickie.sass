@@ -1,0 +1,214 @@
+#stickie-area
+  margin-top: 12px
+  padding-left: 0
+  list-style: none
+  margin-bottom: 0
+
+  & > li
+    margin-bottom: 20px
+    float: none
+    display: inline-block
+    vertical-align: top
+
+.stickie
+  background: $color-stickie
+  position: relative
+  vertical-align: top
+  display: block
+  font-family: $font-stickie-headline
+  overflow: visible  // To make shadow visible
+  padding: 24px 18px
+  word-wrap: break-word
+  +box-sizing(border-box)
+  +border-radius(2px)
+  +box-shadow(0 1px 4px rgba(0, 0, 0, 0.3), 0 0 10px rgba(0, 0, 0, 0.1) inset)
+
+  /* Make stickies clickable */
+  &,  &:active, &:hover, &:visited
+    text-decoration: none
+    color: inherit
+    border-bottom: 0
+
+  &:before, &:after
+    content: ""
+    position: absolute
+    z-index: -2
+    bottom: 15px
+    left: 10px
+    width: 50%
+    height: 20%
+    max-width: 300px
+    +box-shadow(0 15px 10px $color-shadow)
+    +rotate(-3deg)
+
+  &:after
+    right: 10px
+    left: auto
+    +rotate(3deg)
+
+  label
+    font-weight: normal
+
+  .count  // Count is displayed below headline but in a different font
+    font-size: 90%
+    color: $color-stickie-location
+    // font-family: $font-stickie-location
+    display: block
+
+  .annotation
+    font-size: 90%
+    display: block
+    position: absolute
+    color: $color-stickie-location
+    font-family: $font-stickie-location
+    overflow: hidden
+    white-space: nowrap
+    text-overflow: ellipsis
+    height: 1.2em
+
+  .top-right
+    top: 0.1em
+    right: 0.5em
+
+  .top-left
+    top: 0.1em
+    left: 0.5em
+    width: 75%
+
+  .bottom-right
+    right: 0.5em
+    bottom: 0.25em
+    width: 80%
+    text-align: right
+
+  .bottom-left
+    left: 0.5em
+    bottom: 0.25em
+
+  .new
+    color: $color-stickie-new
+    font-family: $font-stickie-new
+    text-transform: lowercase
+
+  .pinned
+    text-indent: -10000px
+    display: block
+    position: absolute
+    top: -4px
+    left: 135px
+    left: calc(50% - 5px)
+    width: 10px
+    height: 10px
+    +border-radius(5px)
+    background: $color-title-has
+    +box-shadow(0 2px 2px rgba(0, 0, 0, 0.2))
+
+.stickie.grouped.under
+  position: absolute
+  top: -5px
+  left: 10px
+  right: 20px
+  bottom: 5px
+  z-index: -3
+  overflow: hidden
+  +transition-duration(0.1s)
+  +transition-property(top, left, bottom, right)
+  +transition-timing-function(ease-out)
+  &:before, &:after
+    +box-shadow(none)
+
+  .headline
+    display: block
+    overflow: hidden
+    position: absolute
+    top: 1.5em
+    bottom: 1.5em
+    left: 1.5em
+    right: 1.5em
+
+  // Extra stickies, beyond those specified below.
+  // Keep in same position
+  li:hover > &
+    top: 0px
+    left: 15px
+    right: 15px
+    bottom: 0px
+    +transition-duration(0.1s)
+    +transition-property(top, left, bottom, right)
+    +transition-timing-function(ease-out)
+
+  // Top left
+  li:hover > &:nth-of-type(1)
+    top: -15px
+    left: 0px
+    right: 30px
+    bottom: 15px
+
+  // Bottom right
+  li:hover > &:nth-of-type(2)
+    top: 15px
+    left: 30px
+    right: 0px
+    bottom: -15px
+
+  // Top right
+  li:hover > &:nth-of-type(3)
+    top: -10px
+    left: 20px
+    right: 5px
+    bottom: 10px
+
+  // Bottom left
+  li:hover > &:nth-of-type(4)
+    top: 10px
+    left: 5px
+    right: 25px
+    bottom: -10px
+
+  // Top
+  li:hover > &:nth-of-type(5)
+    top: -25px
+    left: 15px
+    right: 15px
+    bottom: 25px
+
+  // Right
+  // Bottom
+  // Left
+
+.stickiead
+  padding: 0
+  text-align: center
+
+.stickie.special
+  background-color: $color-stickie-info
+
+#newpost
+  font-family: inherit
+
+#newpost_headline
+  font-family: $font-stickie-headline
+  width: 100%
+  border: 0
+  background-color: $color-stickie-info
+  resize: none
+  min-height: 0
+  padding: 0
+  +box-shadow(none)
+  +transition-property(background-color, box-shadow)
+  +transition-duration(0.5s)
+  &:hover, &:focus
+    border-color: #66afe9
+    outline: 0
+    +box-shadow(0 0 8px rgba(102,175,233,0.6))
+
+#newpost_details
+  // position: relative
+  // top: 10px
+  margin-top: 12px
+  margin-bottom: -12px
+  text-align: right
+
+@media screen and (min-width: 768px)
+  #stickie-area > li
+    margin-bottom: 30px

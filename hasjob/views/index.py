@@ -16,13 +16,10 @@ from flask import (
     )
 
 from hasjob import app, lastuser
-from hasjob.models import JobCategory, JobPost, JobType, POSTSTATUS, newlimit
+from hasjob.models import webmail_domains, JobCategory, JobPost, JobType, POSTSTATUS, newlimit
 from hasjob.search import do_search
 from hasjob.views.helper import getposts, getallposts
 from hasjob.uploads import uploaded_logos
-
-webmail_domains = set(['gmail.com', 'yahoo.com', 'yahoo.co.in', 'hotmail.com', 'outlook.com', 'aol.com',
-    'live.com', 'yopmail.com'])
 
 
 @app.route('/', subdomain='<subdomain>')

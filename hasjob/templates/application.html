@@ -1,123 +1,101 @@
-{% extends "layout.html" %}
+{% extends "sheet.html" %}
+{% from "macros.html" import jobheader %}
 {% block title %}{{ job_application.user.fullname }} &mdash; {{ post.headline }}{% endblock %}
 
 {% block content %}
-<div id="sheet">
-  <div class="section first">
-    <h1>{{ post.headline }}</h1>
-    {% if post.company_logo %}<img class="post-company-logo" alt="Logo" src="{{ url_for('logoimage', hashid=post.hashid) }}"/>{% endif %}
-    <p class="post-date">Posted {{ post.datetime|longdate }}</p>
-    <p id="company-info">
-      <span class="post-company-name">{{ post.company_name }}</span><br/>
-      <span class="post-location">{{ post.location }}{% if post.relocation_assist %}
-        <em>(relocation assistance available)</em>{% endif %}</span><br/>
-      {%- if post.company_url -%}
-        <span class="post-company-url">
-          <a href="{{ post.company_url }}" target="_blank" rel="nofollow">{{ post.company_url|cleanurl }}</a>
-        </span>
-      {%- endif %}
-    </p>
-    <p id="post-meta">
-      <a href="{{ url_for('jobdetail', hashid=post.hashid) }}">&larr; Return to listing</a>
-    </p>
-  </div>
-  <div class="section columns">
-    <div id="detailed-info">
-      <h2>{{ job_application.user.fullname }}</h2>
-      <p class="post-date">Applied {{ job_application.created_at|longdate }}</p>
-      {{ job_application.message|safe }}
-      <hr>
-      <form id="response_form" method="POST" action="{{ url_for('process_application', hashid=post.hashid, application=job_application.hashid) }}">
-        <input type="hidden" name="_charset_"/>
-        <input type="hidden" name="form.id" value="process_application_form"/>
-        {{ response_form.hidden_tag() }}
-        {%- if job_application.is_new() or job_application.is_pending() or job_application.is_ignored() %}
-          <p>
-            <button id="appl-reply" name="action" value="reply">Respond...</button>
-            <button id="appl-reject" name="action" value="reject">Reject...</button>
-            {% if not job_application.is_ignored() %}<button type="submit" name="action" value="ignore">Ignore candidate</button>{% endif %}
-            <button type="submit" name="action" value="flag">Report spam</button>
-          </p>
-          <p id="appl-instructions">
-            {%- if job_application.is_ignored() %}
-              You have ignored this candidate.
+  <div class="sheet">
+    <div class="section first">
+      {{ jobheader(post) }}
+    </div>
+    <div class="section"><div class="row">
+      <div class="col-md-9">
+        <h2>{{ job_application.user.fullname }}</h2>
+        <p class="post-date">Applied {{ job_application.created_at|longdate }}</p>
+        {{ job_application.message|safe }}
+        <hr>
+        <form id="response_form" method="POST" action="{{ url_for('process_application', hashid=post.hashid, application=job_application.hashid) }}">
+          <input type="hidden" name="_charset_"/>
+          <input type="hidden" name="form.id" value="process_application_form"/>
+          {{ response_form.hidden_tag() }}
+          {%- if job_application.is_new() or job_application.is_pending() or job_application.is_ignored() %}
+            <p>
+              <button class="btn btn-success" id="appl-reply" name="action" value="reply">Respond...</button>
+              <button class="btn btn-info" id="appl-reject" name="action" value="reject">Reject...</button>
+              {% if not job_application.is_ignored() %}<button class="btn btn-info" type="submit" name="action" value="ignore">Ignore candidate</button>{% endif %}
+              <button class="btn btn-danger" type="submit" name="action" value="flag">Report spam</button>
+            </p>
+            <p id="appl-instructions">
+              {%- if job_application.is_ignored() %}
+                You have ignored this candidate.
+              {%- endif %}
+              Respond to the candidate to see their contact information.
+              Rejected candidates will receive a message, but your contact information
+              will not be shared. Spam reports are manually processed.
+            </p>
+          {%- elif job_application.is_flagged() %}
+            <p>
+              <button type="submit" name="action" value="unflag">Report not spam</button>
+            </p>
+            <p>
+              You have flagged this application as spam.
+            </p>
+          {%- elif job_application.is_spam() %}
+            <p>
+              An administrator flagged this application as spam.
+            </p>
+          {%- elif job_application.is_replied() %}
+            <p>
+              <strong>Email:</strong> {{ job_application.email }}<br>
+              <strong>Phone:</strong> {{ job_application.phone }}
+              {%- if job_application.replied_by -%}<br>
+                <strong>Correspondent:</strong> {{ job_application.replied_by.fullname }}
+              {%- endif %}
+            </p>
+            {%- if job_application.response_message %}
+              {{ job_application.response_message|safe }}
             {%- endif %}
-            Respond to the candidate to see their contact information.
-            Rejected candidates will receive a message, but your contact information
-            will not be shared. Spam reports are manually processed.
-          </p>
-        {%- elif job_application.is_flagged() %}
-          <p>
-            <button type="submit" name="action" value="unflag">Report not spam</button>
-          </p>
-          <p>
-            You have flagged this application as spam.
-          </p>
-        {%- elif job_application.is_spam() %}
-          <p>
-            An administrator flagged this application as spam.
-          </p>
-        {%- elif job_application.is_replied() %}
-          <p>
-            <strong>Email:</strong> {{ job_application.email }}<br>
-            <strong>Phone:</strong> {{ job_application.phone }}
-            {%- if job_application.replied_by -%}<br>
-              <strong>Correspondent:</strong> {{ job_application.replied_by.fullname }}
+          {%- elif job_application.is_rejected() %}
+            {%- if job_application.response_message %}
+              {{ job_application.response_message|safe }}
             {%- endif %}
+          {%- endif %}
+        </form>
+        <div id="appl-response" class="hidden">
+          <p>
+            <strong>From:</strong> {{ g.user.fullname if post.admin_is(g.user) else post.fullname or post.company_name }} (via {{ config['SITE_TITLE'] }}) &lt;{{ config['MAIL_SENDER'] }}&gt;<br>
+            <span id="appl-yesreply" class="hidden"><strong>Reply-To:</strong> {{ g.user.fullname if post.admin_is(g.user) else post.fullname or post.company_name }} &lt;{{ post.email }}&gt;<br></span>
+            <strong>To:</strong> {{ job_application.user.fullname }}<br>
+            <strong>Subject:</strong> Regarding your job application for {{ post.headline }}
           </p>
-          {%- if job_application.response_message %}
-            {{ job_application.response_message|safe }}
-          {%- endif %}
-        {%- elif job_application.is_rejected() %}
-          {%- if job_application.response_message %}
-            {{ job_application.response_message|safe }}
-          {%- endif %}
-        {%- endif %}
-      </form>
-      <div id="appl-response" class="hidden">
-        <p>
-          <strong>From:</strong> {{ g.user.fullname if post.admin_is(g.user) else post.fullname or post.company_name }} (via {{ config['SITE_TITLE'] }}) &lt;{{ config['MAIL_SENDER'] }}&gt;<br>
-          <span id="appl-yesreply" class="hidden"><strong>Reply-To:</strong> {{ g.user.fullname if post.admin_is(g.user) else post.fullname or post.company_name }} &lt;{{ post.email }}&gt;<br></span>
-          <strong>To:</strong> {{ job_application.user.fullname }}<br>
-          <strong>Subject:</strong> Regarding your job application for {{ post.headline }}
-        </p>
-        <p id="appl-responded" class="hidden">
-          <em>{{ g.user.fullname if post.admin_is(g.user) else post.fullname or post.company_name }} has responded to your application for {{ post.headline }}:</em>
-        </p>
-        <p id="appl-rejected" class="hidden">
-          <em>{{ g.user.fullname if post.admin_is(g.user) else post.fullname or post.company_name }} has declined your application for {{ post.headline }}:</em>
-        </p>
-        {% include "inc/replyform.html" %}
+          <p id="appl-responded" class="hidden">
+            <em>{{ g.user.fullname if post.admin_is(g.user) else post.fullname or post.company_name }} has responded to your application for {{ post.headline }}:</em>
+          </p>
+          <p id="appl-rejected" class="hidden">
+            <em>{{ g.user.fullname if post.admin_is(g.user) else post.fullname or post.company_name }} has declined your application for {{ post.headline }}:</em>
+          </p>
+          {% include "inc/replyform.html" %}
+        </div>
       </div>
-    </div>
-    <div id="detail-sidebar">
-      {%- if post.admin_is(g.user) %}
-        <h3>Filters</h3>
-        <p>
-          {%- for status in statuses %}
-            <label class="status_filter" style="display: inline-block; padding: 1px 3px">
-              <input type="checkbox" class="status_filter" checked="checked" value="{{ status|lower }}"> {{ status }} 
-            </label>
-          {%- endfor %}
-        </p>
-        <ul id="applicant-list" style="height: 100%; max-height: 500px; overflow-y: auto;">
-          {%- for appl in post.applications %}
-            <li class="status_{{ appl.status|lower }}"><a href="{{ url_for('view_application', hashid=post.hashid, application=appl.hashid) }}">
-              {%- if appl == job_application -%}
-                <strong>{{ appl.user.fullname }}</strong>
-              {%- else -%}
-                {{ appl.user.fullname }}
-              {%- endif -%}
-              <br><span class="post-date">{{ appl.created_at|shortdate }} &middot;
-              {%- if appl.is_new() %} <strong>{{ appl.status }}</strong>{% else %} {{ appl.status }}{% endif %}
-              </span>
-            </a></li>
-          {%- endfor %}
-        </ul>
-      {%- endif %}
-    </div>
+      <div class="col-md-3">
+        {%- if post.admin_is(g.user) %}
+          <div class="list-group">
+            {%- for appl in post.applications %}
+              <a class="list-group-item status_{{ appl.status|lower }}" href="{{ url_for('view_application', hashid=post.hashid, application=appl.hashid) }}">
+                {%- if appl == job_application -%}
+                  <strong>{{ appl.user.fullname }}</strong>
+                {%- else -%}
+                  {{ appl.user.fullname }}
+                {%- endif -%}
+                <br><span class="post-date">{{ appl.created_at|shortdate }} &middot;
+                {%- if appl.is_new() %} <strong>{{ appl.status }}</strong>{% else %} {{ appl.status }}{% endif %}
+                </span>
+              </a>
+            {%- endfor %}
+          </div>
+        {%- endif %}
+      </div>
+    </div></div>
   </div>
-</div>
 {% endblock %}
 {% block footerscripts %}
   {% assets "js_tinymce" %}<script src="{{ ASSET_URL }}" type="text/javascript"></script>{% endassets %}
@@ -168,34 +146,6 @@
         e.preventDefault();
         return false;
       });
-
-      var cookie_id = 'status_filters_{{ post.hashid }}';
-
-      $.cookie.json = true;
-      var existing = $.cookie(cookie_id);
-
-      var status_filter = function() {
-        $('#applicant-list li').hide();
-        var checked = [];
-        $('input.status_filter:checked').each(function(e) {
-          $('#applicant-list li.status_' + $(this).val()).show();
-          checked.push($(this).val());
-        });
-        existing = checked;
-        $.cookie(cookie_id, checked);
-      };
-
-      $('label.status_filter').click(status_filter);
-
-      if(existing) {
-        $('input.status_filter').attr('checked', null);
-        for(i in existing) {
-          $('input.status_filter[value=' + existing[i] + ']').attr('checked', 'checked');
-        }
-        status_filter();
-      }
-
-
     });
   </script>
 {% endblock %}

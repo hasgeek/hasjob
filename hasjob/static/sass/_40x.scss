@@ -7,7 +7,7 @@
   display: inline-block;
   text-align: center;
   width: auto;
-  margin-top: 2em;
+  margin: 24px 0;
 }
 #i40x {
   font-size: 150px;
@@ -26,7 +26,7 @@
   position: relative;
 }
 .i0 {
-  color: #f0a40c;
+  color: $color-title-jobs;
   z-index: -1;
 }
 .i5 {

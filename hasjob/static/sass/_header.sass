@@ -1,0 +1,53 @@
+body
+  font-family: $font-default
+  background: #e8e7e6 image-url("canvas.jpg")
+
+header
+  margin-bottom: 0
+  background: #ebe7e4 image-url("paper.jpg")
+  border-bottom: none
+  +box-shadow(0 1px 5px $color-shadow)
+
+h1
+  color: $color-title-has
+  font-size: 30px
+  margin-top: 12px
+  margin-bottom: 0
+  small
+    color: $color-title-geek
+    font-size: 70%
+    font-weight: bold
+
+  a, a:hover, a:focus, a:active, a:visited
+    color: inherit
+    text-decoration: none
+    border-bottom: 1px solid transparent
+    +box-shadow(0 -4px 0 transparent inset)
+    +transition-property(border-bottom, box-shadow)
+    +transition-duration(0.5s)
+
+  a:hover, a:focus, a:active
+    border-bottom: 1px solid $color-title-jobs
+    +box-shadow(0 -4px 0 $color-title-jobs inset)
+    +transition-property(border-bottom, box-shadow)
+    +transition-duration(0.5s)
+
+#page-header
+  border-bottom: none
+
+#logo
+  +replace-text-with-dimensions('logo-star.png')
+
+#hg-networkbar.navbar .navbar-brand
+  padding: 0
+  display: block
+  +replace-text-with-dimensions('logo-star.png')
+  height: 48px
+  background-position: left center
+  background-size: auto 100%
+  background-repeat: none
+  text-indent: -1000px
+
+@media screen and (min-width: 768px)
+  header
+    margin-bottom: 12px

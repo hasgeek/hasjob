@@ -95,8 +95,7 @@ class ListingForm(Form):
         validators=[validators.Required(u"This is required. Posting any name other than that of the actual organization is a violation of the ToS"),
             validators.Length(min=4, max=80, message="The name must be within %(min)d to %(max)d characters")])
     company_logo = FileField("Logo",
-        description=u"Optional — Your company logo will appear at the top of your listing. "
-                    u"170px wide is optimal. We’ll resize automatically if it’s wider",
+        description=u"Optional — Your company logo will appear at the top of your listing.",
         )  # validators=[file_allowed(uploaded_logos, "That image type is not supported")])
     company_logo_remove = BooleanField("Remove existing logo")
     company_url = TextField("URL",
@@ -112,10 +111,11 @@ class ListingForm(Form):
     #     description=u"This is your name, for our records. Will not be revealed to applicants",
     #     validators=[validators.Required("We need your name")])
     poster_email = EmailField("Email",
-        description=u"This is where we’ll send your confirmation email and all job applications. "
+        description=Markup(u"This is where we’ll send your confirmation email and all job applications. "
                     u"We recommend using a shared email address such as jobs@your-company.com. "
-                    u"Listings are classified by your email domain. "
-                    u"Your email address will not be revealed to applicants until you respond",
+                    u"<strong>Listings are classified by your email domain,</strong> "
+                    u"so use a work email address. "
+                    u"Your email address will not be revealed to applicants until you respond"),
         validators=[validators.Required("We need to confirm your email address before the job can be listed"),
             validators.Length(min=5, max=80, message="%(max)d characters maximum"),
             validators.Email("That does not appear to be a valid email address"),
@@ -149,7 +149,10 @@ class ListingForm(Form):
     def validate_job_headline(form, field):
         if EMAIL_RE.search(field.data) is not None:
             raise ValidationError(u"Do not include contact information in the listing")
-        if simplify_text(field.data) == 'awesome coder wanted at awesome company':
+        if simplify_text(field.data) in (
+                'awesome coder wanted at awesome company',
+                'pragmatic programmer wanted at outstanding organisation',
+                'pragmatic programmer wanted at outstanding organization'):
             raise ValidationError(u"Come on, write your own headline. You aren’t just another run-of-the-mill company, right?")
         caps = len(CAPS_RE.findall(field.data))
         small = len(SMALL_RE.findall(field.data))
@@ -185,10 +188,10 @@ class ListingForm(Form):
         if form.job_pay_type.data != PAY_TYPE.NOCASH:
             if not field.data:
                 raise ValidationError("Please specify what this job pays")
-            data = field.data
+            data = field.data.strip()
             if not data[0].isdigit():
                 data = data[1:]  # Remove currency symbol
-            data = data.replace(',', '')  # Remove thousands separator
+            data = data.replace(',', '').strip()  # Remove thousands separator
             if data.isdigit():
                 field.data = int(data)
             else:
@@ -198,11 +201,11 @@ class ListingForm(Form):
 
     def validate_job_pay_cash_max(form, field):
         if form.job_pay_type.data != PAY_TYPE.NOCASH:
-            data = field.data
+            data = field.data.strip()
             if data:
                 if not data[0].isdigit():
                     data = data[1:]  # Remove currency symbol
-                data = data.replace(',', '')  # Remove thousands separator
+                data = data.replace(',', '').strip()  # Remove thousands separator
             if data and data.isdigit():
                 field.data = int(data)
             else:
@@ -212,11 +215,11 @@ class ListingForm(Form):
 
     def validate_job_pay_equity_min(form, field):
         if form.job_pay_equity.data:
-            data = field.data
+            data = field.data.strip()
             if data:
                 if not data[-1].isdigit():
                     data = field.data[:-1]  # Remove % symbol
-                data = data.replace(',', '')  # Remove thousands separator
+                data = data.replace(',', '').strip()  # Remove thousands separator
                 try:
                     field.data = Decimal(data)
                 except InvalidOperation:
@@ -229,11 +232,11 @@ class ListingForm(Form):
 
     def validate_job_pay_equity_max(form, field):
         if form.job_pay_equity.data:
-            data = field.data
+            data = field.data.strip()
             if data:
                 if not data[-1].isdigit():
                     data = field.data[:-1]  # Remove % symbol
-                data = data.replace(',', '')  # Remove thousands separator
+                data = data.replace(',', '').strip()  # Remove thousands separator
                 try:
                     field.data = Decimal(data)
                 except InvalidOperation:

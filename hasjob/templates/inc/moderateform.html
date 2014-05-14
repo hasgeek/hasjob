@@ -1,9 +1,9 @@
-{% from "inc/forms.html" import renderfield, ajaxform %}
-<form id="moderateform" method="POST" action="{{ url_for('moderatejob', hashid=post.hashid) }}">
+{% from "baseframe/forms.html" import renderfield, ajaxform %}
+<form id="moderateform" method="POST" action="{{ url_for('moderatejob', hashid=post.hashid) }}" class="form-horizontal">
   <input type="hidden" name="_charset_"/>
   <input type="hidden" name="form.id" value="moderateform"/>
   {{ moderateform.hidden_tag() }}
-  {{ renderfield(moderateform.reason) }}
-  <button type="submit" name="submit" value="moderate">Moderate</button>
+  {{ renderfield(moderateform.reason, rows=6, style="wide", nolabel=true) }}
+  <button type="submit" name="submit" class="btn btn-primary btn-sm" value="moderate">Moderate</button>
 </form>
-{% if ajaxreg %}{{ ajaxform("moderateform") }}{% endif %}
+{{ ajaxform("moderateform", request) }}

@@ -20,6 +20,8 @@ dnspython
 html2text
 premailer
 langid
+pyyaml
+nltk
 Flask-Script==0.5.3
 https://github.com/hasgeek/coaster/zipball/master
 https://github.com/hasgeek/flask-lastuser/zipball/master

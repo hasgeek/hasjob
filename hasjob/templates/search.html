@@ -1,37 +1,38 @@
 {% extends "layout.html" %}
 {% block title %}Search results{% endblock %}
 {% block content %}
-<ul id="stickie-area">
-  <li id="filtered" class="stickie">
-    <a href="{{ url_for('index') }}">
-      <span class="filtered">
-        You are viewing search results for
-        “{{ request.args['q'] }}”. View all jobs?
-      </span>
+<ul id="stickie-area" class="row">
+  <li class="col-xs-12 col-md-3 col-sm-4">
+    <a href="{{ url_for('index') }}" id="filtered" class="stickie special">
+      You are viewing search results for
+      “{{ request.args['q'] }}”. View all jobs?
     </a>
   </li>
   {%- for result in results -%}
-  <li class="stickie{% if result.idref in ['type', 'category'] %} special{% endif %}">
-    <a href="{{ result|urlfor }}">
+  <li class="col-xs-12 col-md-3 col-sm-4">
+    <a href="{{ result|urlfor }}" class="stickie {%- if result.idref in ['type', 'category'] %} special{% endif %}">
       {% if result.idref == 'type' %}
-        Job Type: {{ result.title }}
+        <span class="annotation top-left">Job Type</span>
+        {{ result.title }}
       {% elif result.idref == 'category' %}
-        Job Category: {{ result.title }}
+        <span class="annotation top-left">Job Category</span>
+        {{ result.title }}
       {% elif result.idref == 'post' %}
-        <span class="location">{{ result.location }}</span>
-        <span class="date">{{ result.datetime|shortdate }}</span>
+        <span class="annotation top-left">{{ result.location }}</span>
+        <span class="annotation top-right">{{ result.datetime|shortdate }}</span>
         <span class="headline">{{ result.headline }}</span>
-        <span class="company">{{ result.company_name }}</span>
-        {%- if now - result.datetime < newlimit %}<span class="new">New!</span>{% endif %}
+        <span class="annotation bottom-right">{{ result.company_name }}</span>
+        {% if now - result.datetime < newlimit -%}
+          <span class="new annotation bottom-left">New!</span>
+        {%- endif %}
       {% endif %}
     </a>
   </li>
   {%- else -%}
-  <li id="nojobs" class="stickie">
-    <span class="filtered">
-      No jobs found.
-    </span>
-  </li>
+  <li class="col-xs-12 col-md-3 col-sm-4">
+  <span id="nojobs" class="stickie special">
+    No jobs found.
+  </span>
   {% endfor %}
 </ul>
 {% endblock %}
