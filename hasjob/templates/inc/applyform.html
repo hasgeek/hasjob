@@ -3,13 +3,17 @@
   <input type="hidden" name="_charset_"/>
   <input type="hidden" name="form.id" value="applyform"/>
   {{ applyform.hidden_tag() }}
-  <div class="form-group">
-    <label class="col-xs-12 col-sm-3 col-md-2 control-label" for="apply_name">Name</label>
-    <div class="col-xs-12 col-sm-9 col-md-10 controls">
-      <input class="form-control" id="apply_name" type="text" value="{{ g.user.fullname }}" disabled />
-      <p class="help-block">You may edit your name from <a href="{{ g.user.profile_url }}" target="_blank">your profile</a></p>
+  {%- if applyform.apply_fullname %}
+    {{ renderfield(applyform.apply_fullname) }}
+  {%- else %}
+    <div class="form-group">
+      <label class="col-xs-12 col-sm-3 col-md-2 control-label" for="apply_name">Name</label>
+      <div class="col-xs-12 col-sm-9 col-md-10 controls">
+        <input class="form-control" id="apply_name" type="text" value="{{ g.user.fullname }}" disabled />
+        <p class="help-block">You may edit your name from <a href="{{ g.user.profile_url }}" target="_blank">your profile</a></p>
+      </div>
     </div>
-  </div>
+  {%- endif %}
   {{ renderfield(applyform.apply_email) }}
   {{ renderfield(applyform.apply_phone) }}
   {{ renderfield(applyform.apply_message, style="wide", widget_css_class="tinymce") }}

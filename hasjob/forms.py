@@ -350,6 +350,28 @@ class ApplicationForm(Form):
             raise ValidationError("Do not include your email address or phone number in the application")
 
 
+class KioskApplicationForm(Form):
+    apply_fullname = TextField("Fullname", validators=[validators.Required("Specify your name")],
+        description="Your full name")
+    apply_email = TextField("Email", validators=[validators.Required("Specify an email address")],
+        description="Your email address")
+    apply_phone = TextField("Phone",
+        validators=[validators.Required("Specify a phone number"),
+            validators.Length(min=1, max=15, message="%(max)d characters maximum")],
+        description="A phone number the employer can reach you at")
+    apply_message = TinyMce4Field("Job application",
+        content_css=content_css,
+        validators=[validators.Required("You need to say something about yourself"),
+            AllUrlsValid()],
+        description=u"Please provide all details the employer has requested. To add a resume, "
+            u"post it on LinkedIn or host the file on Dropbox and insert the link here")
+
+    def validate_email(form, field):
+        oldapp = JobApplication.query.filter_by(jobpost=self.post, user=None, email=field.data).count()
+        if oldapp:
+            raise ValidationError("You have already applied for this position")
+
+
 class ApplicationResponseForm(Form):
     response_message = TinyMce4Field("",
         content_css=content_css)

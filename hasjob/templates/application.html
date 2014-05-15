@@ -82,9 +82,9 @@
             {%- for appl in post.applications %}
               <a class="list-group-item status_{{ appl.status|lower }}" href="{{ url_for('view_application', hashid=post.hashid, application=appl.hashid) }}">
                 {%- if appl == job_application -%}
-                  <strong>{{ appl.user.fullname }}</strong>
+                  <strong>{{ appl.fullname }}</strong>
                 {%- else -%}
-                  {{ appl.user.fullname }}
+                  {{ appl.fullname }}
                 {%- endif -%}
                 <br><span class="post-date">{{ appl.created_at|shortdate }} &middot;
                 {%- if appl.is_new() %} <strong>{{ appl.status }}</strong>{% else %} {{ appl.status }}{% endif %}

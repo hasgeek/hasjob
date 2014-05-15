@@ -206,8 +206,9 @@
         </p>
       {%- endif %}
     </div>
-    {%- if not post.is_draft() and g.user and applyform %}
-      <div id="apply-section" class="section {%- if jobview and not jobview.applied %} hidden {%- endif -%}">
+    {%- if not post.is_draft() and (g.user or g.kiosk) and applyform %}
+      <div id="apply-section" class="section {%- if g.kiosk or (jobview and not jobview.applied) %} hidden {%- endif -%}">
+        {#- This form must be part of the page (even if hidden) in kiosk mode, so remember that if we ever remove it pre-reveal #}
         {% include "inc/applyform.html" %}
       </div>
     {%- elif job_application %}

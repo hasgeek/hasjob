@@ -93,6 +93,9 @@ def jobdetail(hashid):
         if not job_application:
             applyform = forms.ApplicationForm()
             applyform.apply_phone.data = g.user.phone
+    elif g.kiosk and g.peopleflow_url:
+        applyform = forms.KioskApplicationForm()
+        job_application = None
     else:
         job_application = None
     if reportform.validate_on_submit():
@@ -162,13 +165,15 @@ def revealjob(hashid):
 
 @app.route('/apply/<hashid>', methods=['POST'], subdomain='<subdomain>')
 @app.route('/apply/<hashid>', methods=['POST'])
-@lastuser.requires_login
 def applyjob(hashid):
     """
-    Apply to a job
+    Apply to a job (including in kiosk mode)
     """
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
-    job_application = JobApplication.query.filter_by(user=g.user, jobpost=post).first()
+    if g.user:
+        job_application = JobApplication.query.filter_by(user=g.user, jobpost=post).first()
+    else:
+        job_application = None
     if job_application:
         flashmsg = "You have already applied to this job. You may not apply again"
         if request.is_xhr:
@@ -177,17 +182,29 @@ def applyjob(hashid):
             flash(flashmsg, 'interactive')
             return redirect(url_for('jobdetail', hashid=post.hashid), 303)
     else:
-        applyform = forms.ApplicationForm()
+        if g.kiosk:
+            applyform = forms.KioskApplicationForm()
+        else:
+            applyform = forms.ApplicationForm()
+        applyform.post = post
         if applyform.validate_on_submit():
-            if g.user.blocked:
+            if g.user and g.user.blocked:
                 flashmsg = "Your account has been blocked from applying to jobs"
             else:
-                job_application = JobApplication(user=g.user, jobpost=post,
-                    fullname=g.user.fullname,
-                    email=applyform.apply_email.data,
-                    phone=applyform.apply_phone.data,
-                    message=applyform.apply_message.data,
-                    words=applyform.words)
+                if g.kiosk:
+                    job_application = JobApplication(user=None, jobpost=post,
+                        fullname=applyform.apply_fullname.data,
+                        email=applyform.apply_email.data,
+                        phone=applyform.apply_phone.data,
+                        message=applyform.apply_message.data,
+                        words=None)
+                else:
+                    job_application = JobApplication(user=g.user, jobpost=post,
+                        fullname=g.user.fullname,
+                        email=applyform.apply_email.data,
+                        phone=applyform.apply_phone.data,
+                        message=applyform.apply_message.data,
+                        words=applyform.words)
                 db.session.add(job_application)
                 db.session.commit()
                 email_html = email_transform(
@@ -202,6 +219,9 @@ def applyjob(hashid):
 
                 msg = Message(subject=u"Job application: {fullname}".format(fullname=job_application.fullname),
                     recipients=[post.email])
+                if not job_application.user:
+                    # Also BCC the candidate
+                    msg.bcc = [job_application.email]
                 msg.body = email_text
                 msg.html = email_html
                 mail.send(msg)
