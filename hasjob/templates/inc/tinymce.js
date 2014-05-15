@@ -92,6 +92,7 @@ $(function() {
       });
       ed.on('blur', function(e) {
         $(ed.editorContainer).removeClass('active');
+        tinymce.triggerSave();
       });
     } // End of setup keyval
   });

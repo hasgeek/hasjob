@@ -15,10 +15,10 @@
   {{ renderfield(applyform.apply_message, style="wide", widget_css_class="tinymce") }}
   {{ rendersubmit([(None, "Apply", 'btn-primary')], style='wide') }}
 </form>
-{% if ajaxreg %}
+{%- if request.is_xhr %}
   {{ ajaxform("applyform", request) }}
   <script type="text/javascript">
     radioHighlight('apply_email', 'selected');
     {% include "inc/tinymce.js" %}
   </script>
-{% endif %}
+{%- endif %}
