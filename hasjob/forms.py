@@ -393,4 +393,5 @@ class BoardForm(Form):
         validators=[validators.Required("A description of the job board is required"),
             AllUrlsValid()])
     userid = RadioField(u"Owner", validators=[validators.Required("Select an owner")],
-        description=u"Select the user or organization who owns this board")
+        description=u"Select the user or organization who owns this board. "
+            "Owners can add jobs to the board and edit settings")

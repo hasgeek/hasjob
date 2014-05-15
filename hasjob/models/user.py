@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from flask.ext.lastuser.sqlalchemy import UserBase
-from hasjob.models import db
+from . import db
 
 __all__ = ['User']
 

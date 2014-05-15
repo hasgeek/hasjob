@@ -308,7 +308,7 @@ def process_application(hashid, application):
                 msg.html = email_html
                 mail.send(msg)
                 job_application.replied_by = g.user
-                flashmsg = "We sent your message to the candidate and copied you."
+                flashmsg = "We sent your message to the candidate and copied you. Their email and phone number are below"
                 db.session.commit()
         elif request.form.get('action') == 'ignore' and job_application.can_ignore():
             job_application.response = EMPLOYER_RESPONSE.IGNORED
@@ -489,6 +489,8 @@ def confirm_email(hashid, key):
             post.email_verified = True
             post.status = POSTSTATUS.CONFIRMED
             post.datetime = datetime.utcnow()
+            if g.board:
+                post.add_to(g.board)
             db.session.commit()
             if app.config['TWITTER_ENABLED']:
                 try:
