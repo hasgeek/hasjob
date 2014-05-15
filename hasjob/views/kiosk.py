@@ -13,16 +13,19 @@ def kiosk_mode_flag():
         g.kiosk = True
     else:
         g.kiosk = False
+    g.peopleflow_url = session.get('peopleflow')
 
 
 @app.route('/admin/kiosk')
 def kiosk_mode():
     if getbool(request.args.get('enable')):
         session['kiosk'] = True
+        session['peopleflow'] = request.args.get('url')
         session.permanent = True
         flash("Kiosk mode has been enabled", 'success')
     else:
         session.pop('kiosk', None)
+        session.pop('peopleflow', None)
         session.permanent = False
         flash("Kiosk mode has been disabled", 'success')
     return redirect(url_for('index'))

@@ -179,9 +179,13 @@
       </h2>
       {%- if g.kiosk %}
         <p>
-          You can’t apply from this kiosk. Open this link on your phone or computer:
+          {% if g.peopleflow_url %}
+            <strong>Tap your badge</strong> on the attached reader to connect with the employer. You can also open this link on your phone or computer:<br/>
+          {% else %}
+            Open this link on your phone or computer:<br/>
+          {% endif %}
           {%- with len = post.hashid|length %}
-            {{ url_for('jobdetail', hashid=post.hashid, subdomain=None, _external=True)[:-len] }}<strong>{{ post.hashid }}</strong>
+            <big>{{ url_for('jobdetail', hashid=post.hashid, _external=True)[:-len] }}<strong>{{ post.hashid }}</strong></big>
           {%- endwith %}
         </p>
       {%- else %}
