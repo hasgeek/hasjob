@@ -48,7 +48,7 @@ def board_new():
                 board.add(post)
         db.session.commit()
         flash(u"Created a job board named %s" % board.title, 'success')
-        return render_redirect(url_for('board_edit', board=board.name), code=303)
+        return render_redirect(url_for('board_view', board=board.name), code=303)
     return render_form(form=form, title=u"Create a job board…", submit="Next",
         message=u"Make your own job board with just the jobs you want to showcase. "
             "Your board will appear as a subdomain",
