@@ -1,6 +1,6 @@
 {% extends "sheet.html" %}
 {% from "macros.html" import jobheader %}
-{% block title %}{{ job_application.user.fullname }} &mdash; {{ post.headline }}{% endblock %}
+{% block title %}{{ job_application.fullname }} &mdash; {{ post.headline }}{% endblock %}
 
 {% block content %}
   <div class="sheet">
@@ -9,7 +9,7 @@
     </div>
     <div class="section"><div class="row">
       <div class="col-md-9">
-        <h2>{{ job_application.user.fullname }}</h2>
+        <h2>{{ job_application.fullname }}</h2>
         <p class="post-date">Applied {{ job_application.created_at|longdate }}</p>
         {{ job_application.message|safe }}
         <hr>
@@ -64,7 +64,7 @@
           <p>
             <strong>From:</strong> {{ g.user.fullname if post.admin_is(g.user) else post.fullname or post.company_name }} (via {{ config['SITE_TITLE'] }}) &lt;{{ config['MAIL_SENDER'] }}&gt;<br>
             <span id="appl-yesreply" class="hidden"><strong>Reply-To:</strong> {{ g.user.fullname if post.admin_is(g.user) else post.fullname or post.company_name }} &lt;{{ post.email }}&gt;<br></span>
-            <strong>To:</strong> {{ job_application.user.fullname }}<br>
+            <strong>To:</strong> {{ job_application.fullname }}<br>
             <strong>Subject:</strong> Regarding your job application for {{ post.headline }}
           </p>
           <p id="appl-responded" class="hidden">

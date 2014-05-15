@@ -1,9 +1,9 @@
 {% extends "inc/email_layout.html" %}
 
-{% block title %}Job Application: {{ job_application.user.fullname }}{% endblock %}
+{% block title %}Job Application: {{ job_application.fullname }}{% endblock %}
 
 {% block preview -%}
-  {{ job_application.user.fullname }} has applied for &ldquo;{{ post.headline }}&rdquo;
+  {{ job_application.fullname }} has applied for &ldquo;{{ post.headline }}&rdquo;
 {%- endblock %}
 
 {% block archive -%}
@@ -12,7 +12,7 @@
 
 {% block content -%}
   <p>
-    <strong>{{ job_application.user.fullname }}</strong> has applied for <a href="{{ url_for('jobdetail', hashid=post.hashid, _external=True) }}" target="_blank">{{ post.headline }}</a>:
+    <strong>{{ job_application.fullname }}</strong> has applied for <a href="{{ url_for('jobdetail', hashid=post.hashid, _external=True) }}" target="_blank">{{ post.headline }}</a>:
   </p>
   <blockquote>
     {{ job_application.message|safe }}

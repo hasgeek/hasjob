@@ -183,6 +183,7 @@ def applyjob(hashid):
                 flashmsg = "Your account has been blocked from applying to jobs"
             else:
                 job_application = JobApplication(user=g.user, jobpost=post,
+                    fullname=g.user.fullname,
                     email=applyform.apply_email.data,
                     phone=applyform.apply_phone.data,
                     message=applyform.apply_message.data,
@@ -199,7 +200,7 @@ def applyjob(hashid):
                 email_text = html2text(email_html)
                 flashmsg = "Your application has been sent to the employer"
 
-                msg = Message(subject=u"Job application: {fullname}".format(fullname=job_application.user.fullname),
+                msg = Message(subject=u"Job application: {fullname}".format(fullname=job_application.fullname),
                     recipients=[post.email])
                 msg.body = email_text
                 msg.html = email_html

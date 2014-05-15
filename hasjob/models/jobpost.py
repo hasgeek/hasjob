@@ -358,8 +358,10 @@ class JobApplication(BaseMixin, db.Model):
     #: Hash id (to hide database ids)
     hashid = db.Column(db.String(40), nullable=False, unique=True)
     #: User who applied for this listing
-    user_id = db.Column(None, db.ForeignKey('user.id'))
+    user_id = db.Column(None, db.ForeignKey('user.id'), nullable=True)  # TODO: add unique=True
     user = db.relationship(User, foreign_keys=user_id)
+    #: Full name of the user (as it was at the time of the application)
+    fullname = db.Column(db.Unicode(250), nullable=False)
     #: Job listing they applied to
     jobpost_id = db.Column(None, db.ForeignKey('jobpost.id'))
     #: User's email address
