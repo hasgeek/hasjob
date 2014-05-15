@@ -7,6 +7,9 @@
   {%- if post.is_old() %}
     <meta name="robots" content="nofollow" />
   {%- endif %}
+  {%- if g.board %}
+    <link rel="canonical" href="{{ url_for('jobdetail', hashid=post.hashid, subdomain=none) }}" />
+  {%- endif %}
 {% endblock %}
 {% block content %}
   {% if post.is_unpublished() %}
