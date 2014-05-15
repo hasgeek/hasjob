@@ -299,6 +299,7 @@ class ListingForm(Form):
                         success = False
         return success
 
+
 class ApplicationForm(Form):
     apply_email = RadioField("Email", validators=[validators.Required("Pick an email address")],
         description="Add new email addresses from your profile")
