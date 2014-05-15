@@ -1,6 +1,14 @@
 {% extends "baseframe.html" -%}
 {% from "baseframe/components.html" import responsive_networkbar with context %}
 
+{% block doctypehtml -%}
+<!DOCTYPE html>
+<!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="en" {% block manifest %}{%- if g.kiosk %} manifest="{{ url_for('kiosk_manifest') }}" {%- endif %}{% endblock %}> <![endif]-->
+<!--[if IE 7]>    <html class="no-js lt-ie9 lt-ie8" lang="en" {{ self.manifest() }}> <![endif]-->
+<!--[if IE 8]>    <html class="no-js lt-ie9" lang="en" {{ self.manifest() }}> <![endif]-->
+<!--[if gt IE 8]><!--> <html lang="en" class="no-js {%- if g.user %} userlogin {%- else %} no-userlogin {%- endif %}" {{ self.manifest() }}> <!--<![endif]-->
+{%- endblock %}
+
 {%- block titletags %}
   <title>{% block title %}{{ title }}{% endblock %}{% if g.board %}{{ g.board.title }}{% else %}{{ config['SITE_TITLE'] }}{% endif %}</title>
   <meta name="DC.title" content="{{ self.title()|e }}" />
@@ -17,9 +25,9 @@
 
 {% block headerbox -%}
 <header>
-  {% block networkbar -%}
-    {{ responsive_networkbar(siteid=config['SITE_ID'], login=config['LASTUSER_CLIENT_ID'] and true or false) }}
-  {%- endblock %}
+  {% block networkbar -%}{% if not g.kiosk %}
+    {{ responsive_networkbar(siteid=config['SITE_ID'], login=true) }}
+  {%- endif %}{%- endblock %}
   <div class="container">
     <div class="row">
       <div class="col-xs-12 col-sm-6 col-md-8 col-lg-9">
