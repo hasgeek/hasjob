@@ -1,11 +1,11 @@
 body {
   font-family: "Fira Sans", arial, sans-serif;
-  background: #e8e7e6 url('../img/canvas.jpg?1343882941');
+  background: #e8e7e6 url('../img/canvas.jpg?1400098749');
 }
 
 header {
   margin-bottom: 0;
-  background: #ebe7e4 url('../img/paper.jpg?1343882941');
+  background: #ebe7e4 url('../img/paper.jpg?1400098749');
   border-bottom: none;
   -webkit-box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
   -moz-box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
@@ -118,7 +118,7 @@ h1 a:hover, h1 a:focus, h1 a:active {
 }
 
 footer .footer-inner {
-  background: #ebe7e4 url('../img/paper.jpg?1343882941');
+  background: #ebe7e4 url('../img/paper.jpg?1400098749');
   -webkit-box-shadow: 0 -1px 5px rgba(0, 0, 0, 0.4);
   -moz-box-shadow: 0 -1px 5px rgba(0, 0, 0, 0.4);
   box-shadow: 0 -1px 5px rgba(0, 0, 0, 0.4);
@@ -140,7 +140,7 @@ footer .container {
 .flash.info {
   padding-left: 15px;
   padding-right: 15px;
-  background: url('../img/paper.jpg?1343882941');
+  background: url('../img/paper.jpg?1400098749');
   border: none;
   -webkit-box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4), 0 0 10px rgba(0, 0, 0, 0.1) inset;
   -moz-box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4), 0 0 10px rgba(0, 0, 0, 0.1) inset;
@@ -215,6 +215,9 @@ h1 small, h2 small, h3 small {
   -webkit-border-bottom-right-radius: 0;
   border-bottom-right-radius: 0;
   border-bottom: 0;
+}
+.sheet .alert {
+  margin-bottom: 12px;
 }
 .sheet form {
   margin-bottom: 12px;
