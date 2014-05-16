@@ -5,6 +5,7 @@ from coaster.utils import getbool
 from .. import app
 from ..models import JobType, JobCategory
 from .helper import getposts
+import requests
 
 
 @app.before_request
@@ -30,6 +31,13 @@ def kiosk_mode():
         flash("Kiosk mode has been disabled", 'success')
     return redirect(url_for('index'))
 
+
+@app.route('/get_kiosk_user/<nfc>', methods=['GET'])
+def kiosk_user(nfc):
+    if g.peopleflow_url:
+        return requests.get(g.peopleflow_url + '/ext_participant/' + nfc)
+    else:
+        return jsonify(error="No")
 
 @app.route('/kiosk.appcache', subdomain='<subdomain>')
 @app.route('/kiosk.appcache')

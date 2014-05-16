@@ -4,6 +4,7 @@ from markdown import markdown  # FIXME: coaster.gfm is breaking links, so can't 
 from difflib import SequenceMatcher
 from html2text import html2text
 from premailer import transform as email_transform
+from urlparse import urlparse
 
 from sqlalchemy.exc import IntegrityError
 from flask import (
@@ -121,7 +122,8 @@ def jobdetail(hashid):
     return render_template('detail.html', post=post, reportform=reportform, rejectform=rejectform,
         stickyform=stickyform, applyform=applyform, job_application=job_application,
         jobview=jobview, report=report, moderateform=moderateform,
-        siteadmin=lastuser.has_permission('siteadmin')
+        siteadmin=lastuser.has_permission('siteadmin'),
+        urlparse=urlparse
         )
 
 

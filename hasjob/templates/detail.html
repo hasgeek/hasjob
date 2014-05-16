@@ -3,9 +3,15 @@
 {% from "macros.html" import jobheader %}
 {% block title %}{{ post.headline }}{% endblock %}
 {% block description %}{{ post.company_name }}, {{ post.location }}, {{ post.type.title }}, {{ post.category.title }}{% endblock %}
+{% if g.kiosk and g.peopleflow_url %}
+  {% set parsed_url = urlparse(g.peopleflow_url) %}
+{% endif %}
 {% block pageheaders %}
   {%- if post.is_old() %}
     <meta name="robots" content="nofollow" />
+  {%- endif %}
+  {% if g.kiosk and g.peopleflow_url %}
+    <link rel="stylesheet" type="text/css" href="{{ parsed_url.scheme + '://' + parsed_url.netloc }}/static/css/indicators.css">
   {%- endif %}
   {%- if g.board %}
     <link rel="canonical" href="{{ url_for('jobdetail', hashid=post.hashid, subdomain=none) }}" />
@@ -177,6 +183,9 @@
           {%- endif -%}
         {%- endif -%}
       </h2>
+      {% if g.kiosk %}
+        <h1 id="kiosk_errors"></h1>
+      {% endif %}
       {%- if g.kiosk %}
         <p>
           {% if g.peopleflow_url %}
@@ -334,4 +343,41 @@
     });
   </script>
 {%- endwith %}{%- endif %}
+{% if g.kiosk and g.peopleflow_url %}
+  <script src="{{ parsed_url.scheme + '://' + parsed_url.netloc }}/static/js/indicators.js"></script>
+  <script src="http://127.0.0.1:8008/assets/js/lib.js"></script>
+  <script src="{{ parsed_url.scheme + '://' + parsed_url.netloc }}/static/js/rfid/init.js"></script>
+  <script>
+    function set_it(val) {      
+      tinymce.editors[0].setContent(val);
+      tinymce.editors[0].save();
+    }
+    function submit_it() {
+      $('#applyform').submit();
+    }
+    function success(user) {
+      if(user.error) {
+        $('#kiosk_errors').text("The badge you tapped is invalid");
+        $('#kiosk_errors').slideDown(500, function(){
+          $(this).animate({}, 3000, function() {
+            $(this).slideUp(500);
+          });
+        })
+      }
+      else {
+        $('#apply_fullname').val(user.name);
+        $('#apply_email').val(user.email);
+        set_it(user.name + " just applied");
+        // submit_it();
+      }
+    }
+    rfid.on('tag_placed', function(data){
+      $.ajax({
+        url: "{{ g.peopleflow_url }}/participant/" + data['tag_id'],
+        dataType: "jsonp",
+        success: success
+      });
+    });
+  </script>
+{% endif %}
 {% endblock %}
