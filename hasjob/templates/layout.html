@@ -66,10 +66,14 @@
 
 {% block footer %}
 <p>
-  Hasjob is a service of <a href="https://hasgeek.com/" {%- if g.kiosk %} target="_blank"{% endif %}>HasGeek</a>.
-  Subscribe to <a href="{{ url_for('feed') }}" {%- if g.kiosk %} target="_blank"{% endif %}>the feed</a> or follow
-  <a href="https://twitter.com/hasjob" {%- if g.kiosk %} target="_blank"{% endif %}>@hasjob on Twitter</a>
-  to find out when new jobs are posted. Hosted by
-  <a href="http://e2enetworks.com/" {%- if g.kiosk %} target="_blank"{% endif %}>E2E Networks</a>.
+  {%- if g.kiosk %}
+    Hasjob is a service of HasGeek. You are in kiosk mode with a limited view of listings.
+  {%- else %}
+    Hasjob is a service of <a href="https://hasgeek.com/">HasGeek</a>.
+    Subscribe to <a href="{{ url_for('feed') }}">the feed</a> or follow
+    <a href="https://twitter.com/hasjob">@hasjob on Twitter</a>
+    to find out when new jobs are posted. Hosted by
+    <a href="http://e2enetworks.com/">E2E Networks</a>.
+  {%- endif %}
 </p>
 {% endblock %}

@@ -59,7 +59,7 @@
             {{ post.perks|safe }}
           {% endif %}
         </div>
-        <div class="col-md-3">
+        <div class="col-md-3">{% if not g.kiosk %}
           <div class="list-group">
             <a class="list-group-item" href="mailto:?subject=Job%3A%20{{ post.headline|urlquote }}&amp;body={{ request.url|urlquote }}">
               <i class="fa fa-fw fa-envelope"></i>&nbsp;&nbsp; Email this
@@ -161,7 +161,7 @@
                 url_for('static', filename='img/banner.png') }}" width="170" height="156" alt="Rootconf" /></a>
             </div>#}
           </div>
-        </div>
+        {% endif %}</div>
       </div>
     </div>
     <div class="section" id="apply-info">
