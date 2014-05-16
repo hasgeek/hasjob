@@ -26,7 +26,7 @@ from hasjob.uploads import uploaded_logos
 @app.route('/')
 def index(basequery=None, type=None, category=None, md5sum=None, domain=None, title=None, showall=False):
     now = datetime.utcnow()
-    if g.user or g.kiosk or g.board:
+    if g.user or g.kiosk:
         showall = True
     posts = list(getposts(basequery, sticky=True, showall=showall))
     if posts:
