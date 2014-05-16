@@ -1,4 +1,4 @@
-{% macro jobheader(post) %}
+{% macro jobheader(post, kiosk=false) %}
   {%- if post.company_logo %}
     <div class="row">
       <div class="col-xs-12 col-sm-3 col-sm-push-9 post-company-logo">
@@ -17,7 +17,7 @@
         {{ post.location }}
       {%- endif %}
       {%- if post.company_url %}
-        &middot; <a href="{{ post.company_url }}" target="_blank" rel="nofollow">{{ post.company_url|cleanurl }}</a>
+        &middot; {% if kiosk %}{{ post.company_url|cleanurl }}{% else %}<a href="{{ post.company_url }}" target="_blank" rel="nofollow">{{ post.company_url|cleanurl }}</a>{% endif %}
       {%- endif %}
       &middot; <a href="{{ url_for('browse_by_type', name=post.type.name) }}">{{ post.type.title }}</a>
       &middot; <a href="{{ url_for('browse_by_category', name=post.category.name) }}">{{ post.category.title }}</a>
