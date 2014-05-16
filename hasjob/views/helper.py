@@ -11,7 +11,7 @@ from ..utils import scrubemail, redactemail
 
 
 def getposts(basequery=None, sticky=False, showall=False):
-    if g.user or showall or g.kiosk or g.board:
+    if showall:
         useagelimit = agelimit
     else:
         useagelimit = newlimit
