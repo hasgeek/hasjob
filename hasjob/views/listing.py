@@ -321,15 +321,16 @@ def process_application(hashid, application):
                         reply_to=(sender_name, post.email),
                         recipients=[job_application.email],
                         bcc=[post.email])
+                    flashmsg = "We sent your message to the candidate and copied you. Their email and phone number are below"
                 else:
                     msg = Message(subject=u"Regarding your job application for {headline}".format(headline=post.headline),
                         sender=(sender_formatted, app.config['MAIL_SENDER']),
                         bcc=[job_application.email, post.email])
+                    flashmsg = "We sent your message to the candidate and copied you"
                 msg.body = email_text
                 msg.html = email_html
                 mail.send(msg)
                 job_application.replied_by = g.user
-                flashmsg = "We sent your message to the candidate and copied you. Their email and phone number are below"
                 db.session.commit()
         elif request.form.get('action') == 'ignore' and job_application.can_ignore():
             job_application.response = EMPLOYER_RESPONSE.IGNORED
