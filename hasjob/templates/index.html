@@ -67,7 +67,7 @@
               <span class="annotation top-left">{{ post.location }}</span>
               <span class="annotation top-right">{{ post.datetime|shortdate }}</span>
               <span class="headline">{{ post.headline }}</span>
-              {% if siteadmin %}<span class="count">{{ post.viewcounts.applied }}&middot;{{ post.viewcounts.opened }}&middot;{{ post.viewcounts.viewed }} &middot; {{ post.pay_label() }}</span>{% endif %}
+              {#{% if siteadmin %}<span class="count">{{ post.viewcounts.applied }}&middot;{{ post.viewcounts.opened }}&middot;{{ post.viewcounts.viewed }} &middot; {{ post.pay_label() }}</span>{% endif %}#}
               <span class="annotation bottom-right">{{ post.company_name }}</span>
               {% if now - post.datetime < newlimit -%}
                 <span class="new annotation bottom-left">New!</span>
@@ -86,7 +86,7 @@
               <span class="annotation top-left">{{ post.location }}</span>
               <span class="annotation top-right">{{ post.datetime|shortdate }}</span>
               <span class="headline">{{ post.headline }}</span>
-              {% if siteadmin %}<span class="count">{{ post.viewcounts.applied }}&middot;{{ post.viewcounts.opened }}&middot;{{ post.viewcounts.viewed }} &middot; {{ post.pay_label() }}</span>{% endif %}
+              {#{% if siteadmin %}<span class="count">{{ post.viewcounts.applied }}&middot;{{ post.viewcounts.opened }}&middot;{{ post.viewcounts.viewed }} &middot; {{ post.pay_label() }}</span>{% endif %}#}
               <span class="annotation bottom-right">{{ post.company_name }}</span>
               {% if now - post.datetime < newlimit -%}
                 <span class="new annotation bottom-left">New!</span>
@@ -98,7 +98,7 @@
                 <span class="annotation top-left">{{ post.location }}</span>
                 <span class="annotation top-right">{{ post.datetime|shortdate }}</span>
                 <span class="headline">{{ post.headline }}</span>
-                {% if siteadmin %}<span class="count">{{ post.viewcounts.applied }}&middot;{{ post.viewcounts.opened }}&middot;{{ post.viewcounts.viewed }} &middot; {{ post.pay_label() }}</span>{% endif %}
+                {#{% if siteadmin %}<span class="count">{{ post.viewcounts.applied }}&middot;{{ post.viewcounts.opened }}&middot;{{ post.viewcounts.viewed }} &middot; {{ post.pay_label() }}</span>{% endif %}#}
                 <span class="annotation bottom-right">{{ post.company_name }}</span>
                 {% if now - post.datetime < newlimit -%}
                   <span class="new annotation bottom-left">New!</span>
@@ -116,7 +116,7 @@
             <span class="annotation top-left">{{ post.location }}</span>
             <span class="annotation top-right">{{ post.datetime|shortdate }}</span>
             <span class="headline">{{ post.headline }}</span>
-            {% if siteadmin %}<span class="count">{{ post.viewcounts.applied }}&middot;{{ post.viewcounts.opened }}&middot;{{ post.viewcounts.viewed }} &middot; {{ post.pay_label() }}</span>{% endif %}
+            {#{% if siteadmin %}<span class="count">{{ post.viewcounts.applied }}&middot;{{ post.viewcounts.opened }}&middot;{{ post.viewcounts.viewed }} &middot; {{ post.pay_label() }}</span>{% endif %}#}
             <span class="annotation bottom-right">{{ post.company_name }}</span>
             {%- if now - post.datetime < newlimit -%}
               <span class="new annotation bottom-left">New!</span>
