@@ -93,6 +93,9 @@
               <a class="list-group-item" href="{{ url_for('editjob', hashid=post.hashid) }}">
                 <i class="fa fa-fw fa-pencil"></i>&nbsp;&nbsp; Edit this
               </a>
+              <a class="list-group-item" href="{{ url_for('withdraw', hashid=post.hashid) }}">
+                <i class="fa fa-fw fa-trash-o"></i>&nbsp;&nbsp; Withdraw this
+              </a>
             {%- endif %}
             {%- if siteadmin %}
               <div class="list-group-item">
