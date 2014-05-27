@@ -19,7 +19,7 @@ jsmin
 dnspython
 html2text
 premailer
-langid
+langid>=1.1.4dev
 pyyaml
 nltk
 Flask-Script==0.5.3
