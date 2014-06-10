@@ -267,8 +267,12 @@ class ListingForm(Form):
                         success = False
                 else:
                     if self.job_pay_cash_max.data == 10000000:
+                        if self.job_pay_currency.data == 'INR':
+                            figure = u'1 crore'
+                        else:
+                            figure = u'10 million'
                         self.job_pay_cash_max.errors.append(
-                            u"You don’t pay that much. Please provide a realistic figure")
+                            u"You’ve selected an upper limit of {figure}. That can’t be right".format(figure=figure))
                         success = False
                     elif (self.job_pay_type.data == PAY_TYPE.RECURRING
                             and self.job_pay_currency.data == 'INR'
