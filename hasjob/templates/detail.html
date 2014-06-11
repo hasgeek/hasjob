@@ -48,7 +48,7 @@
   <div class="guide">
     <p>
       This listing is from {{ post.email_domain }}, which may or may not be affiliated with
-      {{ post.company_name }}. Please proceed with caution.
+      {{ post.company_url|cleanurl }}. Please proceed with caution.
     </p>
   </div>
   {% endif %}
