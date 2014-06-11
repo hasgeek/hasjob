@@ -44,11 +44,17 @@
       This listing is over 30 days old. The position may no longer be available.
     </p>
   </div>
+  {% elif post.from_webmail_domain %}
+  <div class="guide">
+    <p>
+      This listing is from a public webmail address. The employer's identity has not been verified.
+    </p>
+  </div>
   {% elif domain_mismatch %}
   <div class="guide">
     <p>
       This listing is from {{ post.email_domain }}, which may or may not be affiliated with
-      {{ post.company_url|cleanurl }}. Please proceed with caution.
+      {{ post.company_url_domain_zone }}. Please proceed with caution.
     </p>
   </div>
   {% endif %}

@@ -5,6 +5,7 @@ from werkzeug import cached_property
 from flask import url_for
 from coaster.sqlalchemy import timestamp_columns
 from baseframe import cache
+import tldextract
 from . import agelimit, db, POSTSTATUS, EMPLOYER_RESPONSE, PAY_TYPE, BaseMixin, TimestampMixin, webmail_domains
 from .jobtype import JobType
 from .jobcategory import JobCategory
@@ -124,6 +125,18 @@ class JobPost(BaseMixin, db.Model):
                 return url_for('browse_by_email', md5sum=self.md5sum, _external=_external)
             else:
                 return url_for('browse_by_domain', domain=self.email_domain, _external=_external)
+
+    @property
+    def from_webmail_domain(self):
+        return self.email_domain in webmail_domains
+
+    @property
+    def company_url_domain_zone(self):
+        if not self.company_url:
+            return u''
+        else:
+            r = tldextract.extract(self.company_url)
+            return u'.'.join([r.domain, r.suffix])
 
     @property
     def pays_cash(self):
