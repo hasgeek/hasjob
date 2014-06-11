@@ -192,9 +192,9 @@ class ListingForm(Form):
 
     def validate_job_pay_cash_min(form, field):
         if form.job_pay_type.data != PAY_TYPE.NOCASH:
-            if not field.data:
-                raise ValidationError("Please specify what this job pays")
             data = field.data.strip()
+            if not data:
+                raise ValidationError("Please specify what this job pays")
             if not data[0].isdigit():
                 data = data[1:]  # Remove currency symbol
             data = data.replace(',', '').strip()  # Remove thousands separator
