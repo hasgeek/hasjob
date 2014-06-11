@@ -19,7 +19,7 @@ from flask import (
     )
 from flask.ext.mail import Message
 from baseframe import cache
-from coaster import get_email_domain, md5sum
+from coaster.utils import get_email_domain, md5sum, base_domain_matches
 from hasjob import app, forms, mail, lastuser
 from hasjob.models import (
     agelimit,
@@ -118,9 +118,16 @@ def jobdetail(hashid):
                 flash("You need to be logged in to report a listing", "interactive")
     elif request.method == 'POST' and request.is_xhr:
         return render_template('inc/reportform.html', reportform=reportform)
+
+    if post.company_url:
+        domain_mismatch = not base_domain_matches(post.company_url, post.email_domain)
+    else:
+        domain_mismatch = False
+
     return render_template('detail.html', post=post, reportform=reportform, rejectform=rejectform,
         stickyform=stickyform, applyform=applyform, job_application=job_application,
         jobview=jobview, report=report, moderateform=moderateform,
+        domain_mismatch=domain_mismatch,
         siteadmin=lastuser.has_permission('siteadmin')
         )
 

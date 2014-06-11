@@ -44,6 +44,13 @@
       This listing is over 30 days old. The position may no longer be available.
     </p>
   </div>
+  {% elif domain_mismatch %}
+  <div class="guide">
+    <p>
+      This listing is from <code>{{ post.email_domain }}</code>, which may or may not be affiliated with
+      {{ post.company_name }}. Please proceed with caution.
+    </p>
+  </div>
   {% endif %}
 
   <div class="sheet">
