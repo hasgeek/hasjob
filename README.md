@@ -14,14 +14,6 @@ to install all the requirements listed in `requirements.txt` using
 
     $ pip install -r requirements.txt
 
-Hasjob will soon use NLTK to analyse the text of a post, so you will need to
-install NLTK's corpus data. Be warned, this is about 1.8 GB:
-
-    $ python -m nltk.downloader all
-
-If you are using Mac OS X and had trouble installing Numpy, please see the
-instructions here: https://gist.github.com/goldsmith/7262122
-
 Next, Copy `settings-sample.py` to `settings.py`, edit as
 necessary, and finish configuration with:
 
