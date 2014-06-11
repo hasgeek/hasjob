@@ -127,6 +127,8 @@
                   {% include "inc/stickyform.html" %}
                 </div>
               </div>
+            {%- endif %}
+            {%- if g.user and g.user.has_boards %}
               <div class="list-group-item">
                 <a class="popup" href="#add-to-board">
                   <i class="fa fa-fw fa-plus"></i>&nbsp;&nbsp; Add to board
@@ -135,9 +137,9 @@
                   <a class="close-popup" href="#">&#10005;</a>
                   <ul class="nav nav-pills nav-stacked">
                     <li><a href="{{ url_for('board_new', add=post.hashid) }}">New board...</a></li>
-                    {%- with boards = g.user.boards() %}{% if boards %}{% for board in boards %}
+                    {% for board in g.user.boards() %}
                       <li><a href="{{ url_for('board_add', board=board.name, hashid=post.hashid) }}">{{ board.title }}</a></li>
-                    {% endfor -%}{%- endif %}{% endwith %}
+                    {% endfor -%}
                   </ul>
                 </div>
               </div>
