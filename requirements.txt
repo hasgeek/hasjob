@@ -7,6 +7,7 @@ Flask-Uploads
 Flask-RQ
 Flask-Testing
 Pillow
+SQLAlchemy
 pytz
 markdown
 tweepy

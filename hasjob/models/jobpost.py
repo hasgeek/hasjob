@@ -3,7 +3,7 @@
 from datetime import datetime
 from werkzeug import cached_property
 from flask import url_for
-from coaster.sqlalchemy import timestamp_columns
+from coaster.sqlalchemy import timestamp_columns, JsonDict
 from baseframe import cache
 import tldextract
 from . import agelimit, db, POSTSTATUS, EMPLOYER_RESPONSE, PAY_TYPE, BaseMixin, TimestampMixin, webmail_domains
@@ -33,6 +33,7 @@ class JobPost(BaseMixin, db.Model):
     category_id = db.Column(None, db.ForeignKey('jobcategory.id'), nullable=False)
     category = db.relation(JobCategory, primaryjoin=category_id == JobCategory.id)
     location = db.Column(db.Unicode(80), nullable=False)
+    parsed_location = db.Column(JsonDict)
     relocation_assist = db.Column(db.Boolean, default=False, nullable=False)
     description = db.Column(db.UnicodeText, nullable=False)
     perks = db.Column(db.UnicodeText, nullable=False)
@@ -352,6 +353,22 @@ jobpost_admin_table = db.Table('jobpost_admin', db.Model.metadata,
     db.Column('user_id', None, db.ForeignKey('user.id'), primary_key=True),
     db.Column('jobpost_id', None, db.ForeignKey('jobpost.id'), primary_key=True)
     )))
+
+
+class JobLocation(TimestampMixin, db.Model):
+    __tablename__ = 'job_location'
+    #: Job listing we are tagging
+    jobpost_id = db.Column(None, db.ForeignKey('jobpost.id'), primary_key=True, nullable=False)
+    jobpost = db.relationship(JobPost, backref=db.backref('locations', cascade='all, delete-orphan'))
+    #: Geonameid for this job listing
+    geonameid = db.Column(db.Integer, primary_key=True, nullable=False)
+    primary = db.Column(db.Boolean, default=True, nullable=False)
+
+    def __repr__(self):
+        return '<JobLocation %d %s for job %s>' % (
+            self.geonameid,
+            'primary' if self.primary else 'secondary',
+            self.jobpost.hashid)
 
 
 class UserJobView(TimestampMixin, db.Model):

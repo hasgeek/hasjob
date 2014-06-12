@@ -42,6 +42,12 @@
           You are viewing jobs at {{ employer_name }}. View all jobs?
         </a>
       </li>
+    {%- elif location -%}
+      <li class="col-xs-12 col-md-3 col-sm-4">
+        <a href="{{ url_for('index') }}" class="stickie special">
+          You are viewing jobs in {{ location['short_title'] }}. View all jobs?
+        </a>
+      </li>
     {%- else -%}
       {%- if not g.kiosk -%}
         <li class="col-xs-12 col-md-3 col-sm-4">

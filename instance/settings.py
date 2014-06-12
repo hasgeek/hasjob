@@ -17,6 +17,8 @@ STATIC_SUBDOMAIN = 'static'
 UPLOADED_LOGOS_DEST = '/tmp/uploads'
 #: Search index path
 SEARCH_INDEX_PATH = '/tmp/search'
+#: Hascore server
+HASCORE_SERVER = 'https://api.hasgeek.com/'
 #: Mail settings
 #: MAIL_FAIL_SILENTLY : default True
 #: MAIL_SERVER : default 'localhost'

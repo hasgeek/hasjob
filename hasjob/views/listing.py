@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import bleach
 from datetime import datetime, timedelta
 from markdown import markdown  # FIXME: coaster.gfm is breaking links, so can't use it
@@ -42,6 +44,7 @@ from hasjob.models import (
     viewstats_by_id_day,
     )
 from hasjob.twitter import tweet
+from hasjob.tagging import tag_locations
 from hasjob.uploads import uploaded_logos
 from hasjob.utils import get_word_bag, redactemail, random_long_key
 from hasjob.views import ALLOWED_TAGS
@@ -678,6 +681,7 @@ def editjob(hashid, key, form=None, post=None, validated=False):
                     post.company_logo = None
 
             db.session.commit()
+            tag_locations.delay(post.id)
             userkeys = session.get('userkeys', [])
             userkeys.append(post.edit_key)
             session['userkeys'] = userkeys

@@ -16,15 +16,15 @@ from flask import (
     )
 
 from hasjob import app, lastuser
-from hasjob.models import webmail_domains, JobCategory, JobPost, JobType, POSTSTATUS, newlimit
+from hasjob.models import db, webmail_domains, JobCategory, JobPost, JobType, POSTSTATUS, newlimit, JobLocation
 from hasjob.search import do_search
-from hasjob.views.helper import getposts, getallposts
+from hasjob.views.helper import getposts, getallposts, location_geodata
 from hasjob.uploads import uploaded_logos
 
 
 @app.route('/', subdomain='<subdomain>')
 @app.route('/')
-def index(basequery=None, type=None, category=None, md5sum=None, domain=None, title=None, showall=False):
+def index(basequery=None, type=None, category=None, md5sum=None, domain=None, location=None, title=None, showall=False):
     now = datetime.utcnow()
     if g.user or g.kiosk or g.board:
         showall = True
@@ -55,7 +55,7 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None, ti
     return render_template('index.html', posts=posts, grouped=grouped, now=now,
                            newlimit=newlimit, jobtype=type, jobcategory=category, title=title,
                            md5sum=md5sum, domain=domain, employer_name=employer_name,
-                           showall=showall,
+                           location=location, showall=showall,
                            siteadmin=lastuser.has_permission('siteadmin'))
 
 
@@ -97,9 +97,19 @@ def browse_by_email(md5sum):
     return index(basequery=basequery, md5sum=md5sum, showall=True)
 
 
+@app.route('/in/<location>')
+def browse_by_location(location):
+    geodata = location_geodata(location)
+    if not geodata:
+        abort(404)
+    basequery = JobPost.query.filter(db.and_(
+        JobLocation.jobpost_id == JobPost.id, JobLocation.geonameid == geodata['geonameid']))
+    return index(basequery=basequery, location=geodata)
+
+
 @app.route('/feed', subdomain='<subdomain>')
 @app.route('/feed')
-def feed(basequery=None, type=None, category=None, md5sum=None, domain=None):
+def feed(basequery=None, type=None, category=None, md5sum=None, domain=None, location=None):
     title = "All jobs"
     if type:
         title = type.title
@@ -107,6 +117,8 @@ def feed(basequery=None, type=None, category=None, md5sum=None, domain=None):
         title = category.title
     elif md5sum or domain:
         title = u"Jobs at a single employer"
+    elif location:
+        title = u"Jobs in {location}".format(location=location['short_title'])
     posts = list(getposts(basequery, showall=True))
     if posts:  # Can't do this unless posts is a list
         updated = posts[0].datetime.isoformat() + 'Z'
@@ -154,6 +166,16 @@ def feed_by_domain(domain):
         abort(404)
     basequery = JobPost.query.filter_by(email_domain=domain)
     return feed(basequery=basequery, domain=domain)
+
+
+@app.route('/in/<location>')
+def feed_by_location(location):
+    geodata = location_geodata(location)
+    if not geodata:
+        abort(404)
+    basequery = JobPost.query.filter(db.and_(
+        JobLocation.jobpost_id == JobPost.id, JobLocation.geonameid == geodata['geonameid']))
+    return feed(basequery=basequery, location=geodata)
 
 
 @app.route('/archive')

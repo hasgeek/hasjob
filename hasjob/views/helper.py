@@ -1,10 +1,13 @@
-from datetime import datetime
 from os import path
+from datetime import datetime
+from urlparse import urljoin
 import bleach
+import requests
 from pytz import utc, timezone
 from urllib import quote, quote_plus
 from flask import Markup, request, url_for, g
 
+from baseframe import cache
 from .. import app
 from ..models import agelimit, newlimit, db, JobCategory, JobPost, JobType, POSTSTATUS, BoardJobPost
 from ..utils import scrubemail, redactemail
@@ -47,6 +50,16 @@ def getallposts(order_by=None, desc=False, start=None, limit=None):
     if limit is not None:
         filt = filt.limit(limit)
     return count, filt
+
+
+@cache.memoize(timeout=86400)
+def location_geodata(location):
+    if 'HASCORE_SERVER' in app.config:
+        url = urljoin(app.config['HASCORE_SERVER'], '/1/geo/get_by_name')
+        response = requests.get(url, params={'name': location}).json()
+        if response.get('status') == 'ok':
+            return response.get('result', {})
+    return {}
 
 
 @app.template_filter('urlfor')

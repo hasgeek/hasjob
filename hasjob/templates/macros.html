@@ -1,3 +1,17 @@
+{% macro joblocation(post) %}
+  {%- if post.parsed_location %}
+    {%- for token in post.parsed_location.get('tokens', []) -%}
+      {%- if token['geoname'] -%}
+        <a href="{{ url_for('browse_by_location', location=token['geoname'].get('name') or token['geoname'].get('geonameid')) }}">{{ token['token'] }}</a>
+      {%- else -%}
+        {{ token['token'] }}
+      {%- endif %}
+    {%- endfor -%}
+  {%- else -%}
+    {{ post.location }}
+  {%- endif -%}
+{% endmacro %}
+
 {% macro jobheader(post, kiosk=false) %}
   {%- if post.company_logo %}
     <div class="row">
@@ -12,9 +26,9 @@
     <p>
       <a href="{{ post.url_for('browse') }}"><strong>{{ post.company_name }}</strong></a>,
       {% if post.relocation_assist -%}
-        <span id="post-location" data-toggle="tooltip" data-placement="bottom" title="Relocation assistance available">{{ post.location }} <i class="fa fa-truck fa-flip-horizontal"></i></span>
+        <span id="post-location" data-toggle="tooltip" data-placement="bottom" title="Relocation assistance available">{{ joblocation(post) }} <i class="fa fa-truck fa-flip-horizontal"></i></span>
       {%- else -%}
-        {{ post.location }}
+        {{ joblocation(post) }}
       {%- endif %}
       {%- if post.company_url %}
         &middot; {% if kiosk %}{{ post.company_url|cleanurl }}{% else %}<a href="{{ post.company_url }}" target="_blank" rel="nofollow">{{ post.company_url|cleanurl }}</a>{% endif %}

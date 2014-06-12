@@ -6,8 +6,6 @@ TYPEKIT_CODE = ''
 GA_CODE = ''
 #: Asset server (optional)
 ASSET_SERVER = ''
-#: LogNormal API key for page load performance metrics
-LOGNORMAL_API_KEY = ''
 #: Database backend
 SQLALCHEMY_DATABASE_URI = 'sqlite:///test.db'
 #: Secret key
@@ -22,6 +20,8 @@ STATIC_SUBDOMAIN = 'static'
 UPLOADED_LOGOS_DEST = '/tmp/uploads'
 #: Search index path
 SEARCH_INDEX_PATH = '/tmp/search'
+#: Hascore server
+HASCORE_SERVER = 'https://api.hasgeek.com/'
 #: Mail settings
 #: MAIL_FAIL_SILENTLY : default True
 #: MAIL_SERVER : default 'localhost'
