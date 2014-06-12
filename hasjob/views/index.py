@@ -97,6 +97,7 @@ def browse_by_email(md5sum):
     return index(basequery=basequery, md5sum=md5sum, showall=True)
 
 
+@app.route('/in/<location>', subdomain='<subdomain>')
 @app.route('/in/<location>')
 def browse_by_location(location):
     geodata = location_geodata(location)
@@ -104,7 +105,7 @@ def browse_by_location(location):
         abort(404)
     basequery = JobPost.query.filter(db.and_(
         JobLocation.jobpost_id == JobPost.id, JobLocation.geonameid == geodata['geonameid']))
-    return index(basequery=basequery, location=geodata)
+    return index(basequery=basequery, location=geodata, title=geodata['short_title'])
 
 
 @app.route('/feed', subdomain='<subdomain>')
@@ -168,7 +169,8 @@ def feed_by_domain(domain):
     return feed(basequery=basequery, domain=domain)
 
 
-@app.route('/in/<location>')
+@app.route('/in/<location>/feed', subdomain='<subdomain>')
+@app.route('/in/<location>/feed')
 def feed_by_location(location):
     geodata = location_geodata(location)
     if not geodata:

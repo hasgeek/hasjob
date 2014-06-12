@@ -9,6 +9,7 @@
 {%- if jobcategory %}<link rel="alternate" type="application/atom+xml"  title="{{ jobcategory.title }} – {{ config['SITE_TITLE']|e }}" href="{{ url_for('feed_by_category', name=jobcategory.name) }}" />{% endif -%}
 {%- if md5sum %}<link rel="alternate" type="application/atom+xml" title="Jobs at {{ employer_name }} – {{ config['SITE_TITLE'] }}" href="{{ url_for('feed_by_email', md5sum=md5sum) }}" />{% endif -%}
 {%- if domain %}<link rel="alternate" type="application/atom+xml" title="Jobs at {{ employer_name }} – {{ config['SITE_TITLE'] }}" href="{{ url_for('feed_by_domain', domain=domain) }}" />{% endif -%}
+{%- if location %}<link rel="alternate" type="application/atom+xml" title="Jobs in {{ location['short_title'] }} – {{ config['SITE_TITLE'] }}" href="{{ url_for('feed_by_location', location=location['name']) }}" />{% endif -%}
 {% endblock %}
 
 {% block content %}
@@ -45,7 +46,7 @@
     {%- elif location -%}
       <li class="col-xs-12 col-md-3 col-sm-4">
         <a href="{{ url_for('index') }}" class="stickie special">
-          You are viewing jobs in {{ location['short_title'] }}. View all jobs?
+          You are viewing jobs in {{ location['short_title'] }}. View all jobs?<!-- Id: {{ location['geonameid'] }} -->
         </a>
       </li>
     {%- else -%}
