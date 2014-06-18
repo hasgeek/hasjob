@@ -3,6 +3,7 @@
 from datetime import datetime
 from werkzeug import cached_property
 from flask import url_for
+from sqlalchemy.orm import defer
 from coaster.sqlalchemy import timestamp_columns, JsonDict
 from baseframe import cache
 import tldextract
@@ -78,6 +79,42 @@ class JobPost(BaseMixin, db.Model):
     language = db.Column(db.CHAR(2), nullable=True)
 
     admins = db.relationship(User, secondary=lambda: jobpost_admin_table)
+
+    _defercols = [
+        defer('user_id'),
+        defer('closed_datetime'),
+        defer('parsed_location'),
+        defer('relocation_assist'),
+        defer('description'),
+        defer('perks'),
+        defer('how_to_apply'),
+        defer('hr_contact'),
+        defer('company_logo'),
+        defer('company_url'),
+        defer('fullname'),
+        defer('email'),
+        defer('words'),
+        defer('promocode'),
+        defer('ipaddr'),
+        defer('useragent'),
+        defer('edit_key'),
+        defer('email_verify_key'),
+        defer('email_sent'),
+        defer('email_verified'),
+        defer('payment_value'),
+        defer('payment_received'),
+        defer('reviewer_id'),
+        defer('review_datetime'),
+        defer('review_comments'),
+        defer('language'),
+
+        defer('pay_type'),
+        defer('pay_currency'),
+        defer('pay_cash_min'),
+        defer('pay_cash_max'),
+        defer('pay_equity_min'),
+        defer('pay_equity_max'),
+        ]
 
     @classmethod
     def get(cls, hashid):

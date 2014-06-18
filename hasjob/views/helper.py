@@ -24,9 +24,10 @@ def getposts(basequery=None, sticky=False, showall=False):
 
     query = basequery.filter(
         JobPost.status.in_([POSTSTATUS.CONFIRMED, POSTSTATUS.REVIEWED])).filter(
-            db.or_(
-                db.and_(JobPost.sticky == True, JobPost.datetime > datetime.utcnow() - agelimit),
-                db.and_(JobPost.sticky == False, JobPost.datetime > datetime.utcnow() - useagelimit)))
+        db.or_(
+            db.and_(JobPost.sticky == True, JobPost.datetime > datetime.utcnow() - agelimit),
+            db.and_(JobPost.sticky == False, JobPost.datetime > datetime.utcnow() - useagelimit))).options(
+            *JobPost._defercols)
 
     if g.board:
         query = query.join(JobPost.postboards).filter(BoardJobPost.board == g.board)
