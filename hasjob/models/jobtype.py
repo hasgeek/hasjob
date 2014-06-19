@@ -7,6 +7,8 @@ class JobType(BaseNameMixin, db.Model):
 
     seq = db.Column(db.Integer, nullable=False, default=0)
     public = db.Column(db.Boolean, nullable=False, default=True)
+    nopay_allowed = db.Column(db.Boolean, nullable=False, default=True)
+    webmail_allowed = db.Column(db.Boolean, nullable=False, default=True)
 
     def __call__(self):
         return self.title

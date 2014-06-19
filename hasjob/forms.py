@@ -9,15 +9,15 @@ from baseframe.forms import Form, ValidEmailDomain, AllUrlsValid, TinyMce4Field,
 from wtforms import (TextField, TextAreaField, RadioField, FileField, BooleanField,
     ValidationError, validators)
 from wtforms.fields.html5 import EmailField
-from coaster.utils import getbool
+from coaster.utils import getbool, get_email_domain
 
-from .models import JobApplication, EMPLOYER_RESPONSE, PAY_TYPE
+from .models import JobType, JobApplication, EMPLOYER_RESPONSE, PAY_TYPE, webmail_domains
 from .uploads import process_image, UploadNotAllowed
 
 from . import app, lastuser
 from .utils import simplify_text, EMAIL_RE, URL_RE, PHONE_DETECT_RE, get_word_bag
 
-QUOTES_RE = re.compile(ur'[\'"`‘’“”′″‴]+')
+QUOTES_RE = re.compile(ur'[\'"`‘’“”′″‴«»]+')
 
 CAPS_RE = re.compile('[A-Z]')
 SMALL_RE = re.compile('[a-z]')
@@ -132,6 +132,11 @@ class ListingForm(Form):
                     u"— use a shared email address above for that — but they will be able to respond "
                     u"to candidates who apply")
 
+
+    def validate_job_type(form, field):
+        form.job_type_ob = JobType.query.get(field.data)
+        if not form.job_type_ob:
+            raise ValidationError("Please select a job type")
 
     def validate_company_name(form, field):
         if len(field.data) > 5:
@@ -256,6 +261,14 @@ class ListingForm(Form):
     def validate(self, extra_validators=None):
         success = super(ListingForm, self).validate(extra_validators)
         if success:
+            # Check for job type flags
+            if (not self.job_type_ob.nopay_allowed) and self.job_pay_type.data == PAY_TYPE.NOCASH:
+                self.job_pay_type.errors.append(u"You must specify how much this job pays")
+                success = False
+            if (not self.job_type_ob.webmail_allowed) and get_email_domain(self.poster_email.data) in webmail_domains:
+                self.poster_email.errors.append(
+                    u"Public webmail accounts like Gmail are not accepted. Please use your corporate email address")
+                success = False
             # Check for cash pay range
             if self.job_pay_type.data in (PAY_TYPE.ONETIME, PAY_TYPE.RECURRING):
                 if self.job_pay_cash_min.data == 0:
@@ -371,7 +384,7 @@ class KioskApplicationForm(Form):
             u"post it on LinkedIn or host the file on Dropbox and insert the link here")
 
     def validate_email(form, field):
-        oldapp = JobApplication.query.filter_by(jobpost=self.post, user=None, email=field.data).count()
+        oldapp = JobApplication.query.filter_by(jobpost=form.post, user=None, email=field.data).count()
         if oldapp:
             raise ValidationError("You have already applied for this position")
 

@@ -243,12 +243,12 @@ def sitemap():
     sitemapxml = '<?xml version="1.0" encoding="UTF-8"?>\n'\
                  '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
     # Add job type pages to sitemap
-    for item in JobType.query.all():
+    for item in JobType.query.filter_by(public=True).all():
         sitemapxml += '  <url>\n'\
                       '    <loc>%s</loc>\n' % url_for('browse_by_type', name=item.name, _external=True) + \
                       '  </url>\n'
     # Add job category pages to sitemap
-    for item in JobCategory.query.all():
+    for item in JobCategory.query.filter_by(public=True).all():
         sitemapxml += '  <url>\n'\
                       '    <loc>%s</loc>\n' % url_for('browse_by_category', name=item.name, _external=True) + \
                       '  </url>\n'

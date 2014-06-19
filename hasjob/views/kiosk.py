@@ -44,10 +44,10 @@ def kiosk_manifest():
         lines.append('/')
 
         # Type/category pages
-        for item in JobType.query.all():
+        for item in JobType.query.filter_by(public=True).all():
             lines.append(url_for('browse_by_type', name=item.name))
 
-        for item in JobCategory.query.all():
+        for item in JobCategory.query.filter_by(public=True).all():
             lines.append(url_for('browse_by_category', name=item.name))
 
         # Posts
