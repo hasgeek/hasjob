@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import re
+
 #: The title of this site
 SITE_TITLE = 'Job Board'
 #: TypeKit code for fonts
@@ -70,7 +72,18 @@ BANNED_WORDS = [
     [['killer'], u'Murder is illegal. Don’t make us call the cops.'],
     [['iit', 'iitian', 'iit-ian', 'iim'], u'Q: How do you know someone is from IIT/IIM? A: They remind you all the time. Don’t be that person.'],
 ]
-
+#: URLs we don't accept, with accompanying error messages
+INVALID_URLS = [
+    ([
+        re.compile(r'.*\.recruiterbox\.com/jobs'),
+        re.compile(r'hire\.jobvite\.com/'),
+        re.compile(r'bullhornreach\.com/job/'),
+        re.compile(r'linkedin\.com/jobs'),
+        re.compile(r'freelancer\.com'),
+        re.compile(r'hirist\.com/j/'),
+        re.compile(r'iimjobs\.com/j/'),
+        ], u"Candidates must apply via Hasjob")
+]
 #: LastUser server
 LASTUSER_SERVER = 'https://auth.hasgeek.com/'
 #: LastUser client id

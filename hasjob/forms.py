@@ -54,6 +54,10 @@ class ListingPayCurrencyField(RadioField):
             self.data = None
 
 
+def invalid_urls():
+    return app.config.get('INVALID_URLS', [])
+
+
 class ListingForm(Form):
     """Form for new job posts"""
     job_headline = TextField("Headline",
@@ -71,13 +75,13 @@ class ListingForm(Form):
         content_css=content_css,
         description=u"Don’t just describe the job, tell a compelling story for why someone should work for you",
         validators=[validators.Required("A description of the job is required"),
-            AllUrlsValid()],
+            AllUrlsValid(invalid_urls=invalid_urls)],
         tinymce_options={'convert_urls': True})
     job_perks = BooleanField("Job perks are available")
     job_perks_description = TinyMce4Field("Describe job perks",
         content_css=content_css,
         description=u"Stock options, free lunch, free conference passes, etc",
-        validators=[AllUrlsValid()])
+        validators=[AllUrlsValid(invalid_urls=invalid_urls)])
     job_pay_type = RadioField("What does this job pay?", coerce=int,
         choices=PAY_TYPE.items())
     job_pay_currency = ListingPayCurrencyField("Currency", choices=[("INR", "INR"), ("USD", "USD"), ("EUR", "EUR")])
