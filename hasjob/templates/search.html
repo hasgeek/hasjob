@@ -4,8 +4,9 @@
 <ul id="stickie-area" class="row">
   <li class="col-xs-12 col-md-3 col-sm-4">
     <a href="{{ url_for('index') }}" id="filtered" class="stickie special">
-      You are viewing search results for
-      “{{ request.args['q'] }}”. View all jobs?
+      {{ ngettext("You are viewing a search result for “%(query)s”. View all jobs?",
+        "You are viewing %(num)d search results for “%(query)s”. View all jobs?",
+        results|count, query=request.args.get('q')) }}
     </a>
   </li>
   {%- for result in results -%}
