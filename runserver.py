@@ -2,8 +2,6 @@
 # -*- coding: utf-8 -*-
 from hasjob import app, init_for, models
 from hasjob.models import db
-from hasjob.search import configure as search_configure
-from hasjob.uploads import configure as uploads_configure
 
 if __name__ == '__main__':
 
