@@ -23,7 +23,7 @@ def getposts(basequery=None, sticky=False, showall=False):
         basequery = JobPost.query
 
     query = basequery.filter(
-        JobPost.status.in_([POSTSTATUS.CONFIRMED, POSTSTATUS.REVIEWED])).filter(
+        JobPost.status.in_(POSTSTATUS.LISTED)).filter(
         db.or_(
             db.and_(JobPost.sticky == True, JobPost.datetime > datetime.utcnow() - agelimit),
             db.and_(JobPost.sticky == False, JobPost.datetime > datetime.utcnow() - useagelimit))).options(
@@ -40,7 +40,7 @@ def getposts(basequery=None, sticky=False, showall=False):
 def getallposts(order_by=None, desc=False, start=None, limit=None):
     if order_by is None:
         order_by = JobPost.datetime
-    filt = JobPost.query.filter(JobPost.status.in_([POSTSTATUS.CONFIRMED, POSTSTATUS.REVIEWED]))
+    filt = JobPost.query.filter(JobPost.status.in_(POSTSTATUS.LISTED))
     count = filt.count()
     if desc:
         filt = filt.order_by(db.desc(order_by))

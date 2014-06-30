@@ -56,15 +56,20 @@ webmail_domains = set([
 
 
 class POSTSTATUS:
-    DRAFT = 0      # Being written
-    PENDING = 1    # Pending email verification and payment
-    CONFIRMED = 2  # Post is now live on site
-    REVIEWED = 3   # Reviewed and cleared for push channels
-    REJECTED = 4   # Reviewed and rejected as inappropriate
-    WITHDRAWN = 5  # Withdrawn by owner
-    FLAGGED = 6    # Flagged by users for review
-    SPAM = 7       # Marked as spam
-    MODERATED = 8  # Moderated, needs edit
+    DRAFT = 0         # Being written
+    PENDING = 1       # Pending email verification
+    CONFIRMED = 2     # Post is now live on site
+    REVIEWED = 3      # Reviewed and cleared for push channels
+    REJECTED = 4      # Reviewed and rejected as inappropriate
+    WITHDRAWN = 5     # Withdrawn by owner
+    FLAGGED = 6       # Flagged by users for review
+    SPAM = 7          # Marked as spam
+    MODERATED = 8     # Moderated, needs edit
+    ANNOUNCEMENT = 9  # Special announcement
+
+    GONE = (REJECTED, WITHDRAWN, SPAM)
+    LISTED = (CONFIRMED, REVIEWED, ANNOUNCEMENT)
+    POSTPENDING = (CONFIRMED, REVIEWED, REJECTED, WITHDRAWN, FLAGGED, SPAM, MODERATED, ANNOUNCEMENT)
 
 
 class EMPLOYER_RESPONSE(LabeledEnum):

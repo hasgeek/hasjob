@@ -136,7 +136,7 @@ class JobPost(BaseMixin, db.Model):
 
     def is_listed(self):
         now = datetime.utcnow()
-        return (self.status in [POSTSTATUS.CONFIRMED, POSTSTATUS.REVIEWED]) and (
+        return (self.status in POSTSTATUS.LISTED) and (
             self.datetime > now - agelimit)
 
     def is_flagged(self):

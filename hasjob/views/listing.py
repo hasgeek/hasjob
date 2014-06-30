@@ -495,9 +495,9 @@ def confirm_email(hashid, key):
     # and update post.datetime to utcnow() so it'll show on top of the stack
     # This function expects key to be email_verify_key, not edit_key like the others
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
-    if post.status in [POSTSTATUS.REJECTED, POSTSTATUS.SPAM]:
+    if post.status in POSTSTATUS.GONE:
         abort(410)
-    elif post.status in [POSTSTATUS.CONFIRMED, POSTSTATUS.REVIEWED]:
+    elif post.status in POSTSTATUS.LISTED:
         flash("This job listing has already been confirmed and published", "interactive")
         return redirect(url_for('jobdetail', hashid=post.hashid), code=302)
     elif post.status == POSTSTATUS.DRAFT:
@@ -510,7 +510,7 @@ def confirm_email(hashid, key):
         else:
             if app.config.get('THROTTLE_LIMIT', 0) > 0:
                 post_count = JobPost.query.filter(JobPost.email_domain == post.email_domain).filter(
-                    JobPost.status > POSTSTATUS.PENDING).filter(
+                    JobPost.status.in_(POSTSTATUS.POSTPENDING)).filter(
                         JobPost.datetime > datetime.utcnow() - timedelta(days=1)).count()
                 if post_count > app.config['THROTTLE_LIMIT']:
                     flash(u"We have received too many listings with %s addresses in the last 24 hours. "
@@ -550,7 +550,7 @@ def withdraw(hashid, key):
     if post.status == POSTSTATUS.WITHDRAWN:
         flash("Your job listing has already been withdrawn", "info")
         return redirect(url_for('index'), code=303)
-    if post.status not in [POSTSTATUS.CONFIRMED, POSTSTATUS.REVIEWED]:
+    if post.status not in POSTSTATUS.LISTED:
         flash("Your post cannot be withdrawn because it is not public", "info")
         return redirect(url_for('index'), code=303)
     if form.validate_on_submit():
@@ -577,12 +577,12 @@ def editjob(hashid, key, form=None, post=None, validated=False):
         abort(403)
 
     # Don't allow email address to be changed once its confirmed
-    if post.status > POSTSTATUS.PENDING:
+    if post.status in POSTSTATUS.POSTPENDING:
         no_email = True
     else:
         no_email = False
 
-    if request.method == 'POST' and post.status > POSTSTATUS.PENDING:
+    if request.method == 'POST' and post.status in POSTSTATUS.POSTPENDING:
         # del form.poster_name  # Deprecated 2013-11-20
         form.poster_email.data = post.email
     if request.method == 'POST' and (validated or form.validate()):
@@ -596,8 +596,7 @@ def editjob(hashid, key, form=None, post=None, validated=False):
         for oldpost in JobPost.query.filter(db.or_(
             db.and_(
                 JobPost.email_domain == form_email_domain,
-                JobPost.status.in_([POSTSTATUS.CONFIRMED, POSTSTATUS.REVIEWED,
-                    POSTSTATUS.WITHDRAWN, POSTSTATUS.REJECTED])),
+                JobPost.status.in_(POSTSTATUS.POSTPENDING)),
             JobPost.status == POSTSTATUS.SPAM)).filter(
                 JobPost.datetime > datetime.utcnow() - agelimit).all():
             if oldpost.id != post.id:
@@ -660,7 +659,7 @@ def editjob(hashid, key, form=None, post=None, validated=False):
                 post.md5sum = md5sum(post.email)
             # To protect from gaming, don't allow words to be removed in edited listings once the post
             # has been confirmed. Just add the new words.
-            if post.status >= POSTSTATUS.CONFIRMED:
+            if post.status in POSTSTATUS.POSTPENDING:
                 prev_words = post.words or u''
             else:
                 prev_words = u''
