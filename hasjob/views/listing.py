@@ -56,9 +56,9 @@ from hasjob.nlp import identify_language
 def jobdetail(hashid):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
     if post.status in [POSTSTATUS.DRAFT, POSTSTATUS.PENDING]:
-        if post.edit_key not in session.get('userkeys', []) or (g.user and not post.admin_is(g.user)):
+        if not ((g.user and post.admin_is(g.user)) or post.edit_key in session.get('userkeys', [])):
             abort(403)
-    if post.status in [POSTSTATUS.REJECTED, POSTSTATUS.WITHDRAWN, POSTSTATUS.SPAM]:
+    if post.status in POSTSTATUS.GONE:
         abort(410)
     if g.user:
         jobview = UserJobView.query.get((g.user.id, post.id))
