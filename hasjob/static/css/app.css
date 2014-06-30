@@ -661,6 +661,10 @@ li:hover > .stickie.grouped.under:nth-of-type(5) {
   background-color: #f6f6f6;
 }
 
+.stickie.announcement {
+  background-color: #ebeb00;
+}
+
 #newpost {
   font-family: inherit;
 }

@@ -145,6 +145,9 @@ class JobPost(BaseMixin, db.Model):
     def is_moderated(self):
         return self.status == POSTSTATUS.MODERATED
 
+    def is_announcement(self):
+        return self.status == POSTSTATUS.ANNOUNCEMENT
+
     def is_old(self):
         return self.datetime <= datetime.utcnow() - agelimit
 

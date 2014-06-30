@@ -122,7 +122,7 @@ def jobdetail(hashid):
     elif request.method == 'POST' and request.is_xhr:
         return render_template('inc/reportform.html', reportform=reportform)
 
-    if post.company_url:
+    if post.company_url and post.status != POSTSTATUS.ANNOUNCEMENT:
         domain_mismatch = not base_domain_matches(post.company_url.lower(), post.email_domain.lower())
     else:
         domain_mismatch = False

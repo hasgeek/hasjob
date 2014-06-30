@@ -80,7 +80,7 @@
             <a class="list-group-item" target="_blank" href="https://twitter.com/share?url={{ request.url|urlquote }}&amp;counturl={{ request.url|urlquote }}&amp;via=hasjob&amp;related=hasjob:HasGeek%20Job%20Board&amp;text=Job%3A%20{{ post.headline|urlquote }}">
               <span class="badge" id="tweet-count"></span><i class="fa fa-fw fa-twitter"></i>&nbsp;&nbsp; Tweet this
             </a>
-            {%- if not g.kiosk %}
+            {%- if not g.kiosk and not post.is_announcement() %}
               <div class="list-group-item">
                 <a class="popup" href="#report">
                   {%- if siteadmin and post.flags %}
@@ -158,7 +158,7 @@
               </div>
             {%- endif %}
             {%- if siteadmin or post.admin_is(g.user) %}
-              {%- if post.pay_type is not none %}
+              {%- if post.pay_type is not none and not post.is_announcement() %}
                 <span class="list-group-item">
                   <i class="fa fa-fw fa-money"></i>&nbsp;&nbsp; {{ post.pay_label() }}
                 </span>
@@ -182,75 +182,83 @@
         {% endif %}</div>
       </div>
     </div>
-    <div class="section" id="apply-info">
-      {%- if g.kiosk %}
-        <img align="right" src="//chart.googleapis.com/chart?chs=150x150&cht=qr&chl={{ url_for('jobdetail', hashid=post.hashid, subdomain=None, _external=True) }}&choe=UTF-8"/>
-      {%- endif %}
-      <h2>Apply for this position
-        {%- if not post.pays_cash %}
-          {%- if post.pays_equity %}
-            <small>Equity only</small>
-          {%- else %}
-            <small>No pay</small>
-          {%- endif -%}
-        {%- endif -%}
-      </h2>
-      {%- if g.kiosk %}
-        <p>
-          {% if g.peopleflow_url %}
-            <strong>Tap your badge</strong> on the attached reader to connect with the employer. You can also open this link on your phone or computer:<br/>
-          {% else %}
-            Open this link on your phone or computer:<br/>
-          {% endif %}
-          {%- with len = post.hashid|length %}
-            <big>{{ url_for('jobdetail', hashid=post.hashid, _external=True)[:-len] }}<strong>{{ post.hashid }}</strong></big>
-          {%- endwith %}
-        </p>
-      {%- else %}
-        <p id="apply-info-para">
-          {%- if post.is_draft() %}{# Always show when in draft state #}
-            {{ post.how_to_apply|hideemail }}
-          {%- elif g.user %}
-            {% if jobview.applied %}{# User has already hit the reveal button #}
-              {{ post.how_to_apply|hideemail }}
+    {% if not post.is_announcement() %}
+      <div class="section" id="apply-info">
+        {%- if g.kiosk %}
+          <img align="right" src="//chart.googleapis.com/chart?chs=150x150&cht=qr&chl={{ url_for('jobdetail', hashid=post.hashid, subdomain=None, _external=True) }}&choe=UTF-8"/>
+        {%- endif %}
+        <h2>Apply for this position
+          {%- if not post.pays_cash %}
+            {%- if post.pays_equity %}
+              <small>Equity only</small>
             {%- else %}
-              <a class="btn btn-primary" id="reveal-button" href="{{ url_for('revealjob', hashid=post.hashid) }}">Show instructions</a>
+              <small>No pay</small>
+            {%- endif -%}
+          {%- endif -%}
+        </h2>
+        {%- if g.kiosk %}
+          <p>
+            {% if g.peopleflow_url %}
+              <strong>Tap your badge</strong> on the attached reader to connect with the employer. You can also open this link on your phone or computer:<br/>
+            {% else %}
+              Open this link on your phone or computer:<br/>
+            {% endif %}
+            {%- with len = post.hashid|length %}
+              <big>{{ url_for('jobdetail', hashid=post.hashid, _external=True)[:-len] }}<strong>{{ post.hashid }}</strong></big>
+            {%- endwith %}
+          </p>
+        {%- else %}
+          <p id="apply-info-para">
+            {%- if post.is_draft() %}{# Always show when in draft state #}
+              {{ post.how_to_apply|hideemail }}
+            {%- elif g.user %}
+              {% if jobview.applied %}{# User has already hit the reveal button #}
+                {{ post.how_to_apply|hideemail }}
+              {%- else %}
+                <a class="btn btn-primary" id="reveal-button" href="{{ url_for('revealjob', hashid=post.hashid) }}">Show instructions</a>
+              {%- endif %}
+            {%- else %}
+              <a class="btn btn-primary" href="{{ url_for('revealjob', hashid=post.hashid) }}">Login with Twitter or Google</a>
+              to see instructions on how to apply.
+              Your identity will not be revealed to the employer.
             {%- endif %}
-          {%- else %}
-            <a class="btn btn-primary" href="{{ url_for('revealjob', hashid=post.hashid) }}">Login with Twitter or Google</a>
-            to see instructions on how to apply.
-            Your identity will not be revealed to the employer.
-          {%- endif %}
-        </p>
+          </p>
+        {%- endif %}
+      </div>
+      {%- if not post.is_draft() and (g.user or g.kiosk) and applyform %}
+        <div id="apply-section" class="section {%- if g.kiosk or (jobview and not jobview.applied) %} hidden {%- endif -%}">
+          {#- This form must be part of the page (even if hidden) in kiosk mode, so remember that if we ever remove it pre-reveal #}
+          {% include "inc/applyform.html" %}
+        </div>
+      {%- elif job_application %}
+        <div class="section">
+          <h3>You have applied for this position</h3>
+          <p>
+            <strong>Name:</strong> {{ job_application.fullname }}<br>
+            <strong>Email:</strong> {{ job_application.email }}<br>
+            <strong>Phone:</strong> {{ job_application.phone }}
+          </p>
+          {{ job_application.message|safe }}
+        </div>
       {%- endif %}
-    </div>
-    {%- if not post.is_draft() and (g.user or g.kiosk) and applyform %}
-      <div id="apply-section" class="section {%- if g.kiosk or (jobview and not jobview.applied) %} hidden {%- endif -%}">
-        {#- This form must be part of the page (even if hidden) in kiosk mode, so remember that if we ever remove it pre-reveal #}
-        {% include "inc/applyform.html" %}
-      </div>
-    {%- elif job_application %}
-      <div class="section">
-        <h3>You have applied for this position</h3>
-        <p>
-          <strong>Name:</strong> {{ job_application.fullname }}<br>
-          <strong>Email:</strong> {{ job_application.email }}<br>
-          <strong>Phone:</strong> {{ job_application.phone }}
-        </p>
-        {{ job_application.message|safe }}
-      </div>
-    {%- endif %}
-    {%- if post.hr_contact is not none %}{# Don't display notice on old listings #}
+      {%- if post.hr_contact is not none %}{# Don't display notice on old listings #}
+        <div class="section" id="recruiter-notice">
+        {%- if post.hr_contact %}
+          <p>
+            It is <strong>OK</strong> for recruiters, HR consultants, and other intermediaries to contact this employer.
+          </p>
+        {%- else %}
+          <p>
+            It is <strong>NOT OK</strong> for recruiters, HR consultants, and other intermediaries to contact this employer.
+          </p>
+        {%- endif %}
+        </div>
+      {%- endif %}
+    {%- else %}
       <div class="section" id="recruiter-notice">
-      {%- if post.hr_contact %}
         <p>
-          It is <strong>OK</strong> for recruiters, HR consultants, and other intermediaries to contact this employer.
+          This is a special announcement from {{ post.company_name }}.
         </p>
-      {%- else %}
-        <p>
-          It is <strong>NOT OK</strong> for recruiters, HR consultants, and other intermediaries to contact this employer.
-        </p>
-      {%- endif %}
       </div>
     {%- endif %}
   </div>

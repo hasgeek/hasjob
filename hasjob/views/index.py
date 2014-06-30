@@ -45,6 +45,9 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None, lo
                 #     grouped.setdefault(('se', post.md5sum), []).append(post)
                 # else:
                 #     grouped.setdefault(('sd', post.email_domain), []).append(post)
+            elif post.status == POSTSTATUS.ANNOUNCEMENT:
+                # Make announcements also appear in a group of one
+                grouped.setdefault(('a', post.hashid), []).append(post)
             elif post.email_domain in webmail_domains:
                 grouped.setdefault(('ne', post.md5sum), []).append(post)
             else:

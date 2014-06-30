@@ -69,7 +69,7 @@
       {%- for grouping, group in grouped.items() -%}{%- with post = group[0] -%}
         {%- if group|length == 1 -%}
           <li class="col-xs-12 col-md-3 col-sm-4">
-            <a class="stickie" href="{{ url_for('jobdetail', hashid=post.hashid) }}" rel="bookmark">
+            <a class="stickie {%- if post.is_announcement() %} announcement{% endif %}" href="{{ url_for('jobdetail', hashid=post.hashid) }}" rel="bookmark">
               {%- if post.sticky %}<span class="pinned">Pinned!</span>{% endif %}
               <span class="annotation top-left">{{ post.location }}</span>
               <span class="annotation top-right">{{ post.datetime|shortdate }}</span>
@@ -83,7 +83,7 @@
           </li>
         {%- else -%}
           <li class="grouped col-xs-12 col-md-3 col-sm-4">
-            <a class="stickie" href="
+            <a class="stickie {%- if post.is_announcement() %} announcement{% endif %}" href="
                 {%- if grouping[0] in ['sd', 'nd'] -%}
                   {{ url_for('browse_by_domain', domain=grouping[1]) }}
                 {%- elif grouping[0] in ['se', 'ne'] -%}
@@ -100,7 +100,7 @@
               {%- endif %}
             </a>
             {%- for post in group[1:] -%}
-              <div class="stickie grouped under">
+              <div class="stickie {%- if post.is_announcement() %} announcement{% endif %} grouped under">
                 {%- if post.sticky %}<span class="pinned">Pinned!</span>{% endif %}
                 <span class="annotation top-left">{{ post.location }}</span>
                 <span class="annotation top-right">{{ post.datetime|shortdate }}</span>
@@ -118,7 +118,7 @@
     {%- else %}
       {%- for post in posts -%}
         <li class="col-xs-12 col-md-3 col-sm-4">
-          <a class="stickie" href="{{ url_for('jobdetail', hashid=post.hashid) }}" rel="bookmark">
+          <a class="stickie {%- if post.is_announcement() %} announcement{% endif %}" href="{{ url_for('jobdetail', hashid=post.hashid) }}" rel="bookmark">
             {%- if post.sticky %}<span class="pinned">Pinned!</span>{% endif %}
             <span class="annotation top-left">{{ post.location }}</span>
             <span class="annotation top-right">{{ post.datetime|shortdate }}</span>
