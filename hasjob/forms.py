@@ -5,7 +5,7 @@ from decimal import Decimal, InvalidOperation
 from difflib import SequenceMatcher
 
 from flask import g, request, Markup
-from baseframe.forms import Form, ValidEmailDomain, AllUrlsValid, TinyMce4Field, HiddenMultiField
+from baseframe.forms import Form, ValidEmailDomain, ValidUrl, AllUrlsValid, TinyMce4Field, HiddenMultiField
 from wtforms import (TextField, TextAreaField, RadioField, FileField, BooleanField,
     ValidationError, validators)
 from wtforms.fields.html5 import EmailField
@@ -110,7 +110,7 @@ class ListingForm(Form):
     company_logo_remove = BooleanField("Remove existing logo")
     company_url = TextField("URL",
         description=u"Example: http://www.google.com",
-        validators=[optional_url, AllUrlsValid()])
+        validators=[optional_url, ValidUrl()])
     hr_contact = RadioField(u"Is it okay for recruiters and other "
         u"intermediaries to contact you about this listing?", coerce=getbool,
         description=u"We’ll display a notice to this effect on the listing",
