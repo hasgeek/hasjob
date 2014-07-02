@@ -20,7 +20,7 @@
       {{ form.hidden_tag() }}
       <div class="section">
         {% if form.csrf_token.errors %}
-          <div class="error">This page timed out. Please submit again to confirm everything is all right</div>
+          <div class="help-error">This page timed out. Please submit again to confirm everything is all right</div>
         {% endif %}
         <h2>First, tell us about the position</h2>
         {{ renderfield(form.job_headline, widget_css_class="field-title", autofocus=true) }}
