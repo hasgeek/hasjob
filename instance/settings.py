@@ -70,7 +70,7 @@ BANNED_WORDS = [
     [['fodu'], u'We don’t know what you mean, but that sounds like a dirty word. Got another adjective?'],
     [['sick'], u'Need an ambulance? Call 102, 108, 112 or 1298. One of those should work.'],
     [['killer'], u'Murder is illegal. Don’t make us call the cops.'],
-    [['iit', 'iitian', 'iit-ian', 'iim'], u'Q: How do you know someone is from IIT/IIM? A: They remind you all the time. Don’t be that person.'],
+    [['iit', 'iitian', 'iit-ian', 'iim', 'bits', 'bitsian'], u'Q: How do you know someone is from IIT/IIM/BITS? A: They remind you all the time. Don’t be that person.'],
 ]
 #: URLs we don't accept, with accompanying error messages
 INVALID_URLS = [
