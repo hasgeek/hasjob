@@ -41,8 +41,9 @@
       </div>
       <div class="col-xs-12 col-sm-6 col-md-4 col-lg-3">
         <form id="search" action="{{ url_for('search') }}" class="form-inline" role="form">
+          <label for="search-input" class="sr-only">Search</label>
           <div class="input-group input-group-sm">
-            <input type="text" placeholder="Find a job..." name="q" value="{{ request.args.q }}" class="form-control"/>
+            <input id="search-input" type="text" placeholder="Find a job…" name="q" value="{{ request.args.q }}" class="form-control"/>
             <span class="input-group-btn">
               <input type="submit" class="btn btn-default" value="Go"/>
             </span>
