@@ -61,11 +61,11 @@
 
   <div class="sheet">
     <div class="section first">
-      {{ jobheader(post, g.kiosk) }}
+      {{ jobheader(post, kiosk=g.kiosk) }}
     </div>
     <div class="section">
       <div class="row">
-        <div class="col-md-9">
+        <div class="col-md-9 jobdescription">
           {{ post.description|safe }}
           {% if post.perks %}
             <h2>Job Perks</h2>
@@ -266,6 +266,9 @@
 {% block footerscripts %}
 <script type="text/javascript">
   $(function() {
+    {%- if g.kiosk %}
+      $('.jobdescription a').contents().unwrap();
+    {%- endif %}
     jQuery.getJSON(
       '//cdn.api.twitter.com/1/urls/count.json?url={{ request.url|urlquote }}&callback=?',
       function (data) {
