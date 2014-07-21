@@ -86,7 +86,11 @@ def on_models_committed(sender, changes):
         if isinstance(model, INDEXABLE):
             data.append([change, model.search_mapping()])
     if data:
-        update_index.delay(data)
+        try:
+            update_index.delay(data)
+        except RuntimeError:
+            with app.test_request_context():
+                update_index.delay(data)
 
 
 @job("hasjob-search")
