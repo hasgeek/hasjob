@@ -13,17 +13,20 @@ from ..models import agelimit, newlimit, db, JobCategory, JobPost, JobType, POST
 from ..utils import scrubemail, redactemail
 
 
-def getposts(basequery=None, sticky=False, showall=False):
+def getposts(basequery=None, sticky=False, showall=False, statuses=None):
     if showall:
         useagelimit = agelimit
     else:
         useagelimit = newlimit
 
+    if not statuses:
+        statuses = POSTSTATUS.LISTED
+
     if basequery is None:
         basequery = JobPost.query
 
     query = basequery.filter(
-        JobPost.status.in_(POSTSTATUS.LISTED)).filter(
+        JobPost.status.in_(statuses)).filter(
         db.or_(
             db.and_(JobPost.sticky == True, JobPost.datetime > datetime.utcnow() - agelimit),
             db.and_(JobPost.sticky == False, JobPost.datetime > datetime.utcnow() - useagelimit))).options(

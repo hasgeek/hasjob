@@ -24,11 +24,12 @@ from hasjob.uploads import uploaded_logos
 
 @app.route('/', subdomain='<subdomain>')
 @app.route('/')
-def index(basequery=None, type=None, category=None, md5sum=None, domain=None, location=None, title=None, showall=False):
+def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
+        location=None, title=None, showall=False, statuses=None):
     now = datetime.utcnow()
     if g.user or g.kiosk or g.board:
         showall = True
-    posts = list(getposts(basequery, sticky=True, showall=showall))
+    posts = list(getposts(basequery, sticky=True, showall=showall, statuses=statuses))
     if posts:
         employer_name = posts[0].company_name
     else:
@@ -60,6 +61,14 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None, lo
                            md5sum=md5sum, domain=domain, employer_name=employer_name,
                            location=location, showall=showall,
                            siteadmin=lastuser.has_permission('siteadmin'))
+
+
+@app.route('/drafts', subdomain='<subdomain>')
+@app.route('/drafts')
+@lastuser.requires_login
+def browse_drafts():
+    basequery = JobPost.query.filter_by(user=g.user)
+    return index(statuses=[POSTSTATUS.DRAFT, POSTSTATUS.PENDING])
 
 
 @app.route('/type/<name>', subdomain='<subdomain>')
