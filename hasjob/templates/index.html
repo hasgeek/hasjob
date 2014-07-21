@@ -70,7 +70,7 @@
         {%- if group|length == 1 -%}
           <li class="col-xs-12 col-md-3 col-sm-4">
             <a class="stickie {%- if post.is_announcement() %} announcement{% endif %}" href="{{ url_for('jobdetail', hashid=post.hashid) }}" rel="bookmark">
-              {%- if post.sticky %}<span class="pinned">Pinned!</span>{% endif %}
+              {%- if post.pinned %}<span class="pinned">Pinned!</span>{% endif %}
               <span class="annotation top-left">{{ post.location }}</span>
               <span class="annotation top-right">{{ post.datetime|shortdate }}</span>
               <span class="headline">{{ post.headline }}</span>
@@ -101,7 +101,7 @@
             </a>
             {%- for post in group[1:] -%}
               <div class="stickie {%- if post.is_announcement() %} announcement{% endif %} grouped under">
-                {%- if post.sticky %}<span class="pinned">Pinned!</span>{% endif %}
+                {%- if post.pinned %}<span class="pinned">Pinned!</span>{% endif %}
                 <span class="annotation top-left">{{ post.location }}</span>
                 <span class="annotation top-right">{{ post.datetime|shortdate }}</span>
                 <span class="headline">{{ post.headline }}</span>
@@ -119,7 +119,7 @@
       {%- for post in posts -%}
         <li class="col-xs-12 col-md-3 col-sm-4">
           <a class="stickie {%- if post.is_announcement() %} announcement{% endif %}" href="{{ url_for('jobdetail', hashid=post.hashid) }}" rel="bookmark">
-            {%- if post.sticky %}<span class="pinned">Pinned!</span>{% endif %}
+            {%- if post.pinned %}<span class="pinned">Pinned!</span>{% endif %}
             <span class="annotation top-left">{{ post.location }}</span>
             <span class="annotation top-right">{{ post.datetime|shortdate }}</span>
             <span class="headline">{{ post.headline }}</span>

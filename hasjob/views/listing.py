@@ -89,7 +89,7 @@ def jobdetail(hashid):
     moderateform = forms.ModerateForm()
     if request.method == 'GET':
         moderateform.reason.data = post.review_comments
-    stickyform = forms.StickyForm(obj=post)
+    pinnedform = forms.PinnedForm(obj=post)
     applyform = None  # User isn't allowed to apply unless non-None
     if g.user:
         job_application = JobApplication.query.filter_by(user=g.user, jobpost=post).first()
@@ -128,7 +128,7 @@ def jobdetail(hashid):
         domain_mismatch = False
 
     return render_template('detail.html', post=post, reportform=reportform, rejectform=rejectform,
-        stickyform=stickyform, applyform=applyform, job_application=job_application,
+        pinnedform=pinnedform, applyform=applyform, job_application=job_application,
         jobview=jobview, report=report, moderateform=moderateform,
         domain_mismatch=domain_mismatch,
         siteadmin=lastuser.has_permission('siteadmin')
@@ -361,19 +361,19 @@ def process_application(hashid, application):
     return redirect(url_for('view_application', hashid=post.hashid, application=job_application.hashid), 303)
 
 
-@app.route('/sticky/<hashid>', methods=['POST'], subdomain='<subdomain>')
-@app.route('/sticky/<hashid>', methods=['POST'])
+@app.route('/pinned/<hashid>', methods=['POST'], subdomain='<subdomain>')
+@app.route('/pinned/<hashid>', methods=['POST'])
 @lastuser.requires_permission('siteadmin')
-def stickyjob(hashid):
+def pinnedjob(hashid):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
-    stickyform = forms.StickyForm(obj=post)
-    if stickyform.validate_on_submit():
-        post.sticky = stickyform.sticky.data
+    pinnedform = forms.PinnedForm(obj=post)
+    if pinnedform.validate_on_submit():
+        post.pinned = pinnedform.pinned.data
         db.session.commit()
-        if post.sticky:
-            msg = "This listing has been made sticky."
+        if post.pinned:
+            msg = "This listing has been pinned."
         else:
-            msg = "This listing is no longer sticky."
+            msg = "This listing is no longer pinned."
     else:
         msg = "Invalid submission"
     if request.is_xhr:

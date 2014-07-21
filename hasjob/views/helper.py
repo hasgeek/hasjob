@@ -13,7 +13,7 @@ from ..models import agelimit, newlimit, db, JobCategory, JobPost, JobType, POST
 from ..utils import scrubemail, redactemail
 
 
-def getposts(basequery=None, sticky=False, showall=False, statuses=None):
+def getposts(basequery=None, pinned=False, showall=False, statuses=None):
     if showall:
         useagelimit = agelimit
     else:
@@ -28,15 +28,15 @@ def getposts(basequery=None, sticky=False, showall=False, statuses=None):
     query = basequery.filter(
         JobPost.status.in_(statuses)).filter(
         db.or_(
-            db.and_(JobPost.sticky == True, JobPost.datetime > datetime.utcnow() - agelimit),
-            db.and_(JobPost.sticky == False, JobPost.datetime > datetime.utcnow() - useagelimit))).options(
+            db.and_(JobPost.pinned == True, JobPost.datetime > datetime.utcnow() - agelimit),
+            db.and_(JobPost.pinned == False, JobPost.datetime > datetime.utcnow() - useagelimit))).options(
             *JobPost._defercols)
 
     if g.board:
         query = query.join(JobPost.postboards).filter(BoardJobPost.board == g.board)
 
-    if sticky:
-        query = query.order_by(db.desc(JobPost.sticky))
+    if pinned:
+        query = query.order_by(db.desc(JobPost.pinned))
     return query.order_by(db.desc(JobPost.datetime))
 
 

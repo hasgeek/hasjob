@@ -421,8 +421,8 @@ class ModerateForm(Form):
         validators=[validators.Required(u"Give a reason"), validators.Length(max=250)])
 
 
-class StickyForm(Form):
-    sticky = BooleanField("Make this sticky?")
+class PinnedForm(Form):
+    pinned = BooleanField("Pin this")
 
 
 class BoardForm(Form):

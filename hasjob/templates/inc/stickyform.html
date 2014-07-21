@@ -1,9 +1,0 @@
-{% from "baseframe/forms.html" import renderfield, ajaxform %}
-<form id="stickyform" method="POST" action="{{ url_for('stickyjob', hashid=post.hashid) }}" class="form-horizontal">
-  <input type="hidden" name="_charset_"/>
-  <input type="hidden" name="form.id" value="stickyform"/>
-  {{ stickyform.hidden_tag() }}
-  {{ renderfield(stickyform.sticky, style="wide") }}
-  <input type="submit" value="Apply" class="btn btn-primary btn-sm" />
-</form>
-{{ ajaxform("stickyform", request) }}

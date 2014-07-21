@@ -29,7 +29,7 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
     now = datetime.utcnow()
     if g.user or g.kiosk or g.board:
         showall = True
-    posts = list(getposts(basequery, sticky=True, showall=showall, statuses=statuses))
+    posts = list(getposts(basequery, pinned=True, showall=showall, statuses=statuses))
     if posts:
         employer_name = posts[0].company_name
     else:
@@ -39,8 +39,8 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
         # Group posts by email_domain on index page only, when not in kiosk mode
         grouped = OrderedDict()
         for post in posts:
-            if post.sticky:
-                # Make sticky posts appear in a group of one
+            if post.pinned:
+                # Make pinned posts appear in a group of one
                 grouped.setdefault(('s', post.hashid), []).append(post)
                 # if post.email_domain in webmail_domains:
                 #     grouped.setdefault(('se', post.md5sum), []).append(post)

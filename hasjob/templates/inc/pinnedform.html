@@ -1,0 +1,9 @@
+{% from "baseframe/forms.html" import renderfield, ajaxform %}
+<form id="pinnedform" method="POST" action="{{ url_for('pinnedjob', hashid=post.hashid) }}" class="form-horizontal">
+  <input type="hidden" name="_charset_"/>
+  <input type="hidden" name="form.id" value="pinnedform"/>
+  {{ pinnedform.hidden_tag() }}
+  {{ renderfield(pinnedform.pinned, style="wide") }}
+  <input type="submit" value="Apply" class="btn btn-primary btn-sm" />
+</form>
+{{ ajaxform("pinnedform", request) }}

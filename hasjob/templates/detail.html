@@ -132,12 +132,12 @@
                 </div>
               </div>
               <div class="list-group-item">
-                <a class="popup" href="#makesticky">
+                <a class="popup" href="#makepinned">
                   <i class="fa fa-fw fa-thumb-tack"></i>&nbsp;&nbsp; Pin this
                 </a>
-                <div class="popup-box" id="makesticky">
+                <div class="popup-box" id="makepinned">
                   <a class="close-popup" href="#">&#10005;</a>
-                  {% include "inc/stickyform.html" %}
+                  {% include "inc/pinnedform.html" %}
                 </div>
               </div>
             {%- endif %}
@@ -338,7 +338,7 @@
 </script>
 {{ ajaxform('reportform', request, force=true) }}
 {{ ajaxform('rejectform', request, force=true) }}
-{{ ajaxform('stickyform', request, force=true) }}
+{{ ajaxform('pinnedform', request, force=true) }}
 {{ ajaxform('moderateform', request, force=true) }}
 {% if applyform %}
   {{ ajaxform('applyform', request, force=true) }}
