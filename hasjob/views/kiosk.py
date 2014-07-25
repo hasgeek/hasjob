@@ -16,6 +16,7 @@ def kiosk_mode_flag():
     g.peopleflow_url = session.get('peopleflow')
 
 
+@app.route('/admin/kiosk', subdomain='<subdomain>')
 @app.route('/admin/kiosk')
 def kiosk_mode():
     if getbool(request.args.get('enable')):
@@ -26,7 +27,6 @@ def kiosk_mode():
     else:
         session.pop('kiosk', None)
         session.pop('peopleflow', None)
-        session.permanent = False
         flash("Kiosk mode has been disabled", 'success')
     return redirect(url_for('index'))
 
@@ -55,8 +55,6 @@ def kiosk_manifest():
             lines.append(url_for('jobdetail', hashid=post.hashid))
 
         # Static resources
-        lines.append(url_for('static', filename='favicon.ico'))
-        lines.append(url_for('static', filename='img/favicon.ico'))
         lines.append(url_for('static', filename='img/logo-star.png'))
         lines.append(url_for('static', filename='opensearch.xml'))
         lines.append(url_for('static', filename='css/editor.css'))
