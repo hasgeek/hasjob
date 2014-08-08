@@ -280,6 +280,9 @@ h1 small, h2 small, h3 small {
   .post-company-logo {
     text-align: right;
   }
+  .post-company-logo img {
+    margin-bottom: 12px;
+  }
 
   .flash, .guide {
     padding: 14px 30px 1px;
