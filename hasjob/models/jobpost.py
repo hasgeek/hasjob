@@ -132,7 +132,7 @@ class JobPost(BaseMixin, db.Model):
         return self.status == POSTSTATUS.PENDING
 
     def is_unpublished(self):
-        return self.status in (POSTSTATUS.DRAFT, POSTSTATUS.PENDING)
+        return self.status in POSTSTATUS.UNPUBLISHED
 
     def is_listed(self):
         now = datetime.utcnow()
@@ -166,6 +166,18 @@ class JobPost(BaseMixin, db.Model):
                 return url_for('browse_by_email', md5sum=self.md5sum, _external=_external)
             else:
                 return url_for('browse_by_domain', domain=self.email_domain, _external=_external)
+
+    def permissions(self, user, inherited=None):
+        perms = super(JobPost, self).permissions(user, inherited)
+        if self.status in POSTSTATUS.LISTED:
+            perms.add('view')
+        if self.admin_is(user):
+            if self.status in POSTSTATUS.UNPUBLISHED:
+                perms.add('view')
+            perms.add('edit')
+            perms.add('manage')
+            perms.add('withdraw')
+        return perms
 
     @property
     def from_webmail_domain(self):

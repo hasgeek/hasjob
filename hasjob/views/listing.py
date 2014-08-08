@@ -22,6 +22,7 @@ from flask import (
 from flask.ext.mail import Message
 from baseframe import cache
 from coaster.utils import get_email_domain, md5sum, base_domain_matches
+from coaster.views import load_model
 from hasjob import app, forms, mail, lastuser
 from hasjob.models import (
     agelimit,
@@ -249,16 +250,13 @@ def applyjob(hashid):
 
 
 @app.route('/manage/<hashid>', methods=('GET', 'POST'), defaults={'key': None}, subdomain='<subdomain>')
-@app.route('/manage/<hashid>/<key>', methods=('GET', 'POST'), subdomain='<subdomain>')
 @app.route('/manage/<hashid>', methods=('GET', 'POST'), defaults={'key': None})
-@app.route('/manage/<hashid>/<key>', methods=('GET', 'POST'))
-def managejob(hashid, key):
-    # Candidate management interface
-    post = JobPost.query.filter_by(hashid=hashid).first_or_404()
-    if not ((key is None and post.admin_is(g.user)) or (key == post.edit_key)):
-        abort(403)
-    # TODO: Landing page for candidate management
-    pass
+@load_model(JobPost, {'hashid': 'hashid'}, 'post', permission='manage')
+def managejob(post):
+    if post.applications:
+        return redirect(url_for('view_application', hashid=post.hashid, application=post.applications[0].hashid))
+    else:
+        return redirect(url_for('jobdetail', hashid=post.hashid))
 
 
 @app.route('/view/<hashid>/<application>', subdomain='<subdomain>')
