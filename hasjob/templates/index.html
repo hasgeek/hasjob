@@ -1,3 +1,4 @@
+{%- from "macros.html" import stickie %}
 {% extends "layout.html" %}
 {% block titletags -%}
   <title>{%if title %}{{ title }} &mdash; {% endif %}{% if g.board %}{{ g.board.title }}{% else %}{{ config['SITE_TITLE'] }}{% endif %}</title>
@@ -69,48 +70,17 @@
       {%- for grouping, group in grouped.items() -%}{%- with post = group[0] -%}
         {%- if group|length == 1 -%}
           <li class="col-xs-12 col-md-3 col-sm-4">
-            <a class="stickie {%- if post.is_announcement() %} announcement{% endif %}" href="{{ url_for('jobdetail', hashid=post.hashid) }}" rel="bookmark">
-              {%- if post.pinned %}<span class="pinned">Pinned!</span>{% endif %}
-              <span class="annotation top-left">{{ post.location }}</span>
-              <span class="annotation top-right">{{ post.datetime|shortdate }}</span>
-              <span class="headline">{{ post.headline }}</span>
-              {#{% if siteadmin %}<span class="count">{{ post.viewcounts.applied }}&middot;{{ post.viewcounts.opened }}&middot;{{ post.viewcounts.viewed }} &middot; {{ post.pay_label() }}</span>{% endif %}#}
-              <span class="annotation bottom-right">{{ post.company_name }}</span>
-              {% if now - post.datetime < newlimit -%}
-                <span class="new annotation bottom-left">New!</span>
-              {%- endif %}
-            </a>
+            {{ stickie(post, url_for('jobdetail', hashid=post.hashid), post.pinned) }}
           </li>
         {%- else -%}
           <li class="grouped col-xs-12 col-md-3 col-sm-4">
-            <a class="stickie {%- if post.is_announcement() %} announcement{% endif %}" href="
-                {%- if grouping[0] in ['sd', 'nd'] -%}
-                  {{ url_for('browse_by_domain', domain=grouping[1]) }}
-                {%- elif grouping[0] in ['se', 'ne'] -%}
-                  {{ url_for('browse_by_email', md5sum=grouping[1]) }}
-                {%- endif -%}">
-              {%- if post.pinned %}<span class="pinned">Pinned!</span>{% endif %}
-              <span class="annotation top-left">{{ post.location }}</span>
-              <span class="annotation top-right">{{ post.datetime|shortdate }}</span>
-              <span class="headline">{{ post.headline }}</span>
-              {#{% if siteadmin %}<span class="count">{{ post.viewcounts.applied }}&middot;{{ post.viewcounts.opened }}&middot;{{ post.viewcounts.viewed }} &middot; {{ post.pay_label() }}</span>{% endif %}#}
-              <span class="annotation bottom-right">{{ post.company_name }}</span>
-              {% if now - post.datetime < newlimit -%}
-                <span class="new annotation bottom-left">New!</span>
-              {%- endif %}
-            </a>
+            {%- if grouping[0] in ['sd', 'nd'] -%}
+              {{ stickie(post, url_for('browse_by_domain', domain=grouping[1]), post.pinned) }}
+            {%- elif grouping[0] in ['se', 'ne'] -%}
+              {{ stickie(post, url_for('browse_by_email', md5sum=grouping[1]), post.pinned) }}
+            {%- endif -%}
             {%- for post in group[1:] -%}
-              <div class="stickie {%- if post.is_announcement() %} announcement{% endif %} grouped under">
-                {%- if post.pinned %}<span class="pinned">Pinned!</span>{% endif %}
-                <span class="annotation top-left">{{ post.location }}</span>
-                <span class="annotation top-right">{{ post.datetime|shortdate }}</span>
-                <span class="headline">{{ post.headline }}</span>
-                {#{% if siteadmin %}<span class="count">{{ post.viewcounts.applied }}&middot;{{ post.viewcounts.opened }}&middot;{{ post.viewcounts.viewed }} &middot; {{ post.pay_label() }}</span>{% endif %}#}
-                <span class="annotation bottom-right">{{ post.company_name }}</span>
-                {% if now - post.datetime < newlimit -%}
-                  <span class="new annotation bottom-left">New!</span>
-                {%- endif %}
-              </div>
+              {{ stickie(post, none, false, groupedunder=true) }}
             {%- endfor -%}
           </li>
         {%- endif %}
@@ -118,17 +88,7 @@
     {%- else %}
       {%- for post in posts -%}
         <li class="col-xs-12 col-md-3 col-sm-4">
-          <a class="stickie {%- if post.is_announcement() %} announcement{% endif %}" href="{{ url_for('jobdetail', hashid=post.hashid) }}" rel="bookmark">
-            {%- if post.pinned %}<span class="pinned">Pinned!</span>{% endif %}
-            <span class="annotation top-left">{{ post.location }}</span>
-            <span class="annotation top-right">{{ post.datetime|shortdate }}</span>
-            <span class="headline">{{ post.headline }}</span>
-            {#{% if siteadmin %}<span class="count">{{ post.viewcounts.applied }}&middot;{{ post.viewcounts.opened }}&middot;{{ post.viewcounts.viewed }} &middot; {{ post.pay_label() }}</span>{% endif %}#}
-            <span class="annotation bottom-right">{{ post.company_name }}</span>
-            {%- if now - post.datetime < newlimit -%}
-              <span class="new annotation bottom-left">New!</span>
-            {%- endif %}
-          </a>
+          {{ stickie(post, url_for('jobdetail', hashid=post.hashid), post.pinned) }}
         </li>
       {%- else -%}
         <li class="col-xs-12 col-md-3 col-sm-4">

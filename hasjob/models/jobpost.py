@@ -7,7 +7,7 @@ from sqlalchemy.orm import defer
 from coaster.sqlalchemy import timestamp_columns, JsonDict
 from baseframe import cache
 import tldextract
-from . import agelimit, db, POSTSTATUS, EMPLOYER_RESPONSE, PAY_TYPE, BaseMixin, TimestampMixin, webmail_domains
+from . import newlimit, agelimit, db, POSTSTATUS, EMPLOYER_RESPONSE, PAY_TYPE, BaseMixin, TimestampMixin, webmail_domains
 from .jobtype import JobType
 from .jobcategory import JobCategory
 from .user import User
@@ -147,6 +147,9 @@ class JobPost(BaseMixin, db.Model):
 
     def is_announcement(self):
         return self.status == POSTSTATUS.ANNOUNCEMENT
+
+    def is_new(self):
+        return self.datetime >= datetime.utcnow() - newlimit
 
     def is_old(self):
         return self.datetime <= datetime.utcnow() - agelimit
