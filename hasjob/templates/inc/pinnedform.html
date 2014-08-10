@@ -6,4 +6,6 @@
   {{ renderfield(pinnedform.pinned, style="wide") }}
   <input type="submit" value="Apply" class="btn btn-primary btn-sm" />
 </form>
-{{ ajaxform("pinnedform", request) }}
+{%- if request.is_xhr %}
+  {{ ajaxform("pinnedform", request) }}
+{%- endif %}

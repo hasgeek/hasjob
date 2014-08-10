@@ -7,4 +7,6 @@
   <button type="submit" name="submit" class="btn btn-primary btn-sm" value="reject">Reject</button>
   <button type="submit" name="submit" class="btn btn-danger btn-sm" value="spam">Spam</button>
 </form>
-{{ ajaxform("rejectform", request) }}
+{%- if request.is_xhr %}
+  {{ ajaxform("rejectform", request) }}
+{%- endif %}

@@ -6,4 +6,6 @@
   {{ renderfield(reportform.report_code, style="wide", nolabel=True) }}
   <input type="submit" class="btn btn-primary btn-sm" value="Report this"/>
 </form>
-{{ ajaxform("reportform", request) }}
+{%- if request.is_xhr %}
+  {{ ajaxform("reportform", request) }}
+{%- endif %}
