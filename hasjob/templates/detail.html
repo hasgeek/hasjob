@@ -131,6 +131,8 @@
                   {% include "inc/moderateform.html" %}
                 </div>
               </div>
+            {%- endif %}
+            {%- if siteadmin or (g.user and g.board and g.board.owner_is(g.user)) %}
               <div class="list-group-item">
                 <a class="popup" href="#makepinned">
                   <i class="fa fa-fw fa-thumb-tack"></i>&nbsp;&nbsp; Pin this
@@ -163,7 +165,7 @@
                   <i class="fa fa-fw fa-money"></i>&nbsp;&nbsp; {{ post.pay_label() }}
                 </span>
               {%- endif %}
-              <span class="list-group-item">
+              <a class="list-group-item" href="{{ url_for('managejob', hashid=post.hashid) }}">
                 <i class="fa fa-fw fa-bar-chart-o"></i>&nbsp;&nbsp; <span title="Applied">{{ post.viewcounts.applied }}</span> &middot; <span title="Opened form">{{ post.viewcounts.opened }}</span> &middot; <span title="Viewed">{{ post.viewcounts.viewed }}</span> &middot;
                 {%- with unittype = post.viewstats[0] %}
                   {%- if unittype == 'q' %} Per 15m:
@@ -172,7 +174,7 @@
                   {%- endif %}
                 {%- endwith %}<br>
                 <div id="statsline" class="hidden"></div>
-              </span>
+              </a>
             {%- endif %}
             {#<div class="list-group-item" id="banner">
               <a href="https://rootconf.in/2014/" target="_blank" title="Rootconf 2014"><img src="{{
@@ -293,7 +295,6 @@
   });
   $(function() {
     $('#post-location').tooltip();
-    radioHighlight('report_code', 'selected');
     $(".popup-box").hide();
     $(".popup-box:target").show();
     $("body").click(function() {
@@ -330,11 +331,6 @@
       return false;
     });
   });
-  {%- if applyform %}
-    $(function() {
-      radioHighlight('apply_email', 'selected');
-    });
-  {%- endif %}
 </script>
 {{ ajaxform('reportform', request, force=true) }}
 {{ ajaxform('rejectform', request, force=true) }}

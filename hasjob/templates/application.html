@@ -1,4 +1,5 @@
 {% extends "sheet.html" %}
+{% from "baseframe/forms.html" import ajaxform, widgetscripts %}
 {% from "macros.html" import jobheader %}
 {% block title %}{{ job_application.fullname }} &mdash; {{ post.headline }}{% endblock %}
 
@@ -101,8 +102,8 @@
 {% endblock %}
 {% block footerscripts %}
   {% assets "js_tinymce" %}<script src="{{ ASSET_URL }}" type="text/javascript"></script>{% endassets %}
+  {{ widgetscripts(response_form, script=true) }}
   <script type="text/javascript">
-    {% include "inc/tinymce.js" %}
     $(function() {
       $("#appl-response").hide().removeClass('hidden');
 

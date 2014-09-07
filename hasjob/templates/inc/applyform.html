@@ -22,7 +22,6 @@
 {%- if request.is_xhr %}
   {{ ajaxform("applyform", request) }}
   <script type="text/javascript">
-    radioHighlight('apply_email', 'selected');
     tinymce.editors[0].remove(); {#- FIXME: Do this right with Baseframe’s richtext editor #}
     {% include "inc/tinymce.js" %}
   </script>

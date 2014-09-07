@@ -1,5 +1,5 @@
 {% extends "sheet.html" %}
-{% from "baseframe/forms.html" import renderfield, rendersubmit %}
+{% from "baseframe/forms.html" import renderfield, rendersubmit, widgetscripts %}
 {% block title %}List a job{% endblock %}
 {% block content %}
   <div class="sheet">
@@ -7,30 +7,31 @@
       <div class="page-header"><h1>
         {{ self.title()|e }}
       </h1></div>
-      <p>
-        HasGeek reaches out to thousands of developers via events, blogs and discussion groups.
-        Job listings made here will be shown across the network. Listings are valid for 30 days.
-        Each job listing must be for <strong>one position only</strong> and must comply with the
-        <a href="{{ url_for('terms_of_service') }}" target="_blank">terms of service</a>.
-      </p>
+      {% if g.board and g.board.newjob_blurb %}
+        {{ g.board.newjob_blurb|safe }}
+      {%- else %}
+        <p>
+          HasGeek reaches out to thousands of developers via events, blogs and discussion groups.
+          Job listings made here will be shown across the network. Listings are valid for 30 days.
+          Each job listing must be for <strong>one position only</strong> and must comply with the
+          <a href="{{ url_for('terms_of_service') }}" target="_blank">terms of service</a>.
+        </p>
+      {%- endif %}
     </div>
     <form id="newjob" class="form-horizontal" enctype="multipart/form-data" method="POST">
       <input type="hidden" name="_charset_"/>
       <input type="hidden" name="form.id" value="newjob"/>
       {{ form.hidden_tag() }}
       <div class="section">
-        {% if form.csrf_token.errors %}
-          <div class="help-error">This page timed out. Please submit again to confirm everything is all right</div>
-        {% endif %}
         <h2>First, tell us about the position</h2>
         {{ renderfield(form.job_headline, widget_css_class="field-title", autofocus=true) }}
         {{ renderfield(form.job_type) }}
         {{ renderfield(form.job_category) }}
         {{ renderfield(form.job_location) }}
         {{ renderfield(form.job_relocation_assist) }}
-        {{ renderfield(form.job_description, style="wide", widget_css_class="tinymce") }}
+        {{ renderfield(form.job_description, style="wide") }}
         {{ renderfield(form.job_perks, style="wide") }}
-        {{ renderfield(form.job_perks_description, style="wide", widget_css_class="tinymce") }}
+        {{ renderfield(form.job_perks_description, style="wide") }}
         <div class="row">
           <div class="col-xs-7 col-sm-6">
             {{ renderfield(form.job_pay_type, style="horizlist") }}
@@ -68,7 +69,7 @@
         {{ renderfield(form.job_how_to_apply, widget_css_class="expand50-200", style="wide") }}
       </div>
       <div class="section">
-        <h2>Next, tell us about your company</h2>
+        <h2>Next, tell us about your organization</h2>
         {{ renderfield(form.company_name, widget_css_class="field-title") }}
         {{ renderfield(form.company_logo) }}
         {% if not no_removelogo %}{{ renderfield(form.company_logo_remove) }}{% endif %}
@@ -98,7 +99,7 @@
           Do not reveal your phone number in the listing. If you receive an email, please report it
           and we will block their account
         </p>
-        {{ rendersubmit([(None, "Review your listing…", 'btn-primary')], style="wide") }}
+        {{ rendersubmit([(None, "Review your listing…", 'btn-primary')], style="wide", csrf_error=form.csrf_token.errors) }}
       </div>
     </form>
   </div>
@@ -322,8 +323,16 @@
       // Set initial state of pay currency
       $(".alert.hidden").hide().removeClass('hidden');
       switch($("input[type=radio][name=job_pay_type]:checked").val()) {
+        case '-1':
+          $("#nopay-alert").hide();
+          $("#field-job_pay_currency").hide();
+          $("#field-cashslider").hide();
+          break;
         case '0':
           $("#nopay-alert").show();
+          $("#field-job_pay_currency").hide();
+          $("#field-cashslider").hide();
+          break;
         case undefined:
           $("#field-job_pay_currency").hide();
           $("#field-cashslider").hide();
@@ -344,6 +353,12 @@
       // Update pay currency
       $("input[type=radio][name=job_pay_type]").on('change', function() {
         switch($(this).val()) {
+          case '-1':
+            $("#nopay-alert").slideUp();
+            $("#recurring-alert").slideUp();
+            $("#field-job_pay_currency").hide();
+            $("#field-cashslider").slideUp();
+            break;
           case '0':
             $("#nopay-alert").slideDown();
             $("#recurring-alert").slideUp();
@@ -374,59 +389,7 @@
           $("#field-equityslider").slideUp();
         };
       });
-      radioHighlight('job_type', 'selected');
-      radioHighlight('job_category', 'selected');
-      radioHighlight('job_pay_type', 'selected');
-      radioHighlight('job_pay_currency', 'selected');
-      radioHighlight('hr_contact', 'selected');
-
-      $("#collaborators").select2({
-        placeholder: "Search for a user",
-        multiple: true,
-        minimumInputLength: 2,
-        ajax: {
-          url: {{ getuser_autocomplete|tojson }},
-          dataType: "jsonp",
-          data: function(term, page) {
-            return {
-              q: term
-            };
-          },
-          results: function(data, page) {
-            var rdata = [];
-            if (data.status == 'ok') {
-              for (var i=0; i < data.users.length; i++) {
-                rdata.push({
-                  id: data.users[i].buid, text: data.users[i].label
-                });
-              };
-            };
-            return {more: false, results: rdata};
-          }
-        },
-        initSelection: function(element, callback) {
-          var val = $(element).val();
-          if (val != '') {
-            var qs = '?userid=' + val.replace(/,/g, '&userid=');
-            $.ajax({{ getuser_userids|tojson }} + qs, {
-              accepts: "application/json",
-              dataType: "jsonp",
-            }).done(function(data) {
-              $(element).val('');  // Clear it in preparation for incoming data
-              var rdata = [];
-              if (data.status == 'ok') {
-                for (var i=0; i < data.results.length; i++) {
-                  rdata.push({
-                    id: data.results[i].buid, text: data.results[i].label
-                  });
-                };
-              };
-              callback(rdata);
-            });
-          }
-        }
-      });
+      {{ widgetscripts(form, script=false) }}
     });
-    {% include "inc/tinymce.js" %}
   </script>
 {% endblock %}

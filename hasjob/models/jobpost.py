@@ -4,7 +4,7 @@ from datetime import datetime
 from werkzeug import cached_property
 from flask import url_for
 from sqlalchemy.orm import defer
-from coaster.sqlalchemy import timestamp_columns, JsonDict
+from coaster.sqlalchemy import make_timestamp_columns, JsonDict
 from baseframe import cache
 import tldextract
 from . import newlimit, agelimit, db, POSTSTATUS, EMPLOYER_RESPONSE, PAY_TYPE, BaseMixin, TimestampMixin, webmail_domains
@@ -24,6 +24,7 @@ class JobPost(BaseMixin, db.Model):
     hashid = db.Column(db.String(5), nullable=False, unique=True)
     datetime = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)  # Published
     closed_datetime = db.Column(db.DateTime, nullable=True)  # If withdrawn or rejected
+    # Pinned on the home page. Boards use the BoardJobPost.pinned column
     sticky = db.Column(db.Boolean, nullable=False, default=False)
     pinned = db.synonym('sticky')
 
@@ -404,7 +405,7 @@ def viewstats_by_id_day(jobpost_id):
 
 
 jobpost_admin_table = db.Table('jobpost_admin', db.Model.metadata,
-    *(timestamp_columns + (
+    *(make_timestamp_columns() + (
     db.Column('user_id', None, db.ForeignKey('user.id'), primary_key=True),
     db.Column('jobpost_id', None, db.ForeignKey('jobpost.id'), primary_key=True)
     )))

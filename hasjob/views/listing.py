@@ -27,7 +27,6 @@ from hasjob import app, forms, mail, lastuser
 from hasjob.models import (
     agelimit,
     db,
-    User,
     JobCategory,
     JobType,
     JobPost,
@@ -56,6 +55,14 @@ from hasjob.nlp import identify_language
 @app.route('/view/<hashid>', methods=('GET', 'POST'))
 def jobdetail(hashid):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
+
+    if g.board and post.link_to_board(g.board) is None:
+        blink = post.postboards.first()
+        if blink:
+            return redirect(url_for('jobdetail', hashid=post.hashid, subdomain=blink.board.name, _external=True))
+        else:
+            return redirect(url_for('jobdetail', hashid=post.hashid, subdomain=None, _external=True))
+
     if post.status in [POSTSTATUS.DRAFT, POSTSTATUS.PENDING]:
         if not ((g.user and post.admin_is(g.user)) or post.edit_key in session.get('userkeys', [])):
             abort(403)
@@ -90,7 +97,10 @@ def jobdetail(hashid):
     moderateform = forms.ModerateForm()
     if request.method == 'GET':
         moderateform.reason.data = post.review_comments
-    pinnedform = forms.PinnedForm(obj=post)
+    if g.board:
+        pinnedform = forms.PinnedForm(obj=post.link_to_board(g.board))
+    else:
+        pinnedform = forms.PinnedForm(obj=post)
     applyform = None  # User isn't allowed to apply unless non-None
     if g.user:
         job_application = JobApplication.query.filter_by(user=g.user, jobpost=post).first()
@@ -364,11 +374,17 @@ def process_application(hashid, application):
 @lastuser.requires_permission('siteadmin')
 def pinnedjob(hashid):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
-    pinnedform = forms.PinnedForm(obj=post)
+    if g.board:
+        obj = post.link_to_board(g.board)
+        if obj is None:
+            abort(404)
+    else:
+        obj = post
+    pinnedform = forms.PinnedForm(obj=obj)
     if pinnedform.validate_on_submit():
-        post.pinned = pinnedform.pinned.data
+        obj.pinned = pinnedform.pinned.data
         db.session.commit()
-        if post.pinned:
+        if obj.pinned:
             msg = "This listing has been pinned."
         else:
             msg = "This listing is no longer pinned."
@@ -519,14 +535,12 @@ def confirm_email(hashid, key):
             post.email_verified = True
             post.status = POSTSTATUS.CONFIRMED
             post.datetime = datetime.utcnow()
-            if g.board:
-                post.add_to(g.board)
             db.session.commit()
             if app.config['TWITTER_ENABLED']:
                 try:
                     tweet.delay(post.headline, url_for('jobdetail', hashid=post.hashid,
                         _external=True), post.location)
-                    flash("Congratulations! Your job listing has been published and tweeted",
+                    flash("Congratulations! Your job listing has been published",
                           "interactive")
                 except:  # FIXME: Catch-all
                     flash("Congratulations! Your job listing has been published "
@@ -567,14 +581,25 @@ def withdraw(hashid, key):
 def editjob(hashid, key, form=None, post=None, validated=False):
     if form is None:
         form = forms.ListingForm(request.form)
-        form.job_type.choices = [(ob.id, ob.title) for ob in JobType.query.filter_by(public=True).order_by('seq')]
-        form.job_category.choices = [(ob.id, ob.title) for ob in JobCategory.query.filter_by(public=True).order_by('seq')]
+        form.job_type.choices = JobType.choices(g.board)
+        form.job_category.choices = JobType.choices(g.board)
+        if g.board and not g.board.require_pay:
+            form.job_pay_type.choices = [(-1, u'NA')] + PAY_TYPE.items()
     if post is None:
         post = JobPost.query.filter_by(hashid=hashid).first_or_404()
     if not ((key is None and g.user is not None and post.admin_is(g.user)) or (key == post.edit_key)):
         abort(403)
 
-    # Don't allow email address to be changed once its confirmed
+    # Don't allow editing jobs that aren't on this board as that may be a loophole when
+    # the board allows no pay.
+    if g.board and post.link_to_board(g.board) is None:
+        blink = post.postboards.first()
+        if blink:
+            return redirect(url_for('editjob', hashid=post.hashid, subdomain=blink.board.name, _external=True))
+        else:
+            return redirect(url_for('editjob', hashid=post.hashid, subdomain=None, _external=True))
+
+    # Don't allow email address to be changed once it's confirmed
     if post.status in POSTSTATUS.POSTPENDING:
         no_email = True
     else:
@@ -621,33 +646,25 @@ def editjob(hashid, key, form=None, post=None, validated=False):
             post.hr_contact = form.hr_contact.data
 
             post.pay_type = form.job_pay_type.data
-            if post.pay_type != PAY_TYPE.NOCASH:
+            if post.pay_type == -1:
+                post.pay_type = None
+
+            if post.pay_type is not None and post.pay_type != PAY_TYPE.NOCASH:
                 post.pay_currency = form.job_pay_currency.data
-                post.pay_cash_min = form.job_pay_cash_min.data  # TODO: Sanitize
-                post.pay_cash_max = form.job_pay_cash_max.data  # TODO: Sanitize
+                post.pay_cash_min = form.job_pay_cash_min.data
+                post.pay_cash_max = form.job_pay_cash_max.data
             else:
                 post.pay_currency = None
                 post.pay_cash_min = None
                 post.pay_cash_max = None
             if form.job_pay_equity.data:
-                post.pay_equity_min = form.job_pay_equity_min.data  # TODO: Sanitize
-                post.pay_equity_max = form.job_pay_equity_max.data  # TODO: Sanitize
+                post.pay_equity_min = form.job_pay_equity_min.data
+                post.pay_equity_max = form.job_pay_equity_max.data
             else:
                 post.pay_equity_min = None
                 post.pay_equity_max = None
 
-            if form.collaborators.data:
-                post.admins = []
-                userdata = lastuser.getuser_by_userids(form.collaborators.data)
-                for userinfo in userdata:
-                    if userinfo['type'] == 'user':
-                        user = User.query.filter_by(userid=userinfo['buid']).first()
-                        if not user:
-                            # New user on Hasjob. Don't set username right now. It's not relevant
-                            # until first login and we don't want to deal with conflicts
-                            user = User(userid=userinfo['buid'], fullname=userinfo['title'])
-                            db.session.add(user)
-                        post.admins.append(user)
+            post.admins = form.collaborators.data
 
             # Allow name and email to be set only on non-confirmed posts
             if not no_email:
@@ -702,9 +719,12 @@ def editjob(hashid, key, form=None, post=None, validated=False):
         # form.poster_name.data = post.fullname  # Deprecated 2013-11-20
         form.poster_email.data = post.email
         form.hr_contact.data = int(post.hr_contact or False)
-        form.collaborators.data = [u.userid for u in post.admins]
+        form.collaborators.data = post.admins
 
         form.job_pay_type.data = post.pay_type
+        if post.pay_type is None:
+            # This kludge required because WTForms doesn't know how to handle None in forms
+            form.job_pay_type.data = -1
         form.job_pay_currency.data = post.pay_currency
         form.job_pay_cash_min.data = post.pay_cash_min
         form.job_pay_cash_max.data = post.pay_cash_max
@@ -712,9 +732,7 @@ def editjob(hashid, key, form=None, post=None, validated=False):
         form.job_pay_equity_min.data = post.pay_equity_min
         form.job_pay_equity_max.data = post.pay_equity_max
 
-    return render_template('postjob.html', form=form, no_email=no_email,
-        getuser_autocomplete=lastuser.endpoint_url(lastuser.getuser_autocomplete_endpoint),
-        getuser_userids=lastuser.endpoint_url(lastuser.getuser_userids_endpoint))
+    return render_template('postjob.html', form=form, no_email=no_email)
 
 
 @app.route('/new', methods=('GET', 'POST'), subdomain='<subdomain>')
@@ -737,8 +755,15 @@ def newjob():
             else:
                 session.pop('headline')
 
-    form.job_type.choices = [(ob.id, ob.title) for ob in JobType.query.filter_by(public=True).order_by('seq')]
-    form.job_category.choices = [(ob.id, ob.title) for ob in JobCategory.query.filter_by(public=True).order_by('seq')]
+    if g.board:
+        if 'new-job' not in g.board.permissions(g.user):
+            abort(403)
+
+    if g.board and not g.board.require_pay:
+        form.job_pay_type.choices = [(-1, u'NA')] + PAY_TYPE.items()
+    form.job_type.choices = JobType.choices(g.board)
+    form.job_category.choices = JobCategory.choices(g.board)
+
     if request.method == 'GET' or (request.method == 'POST' and request.form.get('form.id') == 'newheadline'):
         if g.user:
             # form.poster_name.data = g.user.fullname  # Deprecated 2013-11-20
@@ -751,6 +776,8 @@ def newjob():
                        useragent=request.user_agent.string,
                        user=g.user)
         db.session.add(post)
+        if g.board:
+            post.add_to(g.board)
         return editjob(post.hashid, post.edit_key, form, post, validated=True)
     elif request.method == 'POST' and request.form.get('form.id') != 'newheadline':
         # POST request from new job page, with errors
@@ -760,6 +787,4 @@ def newjob():
     # 1. GET request, page loaded for the first time
     # 2. POST request from main page's Post a Job box
     # 3. POST request from this page, with errors
-    return render_template('postjob.html', form=form, no_removelogo=True,
-        getuser_autocomplete=lastuser.endpoint_url(lastuser.getuser_autocomplete_endpoint),
-        getuser_userids=lastuser.endpoint_url(lastuser.getuser_userids_endpoint))
+    return render_template('postjob.html', form=form, no_removelogo=True)

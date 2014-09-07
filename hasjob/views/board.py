@@ -35,7 +35,10 @@ def add_subdomain_parameter(endpoint, values):
 @lastuser.requires_login
 def board_new():
     form = BoardForm()
-    form.userid.choices = [(g.user.userid, g.user.fullname)] + [(o['userid'], o['title']) for o in g.user.organizations_owned()]
+    if not 'siteadmin' in lastuser.permissions():
+        # Allow only siteadmins to set this field
+        del form.require_pay
+    form.userid.choices = g.user.owner_choices()
     if form.validate_on_submit():
         board = Board()
         form.populate_obj(board)
@@ -55,12 +58,20 @@ def board_new():
         formid="board_new", cancel_url=url_for('index'), ajax=False)
 
 
+@app.route('/edit', subdomain='<subdomain>')
+def board_edit_subdomain():
+    return redirect(url_for('board_edit', board=g.board.name))
+
+
 @app.route('/board/<board>/edit', methods=['GET', 'POST'])
 @lastuser.requires_login
-@load_model(Board, {'name': 'board'}, 'board', permission='edit')
+@load_model(Board, {'name': 'board'}, 'board', permission=('edit', 'siteadmin'), addlperms=lastuser.permissions)
 def board_edit(board):
     form = BoardForm(obj=board)
-    form.userid.choices = [(g.user.userid, g.user.fullname)] + [(o['userid'], o['title']) for o in g.user.organizations_owned()]
+    if not 'siteadmin' in lastuser.permissions():
+        # Allow only siteadmins to set this field
+        del form.require_pay
+    form.userid.choices = g.user.owner_choices()
     if form.validate_on_submit():
         form.populate_obj(board)
         if not board.name:

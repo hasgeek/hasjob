@@ -51,44 +51,47 @@
         </a>
       </li>
     {%- else -%}
-      {%- if not g.kiosk -%}
+      {%- if (not g.kiosk) and ((g.board and 'new-job' in g.board.permissions(g.user)) or (not g.board)) -%}
         <li class="col-xs-12 col-md-3 col-sm-4">
           <form id="newpost" action="{{ url_for('newjob')|usessl }}" method="POST" class="stickie special">
             <input type="hidden" name="_charset_"/>
             <input type="hidden" name="form.id" value="newheadline"/>
             <label class="annotation top-left" for="newpost_headline">Post a job</label>
-            <textarea id="newpost_headline" name="job_headline" class="expand form-control">Pragmatic programmer wanted at outstanding organisation</textarea>
+            <textarea id="newpost_headline" name="job_headline" class="expand form-control">
+              {%- if g.board and g.board.newjob_headline -%}
+                {{ g.board.newjob_headline }}
+              {%- else -%}
+                Pragmatic programmer wanted at outstanding organisation
+              {%- endif -%}
+            </textarea>
             <div id="newpost_details" class="jshidden"><input type="submit" class="btn btn-default btn-sm" value="Add details…"/></div>
           </form>
         </li>
       {%- endif -%}
-      {#-<li class="col-xs-12 col-md-3 col-sm-4">
-        <a class="stickie stickiead" style="background-color:#212530;" href="https://rootconf.in/2014/" target="_blank"><img src="{{ url_for('static', filename='img/banner.png') }}"></a>
-      </li>-#}
     {%- endif -%}
     {%- if grouped %}
-      {%- for grouping, group in grouped.items() -%}{%- with post = group[0] -%}
+      {%- for grouping, group in grouped.items() -%}{%- with pinned, post=group[0] -%}
         {%- if group|length == 1 -%}
           <li class="col-xs-12 col-md-3 col-sm-4">
-            {{ stickie(post, url_for('jobdetail', hashid=post.hashid), post.pinned) }}
+            {{ stickie(post, url_for('jobdetail', hashid=post.hashid), pinned) }}
           </li>
         {%- else -%}
           <li class="grouped col-xs-12 col-md-3 col-sm-4">
             {%- if grouping[0] in ['sd', 'nd'] -%}
-              {{ stickie(post, url_for('browse_by_domain', domain=grouping[1]), post.pinned) }}
+              {{ stickie(post, url_for('browse_by_domain', domain=grouping[1]), pinned) }}
             {%- elif grouping[0] in ['se', 'ne'] -%}
-              {{ stickie(post, url_for('browse_by_email', md5sum=grouping[1]), post.pinned) }}
+              {{ stickie(post, url_for('browse_by_email', md5sum=grouping[1]), pinned) }}
             {%- endif -%}
-            {%- for post in group[1:] -%}
+            {%- for pinned, post in group[1:] -%}
               {{ stickie(post, none, false, groupedunder=true) }}
             {%- endfor -%}
           </li>
         {%- endif %}
       {%- endwith -%}{%- endfor -%}
     {%- else %}
-      {%- for post in posts -%}
+      {%- for pinned, post in pinsandposts -%}
         <li class="col-xs-12 col-md-3 col-sm-4">
-          {{ stickie(post, url_for('jobdetail', hashid=post.hashid), post.pinned) }}
+          {{ stickie(post, url_for('jobdetail', hashid=post.hashid), pinned) }}
         </li>
       {%- else -%}
         <li class="col-xs-12 col-md-3 col-sm-4">

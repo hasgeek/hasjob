@@ -37,10 +37,11 @@ def init_for(env):
 
     baseframe.init_app(app, requires=['hasjob'],
         ext_requires=['baseframe-bs3',
-            ('jquery.textarea-expander', 'jquery.cookie', 'jquery.sparkline','jquery.nouislider', 'jquery.tinymce>=4.0.0'),
+            ('jquery.textarea-expander', 'jquery.cookie', 'jquery.sparkline','jquery.nouislider'),
             ('firasans', 'baseframe-firasans'),
             'fontawesome>=4.0.0'])
-    app.assets.register('js_tinymce', assets.require('tinymce.js>=4.0.0'))
+    # TinyMCE has to be loaded by itself, unminified, or it won't be able to find its assets
+    app.assets.register('js_tinymce', assets.require('!jquery.js', 'tinymce.js>=4.0.0', 'jquery.tinymce.js>=4.0.0'))
     app.assets.register('css_editor', Bundle('css/editor.css',
         filters=['cssrewrite', 'cssmin'], output='css/editor.packed.css'))
 

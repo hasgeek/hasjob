@@ -14,29 +14,31 @@ from ..utils import scrubemail, redactemail
 
 
 def getposts(basequery=None, pinned=False, showall=False, statuses=None):
-    if showall:
-        useagelimit = agelimit
-    else:
-        useagelimit = newlimit
-
     if not statuses:
         statuses = POSTSTATUS.LISTED
 
     if basequery is None:
         basequery = JobPost.query
 
-    query = basequery.filter(
-        JobPost.status.in_(statuses)).filter(
-        db.or_(
-            db.and_(JobPost.pinned == True, JobPost.datetime > datetime.utcnow() - agelimit),
-            db.and_(JobPost.pinned == False, JobPost.datetime > datetime.utcnow() - useagelimit))).options(
-            *JobPost._defercols)
+    query = basequery.filter(JobPost.status.in_(statuses)).options(*JobPost._defercols)
+
+    if showall:
+        query = query.filter(JobPost.datetime > datetime.utcnow() - agelimit)
+    else:
+        query = query.filter(
+            db.or_(
+                db.and_(JobPost.pinned == True, JobPost.datetime > datetime.utcnow() - agelimit),
+                db.and_(JobPost.pinned == False, JobPost.datetime > datetime.utcnow() - newlimit)))
 
     if g.board:
         query = query.join(JobPost.postboards).filter(BoardJobPost.board == g.board)
 
     if pinned:
-        query = query.order_by(db.desc(JobPost.pinned))
+        if g.board:
+            query = query.order_by(db.desc(BoardJobPost.pinned))
+        else:
+            query = query.order_by(db.desc(JobPost.pinned))
+
     return query.order_by(db.desc(JobPost.datetime))
 
 

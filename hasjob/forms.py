@@ -5,13 +5,17 @@ from decimal import Decimal, InvalidOperation
 from difflib import SequenceMatcher
 
 from flask import g, request, Markup
-from baseframe.forms import Form, ValidEmailDomain, ValidUrl, AllUrlsValid, TinyMce4Field, HiddenMultiField
+from baseframe.forms import (Form, ValidEmailDomain, ValidUrl, AllUrlsValid, TinyMce4Field, UserSelectMultiField,
+    AnnotatedTextField, FormField, NullTextField, ValidName)
 from wtforms import (TextField, TextAreaField, RadioField, FileField, BooleanField,
     ValidationError, validators)
+from wtforms.widgets import CheckboxInput, ListWidget
 from wtforms.fields.html5 import EmailField
+from wtforms.ext.sqlalchemy.fields import QuerySelectMultipleField
 from coaster.utils import getbool, get_email_domain
+from flask.ext.lastuser import LastuserResourceException
 
-from .models import JobType, JobApplication, EMPLOYER_RESPONSE, PAY_TYPE, webmail_domains
+from .models import User, JobType, JobCategory, JobApplication, Board, EMPLOYER_RESPONSE, PAY_TYPE, webmail_domains
 from .uploads import process_image, UploadNotAllowed
 
 from . import app, lastuser
@@ -95,17 +99,17 @@ class ListingForm(Form):
                      u"We now require candidates to apply through the job board only. "
                      u"Do not include any contact information here. Candidates CANNOT "
                      u"attach resumes or other documents, so do not ask for that",
-         validators=[validators.Required(u"HasGeek does not offer screening services. "
+         validators=[validators.Required(u"We do not offer screening services. "
                                          u"Please specify what candidates should submit")])
     company_name = TextField("Name",
         description=u"The name of the organization where the position is. "
-                    u"No intermediaries or unnamed stealth startups. Use your own real name if the company isn’t named "
+                    u"No intermediaries or unnamed stealth startups. Use your own real name if the organization isn’t named "
                     u"yet. We do not accept listings from third parties such as recruitment consultants. Such listings "
                     u"may be removed without notice",
         validators=[validators.Required(u"This is required. Posting any name other than that of the actual organization is a violation of the ToS"),
             validators.Length(min=4, max=80, message="The name must be within %(min)d to %(max)d characters")])
     company_logo = FileField("Logo",
-        description=u"Optional — Your company logo will appear at the top of your listing.",
+        description=u"Optional — Your organization’s logo will appear at the top of your listing.",
         )  # validators=[file_allowed(uploaded_logos, "That image type is not supported")])
     company_logo_remove = BooleanField("Remove existing logo")
     company_url = TextField("URL",
@@ -122,7 +126,7 @@ class ListingForm(Form):
     #     validators=[validators.Required("We need your name")])
     poster_email = EmailField("Email",
         description=Markup(u"This is where we’ll send your confirmation email and all job applications. "
-                    u"We recommend using a shared email address such as jobs@your-company.com. "
+                    u"We recommend using a shared email address such as jobs@your-organization.com. "
                     u"<strong>Listings are classified by your email domain,</strong> "
                     u"so use a work email address. "
                     u"Your email address will not be revealed to applicants until you respond"),
@@ -130,24 +134,26 @@ class ListingForm(Form):
             validators.Length(min=5, max=80, message="%(max)d characters maximum"),
             validators.Email("That does not appear to be a valid email address"),
             ValidEmailDomain()])
-    collaborators = HiddenMultiField(u"Collaborators",
+    collaborators = UserSelectMultiField(u"Collaborators",
         description=u"If someone is helping you evaluate candidates, type their names here. "
                     u"They must have a HasGeek account. They will not receive email notifications "
                     u"— use a shared email address above for that — but they will be able to respond "
-                    u"to candidates who apply")
+                    u"to candidates who apply",
+        usermodel=User, lastuser=lastuser)
 
 
     def validate_job_type(form, field):
+        # This validator exists primarily for this assignment, used later in the form by other validators
         form.job_type_ob = JobType.query.get(field.data)
         if not form.job_type_ob:
             raise ValidationError("Please select a job type")
 
     def validate_company_name(form, field):
-        if len(field.data) > 5:
+        if len(field.data) > 6:
             caps = len(CAPS_RE.findall(field.data))
             small = len(SMALL_RE.findall(field.data))
             if small == 0 or caps / float(small) > 0.8:
-                raise ValidationError("Surely your company isn't named in uppercase?")
+                raise ValidationError(u"Surely your organization isn’t named in uppercase?")
 
     def validate_company_logo(form, field):
         if not request.files['company_logo']:
@@ -167,8 +173,9 @@ class ListingForm(Form):
         if simplify_text(field.data) in (
                 'awesome coder wanted at awesome company',
                 'pragmatic programmer wanted at outstanding organisation',
-                'pragmatic programmer wanted at outstanding organization'):
-            raise ValidationError(u"Come on, write your own headline. You aren’t just another run-of-the-mill company, right?")
+                'pragmatic programmer wanted at outstanding organization') or (
+                g.board and simplify_text(field.data) == simplify_text(g.board.newjob_headline)):
+            raise ValidationError(u"Come on, write your own headline. You aren’t just another run-of-the-mill employer, right?")
         caps = len(CAPS_RE.findall(field.data))
         small = len(SMALL_RE.findall(field.data))
         if small == 0 or caps / float(small) > 0.5:
@@ -200,7 +207,7 @@ class ListingForm(Form):
             raise ValidationError(u"Do not include contact information in the listing")
 
     def validate_job_pay_cash_min(form, field):
-        if form.job_pay_type.data != PAY_TYPE.NOCASH:
+        if form.job_pay_type.data in (PAY_TYPE.ONETIME, PAY_TYPE.RECURRING):
             data = field.data.strip()
             if not data:
                 raise ValidationError("Please specify what this job pays")
@@ -215,7 +222,7 @@ class ListingForm(Form):
             field.data = None
 
     def validate_job_pay_cash_max(form, field):
-        if form.job_pay_type.data != PAY_TYPE.NOCASH:
+        if form.job_pay_type.data in (PAY_TYPE.ONETIME, PAY_TYPE.RECURRING):
             data = field.data.strip()
             if data:
                 if not data[0].isdigit():
@@ -265,14 +272,15 @@ class ListingForm(Form):
     def validate(self, extra_validators=None):
         success = super(ListingForm, self).validate(extra_validators)
         if success:
-            # Check for job type flags
             if (not self.job_type_ob.nopay_allowed) and self.job_pay_type.data == PAY_TYPE.NOCASH:
-                self.job_pay_type.errors.append(u"You must specify how much this job pays")
+                self.job_pay_type.errors.append(u"“%s” cannot pay nothing" % self.job_type_ob.title)
                 success = False
+
             if (not self.job_type_ob.webmail_allowed) and get_email_domain(self.poster_email.data) in webmail_domains:
                 self.poster_email.errors.append(
                     u"Public webmail accounts like Gmail are not accepted. Please use your corporate email address")
                 success = False
+
             # Check for cash pay range
             if self.job_pay_type.data in (PAY_TYPE.ONETIME, PAY_TYPE.RECURRING):
                 if self.job_pay_cash_min.data == 0:
@@ -298,7 +306,7 @@ class ListingForm(Form):
                             u"That’s rather low. Did you specify monthly pay instead of annual pay? Multiply by 12")
                         success = False
                     elif self.job_pay_cash_max.data > self.job_pay_cash_min.data * 4:
-                        self.job_pay_cash_max.errors.append(u"Please select a narrower range")
+                        self.job_pay_cash_max.errors.append(u"Please select a narrower range, with maximum within 4× minimum")
                         success = False
             if self.job_pay_equity.data:
                 if self.job_pay_equity_min.data == 0:
@@ -316,7 +324,8 @@ class ListingForm(Form):
                         multiplier = 4
 
                     if self.job_pay_equity_max.data > self.job_pay_equity_min.data * multiplier:
-                        self.job_pay_equity_max.errors.append(u"Please select a narrower range")
+                        self.job_pay_equity_max.errors.append(
+                            u"Please select a narrower range, with maximum within %d× minimum" % multiplier)
                         success = False
         return success
 
@@ -342,7 +351,10 @@ class ApplicationForm(Form):
             self.apply_email.description = Markup(
                 u'Add new email addresses from <a href="{}" target="_blank">your profile</a>'.format(
                     g.user.profile_url))
-            self.apply_email.choices = [(e, e) for e in lastuser.user_emails(g.user)]
+            try:
+                self.apply_email.choices = [(e, e) for e in lastuser.user_emails(g.user)]
+            except LastuserResourceException:
+                self.apply_email.choices = [(g.user.email, g.user.email)]
             if not self.apply_email.choices:
                 self.apply_email.choices = [
                     ('', Markup('<em>You have not verified your email address</em>'))
@@ -425,16 +437,83 @@ class PinnedForm(Form):
     pinned = BooleanField("Pin this")
 
 
+def jobtype_label(jobtype):
+    annotations = []
+    if jobtype.nopay_allowed:
+        annotations.append(u'zero pay allowed')
+    if jobtype.webmail_allowed:
+        annotations.append(u'webmail address allowed')
+    if annotations:
+        return Markup(u'%s <small><em>(%s)</em></small>') % (jobtype.title, u', '.join(annotations))
+    else:
+        return jobtype.title
+
+
+class BoardOptionsForm(Form):
+    restrict_listing = BooleanField(u"Restrict direct listing on this board to owners and the following users",
+        default=True,
+        description=u"As the owner of this board, you can always cross-add jobs from other boards on Hasjob")
+    listing_users = UserSelectMultiField(u"Allowed users",
+        description=u"These users will be allowed to list jobs on this board under the following terms",
+        usermodel=User, lastuser=lastuser)
+    # Allow turning this off only in siteadmin-approved boards (deleted in the view for non-siteadmins)
+    require_pay = BooleanField(u"Require pay data for listing on this board?", default=True,
+        description=u"Hasjob requires employers to reveal what they intend to pay, "
+            u"but you can make it optional for jobs listed from this board. "
+            u"Pay data is used to match candidates to jobs. We recommend you collect it")
+    newjob_headline = NullTextField(u"Headline",
+        description=u"The sample headline shown to employers when listing a job",
+        validators=[validators.Length(min=0, max=100, message="%(max)d characters maximum")])
+    newjob_blurb = TinyMce4Field(u"Listing instructions",
+        description=u"What should we tell employers when they list a job on your board? "
+            u"Leave blank to use the default text",
+        content_css=content_css,
+        validators=[AllUrlsValid()])
+    types = QuerySelectMultipleField("Job types",
+        widget=ListWidget(), option_widget=CheckboxInput(),
+        query_factory=lambda: JobType.query.filter_by(private=False).order_by('seq'), get_label=jobtype_label,
+        validators=[validators.Required(u"You need to select at least one job type")],
+        description=u"Jobs listed directly on this board can use one of the types enabled here")
+    categories = QuerySelectMultipleField("Job categories",
+        widget=ListWidget(), option_widget=CheckboxInput(),
+        query_factory=lambda: JobCategory.query.filter_by(private=False).order_by('seq'), get_label='title',
+        validators=[validators.Required(u"You need to select at least one category")],
+        description=u"Jobs listed directly on this board can use one of the categories enabled here")
+
+
 class BoardForm(Form):
     """
     Edit board settings.
     """
-    title = TextField(u"Title", validators=[validators.Required("The board needs a name")])
-    name = TextField(u"URL Name", description=u"Optional — Will be autogenerated if blank")
+    title = TextField(u"Title", validators=[
+        validators.Required("The board needs a name"),
+        validators.Length(min=1, max=80, message="%(max)d characters maximum")])
+    caption = NullTextField(u"Caption", validators=[
+        validators.Optional(),
+        validators.Length(min=0, max=80, message="%(max)d characters maximum")],
+        description=u"The title and caption appear at the top of the page. Keep them concise")
+    name = AnnotatedTextField(u"URL Name", prefix='https://', suffix=u'.hasjob.co',
+        description=u"Optional — Will be autogenerated if blank",
+        validators=[ValidName(), validators.Length(min=0, max=250, message="%(max)d characters maximum")])
     description = TinyMce4Field(u"Description",
+        description=u"The description appears at the top of the board, above all jobs. "
+            u"Use it to introduce your board and keep it brief",
         content_css=content_css,
         validators=[validators.Required("A description of the job board is required"),
             AllUrlsValid()])
     userid = RadioField(u"Owner", validators=[validators.Required("Select an owner")],
         description=u"Select the user or organization who owns this board. "
-            "Owners can add jobs to the board and edit settings")
+            "Owners can add jobs to the board and edit these settings")
+    require_login = BooleanField(u"Prompt users to login", default=True,
+        description=u"If checked, users must login to see all jobs available. "
+            u"Logging in provides users better filtering for jobs that may be of interest to them, "
+            u"and allows employers to understand how well their listing is performing")
+    options = FormField(BoardOptionsForm, u"Direct listing options")
+
+    def validate_name(self, field):
+        if field.data:
+            if field.data in Board.reserved_names:
+                raise ValidationError(u"This name is reserved. Please use another name")
+            existing = Board.query.filter_by(name=field.data).first()
+            if existing and existing != self.edit_obj:
+                raise ValidationError(u"This name has been taken by another board")

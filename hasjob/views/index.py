@@ -27,7 +27,7 @@ from hasjob.uploads import uploaded_logos
 def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
         location=None, title=None, showall=False, statuses=None):
     now = datetime.utcnow()
-    if g.user or g.kiosk or g.board:
+    if g.user or g.kiosk or (g.board and not g.board.require_login):
         showall = True
     posts = list(getposts(basequery, pinned=True, showall=showall, statuses=statuses))
     if posts:
@@ -35,28 +35,44 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
     else:
         employer_name = u'a single employer'
 
+    # Make lookup slightly faster in the loop below since 'g' is a proxy
+    board = g.board
+
     if basequery is None and posts and not g.kiosk:
         # Group posts by email_domain on index page only, when not in kiosk mode
         grouped = OrderedDict()
         for post in posts:
-            if post.pinned:
+            pinned = post.pinned
+            if board is not None:
+                blink = post.link_to_board(board)
+                if blink is not None:
+                    pinned = blink.pinned
+            if pinned:
                 # Make pinned posts appear in a group of one
-                grouped.setdefault(('s', post.hashid), []).append(post)
-                # if post.email_domain in webmail_domains:
-                #     grouped.setdefault(('se', post.md5sum), []).append(post)
-                # else:
-                #     grouped.setdefault(('sd', post.email_domain), []).append(post)
+                grouped.setdefault(('s', post.hashid), []).append((pinned, post))
             elif post.status == POSTSTATUS.ANNOUNCEMENT:
                 # Make announcements also appear in a group of one
-                grouped.setdefault(('a', post.hashid), []).append(post)
+                grouped.setdefault(('a', post.hashid), []).append((pinned, post))
             elif post.email_domain in webmail_domains:
-                grouped.setdefault(('ne', post.md5sum), []).append(post)
+                grouped.setdefault(('ne', post.md5sum), []).append((pinned, post))
             else:
-                grouped.setdefault(('nd', post.email_domain), []).append(post)
+                grouped.setdefault(('nd', post.email_domain), []).append((pinned, post))
+        pinsandposts = None
     else:
         grouped = None
+        if g.board:
+            pinsandposts = []
+            for post in posts:
+                pinned = post.pinned
+                if board is not None:
+                    blink = post.link_to_board(board)
+                    if blink is not None:
+                        pinned = blink.pinned
+                pinsandposts.append((pinned, post))
+        else:
+            pinsandposts = [(post.pinned, post) for post in posts]
 
-    return render_template('index.html', posts=posts, grouped=grouped, now=now,
+    return render_template('index.html', pinsandposts=pinsandposts, grouped=grouped, now=now,
                            newlimit=newlimit, jobtype=type, jobcategory=category, title=title,
                            md5sum=md5sum, domain=domain, employer_name=employer_name,
                            location=location, showall=showall,
