@@ -582,7 +582,7 @@ def editjob(hashid, key, form=None, post=None, validated=False):
     if form is None:
         form = forms.ListingForm(request.form)
         form.job_type.choices = JobType.choices(g.board)
-        form.job_category.choices = JobType.choices(g.board)
+        form.job_category.choices = JobCategory.choices(g.board)
         if g.board and not g.board.require_pay:
             form.job_pay_type.choices = [(-1, u'NA')] + PAY_TYPE.items()
     if post is None:
