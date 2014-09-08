@@ -37,7 +37,7 @@ def board_new():
     form = BoardForm()
     if not 'siteadmin' in lastuser.permissions():
         # Allow only siteadmins to set this field
-        del form.require_pay
+        del form.options.form.require_pay
     form.userid.choices = g.user.owner_choices()
     if form.validate_on_submit():
         board = Board()
@@ -70,7 +70,7 @@ def board_edit(board):
     form = BoardForm(obj=board)
     if not 'siteadmin' in lastuser.permissions():
         # Allow only siteadmins to set this field
-        del form.require_pay
+        del form.options.form.require_pay
     form.userid.choices = g.user.owner_choices()
     if board.userid not in g.user.user_organization_owned_ids():
         # We could get here if we are a siteadmin editing someone's board
