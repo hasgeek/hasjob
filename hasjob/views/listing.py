@@ -584,7 +584,7 @@ def editjob(hashid, key, form=None, post=None, validated=False):
         form.job_type.choices = JobType.choices(g.board)
         form.job_category.choices = JobCategory.choices(g.board)
         if g.board and not g.board.require_pay:
-            form.job_pay_type.choices = [(-1, u'NA')] + PAY_TYPE.items()
+            form.job_pay_type.choices = [(-1, u'Confidential')] + PAY_TYPE.items()
     if post is None:
         post = JobPost.query.filter_by(hashid=hashid).first_or_404()
     if not ((key is None and g.user is not None and post.admin_is(g.user)) or (key == post.edit_key)):
@@ -760,7 +760,7 @@ def newjob():
             abort(403)
 
     if g.board and not g.board.require_pay:
-        form.job_pay_type.choices = [(-1, u'NA')] + PAY_TYPE.items()
+        form.job_pay_type.choices = [(-1, u'Confidential')] + PAY_TYPE.items()
     form.job_type.choices = JobType.choices(g.board)
     form.job_category.choices = JobCategory.choices(g.board)
 
