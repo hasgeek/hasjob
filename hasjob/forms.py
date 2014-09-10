@@ -174,7 +174,7 @@ class ListingForm(Form):
                 'awesome coder wanted at awesome company',
                 'pragmatic programmer wanted at outstanding organisation',
                 'pragmatic programmer wanted at outstanding organization') or (
-                g.board and simplify_text(field.data) == simplify_text(g.board.newjob_headline)):
+                g.board and g.board.newjob_headline and simplify_text(field.data) == simplify_text(g.board.newjob_headline)):
             raise ValidationError(u"Come on, write your own headline. You aren’t just another run-of-the-mill employer, right?")
         caps = len(CAPS_RE.findall(field.data))
         small = len(SMALL_RE.findall(field.data))
