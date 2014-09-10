@@ -592,7 +592,7 @@ def editjob(hashid, key, form=None, post=None, validated=False):
 
     # Don't allow editing jobs that aren't on this board as that may be a loophole when
     # the board allows no pay.
-    if g.board and post.link_to_board(g.board) is None:
+    if g.board and post.link_to_board(g.board) is None and request.method == 'GET':
         blink = post.postboards.first()
         if blink:
             return redirect(url_for('editjob', hashid=post.hashid, subdomain=blink.board.name, _external=True))
