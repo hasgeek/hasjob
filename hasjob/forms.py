@@ -5,7 +5,7 @@ from decimal import Decimal, InvalidOperation
 from difflib import SequenceMatcher
 
 from flask import g, request, Markup
-from baseframe.forms import (Form, ValidEmailDomain, ValidUrl, AllUrlsValid, TinyMce4Field, UserSelectMultiField,
+from baseframe.forms import (Form, ValidEmail, ValidUrl, AllUrlsValid, TinyMce4Field, UserSelectMultiField,
     AnnotatedTextField, FormField, NullTextField, ValidName)
 from wtforms import (TextField, TextAreaField, RadioField, FileField, BooleanField,
     ValidationError, validators)
@@ -132,8 +132,7 @@ class ListingForm(Form):
                     u"Your email address will not be revealed to applicants until you respond"),
         validators=[validators.Required("We need to confirm your email address before the job can be listed"),
             validators.Length(min=5, max=80, message="%(max)d characters maximum"),
-            validators.Email("That does not appear to be a valid email address"),
-            ValidEmailDomain()])
+            ValidEmail("That does not appear to be a valid email address")])
     collaborators = UserSelectMultiField(u"Collaborators",
         description=u"If someone is helping you evaluate candidates, type their names here. "
                     u"They must have a HasGeek account. They will not receive email notifications "

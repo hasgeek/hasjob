@@ -60,7 +60,7 @@ def newid():
     return b64encode(uuid4().bytes, altchars=',-').replace('=', '')
 
 
-EMAIL_RE = re.compile(r'\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}\b', re.I)
+EMAIL_RE = re.compile(r'\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,63}\b', re.I)
 # From http://www.codinghorror.com/blog/2008/10/the-problem-with-urls.html
 URL_RE = re.compile(r'\(?\bhttps?://[-A-Za-z0-9+&@#/%?=~_()|!:,.;]*[-A-Za-z0-9+&@#/%=~_()|]')
 PHONE_DETECT_RE = re.compile('(^|[^0-9])([0-9][ .()_-]*){10}($|[^0-9])')
