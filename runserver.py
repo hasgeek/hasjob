@@ -9,7 +9,7 @@ if __name__ == '__main__':
     init_for('dev')
     # Seed with sample data
     with app.test_request_context():
-        if models.JobType.query.count() == 0:
+        if not models.JobType.query.notempty():
             print >> sys.stderr, "Adding some job types"
             db.session.add(models.JobType(seq=10, name=u'fulltime', title=u'Full-time employment'))
             db.session.add(models.JobType(seq=20, name=u'contract', title=u'Short-term contract'))
@@ -17,7 +17,7 @@ if __name__ == '__main__':
             db.session.add(models.JobType(seq=40, name=u'volunteer', title=u'Volunteer contributor'))
             db.session.add(models.JobType(seq=50, name=u'partner', title=u'Partner for a venture'))
             db.session.commit()
-        if models.JobCategory.query.count() == 0:
+        if not models.JobCategory.query.notempty():
             print >> sys.stderr, "Adding some job categories"
             db.session.add(models.JobCategory(seq=10, name=u'programming', title=u'Programming'))
             db.session.add(models.JobCategory(seq=20, name=u'ux', title=u'Interaction Design'))
@@ -29,7 +29,7 @@ if __name__ == '__main__':
             db.session.add(models.JobCategory(seq=80, name=u'support', title=u'Customer Support'))
             db.session.add(models.JobCategory(seq=90, name=u'mobile', title=u'Mobile (iPhone, Android, other)'))
             db.session.commit()
-        if models.ReportCode.query.count() == 0:
+        if not models.ReportCode.query.notempty():
             print >> sys.stderr, "Adding some report codes"
             db.session.add(models.ReportCode(seq=10, name=u'spam', title=u'Spam, not a job listing'))
             db.session.add(models.ReportCode(seq=20, name=u'fake', title=u'Appears to be a fake listing'))

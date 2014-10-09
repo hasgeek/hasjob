@@ -532,7 +532,7 @@ def unique_hash(model=JobPost):
     """
     while 1:
         hashid = random_hash_key()
-        if model.query.filter_by(hashid=hashid).count() == 0:
+        if not model.query.filter_by(hashid=hashid).notempty():
             break
     return hashid
 
@@ -543,6 +543,6 @@ def unique_long_hash(model=JobApplication):
     """
     while 1:
         hashid = random_long_key()
-        if model.query.filter_by(hashid=hashid).count() == 0:
+        if not model.query.filter_by(hashid=hashid).notempty():
             break
     return hashid
