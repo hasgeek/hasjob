@@ -616,18 +616,19 @@ def editjob(hashid, key, form=None, post=None, validated=False):
         form_words = get_word_bag(u' '.join((form_description, form_perks, form_how_to_apply)))
 
         similar = False
-        for oldpost in JobPost.query.filter(db.or_(
-            db.and_(
-                JobPost.email_domain == form_email_domain,
-                JobPost.status.in_(POSTSTATUS.POSTPENDING)),
-            JobPost.status == POSTSTATUS.SPAM)).filter(
-                JobPost.datetime > datetime.utcnow() - agelimit).all():
-            if oldpost.id != post.id:
-                if oldpost.words:
-                    s = SequenceMatcher(None, form_words, oldpost.words)
-                    if s.ratio() > 0.6:
-                        similar = True
-                        break
+        with db.session.no_autoflush:
+            for oldpost in JobPost.query.filter(db.or_(
+                db.and_(
+                    JobPost.email_domain == form_email_domain,
+                    JobPost.status.in_(POSTSTATUS.POSTPENDING)),
+                JobPost.status == POSTSTATUS.SPAM)).filter(
+                    JobPost.datetime > datetime.utcnow() - agelimit).all():
+                if oldpost.id != post.id:
+                    if oldpost.words:
+                        s = SequenceMatcher(None, form_words, oldpost.words)
+                        if s.ratio() > 0.6:
+                            similar = True
+                            break
 
         if similar:
             flash("This listing is very similar to an earlier listing. You may not relist the same job "
