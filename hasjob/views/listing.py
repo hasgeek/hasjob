@@ -703,7 +703,7 @@ def editjob(hashid, key, form=None, post=None, validated=False):
             session.permanent = True
             return redirect(url_for('jobdetail', hashid=post.hashid), code=303)
     elif request.method == 'POST':
-        flash("Please correct the indicated errors", category='interactive')
+        flash("Please review the indicated issues", category='interactive')
     elif request.method == 'GET':
         # Populate form from model
         form.job_headline.data = post.headline

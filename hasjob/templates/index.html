@@ -115,6 +115,13 @@
     $("#newpost_details").hide().removeClass('jshidden');
     $("#newpost_headline").focus(function() {
       $("#newpost_details").slideDown();
+    }).keypress(function(event) {
+      if(event.which == '13') {
+        $(this).closest("form").submit();
+        return false;
+      }
+    }).blur(function() {
+      $(this).val($(this).val().replace(/(\r\n|\n|\r)/gm," ").replace(/\s+/g," "));
     });
   });
 </script>

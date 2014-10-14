@@ -6,7 +6,7 @@ from difflib import SequenceMatcher
 
 from flask import g, request, Markup
 from baseframe.forms import (Form, ValidEmail, ValidUrl, AllUrlsValid, TinyMce4Field, UserSelectMultiField,
-    AnnotatedTextField, FormField, NullTextField, ValidName)
+    AnnotatedTextField, FormField, NullTextField, ValidName, NoObfuscatedEmail)
 from baseframe.forms.sqlalchemy import AvailableName
 from wtforms import (TextField, TextAreaField, RadioField, FileField, BooleanField,
     ValidationError, validators)
@@ -68,7 +68,8 @@ class ListingForm(Form):
     job_headline = TextField("Headline",
         description="A single-line summary. This goes to the front page and across the network",
         validators=[validators.Required("A headline is required"),
-            validators.Length(min=1, max=100, message="%(max)d characters maximum")])
+            validators.Length(min=1, max=100, message="%(max)d characters maximum"),
+            NoObfuscatedEmail(u"Do not include contact information in the listing")])
     job_type = RadioField("Type", coerce=int, validators=[validators.Required("The job type must be specified")])
     job_category = RadioField("Category", coerce=int, validators=[validators.Required("Select a category")])
     job_location = TextField("Location",
@@ -80,13 +81,15 @@ class ListingForm(Form):
         content_css=content_css,
         description=u"Don’t just describe the job, tell a compelling story for why someone should work for you",
         validators=[validators.Required("A description of the job is required"),
-            AllUrlsValid(invalid_urls=invalid_urls)],
+            AllUrlsValid(invalid_urls=invalid_urls),
+            NoObfuscatedEmail(u"Do not include contact information in the listing")],
         tinymce_options={'convert_urls': True})
     job_perks = BooleanField("Job perks are available")
     job_perks_description = TinyMce4Field("Describe job perks",
         content_css=content_css,
         description=u"Stock options, free lunch, free conference passes, etc",
-        validators=[AllUrlsValid(invalid_urls=invalid_urls)])
+        validators=[AllUrlsValid(invalid_urls=invalid_urls),
+            NoObfuscatedEmail(u"Do not include contact information in the listing")])
     job_pay_type = RadioField("What does this job pay?", coerce=int,
         choices=PAY_TYPE.items())
     job_pay_currency = ListingPayCurrencyField("Currency", choices=[("INR", "INR"), ("USD", "USD"), ("EUR", "EUR")])
@@ -100,8 +103,9 @@ class ListingForm(Form):
                      u"We now require candidates to apply through the job board only. "
                      u"Do not include any contact information here. Candidates CANNOT "
                      u"attach resumes or other documents, so do not ask for that",
-         validators=[validators.Required(u"We do not offer screening services. "
-                                         u"Please specify what candidates should submit")])
+         validators=[
+            validators.Required(u"We do not offer screening services. Please specify what candidates should submit"),
+            NoObfuscatedEmail(u"Do not include contact information in the listing")])
     company_name = TextField("Name",
         description=u"The name of the organization where the position is. "
                     u"No intermediaries or unnamed stealth startups. Use your own real name if the organization isn’t named "
@@ -168,8 +172,6 @@ class ListingForm(Form):
             raise ValidationError("Unsupported file format. We accept JPEG, PNG and GIF")
 
     def validate_job_headline(form, field):
-        if EMAIL_RE.search(field.data) is not None:
-            raise ValidationError(u"Do not include contact information in the listing")
         if simplify_text(field.data) in (
                 'awesome coder wanted at awesome company',
                 'pragmatic programmer wanted at outstanding organisation',
@@ -193,18 +195,6 @@ class ListingForm(Form):
         small = len(SMALL_RE.findall(field.data))
         if small == 0 or caps / float(small) > 0.5:
             raise ValidationError("Surely this location isn't named in uppercase?")
-
-    def validate_job_description(form, field):
-        if EMAIL_RE.search(field.data) is not None:
-            raise ValidationError(u"Do not include contact information in the listing")
-
-    def validate_job_perks_description(form, field):
-        if EMAIL_RE.search(field.data) is not None:
-            raise ValidationError(u"Do not include contact information in the listing")
-
-    def validate_job_how_to_apply(form, field):
-        if EMAIL_RE.search(field.data) is not None or URL_RE.search(field.data) is not None:
-            raise ValidationError(u"Do not include contact information in the listing")
 
     def validate_job_pay_cash_min(form, field):
         if form.job_pay_type.data in (PAY_TYPE.ONETIME, PAY_TYPE.RECURRING):
