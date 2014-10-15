@@ -782,7 +782,7 @@ def newjob():
         return editjob(post.hashid, post.edit_key, form, post, validated=True)
     elif request.method == 'POST' and request.form.get('form.id') != 'newheadline':
         # POST request from new job page, with errors
-        flash("Please correct the indicated errors", category='interactive')
+        flash("Please review the indicated issues", category='interactive')
 
     # Render page. Execution reaches here under three conditions:
     # 1. GET request, page loaded for the first time
