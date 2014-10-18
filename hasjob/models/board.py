@@ -116,12 +116,14 @@ class Board(BaseNameMixin, db.Model):
     def permissions(self, user, inherited=None):
         perms = super(Board, self).permissions(user, inherited)
         perms.add('view')
+        if not self.restrict_listing:
+            perms.add('new-job')
         if user is not None and (user.userid == self.userid or self.userid in user.organizations_owned_ids()):
             perms.add('edit')
             perms.add('delete')
             perms.add('add')
             perms.add('new-job')
-        if user in self.listing_users:
+        elif user in self.listing_users:
             perms.add('new-job')
         return perms
 
