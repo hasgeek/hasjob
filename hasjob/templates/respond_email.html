@@ -4,7 +4,7 @@
 
 {% block preview -%}
   {%- if job_application.is_replied() %}
-    {{ post.fullname or post.company_name }} has responded to your application for <a href="{{ url_for('jobdetail', hashid=post.hashid) }}">{{ post.headline }}</a>. You can reply to this email to initiate a conversation.
+    {{ post.fullname or post.company_name }} has responded to your application for <a href="{{ url_for('jobdetail', hashid=post.hashid) }}">{{ post.headline }}</a>. You can reply to this email to continue the conversation.
   {%- elif job_application.is_rejected() %}
     {{ post.fullname or post.company_name }} has declined your application for <a href="{{ url_for('jobdetail', hashid=post.hashid) }}">{{ post.headline }}</a>
   {%- endif %}

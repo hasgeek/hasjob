@@ -10,22 +10,34 @@ from hasjob import app
 
 
 @job('hasjob')
-def tweet(title, url, location=None):
+def tweet(title, url, location=None, parsed_location=None):
     auth = OAuthHandler(app.config['TWITTER_CONSUMER_KEY'], app.config['TWITTER_CONSUMER_SECRET'])
     auth.set_access_token(app.config['TWITTER_ACCESS_KEY'], app.config['TWITTER_ACCESS_SECRET'])
     api = API(auth)
-    maxlength = 120 # 120 chars plus URL = 140 max for Twitter
-    if location:
-        # Make a hashtag from the first word in the location
-        locationtag = '#'+re.split('\W+', location)[0]
-        maxlength -= len(locationtag)+1
-    else:
-        locationtag = None
+    urllength = 23  # Current Twitter standard for HTTPS (as of Oct 2014)
+    maxlength = 140 - urllength - 1 # == 116
+    locationtag = u''
+    if parsed_location:
+        locationtags = []
+        for token in parsed_location.get('tokens', []):
+            if 'geoname' in token and 'token' in token:
+                locname = token['token'].strip()
+                if locname:
+                    locationtags.append(u'#' + locname.title().replace(u' ', ''))
+        locationtag = u' '.join(locationtags)
+        if locationtag:
+            maxlength -= len(locationtag) + 1
+    if not locationtag and location:
+        # Make a hashtag from the first word in the location. This catches
+        # locations like 'Anywhere' which have no geonameid but are still valid
+        locationtag = u'#' + re.split('\W+', location)[0]
+        maxlength -= len(locationtag) + 1
+
     if len(title) > maxlength:
-        text = title[:maxlength-3] + '...'
+        text = title[:maxlength-1] + u'…'
     else:
         text = title[:maxlength]
-    text = text + ' ' + shorten(url)
+    text = text + ' ' + url  # Don't shorten URLs, now that there's t.co
     if locationtag:
         text = text + ' ' + locationtag
     api.update_status(text)
