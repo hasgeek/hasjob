@@ -32,6 +32,19 @@ def content_css():
     return app.assets['css_editor'].urls()[0]
 
 
+def optional_url(form, field):
+    """
+    Validate URL only if present.
+    """
+    if not field.data:
+        raise validators.StopValidation()
+    else:
+        if ':' not in field.data:
+            field.data = 'http://' + field.data
+        validator = validators.URL(message="Invalid URL. URLs must begin with http:// or https://")
+        return validator(form, field)
+
+
 class ListingPayCurrencyField(RadioField):
     """
     A custom field to get around the annoying pre-validator.
@@ -106,7 +119,7 @@ class ListingForm(Form):
     company_logo_remove = BooleanField("Remove existing logo")
     company_url = TextField("URL",
         description=u"Example: http://www.google.com",
-        validators=[validators.Optional(), validators.Length(min=0, max=255, message="%(max)d characters maximum"), ValidUrl()])
+        validators=[optional_url, validators.Length(min=0, max=255, message="%(max)d characters maximum"), ValidUrl()])
     hr_contact = RadioField(u"Is it okay for recruiters and other "
         u"intermediaries to contact you about this listing?", coerce=getbool,
         description=u"We’ll display a notice to this effect on the listing",
