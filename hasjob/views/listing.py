@@ -538,7 +538,7 @@ def confirm_email(hashid, key):
             db.session.commit()
             if app.config['TWITTER_ENABLED']:
                 tweet.delay(post.headline, url_for('jobdetail', hashid=post.hashid,
-                    _external=True), post.location, dict(post.parsed_location) or {})
+                    _external=True), post.location, dict(post.parsed_location or {}))
             flash("Congratulations! Your job listing has been published", "interactive")
     return redirect(url_for('jobdetail', hashid=post.hashid), code=302)
 
