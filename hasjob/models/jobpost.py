@@ -36,6 +36,7 @@ class JobPost(BaseMixin, db.Model):
     category = db.relation(JobCategory, primaryjoin=category_id == JobCategory.id)
     location = db.Column(db.Unicode(80), nullable=False)
     parsed_location = db.Column(JsonDict)
+    remote_location = db.Column(db.Boolean, default=False, nullable=False)
     relocation_assist = db.Column(db.Boolean, default=False, nullable=False)
     description = db.Column(db.UnicodeText, nullable=False)
     perks = db.Column(db.UnicodeText, nullable=False)
