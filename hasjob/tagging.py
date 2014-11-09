@@ -24,7 +24,7 @@ def tag_locations(jobpost_id):
                     geonames[geoname['geonameid']]['geonameid'] = geoname['geonameid']
                     geonames[geoname['geonameid']]['primary'] = geonames[geoname['geonameid']].get('primary', True)
                     for type, related in geoname.get('related', {}).items():
-                        if type in ['admin1', 'country']:
+                        if type in ['admin2', 'admin1', 'country', 'continent']:
                             geonames[related['geonameid']]['geonameid'] = related['geonameid']
                             geonames[related['geonameid']]['primary'] = False
 

@@ -4,15 +4,15 @@
 
 {% block preview -%}
   {%- if job_application.is_replied() %}
-    {{ post.fullname or post.company_name }} has responded to your application for <a href="{{ url_for('jobdetail', hashid=post.hashid) }}">{{ post.headline }}</a>. You can reply to this email to continue the conversation.
+    {{ g.user.fullname if post.admin_is(g.user) else post.fullname or post.company_name }} has responded to your application for <a href="{{ url_for('jobdetail', hashid=post.hashid) }}">{{ post.headline }}</a>. You can reply to this email to continue the conversation
   {%- elif job_application.is_rejected() %}
-    {{ post.fullname or post.company_name }} has declined your application for <a href="{{ url_for('jobdetail', hashid=post.hashid) }}">{{ post.headline }}</a>
+    {{ g.user.fullname if post.admin_is(g.user) else post.fullname or post.company_name }} has declined your application for <a href="{{ url_for('jobdetail', hashid=post.hashid) }}">{{ post.headline }}</a>
   {%- endif %}
 {%- endblock %}
 
 {% block content -%}
   <p>
-    <em>{{ self.preview() }}:</em>
+    <em>{{ self.preview() }}</em>
   </p>
   {{ job_application.response_message|safe }}
   <hr>
