@@ -13,12 +13,14 @@ def tag_locations(jobpost_id):
     if app.config.get('HASCORE_SERVER'):
         post = JobPost.query.get(jobpost_id)
         url = urljoin(app.config['HASCORE_SERVER'], '/1/geo/parse_locations')
-        response = requests.get(url, params={'q': post.location, 'lang': 'en', 'bias': ['IN', 'US']}).json()
+        response = requests.get(url, params={'q': post.location, 'lang': 'en', 'bias': ['IN', 'US'], 'special': ['Anywhere', 'Remote', 'Home']}).json()
         if response.get('status') == 'ok':
             results = response.get('result', [])
             geonames = defaultdict(dict)
             tokens = []
             for item in results:
+                if item.get('special'):
+                    post.remote_location = True
                 geoname = item.get('geoname', {})
                 if geoname:
                     geonames[geoname['geonameid']]['geonameid'] = geoname['geonameid']
@@ -34,6 +36,9 @@ def tag_locations(jobpost_id):
                         }})
                 else:
                     tokens.append({'token': item.get('token', '')})
+
+                if item.get('special'):
+                    tokens[-1]['remote'] = True
 
             post.parsed_location = {'tokens': tokens}
 
