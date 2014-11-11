@@ -13,25 +13,14 @@ def tag_locations(jobpost_id):
     if app.config.get('HASCORE_SERVER'):
         post = JobPost.query.get(jobpost_id)
         url = urljoin(app.config['HASCORE_SERVER'], '/1/geo/parse_locations')
-        #location_string = str(post.location)
-        #x = location_string.find('Anywhere')
-        #y = location_string.find('Remote')
-        #z1 = location_string.find('Home')
-        #z2 = location_string.find('home')
-        #if (x >= 0) or (y >= 0) or (z1 >= 0) or (z2 >= 0):
         response = requests.get(url, params={'q': post.location, 'lang': 'en', 'bias': ['IN', 'US'], 'special': ['Anywhere', 'Remote', 'Home']}).json()
-        #elif 'Remote' in post.location:
-        #    response = requests.get(url, params={'q': post.location, 'lang': 'en', 'bias': ['IN', 'US'], 'special': ['Anywhere', 'Remote']}).json()
-        #else:
-        #    response = requests.get(url, params={'q': post.location, 'lang': 'en', 'bias': ['IN', 'US']}).json()
         if response.get('status') == 'ok':
             results = response.get('result', [])
             geonames = defaultdict(dict)
             tokens = []
-            if item.get('special'):
-                post.remote_location = True
-                db.session.commit()
             for item in results:
+                if item.get('special'):
+                    post.remote_location = True
                 geoname = item.get('geoname', {})
                 if geoname:
                     geonames[geoname['geonameid']]['geonameid'] = geoname['geonameid']
@@ -47,6 +36,9 @@ def tag_locations(jobpost_id):
                         }})
                 else:
                     tokens.append({'token': item.get('token', '')})
+
+                if item.get('special'):
+                    tokens[-1]['remote'] = True
 
             post.parsed_location = {'tokens': tokens}
 
