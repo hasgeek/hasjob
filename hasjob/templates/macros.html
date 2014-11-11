@@ -1,6 +1,6 @@
 {%- macro stickie(post, url, pinned, groupedunder=false) %}
   {%- if groupedunder %}
-    <div class="stickie {%- if post.is_announcement() %} announcement{% endif %} grouped under">
+    <div class="stickie {%- if post.is_announcement() %} announcement{% endif %} grouped under" data-href="{{ url }}">
   {%- else %}
     <a class="stickie {%- if post.is_announcement() %} announcement{% endif %}" href="{{ url }}" rel="bookmark">
   {%- endif %}
