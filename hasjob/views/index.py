@@ -136,6 +136,13 @@ def browse_by_location(location):
     return index(basequery=basequery, location=geodata, title=geodata['short_title'])
 
 
+@app.route('/in/anywhere', subdomain='<subdomain>')
+@app.route('/in/anywhere')
+def browse_by_anywhere():
+    basequery = JobPost.query.filter(JobPost.remote_location == True)
+    return index(basequery=basequery)
+
+
 @app.route('/feed', subdomain='<subdomain>')
 @app.route('/feed')
 def feed(basequery=None, type=None, category=None, md5sum=None, domain=None, location=None):
