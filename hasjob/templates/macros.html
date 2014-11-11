@@ -25,6 +25,8 @@
     {%- for token in post.parsed_location.get('tokens', []) -%}
       {%- if token['geoname'] -%}
         <a href="{{ url_for('browse_by_location', location=token['geoname'].get('name') or token['geoname'].get('geonameid')) }}">{{ token['token'] }}</a>
+      {%- elif token['remote'] -%}
+        <a href="{{ url_for('browse_by_anywhere') }}">{{ token['token'] }}</a>
       {%- else -%}
         {{ token['token'] }}
       {%- endif %}
