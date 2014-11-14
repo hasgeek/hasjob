@@ -78,12 +78,12 @@
         {%- else -%}
           <li class="grouped col-xs-12 col-md-3 col-sm-4">
             {%- if grouping[0] in ['sd', 'nd'] -%}
-              {{ stickie(post, url_for('browse_by_domain', domain=grouping[1]), pinned) }}
+              {{ stickie(post, url_for('browse_by_domain', domain=grouping[1]), pinned, dataurl=url_for('jobdetail', hashid=post.hashid)) }}
             {%- elif grouping[0] in ['se', 'ne'] -%}
-              {{ stickie(post, url_for('browse_by_email', md5sum=grouping[1]), pinned) }}
+              {{ stickie(post, url_for('browse_by_email', md5sum=grouping[1]), pinned, dataurl=url_for('jobdetail', hashid=post.hashid)) }}
             {%- endif -%}
             {%- for pinned, post in group[1:] -%}
-              {{ stickie(post, none, false, groupedunder=true) }}
+              {{ stickie(post, none, false, groupedunder=true, dataurl=url_for('jobdetail', hashid=post.hashid)) }}
             {%- endfor -%}
           </li>
         {%- endif %}

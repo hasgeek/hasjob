@@ -1,8 +1,8 @@
-{%- macro stickie(post, url, pinned, groupedunder=false) %}
+{%- macro stickie(post, url, pinned, groupedunder=false, dataurl=none) %}
   {%- if groupedunder %}
-    <div class="stickie {%- if post.is_announcement() %} announcement{% endif %} grouped under">
+    <div class="stickie {%- if post.is_announcement() %} announcement{% endif %} grouped under" {%- if dataurl %} data-href="{{ dataurl }}"{% endif %}>
   {%- else %}
-    <a class="stickie {%- if post.is_announcement() %} announcement{% endif %}" href="{{ url }}" rel="bookmark">
+    <a class="stickie {%- if post.is_announcement() %} announcement{% endif %}" href="{{ url }}" rel="bookmark" {%- if dataurl %} data-href="{{ dataurl }}"{% endif %}>
   {%- endif %}
     {%- if pinned %}<span class="pinned">Pinned!</span>{% endif %}
     <span class="annotation top-left">{{ post.location }}</span>
