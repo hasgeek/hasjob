@@ -320,7 +320,6 @@
       $(this).attr('disabled', 'disabled');
       $.ajax($(this).attr('href')).done(function(html) {
         $("#apply-info-para").html(html);
-        unrot13();
         {%- if applyform %}
           $("#apply-section").removeClass('hidden');
         {%- endif %}
