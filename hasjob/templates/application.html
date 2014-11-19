@@ -11,7 +11,20 @@
     <div class="section"><div class="row">
       <div class="col-md-9">
         <h2>{{ job_application.fullname }}</h2>
-        <p class="post-date">Applied {{ job_application.created_at|longdate }}</p>
+        <p class="post-date">
+          Applied {{ job_application.created_at|longdate }}
+          {%- with counts = job_application.application_count() %}{% if counts.count %}
+            &middot;
+            in ± a week, applied {{ counts.count }}
+            {%- if is_siteadmin %}
+              {%- if counts.replied %}, got response {{ counts.replied }}{% endif %}
+              {%- if counts.rejected %}, got rejected {{ counts.rejected }}{% endif %}
+              {%- if counts.ignored %}, got ignored {{ counts.ignored }}{% endif %}
+              {%- if counts.flagged %}, got flagged {{ counts.flagged }}{% endif %}
+              {%- if counts.spam %}, spam {{ counts.spam }}{% endif %}
+            {%- endif %}
+          {%- endif %}{% endwith %}
+        </p>
         {{ job_application.message|safe }}
         <hr>
         <form id="response_form" method="POST" action="{{ url_for('process_application', hashid=post.hashid, application=job_application.hashid) }}">

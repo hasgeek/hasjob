@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from datetime import datetime
+from collections import defaultdict
+from datetime import datetime, timedelta
 from werkzeug import cached_property
 from flask import url_for
 from sqlalchemy.orm import defer
@@ -513,6 +514,34 @@ class JobApplication(BaseMixin, db.Model):
         return self.response in (EMPLOYER_RESPONSE.NEW, EMPLOYER_RESPONSE.PENDING,
             EMPLOYER_RESPONSE.IGNORED, EMPLOYER_RESPONSE.REJECTED)
 
+    def application_count(self):
+        """Number of jobs candidate has applied two around this one"""
+        if not self.user:
+            # Kiosk submission, no data available
+            return {
+                'count': 0,
+                'ignored': 0,
+                'replied': 0,
+                'flagged': 0,
+                'spam': 0,
+                'rejected': 0
+                }
+        date_min = self.created_at - timedelta(days=7)
+        date_max = self.created_at + timedelta(days=7)
+        counts = defaultdict(int)
+        for r in db.session.query(JobApplication.response).filter(JobApplication.user == self.user).filter(
+                JobApplication.created_at > date_min, JobApplication.created_at < date_max):
+            counts[r.response] += 1
+
+        return {
+            'count': sum(counts.values()),
+            'ignored': counts[EMPLOYER_RESPONSE.IGNORED],
+            'replied': counts[EMPLOYER_RESPONSE.REPLIED],
+            'flagged': counts[EMPLOYER_RESPONSE.FLAGGED],
+            'spam': counts[EMPLOYER_RESPONSE.SPAM],
+            'rejected': counts[EMPLOYER_RESPONSE.REJECTED],
+            }
+
 
 JobApplication.jobpost = db.relationship(JobPost,
     backref=db.backref('applications', order_by=(
@@ -532,10 +561,11 @@ def unique_hash(model=JobPost):
     """
     Returns a unique hash for a given model
     """
-    while 1:
-        hashid = random_hash_key()
-        if not model.query.filter_by(hashid=hashid).notempty():
-            break
+    with db.session.no_autoflush:
+        while 1:
+            hashid = random_hash_key()
+            if not model.query.filter_by(hashid=hashid).notempty():
+                break
     return hashid
 
 
@@ -543,8 +573,9 @@ def unique_long_hash(model=JobApplication):
     """
     Returns a long unique hash for a given model
     """
-    while 1:
-        hashid = random_long_key()
-        if not model.query.filter_by(hashid=hashid).notempty():
-            break
+    with db.session.no_autoflush:
+        while 1:
+            hashid = random_long_key()
+            if not model.query.filter_by(hashid=hashid).notempty():
+                break
     return hashid

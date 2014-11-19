@@ -291,7 +291,7 @@ def view_application(hashid, application):
     statuses = set([app.status for app in post.applications])
 
     return render_template('application.html', post=post, job_application=job_application,
-        response_form=response_form, statuses=statuses)
+        response_form=response_form, statuses=statuses, is_siteadmin=lastuser.has_permission('siteadmin'))
 
 
 @app.route('/apply/<hashid>/<application>', methods=['POST'], subdomain='<subdomain>')
