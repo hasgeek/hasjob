@@ -80,22 +80,20 @@
         </div>
       </div>
       <div class="col-md-3">
-        {%- if post.admin_is(g.user) %}
-          <div class="list-group">
-            {%- for appl in post.applications %}
-              <a class="list-group-item status_{{ appl.status|lower }}" href="{{ url_for('view_application', hashid=post.hashid, application=appl.hashid) }}">
-                {%- if appl == job_application -%}
-                  <strong>{{ appl.fullname }}</strong>
-                {%- else -%}
-                  {{ appl.fullname }}
-                {%- endif -%}
-                <br><span class="post-date">{{ appl.created_at|shortdate }} &middot;
-                {%- if appl.is_new() %} <strong>{{ appl.status }}</strong>{% else %} {{ appl.status }}{% endif %}
-                </span>
-              </a>
-            {%- endfor %}
-          </div>
-        {%- endif %}
+        <div class="list-group">
+          {%- for appl in post.applications %}
+            <a class="list-group-item status_{{ appl.status|lower }}" href="{{ url_for('view_application', hashid=post.hashid, application=appl.hashid) }}">
+              {%- if appl == job_application -%}
+                <strong>{{ appl.fullname }}</strong>
+              {%- else -%}
+                {{ appl.fullname }}
+              {%- endif -%}
+              <br><span class="post-date">{{ appl.created_at|shortdate }} &middot;
+              {%- if appl.is_new() %} <strong>{{ appl.status }}</strong>{% else %} {{ appl.status }}{% endif %}
+              </span>
+            </a>
+          {%- endfor %}
+        </div>
       </div>
     </div></div>
   </div>
