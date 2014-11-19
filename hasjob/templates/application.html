@@ -16,13 +16,11 @@
           {%- with counts = job_application.application_count() %}{% if counts.count %}
             &middot;
             in ± a week, applied {{ counts.count }}
-            {%- if is_siteadmin %}
-              {%- if counts.replied %}, got response {{ counts.replied }}{% endif %}
-              {%- if counts.rejected %}, got rejected {{ counts.rejected }}{% endif %}
-              {%- if counts.ignored %}, got ignored {{ counts.ignored }}{% endif %}
-              {%- if counts.flagged %}, got flagged {{ counts.flagged }}{% endif %}
-              {%- if counts.spam %}, spam {{ counts.spam }}{% endif %}
-            {%- endif %}
+            {%- if counts.replied %}, got response {{ counts.replied }}{% endif %}
+            {%- if counts.rejected %}, got rejected {{ counts.rejected }}{% endif %}
+            {%- if counts.ignored %}, got ignored {{ counts.ignored }}{% endif %}
+            {%- if counts.flagged %}, got flagged {{ counts.flagged }}{% endif %}
+            {%- if counts.spam %}, spam {{ counts.spam }}{% endif %}
           {%- endif %}{% endwith %}
         </p>
         {{ job_application.message|safe }}
