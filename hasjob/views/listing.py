@@ -261,7 +261,7 @@ def applyjob(hashid):
 
 @app.route('/manage/<hashid>', methods=('GET', 'POST'), defaults={'key': None}, subdomain='<subdomain>')
 @app.route('/manage/<hashid>', methods=('GET', 'POST'), defaults={'key': None})
-@load_model(JobPost, {'hashid': 'hashid'}, 'post', permission='manage')
+@load_model(JobPost, {'hashid': 'hashid'}, 'post', permission=('manage', 'siteadmin'), addlperms=lastuser.permissions)
 def managejob(post):
     if post.applications:
         return redirect(url_for('view_application', hashid=post.hashid, application=post.applications[0].hashid))
