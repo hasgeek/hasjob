@@ -5,6 +5,7 @@ body {
 }
 
 header {
+  padding-top: 50px;
   margin-bottom: 0;
   background: #ebe7e4 url('../img/paper.jpg?1400098749');
   border-bottom: none;
@@ -92,6 +93,7 @@ h1 a:hover, h1 a:focus, h1 a:active {
 
 @media screen and (min-width: 768px) {
   header {
+    padding-top: 0;
     margin-bottom: 12px;
   }
 }
