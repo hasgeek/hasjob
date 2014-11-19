@@ -44,7 +44,7 @@ from hasjob.models import (
     viewstats_by_id_day,
     )
 from hasjob.twitter import tweet
-from hasjob.tagging import tag_locations
+from hasjob.tagging import tag_locations, add_to_boards
 from hasjob.uploads import uploaded_logos
 from hasjob.utils import get_word_bag, redactemail, random_long_key
 from hasjob.views import ALLOWED_TAGS
@@ -539,6 +539,7 @@ def confirm_email(hashid, key):
             if app.config['TWITTER_ENABLED']:
                 tweet.delay(post.headline, url_for('jobdetail', hashid=post.hashid,
                     _external=True), post.location, dict(post.parsed_location or {}))
+            add_to_boards.delay(post.id)
             flash("Congratulations! Your job listing has been published", "interactive")
     return redirect(url_for('jobdetail', hashid=post.hashid), code=302)
 

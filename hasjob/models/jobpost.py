@@ -419,7 +419,7 @@ class JobLocation(TimestampMixin, db.Model):
     jobpost_id = db.Column(None, db.ForeignKey('jobpost.id'), primary_key=True, nullable=False)
     jobpost = db.relationship(JobPost, backref=db.backref('locations', cascade='all, delete-orphan'))
     #: Geonameid for this job listing
-    geonameid = db.Column(db.Integer, primary_key=True, nullable=False)
+    geonameid = db.Column(db.Integer, primary_key=True, nullable=False, index=True)
     primary = db.Column(db.Boolean, default=True, nullable=False)
 
     def __repr__(self):

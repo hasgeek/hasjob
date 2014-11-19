@@ -4,6 +4,7 @@ from pytz import timezone
 from werkzeug import cached_property
 from flask import url_for
 from sqlalchemy.orm import defer
+from sqlalchemy.ext.associationproxy import association_proxy
 from coaster.sqlalchemy import make_timestamp_columns
 from baseframe import cache
 from . import db, TimestampMixin, BaseNameMixin
@@ -12,7 +13,7 @@ from .jobpost import JobPost
 from .jobtype import JobType
 from .jobcategory import JobCategory
 
-__all__ = ['Board', 'BoardJobPost']
+__all__ = ['Board', 'BoardJobPost', 'BoardDomain', 'BoardLocation']
 
 
 board_jobtype_table = db.Table('board_jobtype', db.Model.metadata,
@@ -54,6 +55,34 @@ def jobcategory_choices(cls, board=None):
 JobCategory.choices = classmethod(jobcategory_choices)
 
 
+class BoardDomain(TimestampMixin, db.Model):
+    """
+    Domain tag for boards
+    """
+    __tablename__ = 'board_domain'
+    #: Board we are referencing
+    board_id = db.Column(None, db.ForeignKey('board.id'), primary_key=True, nullable=False)
+    #: Domain for this board
+    domain = db.Column(db.Unicode(80), primary_key=True, nullable=False, index=True)
+
+    def __repr__(self):
+        return '<BoardDomain %s for board %s>' % (self.domain, self.board.name)
+
+
+class BoardLocation(TimestampMixin, db.Model):
+    """
+    Location tag for boards
+    """
+    __tablename__ = 'board_location'
+    #: Board we are referencing
+    board_id = db.Column(None, db.ForeignKey('board.id'), primary_key=True, nullable=False)
+    #: Geonameid for this board
+    geonameid = db.Column(db.Integer, primary_key=True, nullable=False, index=True)
+
+    def __repr__(self):
+        return '<BoardLocation %d for board %s>' % (self.geonameid, self.board.name)
+
+
 class Board(BaseNameMixin, db.Model):
     """
     Boards show a filtered set of jobs at board-specific URLs.
@@ -84,12 +113,24 @@ class Board(BaseNameMixin, db.Model):
     #: Available job categories
     categories = db.relationship(JobCategory, secondary=board_jobcategory_table, order_by=JobCategory.seq)
 
+    #: Automatic tagging domains
+    domains = db.relationship(BoardDomain, backref='board', cascade='all, delete-orphan')
+    tag_domains = association_proxy('domains', 'domain', creator=lambda d: BoardDomain(domain=d))
+    #: Automatic tagging locations
+    locations = db.relationship(BoardLocation, backref='board', cascade='all, delete-orphan')
+    tag_locations = association_proxy('locations', 'geonameid', creator=lambda l: BoardLocation(geonameid=l))
+
     def __repr__(self):
         return '<Board %s "%s">' % (self.name, self.title)
 
     @property
     def options(self):
         """Form helper method (see BoardOptionsForm)"""
+        return self
+
+    @property
+    def autotag(self):
+        """Form helper method (see BoardTaggingForm)"""
         return self
 
     @cached_property

@@ -4,9 +4,10 @@ import re
 from decimal import Decimal, InvalidOperation
 from difflib import SequenceMatcher
 
+import tldextract
 from flask import g, request, Markup
 from baseframe.forms import (Form, ValidEmail, ValidUrl, AllUrlsValid, TinyMce4Field, UserSelectMultiField,
-    AnnotatedTextField, FormField, NullTextField, ValidName, NoObfuscatedEmail)
+    AnnotatedTextField, FormField, NullTextField, ValidName, NoObfuscatedEmail, TextListField, GeonameSelectMultiField)
 from baseframe.forms.sqlalchemy import AvailableName
 from wtforms import (TextField, TextAreaField, RadioField, FileField, BooleanField,
     ValidationError, validators)
@@ -471,6 +472,35 @@ class BoardOptionsForm(Form):
         description=u"Jobs listed directly on this board can use one of the categories enabled here")
 
 
+class BoardTaggingForm(Form):
+    tag_domains = TextListField("Email Domains",
+        description="Jobs from any of these email domains will be automatically added to this board. "
+        "One per line. Do NOT add the www prefix")
+    tag_locations = GeonameSelectMultiField("Locations",
+        description="Jobs in any of these locations will be automatically added to this board")
+
+    def validate_tag_domains(self, field):
+        relist = []
+        for item in field.data:
+            item = item.strip()
+            if u',' in item:
+                relist.extend([x.strip() for x in item.split(',')])
+            elif u' ' in item:
+                relist.extend([x.strip() for x in item.split(' ')])
+            else:
+                relist.append(item)
+
+        domains = set()
+        for item in relist:
+            if item:
+                r = tldextract.extract(item.lower())
+                domains.add(u'.'.join([r.domain, r.suffix]))
+        field.data = list(domains)
+
+    def validate_tag_locations(self, field):
+        field.data = [int(x) for x in field.data if x.isdigit()]
+
+
 class BoardForm(Form):
     """
     Edit board settings.
@@ -500,6 +530,7 @@ class BoardForm(Form):
             u"Logging in provides users better filtering for jobs that may be of interest to them, "
             u"and allows employers to understand how well their listing is performing")
     options = FormField(BoardOptionsForm, u"Direct listing options")
+    autotag = FormField(BoardTaggingForm, u"Automatic listing options")
 
     def validate_name(self, field):
         if field.data:
