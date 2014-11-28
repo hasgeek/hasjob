@@ -188,6 +188,7 @@ h1 small, h2 small, h3 small {
 .sheet {
   background: #fff;
   margin: 0 -15px;
+  word-wrap: break-word;
   border-bottom: 1px solid #afafaf;
   -moz-box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
   -webkit-box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
