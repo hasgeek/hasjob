@@ -361,5 +361,35 @@
 {%- if g.kiosk and g.peopleflow_url %}
   <script src="http://127.0.0.1:8008/assets/js/lib.js"></script>
   <script type="text/javascript" src="{{ g.peopleflow_url }}"></script>
+  <script type="text/javascript">
+    $(function(){
+      // Hardcoded URL that lets the function connect to a peopleflow server on the network
+      var PEOPLEFLOW_URL = "http://peopleflow.local:8000/event/4/participant/";
+
+      // Takes the user object from peopleflow and submits the form
+      window.submitJobApp = function(data){
+        $('#applyform').on('submit', function(){
+          alert("Thank you for applying! We've notified the employer about your interest.");
+          document.location = '/';
+        });
+        $('#apply_email').val(data.email);
+        $('#apply_fullname').val(data.name);
+        $('#applyform').submit();
+      }
+
+      // Connects to peopleflow on an NFC Tap
+      $(window).on('rfid:action', function(e, data) {
+        $.ajax({
+          url: PEOPLEFLOW_URL+data['tag_id'],
+          dataType: 'jsonp',
+          jsonp: 'callback',
+          jsonpCallback: 'submitJobApp',
+          success: function(data){
+            console.log("Loaded data from peopleflow and posted job successfully!");
+          }
+        });
+      });
+    });
+  </script>
 {%- endif %}
 {% endblock %}
