@@ -359,12 +359,12 @@
   </script>
 {%- endwith %}{%- endif %}
 {%- if g.kiosk and g.peopleflow_url %}
-  <script src="http://127.0.0.1:8008/assets/js/lib.js"></script>
+  <script src="https://127.0.0.1:8008/assets/js/lib.js"></script>
   <script type="text/javascript" src="{{ g.peopleflow_url }}"></script>
   <script type="text/javascript">
     $(function(){
       // Hardcoded URL that lets the function connect to a peopleflow server on the network
-      var PEOPLEFLOW_URL = "http://peopleflow.local:8000/event/4/participant/";
+      var PEOPLEFLOW_URL = "https://peopleflow.local:8000/event/4/participant/";
 
       // Takes the user object from peopleflow and submits the form
       window.submitJobApp = function(data){
