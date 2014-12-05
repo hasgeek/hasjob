@@ -598,6 +598,7 @@
 
       // Connects to peopleflow on an NFC Tap
       $(window).on('rfid:action', function(e, data) {
+        console.log("Tag detected...");
         $.ajax({
           url: PEOPLEFLOW_URL+data['tag_id'],
           dataType: 'jsonp',
