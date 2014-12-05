@@ -579,11 +579,13 @@
       listen();
     }());
   </script>
-  <script type="text/javascript" src="{{ g.peopleflow_url }}"></script>
   <script type="text/javascript">
     $(function(){
-      // Hardcoded URL that lets the function connect to a peopleflow server on the network
-      var PEOPLEFLOW_URL = "http://peopleflow.local:8000/event/4/participant/";
+
+      window.PEOPLEFLOW_URL = localStorage.getItem('peopleflow_url');
+      if (PEOPLEFLOW_URL === '') {
+        console.log("Please set 'peopleflow_url' in localStorage.")
+      }
 
       // Takes the user object from peopleflow and submits the form
       window.submitJobApp = function(data){
