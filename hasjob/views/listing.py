@@ -177,7 +177,7 @@ def revealjob(hashid):
         cache.delete_memoized(viewstats_by_id_hour, post.id)
         cache.delete_memoized(viewstats_by_id_day, post.id)
         db.session.commit()
-        viewcounts_by_id(post.id) # Re-populate cache
+        viewcounts_by_id(post.id)  # Re-populate cache
     if request.is_xhr:
         return redactemail(post.how_to_apply)
     else:
@@ -217,7 +217,7 @@ def applyjob(hashid):
                         fullname=applyform.apply_fullname.data,
                         email=applyform.apply_email.data,
                         phone=applyform.apply_phone.data,
-                        message=applyform.apply_message.data,
+                        message=u"(Application submitted from a kiosk)",
                         words=None)
                 else:
                     job_application = JobApplication(user=g.user, jobpost=post,

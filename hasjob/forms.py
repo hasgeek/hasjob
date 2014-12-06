@@ -333,7 +333,7 @@ class ApplicationForm(Form):
         validators=[validators.Required("You need to say something about yourself"),
             AllUrlsValid()],
         description=u"Please provide all details the employer has requested. To add a resume, "
-            u"post it on LinkedIn or host the file on Dropbox and insert the link here")
+        u"post it on LinkedIn or host the file on Dropbox and insert the link here")
 
     def __init__(self, *args, **kwargs):
         super(ApplicationForm, self).__init__(*args, **kwargs)
@@ -380,15 +380,10 @@ class KioskApplicationForm(Form):
     apply_email = TextField("Email", validators=[validators.Required("Specify an email address")],
         description="Your email address")
     apply_phone = TextField("Phone",
-        validators=[validators.Required("Specify a phone number"),
+        validators=[validators.Optional(),
             validators.Length(min=1, max=15, message="%(max)d characters maximum")],
         description="A phone number the employer can reach you at")
-    apply_message = TinyMce4Field("Job application",
-        content_css=content_css,
-        validators=[validators.Required("You need to say something about yourself"),
-            AllUrlsValid()],
-        description=u"Please provide all details the employer has requested. To add a resume, "
-            u"post it on LinkedIn or host the file on Dropbox and insert the link here")
+    apply_message = TextAreaField("Job application", validators=[validators.Optional()])
 
     def validate_email(form, field):
         oldapp = JobApplication.query.filter_by(jobpost=form.post, user=None, email=field.data).count()
