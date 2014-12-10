@@ -227,10 +227,11 @@ JobPost.link_to_board = _jobpost_link_to_board
 
 
 def _jobpost_add_to(self, board):
-    link = self.link_to_board(board)
-    if not link:
-        link = BoardJobPost(jobpost=self, board=board)
-        db.session.add(link)
-    return link
+    with db.session.no_autoflush:
+        link = self.link_to_board(board)
+        if not link:
+            link = BoardJobPost(jobpost=self, board=board)
+            db.session.add(link)
+        return link
 
 JobPost.add_to = _jobpost_add_to
