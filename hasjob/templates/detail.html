@@ -3,12 +3,18 @@
 {% from "macros.html" import jobheader %}
 {% block title %}{{ post.headline }}{% endblock %}
 {% block description %}{{ post.company_name }}, {{ post.location }}, {{ post.type.title }}, {{ post.category.title }}{% endblock %}
+{% block canonical_url %}
+  {%- if g.board %}
+    <link rel="canonical" href="{{ url_for('jobdetail', hashid=post.hashid, subdomain=none) }}" />
+    <meta property="og:url" content="{{ url_for('jobdetail', hashid=post.hashid, subdomain=none) }}" />
+  {%- else %}
+    <link rel="canonical" href="{{ request.base_url }}" />
+    <meta property="og:url" content="{{ request.base_url }}" />
+  {%- endif %}
+{% endblock %}
 {% block pageheaders %}
   {%- if post.is_old() %}
     <meta name="robots" content="nofollow" />
-  {%- endif %}
-  {%- if g.board %}
-    <link rel="canonical" href="{{ url_for('jobdetail', hashid=post.hashid, subdomain=none) }}" />
   {%- endif %}
 {% endblock %}
 {% block content %}

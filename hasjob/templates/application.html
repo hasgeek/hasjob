@@ -2,6 +2,7 @@
 {% from "baseframe/forms.html" import ajaxform, widgetscripts %}
 {% from "macros.html" import jobheader %}
 {% block title %}{{ job_application.fullname }} &mdash; {{ post.headline }}{% endblock %}
+{% block metareferrer %}origin{% endblock %}
 
 {% block content %}
   <div class="sheet">
