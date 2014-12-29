@@ -3,7 +3,7 @@
 
 {% block doctypehtml -%}
 <!DOCTYPE html>
-<!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="en" {% block manifest %}{%- if g.kiosk %} manifest="{{ url_for('kiosk_manifest') }}" {%- endif %}{% endblock %}> <![endif]-->
+<!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="en" {% block manifest %}{#{%- if g.kiosk %} manifest="{{ url_for('kiosk_manifest') }}" {%- endif %}#}{% endblock %}> <![endif]-->
 <!--[if IE 7]>    <html class="no-js lt-ie9 lt-ie8" lang="en" {{ self.manifest() }}> <![endif]-->
 <!--[if IE 8]>    <html class="no-js lt-ie9" lang="en" {{ self.manifest() }}> <![endif]-->
 <!--[if gt IE 8]><!--> <html lang="en" class="no-js {%- if g.user %} userlogin {%- else %} no-userlogin {%- endif %}" {{ self.manifest() }}> <!--<![endif]-->
