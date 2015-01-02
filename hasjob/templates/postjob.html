@@ -66,6 +66,10 @@
           {% for error in form.job_pay_equity_min.errors %}<div class="help-error">{{ error }}</div>{% endfor %}
           {% for error in form.job_pay_equity_max.errors %}<div class="help-error">{{ error }}</div>{% endfor %}
         </div>
+        <p class="help-block">
+          Pay data is <em>not</em> revealed to candidates. This data is for an upcoming feature to
+          promote this job to relevant candidates
+        </p>
         {{ renderfield(form.job_how_to_apply, widget_css_class="expand50-200", style="wide") }}
       </div>
       <div class="section">
