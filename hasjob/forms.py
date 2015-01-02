@@ -42,8 +42,11 @@ def optional_url(form, field):
     else:
         if ':' not in field.data:
             field.data = 'http://' + field.data
-        validator = validators.URL(message="Invalid URL. URLs must begin with http:// or https://")
-        return validator(form, field)
+        validator = validators.URL(message="This does not appear to be a valid URL.")
+        try:
+            return validator(form, field)
+        except validators.ValidationError as e:
+            raise validators.StopValidation(unicode(e))
 
 
 class ListingPayCurrencyField(RadioField):
