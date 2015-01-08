@@ -15,6 +15,9 @@ def kiosk_mode_flag():
         g.kiosk = False
     g.peopleflow_url = session.get('peopleflow')
 
+    # Not really a kiosk mode flag, but why have two before_request handlers?
+    g.viewcounts = {}
+
 
 @app.route('/admin/kiosk', subdomain='<subdomain>')
 @app.route('/admin/kiosk')

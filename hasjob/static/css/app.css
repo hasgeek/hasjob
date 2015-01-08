@@ -472,7 +472,7 @@ h1 small, h2 small, h3 small {
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3), 0 0 10px rgba(0, 0, 0, 0.1) inset;
   /* Make stickies clickable */
 }
-.stickie, .stickie:active, .stickie:hover, .stickie:visited {
+.stickie, .stickie:active, .stickie:hover, .stickie:visited, .stickie:focus {
   text-decoration: none;
   color: inherit;
   border-bottom: 0;

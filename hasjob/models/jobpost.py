@@ -3,16 +3,37 @@
 from collections import defaultdict
 from datetime import datetime, timedelta
 from werkzeug import cached_property
-from flask import url_for
+from flask import url_for, g
 from sqlalchemy.orm import defer
 from coaster.sqlalchemy import make_timestamp_columns, JsonDict
 from baseframe import cache
 import tldextract
+from .. import redis_store
 from . import newlimit, agelimit, db, POSTSTATUS, EMPLOYER_RESPONSE, PAY_TYPE, BaseMixin, TimestampMixin, webmail_domains
 from .jobtype import JobType
 from .jobcategory import JobCategory
 from .user import User
 from ..utils import random_long_key, random_hash_key
+
+
+number_format = lambda number, suffix: str(int(number)) + suffix if int(number) == number else str(round(number, 2)) + suffix
+
+
+def number_abbreviate(number, indian=False):
+    if indian:
+        if number < 100000:  # < 1 lakh
+            return number_format(number / 1000.0, 'k')
+        elif number < 10000000:  # < 1 crore
+            return number_format(number / 100000.0, 'L')
+        else:  # >= 1 crore
+            return number_format(number / 10000000.0, 'C')
+    else:
+        if number < 1000000:  # < 1 million
+            return number_format(number / 1000.0, 'k')
+        elif number < 100000000:  # < 1 billion
+            return number_format(number / 1000000.0, 'm')
+        else:  # >= 1 billion
+            return number_format(number / 100000000.0, 'b')
 
 
 class JobPost(BaseMixin, db.Model):
@@ -209,23 +230,6 @@ class JobPost(BaseMixin, db.Model):
         return self.pay_equity_min is not None and self.pay_equity_max is not None
 
     def pay_label(self):
-        format = lambda number, suffix: str(int(number)) + suffix if int(number) == number else str(round(number, 2)) + suffix
-        def abbreviate(number, indian=False):
-            if indian:
-                if number < 100000:  # < 1 lakh
-                    return format(number / 1000.0, 'k')
-                elif number < 10000000:  # < 1 crore
-                    return format(number / 100000.0, 'L')
-                else:  # >= 1 crore
-                    return format(number / 10000000.0, 'C')
-            else:
-                if number < 1000000:  # < 1 million
-                    return format(number / 1000.0, 'k')
-                elif number < 100000000:  # < 1 billion
-                    return format(number / 1000000.0, 'm')
-                else:  # >= 1 billion
-                    return format(number / 100000000.0, 'b')
-
         if self.pay_type is None:
             return u"NA"
         elif self.pay_type == PAY_TYPE.NOCASH:
@@ -251,9 +255,9 @@ class JobPost(BaseMixin, db.Model):
                 symbol = u"¤"
 
             if self.pay_cash_min == self.pay_cash_max:
-                cash = symbol + abbreviate(self.pay_cash_min, indian)
+                cash = symbol + number_abbreviate(self.pay_cash_min, indian)
             else:
-                cash = symbol + abbreviate(self.pay_cash_min, indian) + "-" + abbreviate(self.pay_cash_max, indian)
+                cash = symbol + number_abbreviate(self.pay_cash_min, indian) + "-" + number_abbreviate(self.pay_cash_max, indian)
 
             if suffix:
                 cash = cash + " " + suffix
@@ -294,9 +298,43 @@ class JobPost(BaseMixin, db.Model):
                 'idref': u'%s/%s' % (self.idref, self.id),
                 }
 
+    @property
+    def viewcounts_key(self):
+        return 'hasjob/viewcounts/%s' % self.hashid
+
     @cached_property  # For multiple accesses in a single request
     def viewcounts(self):
-        return viewcounts_by_id(self.id)
+        cache_key = self.viewcounts_key
+        values = g.viewcounts.get(cache_key) if g else None
+        if values is None:
+            values = redis_store.hgetall(cache_key)
+        if 'viewed' not in values:
+            values['viewed'] = UserJobView.query.filter_by(jobpost=self).count()
+            redis_store.hset(cache_key, 'viewed', values['viewed'])
+            redis_store.expire(cache_key, 86400)
+        if 'opened' not in values:
+            values['opened'] = UserJobView.query.filter_by(jobpost=self, applied=True).count()
+            redis_store.hset(cache_key, 'opened', values['opened'])
+            redis_store.expire(cache_key, 86400)
+        if 'applied' not in values:
+            values['applied'] = JobApplication.query.filter_by(jobpost=self).count()
+            redis_store.hset(cache_key, 'applied', values['applied'])
+            redis_store.expire(cache_key, 86400)
+        # pay_label rendering is extraordinarily slow. We don't know why yet, but it's static data, so cache it
+        if 'pay_label' not in values:
+            values['pay_label'] = self.pay_label()
+            redis_store.hset(cache_key, 'pay_label', values['pay_label'].encode('utf-8'))
+            redis_store.expire(cache_key, 86400)
+        elif isinstance(values['pay_label'], str):  # Redis appears to return bytestrings, not Unicode
+            values['pay_label'] = unicode(values['pay_label'], 'utf-8')
+        return values
+
+    def uncache_viewcounts(self, key=None):
+        cache_key = self.viewcounts_key
+        if not key:
+            redis_store.delete(cache_key)
+        else:
+            redis_store.hdel(cache_key, key)
 
     @cached_property  # For multiple accesses in a single request
     def viewstats(self):
@@ -319,21 +357,12 @@ class JobPost(BaseMixin, db.Model):
         return [{'count': i[2], 'title': i[1]} for i in sorted([(k.seq, k.title, v) for k, v in counts.items()])]
 
 
-@cache.memoize(timeout=86400)
-def viewcounts_by_id(jobpost_id):
-    return {
-        'viewed': UserJobView.query.filter_by(jobpost_id=jobpost_id).count(),
-        'opened': UserJobView.query.filter_by(jobpost_id=jobpost_id, applied=True).count(),
-        'applied': JobApplication.query.filter_by(jobpost_id=jobpost_id).count()
-        }
-
-
 def viewstats_helper(jobpost_id, interval, limit, daybatch=False):
     post = JobPost.query.get(jobpost_id)
     if not post.datetime:
         return {}
     viewed = UserJobView.query.filter_by(jobpost_id=jobpost_id).all()
-    opened = [v for v in viewed if v.applied == True]
+    opened = [v for v in viewed if v.applied == True]  # NOQA
     applied = db.session.query(JobApplication.created_at).filter_by(jobpost_id=jobpost_id).all()
 
     # Now batch them by size
@@ -409,9 +438,9 @@ def viewstats_by_id_day(jobpost_id):
 
 jobpost_admin_table = db.Table('jobpost_admin', db.Model.metadata,
     *(make_timestamp_columns() + (
-    db.Column('user_id', None, db.ForeignKey('user.id'), primary_key=True),
-    db.Column('jobpost_id', None, db.ForeignKey('jobpost.id'), primary_key=True)
-    )))
+        db.Column('user_id', None, db.ForeignKey('user.id'), primary_key=True),
+        db.Column('jobpost_id', None, db.ForeignKey('jobpost.id'), primary_key=True)
+        )))
 
 
 class JobLocation(TimestampMixin, db.Model):
@@ -432,12 +461,12 @@ class JobLocation(TimestampMixin, db.Model):
 
 class UserJobView(TimestampMixin, db.Model):
     __tablename__ = 'userjobview'
-    #: User who saw a listing
-    user_id = db.Column(None, db.ForeignKey('user.id'), primary_key=True)
-    user = db.relationship(User)
-    #: Job listing they saw
+    #: Job listing that was seen
     jobpost_id = db.Column(None, db.ForeignKey('jobpost.id'), primary_key=True)
     jobpost = db.relationship(JobPost)
+    #: User who saw this listing
+    user_id = db.Column(None, db.ForeignKey('user.id'), primary_key=True)
+    user = db.relationship(User)
     #: Has the user viewed apply instructions?
     applied = db.Column(db.Boolean, default=False, nullable=False)
 
@@ -452,7 +481,8 @@ class JobApplication(BaseMixin, db.Model):
     #: Full name of the user (as it was at the time of the application)
     fullname = db.Column(db.Unicode(250), nullable=False)
     #: Job listing they applied to
-    jobpost_id = db.Column(None, db.ForeignKey('jobpost.id'))
+    jobpost_id = db.Column(None, db.ForeignKey('jobpost.id'), nullable=False, index=True)
+    # jobpost relationship is below
     #: User's email address
     email = db.Column(db.Unicode(80), nullable=False)
     #: User's phone number

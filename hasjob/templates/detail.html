@@ -89,7 +89,7 @@
             {%- if not g.kiosk and not post.is_announcement() %}
               <div class="list-group-item">
                 <a class="popup" href="#report">
-                  {%- if siteadmin and post.flags %}
+                  {%- if is_siteadmin and post.flags %}
                     <span class="badge">{% for report in post.reports() -%}
                       {%if not loop.first %} &middot; {% endif %}<span title="{{ report.title }}">{{ report.count }}</span>
                     {%- endfor %}</span>
@@ -116,7 +116,7 @@
                 <i class="fa fa-fw fa-trash-o"></i>&nbsp;&nbsp; Withdraw this
               </a>
             {%- endif %}
-            {%- if siteadmin %}
+            {%- if is_siteadmin %}
               <div class="list-group-item">
                 <a class="popup" href="#reject">
                   <i class="fa fa-fw fa-trash-o"></i>&nbsp;&nbsp; Reject this
@@ -138,7 +138,7 @@
                 </div>
               </div>
             {%- endif %}
-            {%- if siteadmin or (g.user and g.board and g.board.owner_is(g.user)) %}
+            {%- if is_siteadmin or (g.user and g.board and g.board.owner_is(g.user)) %}
               <div class="list-group-item">
                 <a class="popup" href="#makepinned">
                   <i class="fa fa-fw fa-thumb-tack"></i>&nbsp;&nbsp; Pin this
@@ -165,14 +165,14 @@
                 </div>
               </div>
             {%- endif %}
-            {%- if siteadmin or post.admin_is(g.user) %}
+            {%- if is_siteadmin or post.admin_is(g.user) %}
               {%- if post.pay_type is not none and not post.is_announcement() %}
                 <span class="list-group-item">
                   <i class="fa fa-fw fa-money"></i>&nbsp;&nbsp; {{ post.pay_label() }}
                 </span>
               {%- endif %}
               <a class="list-group-item" href="{{ url_for('managejob', hashid=post.hashid) }}">
-                <i class="fa fa-fw fa-bar-chart-o"></i>&nbsp;&nbsp; <span title="Applied">{{ post.viewcounts.applied }}</span> &middot; <span title="Opened form">{{ post.viewcounts.opened }}</span> &middot; <span title="Viewed">{{ post.viewcounts.viewed }}</span> &middot;
+                <i class="fa fa-fw fa-bar-chart-o"></i>&nbsp;&nbsp; <span title="Viewed">{{ post.viewcounts['viewed'] }}</span> &middot; <span title="Opened form">{{ post.viewcounts['opened'] }}</span> &middot; <span title="Applied">{{ post.viewcounts['applied'] }}</span> &middot;
                 {%- with unittype = post.viewstats[0] %}
                   {%- if unittype == 'q' %} Per 15m:
                   {%- elif unittype == 'h' %} Per hour:
@@ -348,7 +348,7 @@
     {% include "inc/tinymce.js" %}
   </script>
 {% endif %}
-{%- if siteadmin or post.admin_is(g.user) %}{% with stats = post.viewstats[1], max = stats.max|tojson %}
+{%- if is_siteadmin or post.admin_is(g.user) %}{% with stats = post.viewstats[1], max = stats.max|tojson %}
   <script type="text/javascript">
     $(function() {
       $("#statsline").removeClass('hidden').sparkline(

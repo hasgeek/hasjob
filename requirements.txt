@@ -6,6 +6,7 @@ Flask-Assets
 Flask-Uploads
 Flask-RQ
 Flask-Testing
+Flask-Redis
 Pillow
 SQLAlchemy
 pytz

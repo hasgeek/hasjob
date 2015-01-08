@@ -28,7 +28,7 @@ def getposts(basequery=None, pinned=False, showall=False, statuses=None):
         query = query.filter(
             db.or_(
                 db.and_(JobPost.pinned == True, JobPost.datetime > datetime.utcnow() - agelimit),
-                db.and_(JobPost.pinned == False, JobPost.datetime > datetime.utcnow() - newlimit)))
+                db.and_(JobPost.pinned == False, JobPost.datetime > datetime.utcnow() - newlimit)))  # NOQA
 
     if g.board:
         query = query.join(JobPost.postboards).filter(BoardJobPost.board == g.board)

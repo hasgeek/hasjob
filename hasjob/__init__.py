@@ -5,6 +5,7 @@ from flask import Flask
 from flask.ext.assets import Bundle
 from flask.ext.rq import RQ
 from flask.ext.mail import Mail
+from flask.ext.redis import Redis
 from flask.ext.lastuser import Lastuser
 from flask.ext.lastuser.sqlalchemy import UserManager
 from baseframe import baseframe, assets, Version
@@ -18,6 +19,7 @@ app = Flask(__name__, instance_relative_config=True, static_folder=None)
 app.static_folder = 'static'
 mail = Mail()
 lastuser = Lastuser()
+redis_store = Redis()
 
 # Second, setup assets
 version = Version(__version__)
@@ -26,7 +28,7 @@ assets['hasjob.css'][version] = 'css/app.css'
 
 # Third, after config, import the models and views
 
-from . import models, views
+from . import models, views  # NOQA
 from .models import db
 
 
@@ -37,7 +39,7 @@ def init_for(env):
 
     baseframe.init_app(app, requires=['hasjob'],
         ext_requires=['baseframe-bs3',
-            ('jquery.textarea-expander', 'jquery.cookie', 'jquery.sparkline','jquery.nouislider'),
+            ('jquery.textarea-expander', 'jquery.cookie', 'jquery.sparkline', 'jquery.nouislider'),
             ('firasans', 'baseframe-firasans'),
             'fontawesome>=4.0.0'])
     # TinyMCE has to be loaded by itself, unminified, or it won't be able to find its assets
@@ -50,5 +52,6 @@ def init_for(env):
     uploads_configure()
     search_configure()
     mail.init_app(app)
+    redis_store.init_app(app)
     lastuser.init_app(app)
     lastuser.init_usermanager(UserManager(db, models.User))

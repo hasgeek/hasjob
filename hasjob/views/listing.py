@@ -38,7 +38,6 @@ from hasjob.models import (
     UserJobView,
     JobApplication,
     unique_hash,
-    viewcounts_by_id,
     viewstats_by_id_qhour,
     viewstats_by_id_hour,
     viewstats_by_id_day,
@@ -69,10 +68,10 @@ def jobdetail(hashid):
     if post.status in POSTSTATUS.GONE:
         abort(410)
     if g.user:
-        jobview = UserJobView.query.get((g.user.id, post.id))
+        jobview = UserJobView.query.get((post.id, g.user.id))
         if jobview is None:
             jobview = UserJobView(user=g.user, jobpost=post)
-            cache.delete_memoized(viewcounts_by_id, post.id)
+            post.uncache_viewcounts('viewed')
             cache.delete_memoized(viewstats_by_id_qhour, post.id)
             cache.delete_memoized(viewstats_by_id_hour, post.id)
             cache.delete_memoized(viewstats_by_id_day, post.id)
@@ -82,10 +81,10 @@ def jobdetail(hashid):
             except IntegrityError:
                 db.session.rollback()
                 pass  # User opened two tabs at once? We don't really know
-            viewcounts_by_id(post.id)  # Re-populate cache
+            post.viewcounts  # Re-populate cache
     else:
         jobview = None
-    
+
     if g.user:
         report = JobPostReport.query.filter_by(post=post, user=g.user).first()
     else:
@@ -142,7 +141,7 @@ def jobdetail(hashid):
         pinnedform=pinnedform, applyform=applyform, job_application=job_application,
         jobview=jobview, report=report, moderateform=moderateform,
         domain_mismatch=domain_mismatch,
-        siteadmin=lastuser.has_permission('siteadmin')
+        is_siteadmin=lastuser.has_permission('siteadmin')
         )
 
 
@@ -156,10 +155,10 @@ def revealjob(hashid):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
     if post.status in [POSTSTATUS.REJECTED, POSTSTATUS.WITHDRAWN, POSTSTATUS.SPAM]:
         abort(410)
-    jobview = UserJobView.query.get((g.user.id, post.id))
+    jobview = UserJobView.query.get((post.id, g.user.id))
     if jobview is None:
         jobview = UserJobView(user=g.user, jobpost=post, applied=True)
-        cache.delete_memoized(viewcounts_by_id, post.id)
+        post.uncache_viewcounts('opened')
         cache.delete_memoized(viewstats_by_id_qhour, post.id)
         cache.delete_memoized(viewstats_by_id_hour, post.id)
         cache.delete_memoized(viewstats_by_id_day, post.id)
@@ -169,15 +168,15 @@ def revealjob(hashid):
         except IntegrityError:
             db.session.rollback()
             pass  # User double-clicked. Ignore.
-        viewcounts_by_id(post.id)  # Re-populate cache
+        post.viewcounts  # Re-populate cache
     elif not jobview.applied:
         jobview.applied = True
-        cache.delete_memoized(viewcounts_by_id, post.id)
+        post.uncache_viewcounts('opened')
         cache.delete_memoized(viewstats_by_id_qhour, post.id)
         cache.delete_memoized(viewstats_by_id_hour, post.id)
         cache.delete_memoized(viewstats_by_id_day, post.id)
         db.session.commit()
-        viewcounts_by_id(post.id) # Re-populate cache
+        post.viewcounts  # Re-populate cache
     if request.is_xhr:
         return redactemail(post.how_to_apply)
     else:
@@ -228,6 +227,7 @@ def applyjob(hashid):
                         words=applyform.words)
                 db.session.add(job_application)
                 db.session.commit()
+                post.uncache_viewcounts('applied')
                 email_html = email_transform(
                     render_template('apply_email.html',
                         post=post, job_application=job_application,
@@ -309,7 +309,7 @@ def process_application(hashid, application):
 
     if response_form.validate_on_submit():
         if (request.form.get('action') == 'reply' and job_application.can_reply()) or (
-            request.form.get('action') == 'reject' and job_application.can_reject()):
+                request.form.get('action') == 'reject' and job_application.can_reject()):
             if not response_form.response_message.data:
                 flashmsg = "You need to write a message to the candidate."
             else:
@@ -692,6 +692,7 @@ def editjob(hashid, key, form=None, post=None, validated=False):
 
             db.session.commit()
             tag_locations.delay(post.id)
+            post.uncache_viewcounts('pay_label')
             userkeys = session.get('userkeys', [])
             userkeys.append(post.edit_key)
             session['userkeys'] = userkeys

@@ -15,11 +15,11 @@ from flask import (
     g
     )
 
-from hasjob import app, lastuser
-from hasjob.models import db, webmail_domains, JobCategory, JobPost, JobType, POSTSTATUS, newlimit, JobLocation
-from hasjob.search import do_search
-from hasjob.views.helper import getposts, getallposts, location_geodata
-from hasjob.uploads import uploaded_logos
+from .. import app, lastuser, redis_store
+from ..models import db, webmail_domains, JobCategory, JobPost, JobType, POSTSTATUS, newlimit, JobLocation
+from ..search import do_search
+from ..views.helper import getposts, getallposts, location_geodata
+from ..uploads import uploaded_logos
 
 
 @app.route('/', subdomain='<subdomain>')
@@ -30,6 +30,15 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
     if basequery is None and not (g.user or g.kiosk or (g.board and not g.board.require_login)):
         showall = False
     posts = list(getposts(basequery, pinned=True, showall=showall, statuses=statuses))
+
+    # Cache viewcounts (admin view or not)
+    redis_pipe = redis_store.connection.pipeline()
+    viewcounts_keys = [p.viewcounts_key for p in posts]
+    for key in viewcounts_keys:
+        redis_pipe.hgetall(key)
+    viewcounts_values = redis_pipe.execute()
+    g.viewcounts = dict(zip(viewcounts_keys, viewcounts_values))
+
     if posts:
         employer_name = posts[0].company_name
     else:
@@ -76,7 +85,7 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
                            newlimit=newlimit, jobtype=type, jobcategory=category, title=title,
                            md5sum=md5sum, domain=domain, employer_name=employer_name,
                            location=location, showall=showall,
-                           siteadmin=lastuser.has_permission('siteadmin'))
+                           is_siteadmin=lastuser.has_permission('siteadmin'))
 
 
 @app.route('/drafts', subdomain='<subdomain>')
