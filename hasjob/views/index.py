@@ -25,10 +25,10 @@ from hasjob.uploads import uploaded_logos
 @app.route('/', subdomain='<subdomain>')
 @app.route('/')
 def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
-        location=None, title=None, showall=False, statuses=None):
+        location=None, title=None, showall=True, statuses=None):
     now = datetime.utcnow()
-    if g.user or g.kiosk or (g.board and not g.board.require_login):
-        showall = True
+    if basequery is None and not (g.user or g.kiosk or (g.board and not g.board.require_login)):
+        showall = False
     posts = list(getposts(basequery, pinned=True, showall=showall, statuses=statuses))
     if posts:
         employer_name = posts[0].company_name
