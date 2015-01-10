@@ -18,22 +18,22 @@ __all__ = ['Board', 'BoardJobPost', 'BoardDomain', 'BoardLocation']
 
 board_jobtype_table = db.Table('board_jobtype', db.Model.metadata,
     *(make_timestamp_columns() + (
-    db.Column('board_id', None, db.ForeignKey('board.id'), primary_key=True),
-    db.Column('jobtype_id', None, db.ForeignKey('jobtype.id'), primary_key=True)
+        db.Column('board_id', None, db.ForeignKey('board.id'), primary_key=True),
+        db.Column('jobtype_id', None, db.ForeignKey('jobtype.id'), primary_key=True)
     )))
 
 
 board_jobcategory_table = db.Table('board_jobcategory', db.Model.metadata,
     *(make_timestamp_columns() + (
-    db.Column('board_id', None, db.ForeignKey('board.id'), primary_key=True),
-    db.Column('jobcategory_id', None, db.ForeignKey('jobcategory.id'), primary_key=True)
+        db.Column('board_id', None, db.ForeignKey('board.id'), primary_key=True),
+        db.Column('jobcategory_id', None, db.ForeignKey('jobcategory.id'), primary_key=True)
     )))
 
 
 board_users_table = db.Table('board_user', db.Model.metadata,
     *(make_timestamp_columns() + (
-    db.Column('board_id', None, db.ForeignKey('board.id'), primary_key=True),
-    db.Column('user_id', None, db.ForeignKey('user.id'), primary_key=True),
+        db.Column('board_id', None, db.ForeignKey('board.id'), primary_key=True),
+        db.Column('user_id', None, db.ForeignKey('user.id'), primary_key=True),
     )))
 
 
