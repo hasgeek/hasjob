@@ -20,9 +20,9 @@
 {% block content %}
   {% if post.is_unpublished() %}
   <div class="guide">
-    <div class="page-header"><h2>Review this listing</h2></div>
+    <div class="page-header"><h2>Review this post</h2></div>
     <p>
-      This is a preview. It is only visible to you. You may edit again or confirm this listing.
+      This is a preview. It is only visible to you. You may edit again or confirm this post.
     </p>
     <form action="{{ url_for('confirm', hashid=post.hashid)|usessl }}" method="POST" class="form-group">
       <input type="submit" class="btn btn-primary btn-sm" value="This looks good, confirm it"/>
@@ -31,35 +31,35 @@
   </div>
   {% elif post.is_flagged() %}
   <div class="guide">
-    <div class="page-header"><h2>This listing has been flagged for review</h2></div>
+    <div class="page-header"><h2>This post has been flagged for review</h2></div>
     <p>
-      Previous viewers of this listing flagged it for review by a moderator.
+      Previous viewers of this post flagged it for review by a moderator.
       A review is currently pending.
     </p>
   </div>
   {% elif post.is_moderated() %}
   <div class="guide">
     <p>
-      This listing has been marked by a moderator as carrying potentially inaccurate or incomplete
+      This post has been marked by a moderator as carrying potentially inaccurate or incomplete
       information. Please proceed with caution.
     </p>
   </div>
   {% elif post.is_old() %}
   <div class="guide">
     <p>
-      This listing is over 30 days old. The position may no longer be available.
+      This post is over 30 days old. The position may no longer be available.
     </p>
   </div>
   {% elif post.from_webmail_domain %}
   <div class="guide">
     <p>
-      This listing was made with a public webmail address. The employer's identity has not been verified.
+      This post was made with a public webmail address. The employer's identity has not been verified.
     </p>
   </div>
   {% elif domain_mismatch %}
   <div class="guide">
     <p>
-      This listing is from {{ post.email_domain }}, which may or may not be affiliated with
+      This post is from {{ post.email_domain }}, which may or may not be affiliated with
       {{ post.company_url_domain_zone }}. Please proceed with caution.
     </p>
   </div>
@@ -102,7 +102,7 @@
                     <h2>What’s wrong with it?</h2>
                     {% include "inc/reportform.html" %}
                   {%- else %}
-                    <p>You need to be logged in to report a listing</p>
+                    <p>You need to be logged in to report a post</p>
                     <p><a class="btn btn-primary btn-sm" href="{{ url_for('login') }}">Login with Twitter or Google</a></p>
                   {%- endif %}
                 </div>
@@ -257,7 +257,7 @@
           {{ job_application.message|safe }}
         </div>
       {%- endif %}
-      {%- if post.hr_contact is not none %}{# Don't display notice on old listings #}
+      {%- if post.hr_contact is not none %}{# Don't display notice on old posts #}
         <div class="section" id="recruiter-notice">
         {%- if post.hr_contact %}
           <p>

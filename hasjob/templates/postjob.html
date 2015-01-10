@@ -11,11 +11,11 @@
         {{ g.board.newjob_blurb|safe }}
       {%- else %}
         <p>
-          Hasjob is visited by thousands of developers every month. Listings are valid for 30 days.
+          Hasjob is visited by thousands of developers every month. Posts are valid for 30 days.
         </p>
         <p>
-          <strong>Attention, recruiters:</strong> You may NOT use this site to list
-          jobs on behalf of your clients. We accept listings for your own firm only. Please read the
+          <strong>Attention, recruiters:</strong> You may NOT use this site to post
+          jobs on behalf of your clients. We accept posts for your own firm only. Please read the
           <a href="{{ url_for('terms_of_service') }}" target="_blank">terms of service</a> and ask your
           clients to list for themselves.
         </p>
@@ -86,7 +86,7 @@
             <label class="col-xs-12 col-sm-3 col-md-2 control-label" for="poster_email">Email</label>
             <div class="col-xs-12 col-sm-9 col-md-10 controls">
               <input class="form-control" id="poster_email" type="text" value="{{ form.poster_email.data }}" disabled />
-              <p class="help-block">You cannot change the email address of a published listing</p>
+              <p class="help-block">You cannot change the email address of a published post</p>
             </div>
           </div>
         {%- else %}
@@ -103,10 +103,10 @@
         {{ renderfield(form.hr_contact, style="widelist") }}
         <p>
           <strong>Warning:</strong> Many recruiters will ignore your preference and contact you anyway.
-          Do not reveal your phone number in the listing. If you receive an email, please report it
+          Do not reveal your phone number in the post. If you receive an email, please report it
           and we will block their account
         </p>
-        {{ rendersubmit([(None, "Review your listing…", 'btn-primary')], style="wide", csrf_error=form.csrf_token.errors) }}
+        {{ rendersubmit([(None, "Review your post…", 'btn-primary')], style="wide", csrf_error=form.csrf_token.errors) }}
       </div>
     </form>
   </div>

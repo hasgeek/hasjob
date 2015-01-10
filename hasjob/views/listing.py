@@ -121,14 +121,14 @@ def jobdetail(hashid):
             db.session.add(report)
             db.session.commit()
             if request.is_xhr:
-                return "<p>Thanks! This listing has been flagged for review</p>"  # FIXME: Ugh!
+                return "<p>Thanks! This post has been flagged for review</p>"  # FIXME: Ugh!
             else:
-                flash("Thanks! This listing has been flagged for review", "interactive")
+                flash("Thanks! This post has been flagged for review", "interactive")
         else:
             if request.is_xhr:
-                return "<p>You need to be logged in to report a listing</p>"  # FIXME: Ugh!
+                return "<p>You need to be logged in to report a post</p>"  # FIXME: Ugh!
             else:
-                flash("You need to be logged in to report a listing", "interactive")
+                flash("You need to be logged in to report a post", "interactive")
     elif request.method == 'POST' and request.is_xhr:
         return render_template('inc/reportform.html', reportform=reportform)
 
@@ -385,9 +385,9 @@ def pinnedjob(hashid):
         obj.pinned = pinnedform.pinned.data
         db.session.commit()
         if obj.pinned:
-            msg = "This listing has been pinned."
+            msg = "This post has been pinned."
         else:
-            msg = "This listing is no longer pinned."
+            msg = "This post is no longer pinned."
     else:
         msg = "Invalid submission"
     if request.is_xhr:
@@ -415,12 +415,12 @@ def rejectjob(hashid):
         post.reviewer = g.user
 
         if request.form.get('submit') == 'spam':
-            flashmsg = "This job listing has been marked as spam."
+            flashmsg = "This job post has been marked as spam."
             post.status = POSTSTATUS.SPAM
         else:
-            flashmsg = "This job listing has been rejected."
+            flashmsg = "This job post has been rejected."
             post.status = POSTSTATUS.REJECTED
-            msg = Message(subject="About your job listing on Hasjob",
+            msg = Message(subject="About your job post on Hasjob",
                 recipients=[post.email])
             msg.body = render_template("reject_email.md", post=post)
             msg.html = markdown(msg.body)
@@ -451,9 +451,9 @@ def moderatejob(hashid):
         post.review_comments = moderateform.reason.data
         post.review_datetime = datetime.utcnow()
         post.reviewer = g.user
-        flashmsg = "This job listing has been moderated."
+        flashmsg = "This job post has been moderated."
         post.status = POSTSTATUS.MODERATED
-        msg = Message(subject="About your job listing on Hasjob",
+        msg = Message(subject="About your job post on Hasjob",
             recipients=[post.email])
         msg.body = render_template("moderate_email.md", post=post)
         msg.html = markdown(msg.body)
@@ -484,7 +484,7 @@ def confirm(hashid):
         # Also (re-)set the verify key, just in case they changed their email
         # address and are re-verifying
         post.email_verify_key = random_long_key()
-        msg = Message(subject="Confirmation of your job listing at Hasjob",
+        msg = Message(subject="Confirmation of your job post at Hasjob",
             recipients=[post.email])
         msg.body = render_template("confirm_email.md", post=post)
         msg.html = markdown(msg.body)
@@ -512,7 +512,7 @@ def confirm_email(hashid, key):
     if post.status in POSTSTATUS.GONE:
         abort(410)
     elif post.status in POSTSTATUS.LISTED:
-        flash("This job listing has already been confirmed and published", "interactive")
+        flash("This job post has already been confirmed and published", "interactive")
         return redirect(url_for('jobdetail', hashid=post.hashid), code=302)
     elif post.status == POSTSTATUS.DRAFT:
         # This should not happen. The user doesn't have this URL until they
@@ -527,8 +527,8 @@ def confirm_email(hashid, key):
                     JobPost.status.in_(POSTSTATUS.POSTPENDING)).filter(
                         JobPost.datetime > datetime.utcnow() - timedelta(days=1)).count()
                 if post_count > app.config['THROTTLE_LIMIT']:
-                    flash(u"We have received too many listings with %s addresses in the last 24 hours. "
-                        u"Listings are rate-limited per domain, so yours was not confirmed for now. "
+                    flash(u"We have received too many posts with %s addresses in the last 24 hours. "
+                        u"Posts are rate-limited per domain, so yours was not confirmed for now. "
                         u"Please try confirming again in a few hours."
                         % post.email_domain, category='info')
                     return redirect(url_for('index'))
@@ -540,7 +540,7 @@ def confirm_email(hashid, key):
                 tweet.delay(post.headline, url_for('jobdetail', hashid=post.hashid,
                     _external=True), post.location, dict(post.parsed_location or {}))
             add_to_boards.delay(post.id)
-            flash("Congratulations! Your job listing has been published", "interactive")
+            flash("Congratulations! Your job post has been published", "interactive")
     return redirect(url_for('jobdetail', hashid=post.hashid), code=302)
 
 
@@ -554,7 +554,7 @@ def withdraw(hashid, key):
     if not ((key is None and g.user is not None and post.admin_is(g.user)) or (key == post.edit_key)):
         abort(403)
     if post.status == POSTSTATUS.WITHDRAWN:
-        flash("Your job listing has already been withdrawn", "info")
+        flash("Your job post has already been withdrawn", "info")
         return redirect(url_for('index'), code=303)
     if post.status not in POSTSTATUS.LISTED:
         flash("Your post cannot be withdrawn because it is not public", "info")
@@ -563,7 +563,7 @@ def withdraw(hashid, key):
         post.status = POSTSTATUS.WITHDRAWN
         post.closed_datetime = datetime.utcnow()
         db.session.commit()
-        flash("Your job listing has been withdrawn and is no longer available", "info")
+        flash("Your job post has been withdrawn and is no longer available", "info")
         return redirect(url_for('index'), code=303)
     return render_template("withdraw.html", post=post, form=form)
 
@@ -626,7 +626,7 @@ def editjob(hashid, key, form=None, post=None, validated=False):
                             break
 
         if similar:
-            flash("This listing is very similar to an earlier listing. You may not relist the same job "
+            flash("This post is very similar to an earlier post. You may not repost the same job "
                 "in less than %d days." % agelimit.days, category='interactive')
         else:
             post.headline = form.job_headline.data
@@ -668,7 +668,7 @@ def editjob(hashid, key, form=None, post=None, validated=False):
                 post.email = form.poster_email.data
                 post.email_domain = form_email_domain
                 post.md5sum = md5sum(post.email)
-            # To protect from gaming, don't allow words to be removed in edited listings once the post
+            # To protect from gaming, don't allow words to be removed in edited posts once the post
             # has been confirmed. Just add the new words.
             if post.status in POSTSTATUS.POSTPENDING:
                 prev_words = post.words or u''
@@ -740,11 +740,11 @@ def newjob():
         if request.method == 'POST' and request.form.get('form.id') == 'newheadline':
             session['headline'] = form.job_headline.data
         return redirect(url_for('login', next=url_for('newjob'),
-            message=u"Hasjob now requires you to login before listing a job. Please login as yourself."
+            message=u"Hasjob now requires you to login before posting a job. Please login as yourself."
                 u" We'll add details about your company later"))
     else:
         if g.user.blocked:
-            flash("Your account has been blocked from listing jobs", category='info')
+            flash("Your account has been blocked from posting jobs", category='info')
             return redirect(url_for('index'), code=303)
         if 'headline' in session:
             if request.method == 'GET':

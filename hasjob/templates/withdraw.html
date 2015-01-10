@@ -4,15 +4,15 @@
 {% block content %}
   <div class="sheet">
     <div class="section first">
-      <h1>Withdraw job listing?</h1>
+      <h1>Withdraw job post?</h1>
       <h2>{{ post.headline }}</h2>
       <p>
-        Please confirm that you wish to withdraw this job listing.
-        Your listing will be permanently withdrawn and cannot be made
+        Please confirm that you wish to withdraw this job post.
+        Your post will be permanently withdrawn and cannot be made
         available again.
       </p>
       <p>
-        You will not be able to re-post this listing or a similar listing
+        You will not be able to re-post this post or a similar post
         until 30 days have passed.
       </p>
       <form method="POST" class="form-horizontal">
@@ -20,7 +20,7 @@
         <input type="hidden" name="form.id" value="withdrawjob"/>
         {{ form.hidden_tag() }}
         {{ renderfield(form.really_withdraw, style="wide") }}
-        <input type="submit" class="btn btn-danger" value="Withdraw job listing"/>
+        <input type="submit" class="btn btn-danger" value="Withdraw job post"/>
       </form>
     </div>
   </div>

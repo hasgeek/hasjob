@@ -73,7 +73,7 @@ class ListingForm(Form):
         description="A single-line summary. This goes to the front page and across the network",
         validators=[validators.Required("A headline is required"),
             validators.Length(min=1, max=100, message="%(max)d characters maximum"),
-            NoObfuscatedEmail(u"Do not include contact information in the listing")])
+            NoObfuscatedEmail(u"Do not include contact information in the post")])
     job_type = RadioField("Type", coerce=int, validators=[validators.Required("The job type must be specified")])
     job_category = RadioField("Category", coerce=int, validators=[validators.Required("Select a category")])
     job_location = TextField("Location",
@@ -86,14 +86,14 @@ class ListingForm(Form):
         description=u"Don’t just describe the job, tell a compelling story for why someone should work for you",
         validators=[validators.Required("A description of the job is required"),
             AllUrlsValid(invalid_urls=invalid_urls),
-            NoObfuscatedEmail(u"Do not include contact information in the listing")],
+            NoObfuscatedEmail(u"Do not include contact information in the post")],
         tinymce_options={'convert_urls': True})
     job_perks = BooleanField("Job perks are available")
     job_perks_description = TinyMce4Field("Describe job perks",
         content_css=content_css,
         description=u"Stock options, free lunch, free conference passes, etc",
         validators=[AllUrlsValid(invalid_urls=invalid_urls),
-            NoObfuscatedEmail(u"Do not include contact information in the listing")])
+            NoObfuscatedEmail(u"Do not include contact information in the post")])
     job_pay_type = RadioField("What does this job pay?", coerce=int,
         choices=PAY_TYPE.items())
     job_pay_currency = ListingPayCurrencyField("Currency", choices=[("INR", "INR"), ("USD", "USD"), ("EUR", "EUR")])
@@ -109,24 +109,24 @@ class ListingForm(Form):
                     u"attach resumes or other documents, so do not ask for that",
         validators=[
             validators.Required(u"We do not offer screening services. Please specify what candidates should submit"),
-            NoObfuscatedEmail(u"Do not include contact information in the listing")])
+            NoObfuscatedEmail(u"Do not include contact information in the post")])
     company_name = TextField("Name",
         description=u"The name of the organization where the position is. "
                     u"No intermediaries or unnamed stealth startups. Use your own real name if the organization isn’t named "
-                    u"yet. We do not accept listings from third parties such as recruitment consultants. Such listings "
+                    u"yet. We do not accept posts from third parties such as recruitment consultants. Such posts "
                     u"may be removed without notice",
         validators=[validators.Required(u"This is required. Posting any name other than that of the actual organization is a violation of the ToS"),
             validators.Length(min=4, max=80, message="The name must be within %(min)d to %(max)d characters")])
     company_logo = FileField("Logo",
-        description=u"Optional — Your organization’s logo will appear at the top of your listing.",
+        description=u"Optional — Your organization’s logo will appear at the top of your post.",
         )  # validators=[file_allowed(uploaded_logos, "That image type is not supported")])
     company_logo_remove = BooleanField("Remove existing logo")
     company_url = TextField("URL",
         description=u"Example: http://www.google.com",
         validators=[optional_url, validators.Length(min=0, max=255, message="%(max)d characters maximum"), ValidUrl()])
     hr_contact = RadioField(u"Is it okay for recruiters and other "
-        u"intermediaries to contact you about this listing?", coerce=getbool,
-        description=u"We’ll display a notice to this effect on the listing",
+        u"intermediaries to contact you about this post?", coerce=getbool,
+        description=u"We’ll display a notice to this effect on the post",
         default=0,
         choices=[(0, u"No, it is NOT OK"), (1, u"Yes, recruiters may contact me")])
     # Deprecated 2013-11-20
@@ -405,12 +405,12 @@ class ApplicationResponseForm(Form):
 
 class ConfirmForm(Form):
     terms_accepted = BooleanField("I accept the terms of service",
-        validators=[validators.Required("You must accept the terms of service to publish this listing")])
+        validators=[validators.Required("You must accept the terms of service to publish this post")])
 
 
 class WithdrawForm(Form):
-    really_withdraw = BooleanField("Yes, I really want to withdraw the job listing",
-        validators=[validators.Required(u"If you don’t want to withdraw the listing, just close this page")])
+    really_withdraw = BooleanField("Yes, I really want to withdraw the job post",
+        validators=[validators.Required(u"If you don’t want to withdraw the post, just close this page")])
 
 
 class ReportForm(Form):
@@ -443,22 +443,22 @@ def jobtype_label(jobtype):
 
 
 class BoardOptionsForm(Form):
-    restrict_listing = BooleanField(u"Restrict direct listing on this board to owners and the following users",
+    restrict_listing = BooleanField(u"Restrict direct posting on this board to owners and the following users",
         default=True,
         description=u"As the owner of this board, you can always cross-add jobs from other boards on Hasjob")
-    listing_users = UserSelectMultiField(u"Allowed users",
-        description=u"These users will be allowed to list jobs on this board under the following terms",
+    posting_users = UserSelectMultiField(u"Allowed users",
+        description=u"These users will be allowed to post jobs on this board under the following terms",
         usermodel=User, lastuser=lastuser)
     # Allow turning this off only in siteadmin-approved boards (deleted in the view for non-siteadmins)
-    require_pay = BooleanField(u"Require pay data for listing on this board?", default=True,
+    require_pay = BooleanField(u"Require pay data for post on this board?", default=True,
         description=u"Hasjob requires employers to reveal what they intend to pay, "
-            u"but you can make it optional for jobs listed from this board. "
+            u"but you can make it optional for jobs posted from this board. "
             u"Pay data is used to match candidates to jobs. We recommend you collect it")
     newjob_headline = NullTextField(u"Headline",
-        description=u"The sample headline shown to employers when listing a job",
+        description=u"The sample headline shown to employers when post a job",
         validators=[validators.Length(min=0, max=100, message="%(max)d characters maximum")])
-    newjob_blurb = TinyMce4Field(u"Listing instructions",
-        description=u"What should we tell employers when they list a job on your board? "
+    newjob_blurb = TinyMce4Field(u"Posting instructions",
+        description=u"What should we tell employers when they post a job on your board? "
             u"Leave blank to use the default text",
         content_css=content_css,
         validators=[AllUrlsValid()])
@@ -530,9 +530,9 @@ class BoardForm(Form):
     require_login = BooleanField(u"Prompt users to login", default=True,
         description=u"If checked, users must login to see all jobs available. "
             u"Logging in provides users better filtering for jobs that may be of interest to them, "
-            u"and allows employers to understand how well their listing is performing")
-    options = FormField(BoardOptionsForm, u"Direct listing options")
-    autotag = FormField(BoardTaggingForm, u"Automatic listing options")
+            u"and allows employers to understand how well their post is performing")
+    options = FormField(BoardOptionsForm, u"Direct posting options")
+    autotag = FormField(BoardTaggingForm, u"Automatic posting options")
 
     def validate_name(self, field):
         if field.data:

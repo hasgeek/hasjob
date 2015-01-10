@@ -96,7 +96,7 @@ class Board(BaseNameMixin, db.Model):
     userid = db.Column(db.Unicode(22), nullable=False, index=True)
     #: Welcome text
     description = db.Column(db.UnicodeText, nullable=False, default=u'')
-    #: Restrict displayed listings to 24 hours if not logged in?
+    #: Restrict displayed posts to 24 hours if not logged in?
     require_login = db.Column(db.Boolean, nullable=False, default=True)
     #: Restrict ability to list via this board?
     restrict_listing = db.Column(db.Boolean, nullable=False, default=True)
@@ -106,8 +106,8 @@ class Board(BaseNameMixin, db.Model):
     newjob_headline = db.Column(db.Unicode(100), nullable=True)
     #: New job posting instructions
     newjob_blurb = db.Column(db.UnicodeText, nullable=True)
-    #: Listing users
-    listing_users = db.relationship(User, secondary=board_users_table)
+    #: Posting users
+    posting_users = db.relationship(User, secondary=board_users_table)
     #: Available job types
     types = db.relationship(JobType, secondary=board_jobtype_table, order_by=JobType.seq)
     #: Available job categories
@@ -164,7 +164,7 @@ class Board(BaseNameMixin, db.Model):
             perms.add('delete')
             perms.add('add')
             perms.add('new-job')
-        elif user in self.listing_users:
+        elif user in self.posting_users:
             perms.add('new-job')
         return perms
 
@@ -216,7 +216,7 @@ class BoardJobPost(TimestampMixin, db.Model):
     jobpost_id = db.Column(None, db.ForeignKey('jobpost.id'), primary_key=True)
     jobpost = db.relationship(JobPost, backref=db.backref('postboards',
         lazy='dynamic', order_by='BoardJobPost.created_at', cascade='all, delete-orphan'))
-    #: Is this listing pinned on this board?
+    #: Is this post pinned on this board?
     pinned = db.Column(db.Boolean, default=False, nullable=False)
 
 

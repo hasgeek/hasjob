@@ -1,6 +1,6 @@
 {% extends "sheet.html" %}
 {% from "baseframe/forms.html" import renderfield %}
-{% block title %}Job listing statistics{% endblock %}
+{% block title %}Job post statistics{% endblock %}
 {% block content %}
   <div class="sheet">
     <div class="section first">
@@ -12,13 +12,13 @@
       </p>
     </div>
     <div class="section">
-      <h2>Listings by date</h2>
-      <div class="chart" id="listings-by-date" style="height: 300px">
+      <h2>Posts by date</h2>
+      <div class="chart" id="posts-by-date" style="height: 300px">
       </div>
     </div>
     <div class="section">
-      <h2>Listings by type</h2>
-      <div class="chart" id="listings-by-type" style="height: 300px">
+      <h2>Posts by type</h2>
+      <div class="chart" id="posts-by-type" style="height: 300px">
       </div>
     </div>
   </div>
@@ -28,27 +28,27 @@
 <script type="text/javascript">
   $(function () {
 
-    var onListingsByDate = function (source) {
-      $.plot($("#listings-by-date"), source.data, source.options);
+    var onPostsByDate = function (source) {
+      $.plot($("#posts-by-date"), source.data, source.options);
     };
 
     $.ajax({
-      url: '{{url_for("stats_listings_by_date") }}',
+      url: '{{url_for("stats_posts_by_date") }}',
       method: 'GET',
       dataType: 'json',
-      success: onListingsByDate
+      success: onPostsByDate
     });
 
-    var onListingsByType = function (source) {
+    var onPostsByType = function (source) {
       console.log(source.data);
-      $.plot($("#listings-by-type"), source.data, source.options);
+      $.plot($("#posts-by-type"), source.data, source.options);
     };
 
     $.ajax({
-      url: '{{url_for("stats_listings_by_type") }}',
+      url: '{{url_for("stats_posts_by_type") }}',
       method: 'GET',
       dataType: 'json',
-      success: onListingsByType
+      success: onPostsByType
     });
 
   });

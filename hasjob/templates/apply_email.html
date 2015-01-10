@@ -28,5 +28,5 @@
 {%- endblock %}
 
 {% block footer -%}
-  <a href="{{ url_for('editjob', _external=True, hashid=post.hashid, key=post.edit_key) }}">Edit job listing</a>&nbsp;&nbsp;&nbsp;<a href="{{ url_for('withdraw', _external=True, hashid=post.hashid, key=post.edit_key) }}">Withdraw job listing</a>&nbsp;
+  <a href="{{ url_for('editjob', _external=True, hashid=post.hashid, key=post.edit_key) }}">Edit job post</a>&nbsp;&nbsp;&nbsp;<a href="{{ url_for('withdraw', _external=True, hashid=post.hashid, key=post.edit_key) }}">Withdraw job post</a>&nbsp;
 {%- endblock %}

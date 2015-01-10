@@ -399,8 +399,8 @@ def viewstats_helper(jobpost_id, interval, limit, daybatch=False):
         for item in source:
             sourcedate = getattr(item, attr)
             if sourcedate < post.datetime:
-                # This happens when the user creates a listing when logged in. Their 'viewed' date will be
-                # for the draft, whereas the confirmed listing's datetime will be later. There should
+                # This happens when the user creates a post when logged in. Their 'viewed' date will be
+                # for the draft, whereas the confirmed post's datetime will be later. There should
                 # be just one instance of this.
                 sourcedate = post.datetime
             itemdelta = sourcedate - post.datetime
@@ -455,10 +455,10 @@ jobpost_admin_table = db.Table('jobpost_admin', db.Model.metadata,
 
 class JobLocation(TimestampMixin, db.Model):
     __tablename__ = 'job_location'
-    #: Job listing we are tagging
+    #: Job post we are tagging
     jobpost_id = db.Column(None, db.ForeignKey('jobpost.id'), primary_key=True, nullable=False)
     jobpost = db.relationship(JobPost, backref=db.backref('locations', cascade='all, delete-orphan'))
-    #: Geonameid for this job listing
+    #: Geonameid for this job post
     geonameid = db.Column(db.Integer, primary_key=True, nullable=False, index=True)
     primary = db.Column(db.Boolean, default=True, nullable=False)
 
@@ -471,10 +471,10 @@ class JobLocation(TimestampMixin, db.Model):
 
 class UserJobView(TimestampMixin, db.Model):
     __tablename__ = 'userjobview'
-    #: Job listing that was seen
+    #: Job post that was seen
     jobpost_id = db.Column(None, db.ForeignKey('jobpost.id'), primary_key=True)
     jobpost = db.relationship(JobPost)
-    #: User who saw this listing
+    #: User who saw this post
     user_id = db.Column(None, db.ForeignKey('user.id'), primary_key=True)
     user = db.relationship(User)
     #: Has the user viewed apply instructions?
@@ -485,12 +485,12 @@ class JobApplication(BaseMixin, db.Model):
     __tablename__ = 'job_application'
     #: Hash id (to hide database ids)
     hashid = db.Column(db.String(40), nullable=False, unique=True)
-    #: User who applied for this listing
+    #: User who applied for this post
     user_id = db.Column(None, db.ForeignKey('user.id'), nullable=True)  # TODO: add unique=True
     user = db.relationship(User, foreign_keys=user_id)
     #: Full name of the user (as it was at the time of the application)
     fullname = db.Column(db.Unicode(250), nullable=False)
-    #: Job listing they applied to
+    #: Job post they applied to
     jobpost_id = db.Column(None, db.ForeignKey('jobpost.id'), nullable=False, index=True)
     # jobpost relationship is below
     #: User's email address
@@ -505,7 +505,7 @@ class JobApplication(BaseMixin, db.Model):
     response_message = db.Column(db.UnicodeText, nullable=True)
     #: Bag of words, for spam analysis
     words = db.Column(db.UnicodeText, nullable=True)
-    #: Admin who replied for this listing
+    #: Admin who replied for this post
     replied_by_id = db.Column(None, db.ForeignKey('user.id'), nullable=True)
     replied_by = db.relationship(User, foreign_keys=replied_by_id)
 
