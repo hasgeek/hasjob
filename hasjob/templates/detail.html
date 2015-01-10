@@ -80,12 +80,6 @@
         </div>
         <div class="col-md-3">{% if not g.kiosk %}
           <div class="list-group">
-            {%- if is_siteadmin or post.admin_is(g.user) %}
-              <a class="list-group-item" href="{{ url_for('managejob', hashid=post.hashid) }}">
-                <i class="fa fa-users"></i>&nbsp;&nbsp;
-                View Candidates
-              </a>
-            {% endif   %}
             <a class="list-group-item" href="mailto:?subject=Job%3A%20{{ post.headline|urlquote }}&amp;body={{ request.url|urlquote }}">
               <i class="fa fa-fw fa-envelope"></i>&nbsp;&nbsp; Email this
             </a>
@@ -178,6 +172,10 @@
                 </span>
               {%- endif %}
               <a class="list-group-item" href="{{ url_for('managejob', hashid=post.hashid) }}">
+                <i class="fa fa-users"></i>&nbsp;&nbsp;
+                View Candidates
+              </a>
+              <div class="list-group-item">
                 <i class="fa fa-fw fa-bar-chart-o"></i>&nbsp;&nbsp; <span title="Viewed">{{ post.viewcounts['viewed'] }}</span> &middot; <span title="Opened form">{{ post.viewcounts['opened'] }}</span> &middot; <span title="Applied">{{ post.viewcounts['applied'] }}</span> &middot;
                 {%- with unittype = post.viewstats[0] %}
                   {%- if unittype == 'q' %} Per 15m:
@@ -186,7 +184,7 @@
                   {%- endif %}
                 {%- endwith %}<br>
                 <div id="statsline" class="hidden"></div>
-              </a>
+              </div>
             {%- endif %}
             {#<div class="list-group-item" id="banner">
               <a href="https://rootconf.in/2014/" target="_blank" title="Rootconf 2014"><img src="{{
