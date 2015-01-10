@@ -181,7 +181,7 @@ h1 small, h2 small, h3 small {
   font-weight: 600;
 }
 
-.list-group-item > .badge {
+.list-group-item .badge {
   float: right;
 }
 
