@@ -41,7 +41,7 @@ webmail_domains = set([
     'outlook.com',
     'pobox.com',
     'qmail.com',
-    'rediff.com',
+    'rediffmail.com',
     'runbox.com',
     'seznam.cz',
     'spamgourmet.com',
