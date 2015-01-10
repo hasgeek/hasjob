@@ -89,12 +89,12 @@
             {%- if not g.kiosk and not post.is_announcement() %}
               <div class="list-group-item">
                 <a class="popup" href="#report">
+                  <i class="fa fa-fw fa-flag"></i>&nbsp;&nbsp; {% if report -%} Reported {%- else -%} Report this {%- endif %}
                   {%- if is_siteadmin and post.flags %}
                     <span class="badge">{% for report in post.reports() -%}
                       {%if not loop.first %} &middot; {% endif %}<span title="{{ report.title }}">{{ report.count }}</span>
                     {%- endfor %}</span>
                   {%- endif -%}
-                  <i class="fa fa-fw fa-flag"></i>&nbsp;&nbsp; {% if report -%} Reported {%- else -%} Report this {%- endif %}
                 </a>
                 <div class="popup-box" id="report">
                   <a class="close-popup" href="#">&#10005;</a>
