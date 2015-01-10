@@ -171,11 +171,15 @@
                   <i class="fa fa-fw fa-money"></i>&nbsp;&nbsp; {{ post.pay_label() }}
                 </span>
               {%- endif %}
-              <a class="list-group-item" href="{{ url_for('managejob', hashid=post.hashid) }}">
-                <i class="fa fa-users"></i>&nbsp;&nbsp;
-                View Candidates
-              </a>
-              <div class="list-group-item">
+              {%- with appl=post.viewcounts['applied'], newappl=post.new_applications %}{% if appl %}
+                <a class="list-group-item" href="{{ url_for('managejob', hashid=post.hashid) }}">
+                  <i class="fa fa-fw fa-file-text-o"></i>&nbsp;&nbsp;View candidates
+                  {%- if newappl %} <span class="badge badge-new">{{ newappl }}/{{ appl }}</span>
+                  {%- else %} <span class="badge">{{ appl }}</span>
+                  {%- endif -%}
+                </a>
+              {%- endif %}{% endwith -%}
+              <div class="list-group-item no-border">
                 <i class="fa fa-fw fa-bar-chart-o"></i>&nbsp;&nbsp; <span title="Viewed">{{ post.viewcounts['viewed'] }}</span> &middot; <span title="Opened form">{{ post.viewcounts['opened'] }}</span> &middot; <span title="Applied">{{ post.viewcounts['applied'] }}</span> &middot;
                 {%- with unittype = post.viewstats[0] %}
                   {%- if unittype == 'q' %} Per 15m:

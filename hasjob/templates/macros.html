@@ -36,7 +36,7 @@
   {%- endif -%}
 {%- endmacro %}
 
-{%- macro jobheader(post, kiosk=false) %}
+{%- macro jobheader(post, kiosk=false, return=false) %}
   {%- if post.company_logo %}
     <div class="row">
       <div class="col-xs-12 col-sm-3 col-sm-push-9 post-company-logo">
@@ -48,6 +48,7 @@
     <p class="post-date">Posted <time datetime="{{ post.datetime.isoformat() }}Z">{{ post.datetime|longdate }}</time>
       {%- if post.user %} by {{ post.user.pickername }}{% endif %}</p>
     <p>
+      {% if return %}<a href="{{ post.url_for() }}"><i class="fa fa-angle-left"></i> Post</a> &middot; {% endif -%}
       <a href="{{ post.url_for('browse') }}"><strong>{{ post.company_name }}</strong></a>,
       {% if post.relocation_assist -%}
         <span id="post-location" data-toggle="tooltip" data-placement="bottom" title="Relocation assistance available">{{ joblocation(post) }} <i class="fa fa-truck fa-flip-horizontal"></i></span>

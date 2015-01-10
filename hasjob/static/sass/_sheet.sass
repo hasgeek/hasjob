@@ -41,8 +41,11 @@ h1 small, h2 small, h3 small
 
 // --- Sheet ------------------------------------------------------------------
 
-.list-group-item > a > .badge
+.list-group-item > .badge
   float: right
+
+.badge-new
+  background-color: #428bca
 
 .sheet
   background: $color-sheet
@@ -71,7 +74,11 @@ h1 small, h2 small, h3 small
 
   .list-group-item:last-child
     +border-bottom-radius(0)
+    margin-bottom: -1px
+
+  .list-group-item.no-bottom-border
     border-bottom: 0
+    margin-bottom: 0
 
   .alert
     margin-bottom: 12px
@@ -141,6 +148,11 @@ h1 small, h2 small, h3 small
     +border-radius(4px)
     +box-shadow(0 2px 10px $color-shadow, 0 0 10px rgba(0, 0, 0, 0.1) inset)
 
+  .section
+    padding: 12px 30px 0
+
+@media screen and (min-width: 992px)
+  .sheet
     .list-group
       margin: -12px -30px 20px -15px // Undo section's padding-top, flush with right edge of sheet
       margin-top: -12px
@@ -151,6 +163,3 @@ h1 small, h2 small, h3 small
 
     .list-group-item:first-child
       border-top: none
-
-  .section
-    padding: 12px 30px 0

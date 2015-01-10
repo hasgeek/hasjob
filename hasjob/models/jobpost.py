@@ -312,14 +312,20 @@ class JobPost(BaseMixin, db.Model):
             values['viewed'] = UserJobView.query.filter_by(jobpost=self).count()
             redis_store.hset(cache_key, 'viewed', values['viewed'])
             redis_store.expire(cache_key, 86400)
+        else:
+            values['viewed'] = int(values['viewed'])
         if 'opened' not in values:
             values['opened'] = UserJobView.query.filter_by(jobpost=self, applied=True).count()
             redis_store.hset(cache_key, 'opened', values['opened'])
             redis_store.expire(cache_key, 86400)
+        else:
+            values['opened'] = int(values['opened'])
         if 'applied' not in values:
             values['applied'] = JobApplication.query.filter_by(jobpost=self).count()
             redis_store.hset(cache_key, 'applied', values['applied'])
             redis_store.expire(cache_key, 86400)
+        else:
+            values['applied'] = int(values['applied'])
         # pay_label rendering is extraordinarily slow. We don't know why yet, but it's static data, so cache it
         if 'pay_label' not in values:
             values['pay_label'] = self.pay_label()
@@ -347,6 +353,10 @@ class JobPost(BaseMixin, db.Model):
                 return 'h', viewstats_by_id_hour(self.id)
         else:
             return 'd', viewstats_by_id_day(self.id)
+
+    @property
+    def new_applications(self):
+        return JobApplication.query.filter_by(jobpost=self, response=EMPLOYER_RESPONSE.NEW).count()
 
     def reports(self):
         if not self.flags:
