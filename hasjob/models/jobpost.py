@@ -44,7 +44,7 @@ class JobPost(BaseMixin, db.Model):
     user_id = db.Column(None, db.ForeignKey('user.id'), nullable=True)
     user = db.relationship(User, primaryjoin=user_id == User.id, backref='jobposts')
     hashid = db.Column(db.String(5), nullable=False, unique=True)
-    datetime = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)  # Published
+    datetime = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)  # Published
     closed_datetime = db.Column(db.DateTime, nullable=True)  # If withdrawn or rejected
     # Pinned on the home page. Boards use the BoardJobPost.pinned column
     sticky = db.Column(db.Boolean, nullable=False, default=False)
@@ -144,6 +144,9 @@ class JobPost(BaseMixin, db.Model):
     @classmethod
     def get(cls, hashid):
         return cls.query.filter_by(hashid=hashid).one_or_none()
+
+    def __repr__(self):
+        return u'<JobPost {hashid} "{headline}">'.format(hashid=self.hashid, headline=self.headline)
 
     def admin_is(self, user):
         if user is None:
