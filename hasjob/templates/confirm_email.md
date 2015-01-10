@@ -26,5 +26,4 @@ info@hasgeek.com if you have suggestions or questions on this service.
 [jb]: https://hasjob.co/
 [hg]: https://hasgeek.com/
 
-If you did not post a job, you may safely ignore this email and the listing
-will be automatically removed.
+If you did not post a job, you may safely ignore this email.

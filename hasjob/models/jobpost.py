@@ -401,7 +401,8 @@ def viewstats_helper(jobpost_id, interval, limit, daybatch=False):
             if sourcedate < post.datetime:
                 # This happens when the user creates a post when logged in. Their 'viewed' date will be
                 # for the draft, whereas the confirmed post's datetime will be later. There should
-                # be just one instance of this.
+                # be just one instance of this. This can also happen if the server's clock is reset, such
+                # as by an NTP error after reboot (has happened to us).
                 sourcedate = post.datetime
             itemdelta = sourcedate - post.datetime
             try:
