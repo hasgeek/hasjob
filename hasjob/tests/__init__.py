@@ -3,6 +3,7 @@ from flask.ext.testing import TestCase, Twill
 from hasjob import app, init_for
 from hasjob.models import db
 
+
 # Base setup to run tests
 class TestBase(TestCase):
     def create_app(self):
@@ -14,6 +15,7 @@ class TestBase(TestCase):
     def tearDown(self):
         db.session.remove()
         db.drop_all()
+
 
 class TestWorkflow(TestBase):
     def test_index(self):
@@ -36,5 +38,6 @@ class TestWorkflow(TestBase):
         with Twill(self.app, port=5000) as t:
             t.browser.go(t.url('/blah'))
 
-if __name__=='__main__':
+
+if __name__ == '__main__':
     unittest.main()

@@ -103,11 +103,11 @@ class ListingForm(Form):
     job_pay_equity_min = TextField("Minimum")
     job_pay_equity_max = TextField("Maximum")
     job_how_to_apply = TextAreaField("What should a candidate submit when applying for this job?",
-         description=u"Example: “Include your LinkedIn and GitHub profiles.” "
-                     u"We now require candidates to apply through the job board only. "
-                     u"Do not include any contact information here. Candidates CANNOT "
-                     u"attach resumes or other documents, so do not ask for that",
-         validators=[
+        description=u"Example: “Include your LinkedIn and GitHub profiles.” "
+                    u"We now require candidates to apply through the job board only. "
+                    u"Do not include any contact information here. Candidates CANNOT "
+                    u"attach resumes or other documents, so do not ask for that",
+        validators=[
             validators.Required(u"We do not offer screening services. Please specify what candidates should submit"),
             NoObfuscatedEmail(u"Do not include contact information in the listing")])
     company_name = TextField("Name",
@@ -148,7 +148,6 @@ class ListingForm(Form):
                     u"— use a shared email address above for that — but they will be able to respond "
                     u"to candidates who apply",
         usermodel=User, lastuser=lastuser)
-
 
     def validate_job_type(form, field):
         # This validator exists primarily for this assignment, used later in the form by other validators
