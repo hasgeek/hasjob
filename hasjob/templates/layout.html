@@ -25,9 +25,16 @@
 
 {% block headerbox -%}
 <header>
-  {% block networkbar -%}{% if not g.kiosk %}
-    {{ responsive_networkbar(siteid=config['SITE_ID'], login=true) }}
-  {%- endif %}{%- endblock %}
+  {% block networkbar -%}
+    {% if not g.kiosk %}
+      {% with app_links = [] %}
+        {%- if g.user and (is_siteadmin or g.user | user_has_drafts) %}
+          {% set app_links = app_links + [{'title': "Drafts", 'url': "/drafts"}] %}
+        {%- endif %}
+        {{ responsive_networkbar(siteid=config['SITE_ID'], login=true, app_links=app_links) }}
+      {% endwith %}
+    {%- endif %}
+  {%- endblock %}
   <div class="container">
     <div class="row">
       <div class="col-xs-12 col-sm-6 col-md-8 col-lg-9">

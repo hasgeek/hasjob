@@ -58,6 +58,7 @@ def getallposts(order_by=None, desc=False, start=None, limit=None):
     return count, filt
 
 
+
 @cache.memoize(timeout=86400)
 def location_geodata(location):
     if 'HASCORE_SERVER' in app.config:
@@ -143,3 +144,8 @@ def usessl(url):
     if url.startswith('http:'): # http://www.example.com
         url = 'https:' + url[5:]
     return url
+
+
+@app.template_filter('user_has_drafts')
+def user_has_drafts(user):
+    return JobPost.query.filter_by(user=user).filter(JobPost.status.in_([POSTSTATUS.DRAFT, POSTSTATUS.PENDING])).count() > 0
