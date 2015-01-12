@@ -27,11 +27,11 @@
 <header>
   {% block networkbar -%}
     {% if not g.kiosk %}
-      {% with app_links = [] %}
+      {% with links = [] %}
         {%- if g.user and (is_siteadmin or g.user | user_has_drafts) %}
-          {% set app_links = app_links + [{'title': "Drafts", 'url': "/drafts"}] %}
+          {% set links = links + [{'title': "Drafts", 'url': "/drafts"}] %}
         {%- endif %}
-        {{ responsive_networkbar(siteid=config['SITE_ID'], login=true, app_links=app_links) }}
+        {{ responsive_networkbar(siteid=config['SITE_ID'], login=true, links=links) }}
       {% endwith %}
     {%- endif %}
   {%- endblock %}
