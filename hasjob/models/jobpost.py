@@ -102,6 +102,7 @@ class JobPost(BaseMixin, db.Model):
 
     # Metadata for classification
     language = db.Column(db.CHAR(2), nullable=True)
+    language_confidence = db.Column(db.Float, nullable=True)
 
     admins = db.relationship(User, secondary=lambda: jobpost_admin_table)
 

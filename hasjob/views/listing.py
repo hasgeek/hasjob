@@ -676,7 +676,7 @@ def editjob(hashid, key, form=None, post=None, validated=False):
                 prev_words = u''
             post.words = get_word_bag(u' '.join((prev_words, form_description, form_perks, form_how_to_apply)))
 
-            post.language = identify_language(post)
+            post.language, post.language_confidence = identify_language(post)
 
             if post.status == POSTSTATUS.MODERATED:
                 post.status = POSTSTATUS.CONFIRMED
