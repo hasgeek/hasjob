@@ -224,6 +224,7 @@ def applyjob(hashid):
                         email=applyform.apply_email.data,
                         phone=applyform.apply_phone.data,
                         message=applyform.apply_message.data,
+                        optin=applyform.apply_optin.data,
                         words=applyform.words)
                 db.session.add(job_application)
                 db.session.commit()

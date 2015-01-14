@@ -335,7 +335,9 @@ class ApplicationForm(Form):
         validators=[validators.Required("You need to say something about yourself"),
             AllUrlsValid()],
         description=u"Please provide all details the employer has requested. To add a resume, "
-            u"post it on LinkedIn or host the file on Dropbox and insert the link here")
+        u"post it on LinkedIn or host the file on Dropbox and insert the link here")
+    apply_optin = BooleanField("Optional: sign me up for a better Hasjob experience",
+        description=u"Hasjob’s maintainers may contact about new features and can see this application for reference")
 
     def __init__(self, *args, **kwargs):
         super(ApplicationForm, self).__init__(*args, **kwargs)
@@ -390,7 +392,7 @@ class KioskApplicationForm(Form):
         validators=[validators.Required("You need to say something about yourself"),
             AllUrlsValid()],
         description=u"Please provide all details the employer has requested. To add a resume, "
-            u"post it on LinkedIn or host the file on Dropbox and insert the link here")
+        u"post it on LinkedIn or host the file on Dropbox and insert the link here")
 
     def validate_email(form, field):
         oldapp = JobApplication.query.filter_by(jobpost=form.post, user=None, email=field.data).count()

@@ -504,6 +504,8 @@ class JobApplication(BaseMixin, db.Model):
     phone = db.Column(db.Unicode(80), nullable=False)
     #: User's message
     message = db.Column(db.UnicodeText, nullable=False)
+    #: User opted-in to experimental features
+    optin = db.Column(db.Boolean, default=False, nullable=False)
     #: Employer's response code
     response = db.Column(db.Integer, nullable=False, default=EMPLOYER_RESPONSE.NEW)
     #: Employer's response message
