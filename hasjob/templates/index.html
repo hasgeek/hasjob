@@ -64,7 +64,7 @@
                 Pragmatic programmer wanted at outstanding organisation
               {%- endif -%}
             </textarea>
-            <div id="newpost_details" class="jshidden"><input type="submit" class="btn btn-default btn-sm" value="Add details…"/></div>
+            <div id="newpost_details"><input type="submit" class="btn btn-primary btn-sm" value="Add details…"/></div>
           </form>
         </li>
       {%- endif -%}
@@ -112,10 +112,7 @@
 {% block footerscripts %}
 <script type="text/javascript">
   $(function() {
-    $("#newpost_details").hide().removeClass('jshidden');
-    $("#newpost_headline").focus(function() {
-      $("#newpost_details").slideDown();
-    }).keypress(function(event) {
+    $("#newpost_headline").keypress(function(event) {
       if(event.which == '13') {
         $(this).closest("form").submit();
         return false;
