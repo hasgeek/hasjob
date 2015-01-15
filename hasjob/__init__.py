@@ -39,7 +39,7 @@ def init_for(env):
 
     baseframe.init_app(app, requires=['hasjob'],
         ext_requires=['baseframe-bs3',
-            ('jquery.textarea-expander', 'jquery.cookie', 'jquery.sparkline', 'jquery.nouislider'),
+            ('jquery.autosize', 'jquery.cookie', 'jquery.sparkline', 'jquery.liblink', 'jquery.wnumb', 'jquery.nouislider'),
             ('firasans', 'baseframe-firasans'),
             'fontawesome>=4.0.0'])
     # TinyMCE has to be loaded by itself, unminified, or it won't be able to find its assets

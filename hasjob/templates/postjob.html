@@ -73,7 +73,7 @@
           Pay data is <em>not</em> revealed to candidates. This data is for an upcoming feature to
           promote this job to relevant candidates
         </p>
-        {{ renderfield(form.job_how_to_apply, widget_css_class="expand50-200", style="wide") }}
+        {{ renderfield(form.job_how_to_apply, style="wide") }}
       </div>
       <div class="section">
         <h2>Next, tell us about your organization</h2>
@@ -115,6 +115,7 @@
   {% assets "js_tinymce" %}<script src="{{ ASSET_URL }}" type="text/javascript"></script>{% endassets %}
   <script type="text/javascript">
     $(function() {
+      $('textarea').autosize();
       if (! $("#job_perks").is(":checked")) {
         $("#field-job_perks_description").hide();
       };
@@ -147,6 +148,15 @@
           '90%': [2000000, 100000],
           'max': [10000000, 1000000],
         },
+        format: wNumb({
+          decimals: 0,
+          thousand: ',',
+          prefix: '¤'
+        })
+      });
+      cashslider.Link('lower').to($('#job_pay_cash_min'))
+      cashslider.Link('upper').to($('#job_pay_cash_max'))
+      /*
         serialization: {
           lower: [
             new $.noUiSlider.Link({
@@ -164,7 +174,8 @@
             prefix: '¤'
           }
         }
-      });
+      */
+
       var equityslider = $("#equityslider").noUiSlider({
         start: [{{ (form.job_pay_equity_min.data or 0)|tojson }}, {{ (form.job_pay_equity_max.data or 100)|tojson }}],
         step: 0.1,
@@ -174,6 +185,14 @@
           'min': 0,
           'max': 100
         },
+        format: wNumb({
+          decimals: 1,
+          postfix: '%'
+        })
+      });
+      $('#equityslider').Link('lower').to($('#job_pay_equity_min'));
+      $('#equityslider').Link('upper').to($('#job_pay_equity_max'));
+      /*
         serialization: {
           lower: [
             new $.noUiSlider.Link({
@@ -190,7 +209,7 @@
             postfix: '%'
           }
         }
-      });
+      */
       $("#job_pay_cash_min").keydown(function(e) {
         // Convert the string to a number.
         var value = Number(cashslider.val()[0].slice(1).replace(',', ''));
@@ -259,18 +278,19 @@
         };
       });
 
-      var indian_encoder = function(value) {
+      var indian_rupee_encoder = function(value) {
         value=value.toString();
+        value = value.replace(/[^0-9.]/g, '');  // Remove non-digits, assume . for decimals
         var afterPoint = '';
-        if(value.indexOf('.') > 0)
-           afterPoint = value.substring(value.indexOf('.'), value.length);
+        if (value.indexOf('.') > 0)
+          afterPoint = value.substring(value.indexOf('.'), value.length);
         value = Math.floor(value);
-        value=value.toString();
+        value = value.toString();
         var lastThree = value.substring(value.length - 3);
         var otherNumbers = value.substring(0, value.length - 3);
         if (otherNumbers != '')
             lastThree = ',' + lastThree;
-        var res = otherNumbers.replace(/\B(?=(\d{2})+(?!\d))/g, ",") + lastThree + afterPoint;
+        var res = '₹' + otherNumbers.replace(/\B(?=(\d{2})+(?!\d))/g, ",") + lastThree + afterPoint;
         return res;
       }
 
@@ -278,11 +298,13 @@
         var start = cashslider.val()[0].slice(1).replace(',', ''),
           end = cashslider.val()[1].slice(1).replace(',', ''),
           prefix = '¤',
-          thousand = ',';
+          thousand = ',',
+          encoder = null;
         switch(currency.val()) {
           case 'INR':
             prefix = '₹';
             // thousand = '';
+            encoder = indian_rupee_encoder;
             break;
           case 'USD':
           case 'SGD':
@@ -295,15 +317,36 @@
             prefix = '£';
             break;
         };
-        cashslider.noUiSlider({
-          start: [start, end],
+        if (encoder === null) {
+          cashslider.noUiSlider({
+            start: [start, end],
+            format: wNumb({
+              decimals: 0,
+              thousand: thousand,
+              prefix: prefix,
+            })
+          }, true);
+        } else {
+          cashslider.noUiSlider({
+            start: [start, end],
+            format: wNumb({
+              decimals: 0,
+              thousand: thousand,
+              prefix: prefix,
+              edit: encoder
+            })
+          }, true);
+        }
+        cashslider.Link('lower').to($('#job_pay_cash_min'))
+        cashslider.Link('upper').to($('#job_pay_cash_max'))
+        /*
           serialization: {
             lower: [
               new $.noUiSlider.Link({
                 // TODO: Figure out encoder+decoder at http://refreshless.com/nouislider/number-formatting
                 target: $("#job_pay_cash_min")
                 // target: function(val) {
-                //   $("#job_pay_cash_min").val(val.lastIndexOf('₹', 0) === 0 ? '₹' + indian_encoder(val.substr(1)) : val);
+                //   $("#job_pay_cash_min").val(val.lastIndexOf('₹', 0) === 0 ? indian_rupee_encoder(val.substr(1)) : val);
                 // }
               })
             ],
@@ -311,17 +354,11 @@
               new $.noUiSlider.Link({
                 target: $("#job_pay_cash_max")
                 // target: function(val) {
-                //   $("#job_pay_cash_max").val(val.lastIndexOf('₹', 0) === 0 ? '₹' + indian_encoder(val.substr(1)) : val);
+                //   $("#job_pay_cash_max").val(val.lastIndexOf('₹', 0) === 0 ? indian_rupee_encoder(val.substr(1)) : val);
                 // }
               })
             ],
-            format: {
-              decimals: 0,
-              thousand: thousand,
-              prefix: prefix
-            }
-          }
-        }, true);
+        */
       };
       currency_options($("input[type=radio][name=job_pay_currency]:checked"));
       $("input[type=radio][name=job_pay_currency]").on('change', function() {

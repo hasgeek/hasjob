@@ -57,7 +57,7 @@
             <input type="hidden" name="_charset_"/>
             <input type="hidden" name="form.id" value="newheadline"/>
             <label class="annotation top-left" for="newpost_headline">Post a job</label>
-            <textarea id="newpost_headline" name="job_headline" class="expand form-control">
+            <textarea id="newpost_headline" name="job_headline" class="form-control">
               {%- if g.board and g.board.newjob_headline -%}
                 {{ g.board.newjob_headline }}
               {%- else -%}
@@ -112,6 +112,7 @@
 {% block footerscripts %}
 <script type="text/javascript">
   $(function() {
+    $('textarea').autosize();
     $("#newpost_details").hide().removeClass('jshidden');
     $("#newpost_headline").focus(function() {
       $("#newpost_details").slideDown();
