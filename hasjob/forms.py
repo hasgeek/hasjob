@@ -350,7 +350,8 @@ class ApplicationForm(Form):
                 self.apply_email.choices = [(e, e) for e in lastuser.user_emails(g.user)]
             except LastuserResourceException:
                 self.apply_email.choices = [(g.user.email, g.user.email)]
-            if not self.apply_email.choices:
+            # If choices is [] or [(None, None)]
+            if not self.apply_email.choices or not self.apply_email.choices[0][0]:
                 self.apply_email.choices = [
                     ('', Markup('<em>You have not verified your email address</em>'))
                 ]
