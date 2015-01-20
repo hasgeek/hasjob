@@ -68,6 +68,13 @@
   <div class="sheet">
     <div class="section first">
       {{ jobheader(post, kiosk=g.kiosk) }}
+      {%- if is_siteadmin %}
+        <p>
+        {%- for taglink in post.taglinks %}{% with label=taglink.status_label %}
+          <a href="/tag/{{ taglink.tag.name }}"><span class="label label-default tag-{{ label.name }}" title="{{ label.title }}">{{ taglink.tag.title }}</span></a>
+        {% endwith %}{%- endfor %}
+        </p>
+      {%- endif %}
     </div>
     <div class="section">
       <div class="row">

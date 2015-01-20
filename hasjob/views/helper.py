@@ -9,7 +9,7 @@ from flask import Markup, request, url_for, g
 
 from baseframe import cache
 from .. import app
-from ..models import agelimit, newlimit, db, JobCategory, JobPost, JobType, POSTSTATUS, BoardJobPost
+from ..models import agelimit, newlimit, db, JobCategory, JobPost, JobType, POSTSTATUS, BoardJobPost, Tag, JobPostTag
 from ..utils import scrubemail, redactemail
 
 
@@ -56,6 +56,18 @@ def getallposts(order_by=None, desc=False, start=None, limit=None):
     if limit is not None:
         filt = filt.limit(limit)
     return count, filt
+
+
+def gettags(alltime=False):
+    query = db.session.query(Tag.name.label('name'), Tag.title.label('title'), Tag.public.label('public'),
+        db.func.count(Tag.id).label('count')).join(JobPostTag).join(JobPost).filter(
+        JobPost.status.in_(POSTSTATUS.LISTED)).filter(Tag.public == True
+        ).group_by(Tag.id).order_by('count desc')  # NOQA
+    if not alltime:
+        query = query.filter(JobPost.datetime > datetime.utcnow() - agelimit)
+    if g.board:
+        query = query.join(JobPost.postboards).filter(BoardJobPost.board == g.board)
+    return query.all()
 
 
 @cache.memoize(timeout=86400)

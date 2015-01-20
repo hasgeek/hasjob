@@ -50,6 +50,12 @@
           You are viewing jobs in {{ location['short_title'] }}. View all jobs?<!-- Id: {{ location['geonameid'] }} -->
         </a>
       </li>
+    {%- elif tag -%}
+      <li class="col-xs-12 col-md-3 col-sm-4">
+        <a href="{{ url_for('index') }}" class="stickie special">
+          You are viewing jobs tagged “{{ tag.title }}”. View all jobs?
+        </a>
+      </li>
     {%- else -%}
       {%- if (not g.kiosk) and ((g.board and 'new-job' in g.board.permissions(g.user)) or (not g.board)) -%}
         <li class="col-xs-12 col-md-3 col-sm-4">

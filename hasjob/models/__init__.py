@@ -101,6 +101,7 @@ from .user import *
 from .jobcategory import *
 from .jobpostreport import *
 from .jobtype import *
+from .tag import *
 from .reportcode import *
 from .jobpost import *
 from .board import *

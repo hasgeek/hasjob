@@ -1,10 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from datetime import datetime
-try:
-    from collections import OrderedDict
-except ImportError:
-    from ordereddict import OrderedDict
+from collections import OrderedDict
 from flask import (
     abort,
     redirect,
@@ -14,18 +11,20 @@ from flask import (
     url_for,
     g
     )
+from coaster.utils import getbool
 
 from .. import app, lastuser, redis_store
-from ..models import db, webmail_domains, JobCategory, JobPost, JobType, POSTSTATUS, newlimit, JobLocation
+from ..models import (db, webmail_domains, JobCategory, JobPost, JobType, POSTSTATUS, newlimit, JobLocation,
+    Tag, JobPostTag)
 from ..search import do_search
-from ..views.helper import getposts, getallposts, location_geodata
+from ..views.helper import getposts, getallposts, gettags, location_geodata
 from ..uploads import uploaded_logos
 
 
 @app.route('/', subdomain='<subdomain>')
 @app.route('/')
 def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
-        location=None, title=None, showall=True, statuses=None):
+        location=None, title=None, showall=True, statuses=None, tag=None):
     now = datetime.utcnow()
     if basequery is None and not (g.user or g.kiosk or (g.board and not g.board.require_login)):
         showall = False
@@ -84,7 +83,7 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
     return render_template('index.html', pinsandposts=pinsandposts, grouped=grouped, now=now,
                            newlimit=newlimit, jobtype=type, jobcategory=category, title=title,
                            md5sum=md5sum, domain=domain, employer_name=employer_name,
-                           location=location, showall=showall,
+                           location=location, showall=showall, tag=tag,
                            is_siteadmin=lastuser.has_permission('siteadmin'))
 
 
@@ -148,8 +147,23 @@ def browse_by_location(location):
 @app.route('/in/anywhere', subdomain='<subdomain>')
 @app.route('/in/anywhere')
 def browse_by_anywhere():
-    basequery = JobPost.query.filter(JobPost.remote_location == True)
+    basequery = JobPost.query.filter(JobPost.remote_location == True)  # NOQA
     return index(basequery=basequery)
+
+
+@app.route('/tag/<tag>', subdomain='<subdomain>')
+@app.route('/tag/<tag>')
+def browse_by_tag(tag):
+    tag = Tag.query.filter_by(name=tag).first_or_404()
+    basequery = JobPost.query.filter(db.and_(
+        JobPostTag.jobpost_id == JobPost.id, JobPostTag.tag == tag))
+    return index(basequery=basequery, tag=tag, title=tag.title)
+
+
+@app.route('/tag', subdomain='<subdomain>')
+@app.route('/tag')
+def browse_tags():
+    return render_template('tags.html', tags=gettags(alltime=getbool(request.args.get('all'))))
 
 
 @app.route('/feed', subdomain='<subdomain>')

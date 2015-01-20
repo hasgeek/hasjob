@@ -3,7 +3,7 @@
 from collections import defaultdict
 from datetime import datetime, timedelta
 from werkzeug import cached_property
-from flask import url_for, g
+from flask import url_for, g, escape, Markup
 from sqlalchemy.orm import defer
 from coaster.sqlalchemy import make_timestamp_columns, JsonDict
 from baseframe import cache
@@ -302,6 +302,13 @@ class JobPost(BaseMixin, db.Model):
                 'idref': u'%s/%s' % (self.idref, self.id),
                 }
 
+    def tag_content(self):
+        return Markup('\n').join((
+            Markup('<div>') + Markup(escape(self.headline)) + Markup('</div>'),
+            Markup('<div>') + Markup(self.description) + Markup('</div>'),
+            Markup('<div>') + Markup(self.perks) + Markup('</div>')
+            ))
+
     @property
     def viewcounts_key(self):
         return 'hasjob/viewcounts/%s' % self.hashid
@@ -345,6 +352,19 @@ class JobPost(BaseMixin, db.Model):
             redis_store.delete(cache_key)
         else:
             redis_store.hdel(cache_key, key)
+
+    @property
+    def sort_score(self):
+        """
+        Sort with a gravity of 1.8 using the HackerNews algorithm
+        """
+        viewcounts = self.viewcounts
+        opened = int(viewcounts['opened'])
+        applied = int(viewcounts['applied'])
+        age = datetime.utcnow() - self.datetime
+        hours = age.days * 24 + age.seconds / 3600
+
+        return ((applied * 3) + (opened - applied)) / pow((hours + 2), 1.8)
 
     @cached_property  # For multiple accesses in a single request
     def viewstats(self):

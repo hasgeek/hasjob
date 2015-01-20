@@ -43,7 +43,7 @@ from hasjob.models import (
     viewstats_by_id_day,
     )
 from hasjob.twitter import tweet
-from hasjob.tagging import tag_locations, add_to_boards
+from hasjob.tagging import tag_locations, add_to_boards, tag_jobpost
 from hasjob.uploads import uploaded_logos
 from hasjob.utils import get_word_bag, redactemail, random_long_key
 from hasjob.views import ALLOWED_TAGS
@@ -692,7 +692,8 @@ def editjob(hashid, key, form=None, post=None, validated=False):
                     post.company_logo = None
 
             db.session.commit()
-            tag_locations.delay(post.id)
+            tag_jobpost.delay(post.id)    # Keywords
+            tag_locations.delay(post.id)  # Locations
             post.uncache_viewcounts('pay_label')
             userkeys = session.get('userkeys', [])
             userkeys.append(post.edit_key)

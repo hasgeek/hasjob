@@ -4,8 +4,10 @@ from collections import defaultdict
 from urlparse import urljoin
 import requests
 from flask.ext.rq import job
+from coaster.nlp import extract_text_blocks, extract_named_entities
 from . import app
-from .models import db, JobPost, JobLocation, Board, BoardDomain, BoardLocation
+from .models import (db, JobPost, JobLocation, Board, BoardDomain, BoardLocation,
+    Tag, JobPostTag, TAG_TYPE)
 
 
 @job('hasjob')
@@ -67,4 +69,27 @@ def add_to_boards(jobpost_id):
                 BoardLocation.geonameid.in_([l.geonameid for l in post.locations])
                 )):
             board.add(post)
+        db.session.commit()
+
+
+def tag_named_entities(post):
+        entities = extract_named_entities(extract_text_blocks(post.tag_content()))
+        links = set()
+        for entity in entities:
+            tag = Tag.get(entity, create=True)
+            link = JobPostTag.get(post, tag)
+            if not link:
+                link = JobPostTag(jobpost=post, tag=tag, status=TAG_TYPE.AUTO)
+                post.taglinks.append(link)
+            links.add(link)
+        for link in post.taglinks:
+            if link.status == TAG_TYPE.AUTO and link not in links:
+                link.status = TAG_TYPE.REMOVED
+
+
+@job('hasjob')
+def tag_jobpost(jobpost_id):
+    with app.test_request_context():
+        post = JobPost.query.get(jobpost_id)
+        tag_named_entities(post)
         db.session.commit()

@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+{% block title %}Top tags{% endblock %}
+{% block content %}
+<ul id="stickie-area" class="row">
+  <li class="col-xs-12 col-md-3 col-sm-4">
+    <a href="{{ url_for('index') }}" id="filtered" class="stickie special">
+      Top tags on Hasjob
+    </a>
+  </li>
+  {%- for tagdata in tags -%}
+  <li class="col-xs-12 col-md-3 col-sm-4">
+    <a href="/tag/{{ tagdata.name }}" class="stickie">
+      {{ tagdata.title }}
+      <span class="annotation bottom-right">{{ tagdata.count }}</span>
+    </a>
+  </li>
+  {%- else -%}
+  <li class="col-xs-12 col-md-3 col-sm-4">
+  <span id="nojobs" class="stickie special">
+    No tags found.
+  </span>
+  {% endfor %}
+</ul>
+{% endblock %}
