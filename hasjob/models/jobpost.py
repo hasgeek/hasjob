@@ -497,7 +497,7 @@ class JobApplication(BaseMixin, db.Model):
     fullname = db.Column(db.Unicode(250), nullable=False)
     #: Job post they applied to
     jobpost_id = db.Column(None, db.ForeignKey('jobpost.id'), nullable=False, index=True)
-    # jobpost relationship is below
+    # jobpost relationship is below, outside the class definition
     #: User's email address
     email = db.Column(db.Unicode(80), nullable=False)
     #: User's phone number
@@ -516,7 +516,7 @@ class JobApplication(BaseMixin, db.Model):
     replied_by_id = db.Column(None, db.ForeignKey('user.id'), nullable=True)
     replied_by = db.relationship(User, foreign_keys=replied_by_id)
 
-    # candidate_feedback = db.Column(db.Integer, nullable=True)
+    candidate_feedback = db.Column(db.SmallInteger, nullable=True)
 
     def __init__(self, **kwargs):
         super(JobApplication, self).__init__(**kwargs)
@@ -562,7 +562,7 @@ class JobApplication(BaseMixin, db.Model):
             EMPLOYER_RESPONSE.IGNORED, EMPLOYER_RESPONSE.REJECTED)
 
     def application_count(self):
-        """Number of jobs candidate has applied two around this one"""
+        """Number of jobs candidate has applied to around this one"""
         if not self.user:
             # Kiosk submission, no data available
             return {
