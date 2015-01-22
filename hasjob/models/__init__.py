@@ -11,49 +11,6 @@ db = SQLAlchemy(app)
 agelimit = timedelta(days=30)
 newlimit = timedelta(days=1)
 
-webmail_domains = set([
-    'aol.com',
-    'anonymous.to',
-    'comcast.net',
-    'dispostable.com',
-    'everymail.net',
-    'everyone.net',
-    'facebook.com',
-    'fastmail.fm',
-    'flashmail.com',
-    'gmail.com',
-    'gmx.com',
-    'googlemail.com',
-    'guerillamail.com',
-    'hotmail.com',
-    'hotmail.fr',
-    'hotmail.it',
-    'hushmail.com',
-    'inbox.com',
-    'live.com',
-    'lycos.com',
-    'mail.com',
-    'mail.ru',
-    'mailinator.com',
-    'me.com',
-    'msn.com',
-    'onebox.com',
-    'outlook.com',
-    'pobox.com',
-    'qmail.com',
-    'rediffmail.com',
-    'runbox.com',
-    'seznam.cz',
-    'spamgourmet.com',
-    'trashmail.net',
-    'yahoo.com',
-    'yahoo.co.in',
-    'yandex.ru',
-    'ymail.com',
-    'yopmail.com',
-    'zoho.com',
-    ])
-
 
 class POSTSTATUS:
     DRAFT = 0         # Being written

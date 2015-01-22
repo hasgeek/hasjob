@@ -7,9 +7,10 @@ from flask import url_for, g, escape, Markup
 from sqlalchemy.orm import defer
 from coaster.sqlalchemy import make_timestamp_columns, JsonDict
 from baseframe import cache
+from baseframe.staticdata import webmail_domains
 import tldextract
 from .. import redis_store
-from . import newlimit, agelimit, db, POSTSTATUS, EMPLOYER_RESPONSE, PAY_TYPE, BaseMixin, TimestampMixin, webmail_domains
+from . import newlimit, agelimit, db, POSTSTATUS, EMPLOYER_RESPONSE, PAY_TYPE, BaseMixin, TimestampMixin
 from .jobtype import JobType
 from .jobcategory import JobCategory
 from .user import User

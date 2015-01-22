@@ -12,9 +12,10 @@ from flask import (
     g
     )
 from coaster.utils import getbool
+from baseframe.staticdata import webmail_domains
 
 from .. import app, lastuser, redis_store
-from ..models import (db, webmail_domains, JobCategory, JobPost, JobType, POSTSTATUS, newlimit, JobLocation,
+from ..models import (db, JobCategory, JobPost, JobType, POSTSTATUS, newlimit, JobLocation,
     Tag, JobPostTag)
 from ..search import do_search
 from ..views.helper import getposts, getallposts, gettags, location_geodata

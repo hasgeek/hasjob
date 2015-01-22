@@ -9,6 +9,7 @@ from flask import g, request, Markup
 from baseframe.forms import (Form, ValidEmail, ValidUrl, AllUrlsValid, TinyMce4Field, UserSelectMultiField,
     AnnotatedTextField, FormField, NullTextField, ValidName, NoObfuscatedEmail, TextListField, GeonameSelectMultiField)
 from baseframe.forms.sqlalchemy import AvailableName
+from baseframe.staticdata import webmail_domains
 from wtforms import (TextField, TextAreaField, RadioField, FileField, BooleanField,
     ValidationError, validators)
 from wtforms.widgets import CheckboxInput, ListWidget
@@ -17,7 +18,7 @@ from wtforms.ext.sqlalchemy.fields import QuerySelectMultipleField
 from coaster.utils import getbool, get_email_domain
 from flask.ext.lastuser import LastuserResourceException
 
-from .models import User, JobType, JobCategory, JobApplication, Board, EMPLOYER_RESPONSE, PAY_TYPE, webmail_domains
+from .models import User, JobType, JobCategory, JobApplication, Board, EMPLOYER_RESPONSE, PAY_TYPE
 from .uploads import process_image, UploadNotAllowed
 
 from . import app, lastuser
