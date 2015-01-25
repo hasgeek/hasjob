@@ -180,6 +180,10 @@ class Board(BaseNameMixin, db.Model):
         elif action == 'delete':
             return url_for('board_delete', board=self.name, _external=_external)
 
+    @classmethod
+    def get(cls, name):
+        return cls.query.filter_by(name=name).one_or_none()
+
 
 def _user_boards(self):
     return Board.query.filter(

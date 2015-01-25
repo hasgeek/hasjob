@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from sqlalchemy import DDL, event
 from coaster.sqlalchemy import Query
 from coaster.utils import make_name, LabeledEnum
 from baseframe import __
