@@ -35,7 +35,7 @@ def add_subdomain_parameter(endpoint, values):
 @lastuser.requires_login
 def board_new():
     form = BoardForm()
-    if not 'siteadmin' in lastuser.permissions():
+    if 'siteadmin' not in lastuser.permissions():
         # Allow only siteadmins to set this field
         del form.options.form.require_pay
     form.userid.choices = g.user.owner_choices()

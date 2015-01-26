@@ -16,6 +16,9 @@ from .jobcategory import JobCategory
 from .user import User
 from ..utils import random_long_key, random_hash_key
 
+__all__ = ['JobPost', 'JobLocation', 'UserJobView', 'JobApplication',
+    'unique_hash', 'viewstats_by_id_qhour', 'viewstats_by_id_hour', 'viewstats_by_id_day']
+
 
 number_format = lambda number, suffix: str(int(number)) + suffix if int(number) == number else str(round(number, 2)) + suffix
 

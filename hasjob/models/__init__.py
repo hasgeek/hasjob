@@ -3,7 +3,7 @@
 from datetime import timedelta
 from flask.ext.sqlalchemy import SQLAlchemy
 from coaster import LabeledEnum
-from coaster.sqlalchemy import BaseMixin, BaseNameMixin, TimestampMixin
+from coaster.sqlalchemy import BaseMixin, BaseNameMixin, TimestampMixin  # NOQA
 from .. import app
 
 
