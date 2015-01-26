@@ -142,13 +142,16 @@ class ListingForm(Form):
                     u"Your email address will not be revealed to applicants until you respond"),
         validators=[validators.Required("We need to confirm your email address before the job can be listed"),
             validators.Length(min=5, max=80, message="%(max)d characters maximum"),
-            ValidEmail("That does not appear to be a valid email address")])
+            ValidEmail("This does not appear to be a valid email address")])
     collaborators = UserSelectMultiField(u"Collaborators",
         description=u"If someone is helping you evaluate candidates, type their names here. "
                     u"They must have a HasGeek account. They will not receive email notifications "
                     u"— use a shared email address above for that — but they will be able to respond "
                     u"to candidates who apply",
         usermodel=User, lastuser=lastuser)
+
+    def validate_poster_email(form, field):
+        field.data = field.data.lower()
 
     def validate_job_type(form, field):
         # This validator exists primarily for this assignment, used later in the form by other validators

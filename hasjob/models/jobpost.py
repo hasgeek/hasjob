@@ -14,6 +14,7 @@ from . import newlimit, agelimit, db, POSTSTATUS, EMPLOYER_RESPONSE, PAY_TYPE, B
 from .jobtype import JobType
 from .jobcategory import JobCategory
 from .user import User
+from .org import Organization
 from ..utils import random_long_key, random_hash_key
 
 __all__ = ['JobPost', 'JobLocation', 'UserJobView', 'JobApplication',
@@ -46,7 +47,10 @@ class JobPost(BaseMixin, db.Model):
 
     # Metadata
     user_id = db.Column(None, db.ForeignKey('user.id'), nullable=True)
-    user = db.relationship(User, primaryjoin=user_id == User.id, backref='jobposts')
+    user = db.relationship(User, primaryjoin=user_id == User.id, backref=db.backref('jobposts', lazy='dynamic'))
+    org_id = db.Column(None, db.ForeignKey('organization.id', ondelete='SET NULL'), nullable=True)
+    org = db.relationship(Organization, backref=db.backref('jobposts', lazy='dynamic'))
+
     hashid = db.Column(db.String(5), nullable=False, unique=True)
     datetime = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)  # Published
     closed_datetime = db.Column(db.DateTime, nullable=True)  # If withdrawn or rejected
@@ -82,7 +86,7 @@ class JobPost(BaseMixin, db.Model):
     company_name = db.Column(db.Unicode(80), nullable=False)
     company_logo = db.Column(db.Unicode(255), nullable=True)
     company_url = db.Column(db.Unicode(255), nullable=False, default=u'')
-    fullname = db.Column(db.Unicode(80), nullable=True)
+    fullname = db.Column(db.Unicode(80), nullable=True)  # Deprecated field, used before user_id was introduced
     email = db.Column(db.Unicode(80), nullable=False)
     email_domain = db.Column(db.Unicode(80), nullable=False, index=True)
     md5sum = db.Column(db.String(32), nullable=False, index=True)
