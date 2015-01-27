@@ -14,7 +14,7 @@
 {% endblock %}
 
 {% block content %}
-  {%- if g.board %}
+  {%- if g.board and g.board.name != 'www' %}
     <div class="flash info">
       {{ g.board.description|safe }}
       {%- if g.kiosk and g.peopleflow_url %}
