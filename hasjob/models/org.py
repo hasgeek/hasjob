@@ -2,8 +2,9 @@
 
 from flask.ext.lastuser.sqlalchemy import ProfileBase
 from . import db, BaseScopedIdMixin, CoordinatesMixin
+from .user import Team
 
-__all__ = ['Organization']
+__all__ = ['Organization', 'OrgLocation']
 
 
 class Organization(ProfileBase, db.Model):
@@ -20,6 +21,12 @@ class Organization(ProfileBase, db.Model):
     cover_image = db.Column(db.Unicode(250), nullable=True)
     #: Description of the organization
     description = db.Column(db.UnicodeText, nullable=False, default=u'')
+
+    admin_team_id = db.Column(None, db.ForeignKey('team.id', ondelete='SET NULL'), nullable=True)
+    admin_team = db.relationship(Team, foreign_keys=[admin_team_id])
+
+    hiring_team_id = db.Column(None, db.ForeignKey('team.id', ondelete='SET NULL'), nullable=True)
+    hiring_team = db.relationship(Team, foreign_keys=[hiring_team_id])
 
 
 class OrgLocation(BaseScopedIdMixin, CoordinatesMixin, db.Model):
