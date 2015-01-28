@@ -1,5 +1,6 @@
 {% extends "baseframe.html" -%}
 {% from "baseframe/components.html" import responsive_networkbar with context %}
+{% from "macros.html" import campaign_header, campaign_script with context %}
 
 {% block doctypehtml -%}
 <!DOCTYPE html>
@@ -64,6 +65,7 @@
 {% endblock %}
 
 {% block basecontent -%}
+  {{ campaign_header() }}
   {% block content %}{% endblock %}
 {%- endblock %}
 
@@ -85,4 +87,9 @@
     <a href="http://e2enetworks.com/">E2E Networks</a>.
   {%- endif %}
 </p>
+{% endblock %}
+
+{% block layoutscripts %}
+  {{ campaign_script() }}
+  {% block footerscripts %}{% endblock %}
 {% endblock %}

@@ -5,12 +5,54 @@ import bleach
 import requests
 from pytz import utc, timezone
 from urllib import quote, quote_plus
-from flask import Markup, request, url_for, g
+from sqlalchemy.exc import IntegrityError
+from flask import Markup, request, url_for, g, session
 
 from baseframe import cache
 from .. import app
-from ..models import agelimit, newlimit, db, JobCategory, JobPost, JobType, POSTSTATUS, BoardJobPost, Tag, JobPostTag
+from ..models import (agelimit, newlimit, db, JobCategory, JobPost, JobType, POSTSTATUS, BoardJobPost, Tag, JobPostTag,
+    Campaign, CampaignView, CAMPAIGN_POSITION)
 from ..utils import scrubemail, redactemail
+
+
+@app.before_request
+def request_flags():
+    if session.get('kiosk'):
+        g.kiosk = True
+    else:
+        g.kiosk = False
+    g.peopleflow_url = session.get('peopleflow')
+
+    g.viewcounts = {}
+    if 'preview' in request.args:
+        preview_campaign = Campaign.get(request.args['preview'])
+    else:
+        preview_campaign = None
+
+    if g.kiosk:
+        header_campaign = None
+    else:
+        # g.board is already set via a url value pre-processor
+        header_campaign = Campaign.for_context(CAMPAIGN_POSITION.HEADER, board=g.board)
+        if preview_campaign and preview_campaign.position == CAMPAIGN_POSITION.HEADER:
+            header_campaign = preview_campaign
+
+    g.header_campaign = header_campaign
+    g.campaign_views = []
+
+
+@app.after_request
+def record_campaign_views(response):
+    if g.user:
+        for campaign in g.campaign_views:
+            if not CampaignView.exists(campaign, g.user):
+                try:
+                    db.session.add(CampaignView(campaign=campaign, user=g.user))
+                    db.session.commit()
+                except IntegrityError:  # Race condition from parallel requests
+                    db.session.rollback()
+
+    return response
 
 
 def getposts(basequery=None, pinned=False, showall=False, statuses=None):

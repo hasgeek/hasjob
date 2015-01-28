@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
+# flake8: noqa
 
 from datetime import timedelta
 from flask.ext.sqlalchemy import SQLAlchemy
 from coaster import LabeledEnum
-from coaster.sqlalchemy import BaseMixin, BaseNameMixin, TimestampMixin, BaseScopedIdMixin, CoordinatesMixin  # NOQA
+from coaster.sqlalchemy import (BaseMixin, BaseNameMixin, TimestampMixin, BaseScopedIdMixin,
+    BaseScopedNameMixin, CoordinatesMixin, make_timestamp_columns)
 from .. import app
 
 
@@ -63,3 +65,4 @@ from .reportcode import *
 from .org import *
 from .jobpost import *
 from .board import *
+from .campaign import *

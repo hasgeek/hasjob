@@ -25,4 +25,4 @@ ALLOWED_TAGS = [
     'a',
 ]
 
-from . import index, error_handling, helper, listing, admin, static, login, board, kiosk
+from . import index, error_handling, helper, listing, admin, static, login, board, kiosk, campaign

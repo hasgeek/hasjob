@@ -68,7 +68,7 @@ def board_edit_subdomain():
 @load_model(Board, {'name': 'board'}, 'board', permission=('edit', 'siteadmin'), addlperms=lastuser.permissions)
 def board_edit(board):
     form = BoardForm(obj=board)
-    if not 'siteadmin' in lastuser.permissions():
+    if 'siteadmin' not in lastuser.permissions():
         # Allow only siteadmins to set this field
         del form.options.form.require_pay
     form.userid.choices = g.user.owner_choices()

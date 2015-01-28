@@ -141,6 +141,9 @@ footer .container {
   border-top: 1px solid #afafaf;
   border-bottom: 1px solid #afafaf;
 }
+.flash h2, .guide h2 {
+  margin: 0;
+}
 
 .flash.info {
   padding-left: 15px;
@@ -179,6 +182,14 @@ footer .container {
 
 h1 small, h2 small, h3 small {
   font-weight: 600;
+}
+
+.button-bar .btn {
+  margin-bottom: 5px;
+}
+
+.img-container img {
+  max-width: 100%;
 }
 
 .list-group-item .badge {

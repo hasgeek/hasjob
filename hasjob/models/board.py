@@ -118,7 +118,7 @@ class Board(BaseNameMixin, db.Model):
     tag_domains = association_proxy('domains', 'domain', creator=lambda d: BoardDomain(domain=d))
     #: Automatic tagging locations
     locations = db.relationship(BoardLocation, backref='board', cascade='all, delete-orphan')
-    tag_locations = association_proxy('locations', 'geonameid', creator=lambda l: BoardLocation(geonameid=l))
+    geonameids = association_proxy('locations', 'geonameid', creator=lambda l: BoardLocation(geonameid=l))
 
     def __repr__(self):
         return '<Board %s "%s">' % (self.name, self.title)

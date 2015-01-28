@@ -39,7 +39,7 @@
 {%- macro jobheader(post, kiosk=false, return=false) %}
   {%- if post.company_logo %}
     <div class="row">
-      <div class="col-xs-12 col-sm-3 col-sm-push-9 post-company-logo">
+      <div class="img-container col-xs-12 col-sm-3 col-sm-push-9 post-company-logo">
         <img alt="Logo" src="{{ url_for('logoimage', hashid=post.hashid) }}"/>
       </div>
       <div class="col-xs-12 col-sm-9 col-sm-pull-3">
@@ -68,3 +68,81 @@
     </div>
   {%- endif %}
 {%- endmacro %}
+
+{% macro campaign_header() %}
+  {#- In campaign.banner_location, 0 = top, 1 = right, 2 = bottom, 3 = left. In here, add +1 to avoid matching 0 == false #}
+  {%- if g.header_campaign %}{% with c=g.header_campaign, ua=c.useractions(g.user), view=c.view_for(g.user), i=c.banner_image and (c.banner_location + 1) %}
+    {% if not view or (view and not view.dismissed) %}
+      <div class="row">
+        <div class="col-md-10 col-md-offset-1 col-xs-12 col-sm-12">
+          <div class="flash">
+            {% if i in [2, 4] %}
+              <div class="row">
+                <div class="img-container col-xs-12 col-sm-3 col-md-2 {%- if i == 2 %} col-sm-push-9 col-md-push-10 {%- endif %}">
+                  <img src="{{ c.banner_image }}">
+                </div>
+                <div class="col-xs-12 col-sm-9 col-md-10 {%- if i == 2 %} col-sm-pull-3 col-md-pull-2 {%- endif %}">
+            {%- elif i == 1 %}
+              <div><img src="{{ c.banner_image }}"/></div>
+            {%- endif %}
+            {% if c.subject %}<h2>{{ c.subject }}</h2>{% endif %}
+            {% if c.blurb %}{{ c.blurb|safe }}{% endif %}
+            {% if c.description %}<p class="read-more no-jshidden"><a title="Read more…" href="#"><i class="fa fa-ellipsis-h"></i></a>
+            <div class="jshidden read-more-text">{{ c.description|safe }}</div>
+            {%- endif %}
+            {%- if i == 3 %}
+              <div><img src="{{ c.banner_image }}"/></div>
+            {%- endif %}
+            <form id="header-campaign-form" action="{{ url_for('campaign_action', campaign=c.name) }}" method="POST"><p class="button-bar">
+              {%- for action in c.actions %}
+                <button name="action" value="{{ action.name }}" type="submit" class="btn btn-sm btn-{{ action.category }}" data-type="{{ action.type }}">{% if action.icon %}<i class="fa fa-{{ action.icon }}"></i> {% endif %}{{ action.title }}{% if action.name in ua %} <i class="fa fa-check"></i>{% endif %}</button>
+              {%- endfor %}
+              <span class="loading hidden">&nbsp;</span>
+            </p></form>
+            {%- if i in [2, 4] %}
+                </div>
+              </div>
+            {%- endif %}
+            <div id="header-campaign-form-response"></div>
+          </div>
+        </div>
+      </div>
+    {%- do g.campaign_views.append(g.header_campaign) %}
+    {%- endif %}
+  {%- endwith %}{% endif %}
+{% endmacro %}
+
+{% macro campaign_script() %}
+  <script type="text/javascript">
+    $(function() {
+      $('.read-more a').click(function(e) {
+        $(this).parent().slideUp().parent().find('.read-more-text').hide().removeClass('jshidden').slideDown();
+        e.preventDefault();
+        return false;
+      });
+
+      $("#header-campaign-form").ajaxForm({
+        target: '#header-campaign-form-response',
+        beforeSubmit: function(formdata, form, options) {
+          form.find('input[type="submit"]').prop('disabled', true).addClass('submit-disabled');
+          form.find('button[type="submit"]').prop('disabled', true).addClass('submit-disabled');
+          form.find('.loading').removeClass('hidden');
+          return true;
+        },
+        success: function(response, status, xhr, form) {
+          form.find('input[type="submit"]').prop('disabled', false).removeClass('submit-disabled');
+          form.find('button[type="submit"]').prop('disabled', false).removeClass('submit-disabled');
+          form.find('.loading').addClass('hidden');
+        },
+        error: function(context, xhr, status, errMsg) {
+          var form = $("#header-campaign-form");
+          form.find('input[type="submit"]').prop('disabled', false).removeClass('submit-disabled');
+          form.find('button[type="submit"]').prop('disabled', false).removeClass('submit-disabled');
+          form.find('.loading').addClass('hidden');
+          form.append('<div class="alert alert-danger fade in"><a href="#" class="close" data-dismiss="alert">&times;</a> An error occured when submitting the form</div>');
+        } // No comma or semicolon here
+      });
+
+    });
+  </script>
+{% endmacro %}
