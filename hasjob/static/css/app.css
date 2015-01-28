@@ -188,6 +188,9 @@ h1 small, h2 small, h3 small {
   margin-bottom: 5px;
 }
 
+.img-container {
+  text-align: center;
+}
 .img-container img {
   max-width: 100%;
 }
