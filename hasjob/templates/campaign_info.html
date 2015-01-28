@@ -28,7 +28,7 @@
 
           <p class="campaign-actions">
             {%- for action in campaign.actions %}
-              <a href="{{ url_for('campaign_action_edit', campaign=campaign.name, action=action.name) }}" class="btn btn-sm btn-{{ action.category }}">{% if action.icon %}<i class="fa fa-{{ action.icon }}"></i> {% endif %}{{ action.title }}</a>
+              <a href="{{ url_for('campaign_action_edit', campaign=campaign.name, action=action.name) }}" class="btn btn-sm btn-{{ action.category }}">{% if action.icon %}<i class="fa fa-{{ action.icon }}"></i> {% endif %}{{ action.title }}{% if not action.public %} <i class="fa fa-eye-slash"></i>{% endif %}</a>
             {%- endfor %}
             <a title="New action" href="{{ url_for('campaign_action_new', campaign=campaign.name) }}" class="btn btn-sm btn-default"><i class="fa fa-plus"></i></a>
           </p>

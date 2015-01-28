@@ -94,9 +94,9 @@
               <div><img src="{{ c.banner_image }}"/></div>
             {%- endif %}
             <form id="header-campaign-form" action="{{ url_for('campaign_action', campaign=c.name) }}" method="POST"><p class="button-bar">
-              {%- for action in c.actions %}
+              {%- for action in c.actions %}{% if action.public %}
                 <button name="action" value="{{ action.name }}" type="submit" class="btn btn-sm btn-{{ action.category }}" data-type="{{ action.type }}">{% if action.icon %}<i class="fa fa-{{ action.icon }}"></i> {% endif %}{{ action.title }}{% if action.name in ua %} <i class="fa fa-check"></i>{% endif %}</button>
-              {%- endfor %}
+              {%- endif %}{%- endfor %}
               <span class="loading hidden">&nbsp;</span>
             </p></form>
             {%- if i in [2, 4] %}

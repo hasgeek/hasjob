@@ -595,6 +595,7 @@ class CampaignActionForm(Form):
         validators=[validators.Required("You must provide some text")])
     icon = NullTextField(__("Icon"), validators=[validators.Optional()],
         description=__("Optional Font-Awesome icon name"))
+    public = BooleanField(__("This action is live"))
     type = RadioField(__("Type"), choices=CAMPAIGN_ACTION.items(), validators=[validators.Required()])
     category = RadioField(__("Category"), validators=[validators.Required()], choices=[
         (u'default', __(u"Default")),
