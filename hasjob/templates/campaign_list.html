@@ -5,12 +5,19 @@
   <div class="sheet">
     <div class="section first">
       <h1>{{ self.title() }}</h1>
-    </div>
-    <div class="section">
+      <p>
+      All campaigns, future and past.
+      </p>
       <ol>
         {%- for campaign in campaigns %}
-          <li><a href="{{ url_for('campaign_view', campaign=campaign.name) }}">{{ campaign.title }}</a><br/>
-            <em>{{ campaign.start_at.strftime('%Y-%m-%d') }} – {{ campaign.end_at.strftime('%Y-%m-%d') }}</em></li>
+          <li>
+            <a href="{{ url_for('campaign_view', campaign=campaign.name) }}">{{ campaign.title }}</a>
+            <p class="post-date">
+              {%- if campaign.is_live %}<strong>Live</strong>{% elif campaign.public %}Offline{% else %}Disabled{% endif %} —
+              <time datetime="{{ campaign.start_at.isoformat() }}Z">{{ campaign.start_at|longdate }}</time> –
+              <time datetime="{{ campaign.end_at.isoformat() }}Z">{{ campaign.end_at|longdate }}</time>
+            </p>
+          </li>
         {%- endfor %}
         <li>
           <a href="{{ url_for('campaign_new') }}">New campaign &rarr;</a>

@@ -20,6 +20,7 @@ def upgrade():
         sa.Column('id', sa.Integer(), nullable=False),
         sa.Column('created_at', sa.DateTime(), nullable=False),
         sa.Column('updated_at', sa.DateTime(), nullable=False),
+        sa.Column('user_id', sa.Integer(), nullable=False),
         sa.Column('start_at', sa.DateTime(), nullable=False),
         sa.Column('end_at', sa.DateTime(), nullable=False),
         sa.Column('public', sa.Boolean(), nullable=False),
@@ -29,8 +30,10 @@ def upgrade():
         sa.Column('blurb', sa.UnicodeText(), nullable=False),
         sa.Column('description', sa.UnicodeText(), nullable=False),
         sa.Column('banner_image', sa.Unicode(length=250), nullable=True),
+        sa.Column('banner_location', sa.SmallInteger(), nullable=False),
         sa.Column('name', sa.Unicode(length=250), nullable=False),
         sa.Column('title', sa.Unicode(length=250), nullable=False),
+        sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
         sa.PrimaryKeyConstraint('id'),
         sa.UniqueConstraint('name')
         )
@@ -102,6 +105,7 @@ def downgrade():
     op.drop_index(op.f('ix_campaign_user_action_action_id'), table_name='campaign_user_action')
     op.drop_table('campaign_user_action')
     op.drop_table('campaign_action')
+    op.execute(sa.text('DROP TYPE campaign_action_type_enum;'))
     op.drop_index(op.f('ix_campaign_location_geonameid'), table_name='campaign_location')
     op.drop_table('campaign_location')
     op.drop_table('campaign_view')

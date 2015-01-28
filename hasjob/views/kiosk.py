@@ -7,18 +7,6 @@ from ..models import JobType, JobCategory
 from .helper import getposts
 
 
-@app.before_request
-def kiosk_mode_flag():
-    if session.get('kiosk'):
-        g.kiosk = True
-    else:
-        g.kiosk = False
-    g.peopleflow_url = session.get('peopleflow')
-
-    # Not really a kiosk mode flag, but why have two before_request handlers?
-    g.viewcounts = {}
-
-
 @app.route('/admin/kiosk', subdomain='<subdomain>')
 @app.route('/admin/kiosk')
 def kiosk_mode():

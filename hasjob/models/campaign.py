@@ -3,15 +3,16 @@
 from datetime import datetime
 from sqlalchemy.orm import deferred
 from sqlalchemy.ext.associationproxy import association_proxy
+from sqlalchemy.ext.orderinglist import ordering_list
 from flask import request
 from coaster.utils import LabeledEnum
 from coaster.sqlalchemy import JsonDict
 from baseframe import __
-from . import db, TimestampMixin, BaseMixin, BaseNameMixin, BaseScopedNameMixin, make_timestamp_columns
+from . import db, TimestampMixin, BaseNameMixin, BaseScopedNameMixin, make_timestamp_columns
 from .user import User
 from .board import Board
 
-__all__ = ['CAMPAIGN_POSITION', 'CAMPAIGN_ACTION',
+__all__ = ['CAMPAIGN_POSITION', 'CAMPAIGN_ACTION', 'BANNER_LOCATION',
     'Campaign', 'CampaignLocation', 'CampaignAction', 'CampaignView', 'CampaignUserAction']
 
 _marker = object()
@@ -40,6 +41,13 @@ class CAMPAIGN_ACTION(LabeledEnum):
     DISMISS = ('D', __("Dismiss campaign"))
 
 
+class BANNER_LOCATION(LabeledEnum):
+    TOP = (0, __("Top"))
+    RIGHT = (1, __("Right"))
+    BOTTOM = (2, __("Bottom"))
+    LEFT = (3, __("Left"))
+
+
 class Campaign(BaseNameMixin, db.Model):
     """
     A campaign runs in the header or sidebar of Hasjob's pages and prompts the user towards some action.
@@ -49,6 +57,9 @@ class Campaign(BaseNameMixin, db.Model):
 
     # Campaign metadata columns
 
+    #: User who created this campaign
+    user_id = db.Column(None, db.ForeignKey('user.id'), nullable=False)
+    user = db.relationship(User, backref='campaigns')
     #: When does this campaign go on air?
     start_at = db.Column(db.DateTime, nullable=False)
     #: When does it go off air?
@@ -74,6 +85,8 @@ class Campaign(BaseNameMixin, db.Model):
     description = db.Column(db.UnicodeText, nullable=False, default=u'')
     #: Banner image
     banner_image = db.Column(db.Unicode(250), nullable=True)
+    #: Banner location
+    banner_location = db.Column(db.SmallInteger, nullable=False, default=BANNER_LOCATION.TOP)
 
     @property
     def content(self):
@@ -84,13 +97,29 @@ class Campaign(BaseNameMixin, db.Model):
         return '<Campaign %s "%s" %s:%s>' % (
             self.name, self.title, self.start_at.strftime('%Y-%m-%d'), self.end_at.strftime('%Y-%m-%d'))
 
+    @property
+    def is_live(self):
+        now = datetime.utcnow()
+        return self.public and self.start_at <= now and self.end_at >= now
+
+    def useractions(self, user):
+        if user is not None:
+            return dict([(cua.action.name, cua) for cua in CampaignUserAction.query.filter_by(user=user).filter(
+                CampaignUserAction.action_id.in_([a.id for a in self.actions])).all()])
+        else:
+            return {}
+
+    def view_for(self, user):
+        return CampaignView.get(campaign=self, user=user)
+
     @classmethod
     def for_context(cls, position, board=None, post=None):
         """
         Return a campaign suitable for this board and post
         """
         now = datetime.utcnow()
-        basequery = cls.query.filter(cls.start_at <= now, cls.end_at >= now, cls.position == position)
+        basequery = cls.query.filter(
+            cls.start_at <= now, cls.end_at >= now, cls.position == position).filter_by(public=True)
         if board:
             basequery = basequery.filter(cls.boards.any(id=board.id))
 
@@ -131,9 +160,13 @@ class CampaignAction(BaseScopedNameMixin, db.Model):
     __tablename__ = 'campaign_action'
     #: Campaign
     campaign_id = db.Column(None, db.ForeignKey('campaign.id'), nullable=False)
-    campaign = db.relationship(Campaign, backref=db.backref('actions', cascade='all, delete-orphan'))
+    campaign = db.relationship(Campaign,
+        backref=db.backref('actions', cascade='all, delete-orphan',
+            order_by='CampaignAction.seq',
+            collection_class=ordering_list('seq')))
     parent = db.synonym('campaign')
-
+    #: Sequence number
+    seq = db.Column(db.Integer, nullable=False, default=0)
     #: Is this action live?
     public = db.Column(db.Boolean, nullable=False, default=False)
     #: Action type
@@ -141,10 +174,14 @@ class CampaignAction(BaseScopedNameMixin, db.Model):
         default=CAMPAIGN_ACTION)
     #: Action category (for buttons)
     category = db.Column(db.Unicode(20), nullable=False, default=u'default')
+    #: Icon to accompany text
+    icon = db.Column(db.Unicode(20), nullable=True)
     #: Target link (for follow link actions; blank = ?)
     link = deferred(db.Column(db.Unicode(250), nullable=True))
     #: Form
-    form = deferred(db.Column(JsonDict, nullable=False, default='{}'))
+    form = deferred(db.Column(JsonDict, nullable=False, server_default='{}'))
+    #: Post action message
+    message = db.Column(db.UnicodeText, nullable=False, default=u'')
 
     __table_args__ = (db.UniqueConstraint('campaign_id', 'name'),)
 
@@ -164,10 +201,16 @@ class CampaignView(TimestampMixin, db.Model):
     #: User who saw this campaign
     user_id = db.Column(None, db.ForeignKey('user.id'), nullable=False, primary_key=True)
     user = db.relationship(User, backref=db.backref('campaign_views', lazy='dynamic'))
+    #: User dismissed this campaign. Don't show it
+    dismissed = db.Column(db.Boolean, nullable=False, default=False)
 
     @classmethod
     def get(cls, campaign, user):
         return cls.query.filter_by(campaign=campaign, user=user).one_or_none()
+
+    @classmethod
+    def exists(cls, campaign, user):
+        return cls.query.filter_by(campaign=campaign, user=user).notempty()
 
 
 class UserActionFormData(object):
@@ -190,26 +233,29 @@ class UserActionFormData(object):
         self._data[attr] = value
 
 
-class CampaignUserAction(BaseMixin, db.Model):
+class CampaignUserAction(TimestampMixin, db.Model):
     """
-    Track the actions users undertook. This model records events, so a submission could
-    be recorded multiple times and users may be anonymous.
+    Track the actions users undertook (could be more than one)
     """
     __tablename__ = 'campaign_user_action'
     #: Action the user selected
-    action_id = db.Column(None, db.ForeignKey('campaign_action.id'), index=True)
+    action_id = db.Column(None, db.ForeignKey('campaign_action.id'), primary_key=True)
     action = db.relationship(CampaignAction,
         backref=db.backref('useractions', cascade='all, delete-orphan', lazy='dynamic'))
     #: User who performed an action, null if anonymous
-    user_id = db.Column(None, db.ForeignKey('user.id'), nullable=True, index=True)
+    user_id = db.Column(None, db.ForeignKey('user.id'), nullable=False, primary_key=True, index=True)
     user = db.relationship(User, backref=db.backref('campaign_useractions', lazy='dynamic'))
     #: User's IP address
     ipaddr = db.Column(db.String(45), nullable=True, default=lambda: request and request.environ['REMOTE_ADDR'])
     #: User's browser
     useragent = db.Column(db.Unicode(250), nullable=True, default=lambda: request and request.user_agent.string)
     #: Data the user submitted
-    data = deferred(db.Column(JsonDict, nullable=False, default='{}'))
+    data = deferred(db.Column(JsonDict, nullable=False, server_default='{}'))
 
     @property
     def formdata(self):
         return UserActionFormData(self.data)
+
+    @classmethod
+    def get(cls, action, user):
+        return cls.query.filter_by(action=action, user=user).one_or_none()

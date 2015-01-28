@@ -21,7 +21,7 @@ from coaster.utils import getbool, get_email_domain
 from flask.ext.lastuser import LastuserResourceException
 
 from .models import (User, JobType, JobCategory, JobApplication, Board, EMPLOYER_RESPONSE, PAY_TYPE,
-    CAMPAIGN_POSITION, CAMPAIGN_ACTION)
+    CAMPAIGN_POSITION, CAMPAIGN_ACTION, BANNER_LOCATION)
 from .uploads import process_image, UploadNotAllowed
 
 from . import app, lastuser
@@ -556,31 +556,30 @@ class BoardForm(Form):
 class CampaignContentForm(Form):
     subject = NullTextField(__("Subject"), description=__("A subject title shown to viewers"),
         validators=[validators.Optional()])
-    blurb = TinyMce4Field(u"Blurb",
-        description=u"Teaser to introduce the campaign and convince users to interact",
+    blurb = TinyMce4Field(__("Blurb"),
+        description=__("Teaser to introduce the campaign and convince users to interact"),
         content_css=content_css,
         validators=[validators.Optional(), AllUrlsValid()])
-    blurb = TinyMce4Field(u"Blurb",
-        description=u"Teaser to introduce the campaign and convince users to interact",
+    description = TinyMce4Field(__("Description"),
+        description=__("Optional additional content to follow after the blurb"),
         content_css=content_css,
         validators=[validators.Optional(), AllUrlsValid()])
-    description = TinyMce4Field(u"Description",
-        description=u"Optional additional content to follow after the blurb",
-        content_css=content_css,
-        validators=[validators.Optional(), AllUrlsValid()])
-    banner_image = URLField(__("Banner image URL"), validators=[validators.Optional()])  # TODO: Use ImgeeField
+    banner_image = URLField(__("Banner image URL"), validators=[validators.Optional()],  # TODO: Use ImgeeField
+        description=__("An image to illustrate your campaign"))
+    banner_location = RadioField(__("Banner location"), choices=BANNER_LOCATION.items(), coerce=int,
+        description=__("Where should this banner appear relative to text?"))
 
 
 class CampaignForm(Form):
     title = TextField(__("Title"), description=__("A reference name for looking up this campaign again"))
-    start_at = DateTimeField(__("Start at"))
-    end_at = DateTimeField(__("End at"))
+    start_at = DateTimeField(__("Start at"), timezone=lambda: g.user.timezone if g.user else None)
+    end_at = DateTimeField(__("End at"), timezone=lambda: g.user.timezone if g.user else None)
     public = BooleanField(__("This campaign is live"))
     position = RadioField(__("Display position"), choices=CAMPAIGN_POSITION.items(), coerce=int)
     priority = IntegerField(__("Priority"), default=0,
         description=__("A larger number is higher priority when multiple campaigns are running on the "
             "same dates. 0 implies lowest priority"))
-    boards = QuerySelectMultipleField("Boards",
+    boards = QuerySelectMultipleField(__("Boards"),
         widget=ListWidget(), option_widget=CheckboxInput(),
         query_factory=lambda: Board.query.order_by('title'), get_label='title',
         validators=[validators.Optional()],
@@ -594,6 +593,8 @@ class CampaignForm(Form):
 class CampaignActionForm(Form):
     title = TextField(__("Title"), description=__("Contents of the call to action button"),
         validators=[validators.Required("You must provide some text")])
+    icon = NullTextField(__("Icon"), validators=[validators.Optional()],
+        description=__("Optional Font-Awesome icon name"))
     type = RadioField(__("Type"), choices=CAMPAIGN_ACTION.items(), validators=[validators.Required()])
     category = RadioField(__("Category"), validators=[validators.Required()], choices=[
         (u'default', __(u"Default")),
@@ -603,9 +604,17 @@ class CampaignActionForm(Form):
         (u'warning', __(u"Warning")),
         (u'danger', __(u"Danger")),
         ])
-    link = URLField(__("Link"), validators=[optional_url, validators.Length(min=0, max=250, message="%(max)d characters maximum"), ValidUrl()])
+    message = TinyMce4Field(__("Message"),
+        description=__("Message shown after the user has performed an action (for forms and RSVP type)"),
+        content_css=content_css,
+        validators=[validators.Optional(), AllUrlsValid()])
+    link = URLField(__("Link"), description=__(u"URL to redirect to, if type is “follow link”"),
+        validators=[optional_url, validators.Length(min=0, max=250, message="%(max)d characters maximum"), ValidUrl()])
     form = TextAreaField(__("Form JSON"), description=__("Form definition (for form type)"),
         validators=[validators.Optional()])
+    seq = IntegerField(__("Sequence #"), validators=[validators.Required()],
+        description=__("Sequence number for displaying this action when multiple actions are available to the user"))
+
 
 # --- Organization forms ------------------------------------------------------
 #
