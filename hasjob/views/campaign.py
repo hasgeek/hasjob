@@ -152,7 +152,7 @@ def campaign_view_counts(campaign):
     viewlist.sort()  # Sorts by first column, the hour slot (datetime)
     tz = g.user.tz
     for row in viewlist:
-        row[0] = UTC.localize(row[0]).astimezone(tz).isoformat()
+        row[0] = UTC.localize(row[0]).astimezone(tz).replace(tzinfo=None).isoformat()
 
     outfile = StringIO()
     out = unicodecsv.writer(outfile, 'excel')
