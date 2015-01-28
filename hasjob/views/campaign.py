@@ -140,6 +140,9 @@ def campaign_action(campaign):
         return render_redirect(url_for('login', next=request.referrer,
             message=u"Please login so we can save your preferences"), code=303)
     if action.type in (CAMPAIGN_ACTION.RSVP_Y, CAMPAIGN_ACTION.RSVP_N, CAMPAIGN_ACTION.RSVP_M):
+        for cua in campaign.useractions(g.user).values():
+            if cua.action != action and cua.action.type in (CAMPAIGN_ACTION.RSVP_Y, CAMPAIGN_ACTION.RSVP_N, CAMPAIGN_ACTION.RSVP_M):
+                db.session.delete(cua)  # If user changed their RSVP answer, delete old answer
         db.session.commit()
         return render_message("Saved", Markup(action.message))
     elif action.type == CAMPAIGN_ACTION.DISMISS:
