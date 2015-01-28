@@ -72,7 +72,7 @@
 {% macro campaign_header() %}
   {#- In campaign.banner_location, 0 = top, 1 = right, 2 = bottom, 3 = left. In here, add +1 to avoid matching 0 == false #}
   {%- if g.header_campaign %}{% with c=g.header_campaign, ua=c.useractions(g.user), view=c.view_for(g.user), i=c.banner_image and (c.banner_location + 1) %}
-    {% if not view or (view and not view.dismissed) %}
+    {% if not view or (c == g.preview_campaign) or (view and not view.dismissed) %}
       <div class="row">
         <div class="col-md-10 col-md-offset-1 col-xs-12 col-sm-12">
           <div class="flash">

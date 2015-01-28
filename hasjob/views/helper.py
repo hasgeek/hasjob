@@ -38,6 +38,7 @@ def request_flags():
             header_campaign = preview_campaign
 
     g.header_campaign = header_campaign
+    g.preview_campaign = preview_campaign
     g.campaign_views = []
 
 
