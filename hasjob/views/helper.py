@@ -44,7 +44,7 @@ def request_flags():
 
 @app.after_request
 def record_campaign_views(response):
-    if g.user:
+    if hasattr(g, 'user') and g.user:
         for campaign in g.campaign_views:
             if not CampaignView.exists(campaign, g.user):
                 try:
