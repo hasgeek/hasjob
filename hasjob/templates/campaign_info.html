@@ -1,0 +1,15 @@
+{% extends "sheet.html" %}
+{% block title %}{{ campaign.title }}{% endblock %}
+
+{% block content %}
+  <div class="sheet">
+    <div class="section first">
+      <h1>{{ self.title() }}</h1>
+      <em>{{ campaign.start_at.strftime('%Y-%m-%d') }} – {{ campaign.end_at.strftime('%Y-%m-%d') }}
+      {%- if campaign.public %} (<strong>live</strong>){% else %} (offline){% endif %}</em></li>
+    </div>
+    <div class="section">
+
+    </div>
+  </div>
+{% endblock %}

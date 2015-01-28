@@ -1,0 +1,21 @@
+{% extends "sheet.html" %}
+{% block title %}Campaign archive{% endblock %}
+
+{% block content %}
+  <div class="sheet">
+    <div class="section first">
+      <h1>{{ self.title() }}</h1>
+    </div>
+    <div class="section">
+      <ol>
+        {%- for campaign in campaigns %}
+          <li><a href="{{ url_for('campaign_view', campaign=campaign.name) }}">{{ campaign.title }}</a><br/>
+            <em>{{ campaign.start_at.strftime('%Y-%m-%d') }} – {{ campaign.end_at.strftime('%Y-%m-%d') }}</em></li>
+        {%- endfor %}
+        <li>
+          <a href="{{ url_for('campaign_new') }}">New campaign &rarr;</a>
+        </li>
+      </ol>
+    </div>
+  </div>
+{% endblock %}

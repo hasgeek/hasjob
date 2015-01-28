@@ -6,19 +6,22 @@ from difflib import SequenceMatcher
 
 import tldextract
 from flask import g, request, Markup
+from baseframe import __
 from baseframe.forms import (Form, ValidEmail, ValidUrl, AllUrlsValid, TinyMce4Field, UserSelectMultiField,
-    AnnotatedTextField, FormField, NullTextField, ValidName, NoObfuscatedEmail, TextListField, GeonameSelectMultiField)
+    AnnotatedTextField, FormField, NullTextField, ValidName, NoObfuscatedEmail, TextListField, GeonameSelectMultiField,
+    DateTimeField)
 from baseframe.forms.sqlalchemy import AvailableName
 from baseframe.staticdata import webmail_domains
-from wtforms import (TextField, TextAreaField, RadioField, FileField, BooleanField,
+from wtforms import (TextField, TextAreaField, RadioField, FileField, BooleanField, IntegerField,
     ValidationError, validators)
 from wtforms.widgets import CheckboxInput, ListWidget
-from wtforms.fields.html5 import EmailField
+from wtforms.fields.html5 import EmailField, URLField
 from wtforms.ext.sqlalchemy.fields import QuerySelectMultipleField
 from coaster.utils import getbool, get_email_domain
 from flask.ext.lastuser import LastuserResourceException
 
-from .models import User, JobType, JobCategory, JobApplication, Board, EMPLOYER_RESPONSE, PAY_TYPE
+from .models import (User, JobType, JobCategory, JobApplication, Board, EMPLOYER_RESPONSE, PAY_TYPE,
+    CAMPAIGN_POSITION, CAMPAIGN_ACTION)
 from .uploads import process_image, UploadNotAllowed
 
 from . import app, lastuser
@@ -485,7 +488,7 @@ class BoardTaggingForm(Form):
     tag_domains = TextListField("Email Domains",
         description="Jobs from any of these email domains will be automatically added to this board. "
         "One per line. Do NOT add the www prefix")
-    tag_locations = GeonameSelectMultiField("Locations",
+    geonameids = GeonameSelectMultiField("Locations",
         description="Jobs in any of these locations will be automatically added to this board")
 
     def validate_tag_domains(self, field):
@@ -506,7 +509,7 @@ class BoardTaggingForm(Form):
                 domains.add(u'.'.join([r.domain, r.suffix]))
         field.data = list(domains)
 
-    def validate_tag_locations(self, field):
+    def validate_geonameids(self, field):
         field.data = [int(x) for x in field.data if x.isdigit()]
 
 
@@ -549,6 +552,60 @@ class BoardForm(Form):
             # if existing and existing != self.edit_obj:
             #     raise ValidationError(u"This name has been taken by another board")
 
+
+class CampaignContentForm(Form):
+    subject = NullTextField(__("Subject"), description=__("A subject title shown to viewers"),
+        validators=[validators.Optional()])
+    blurb = TinyMce4Field(u"Blurb",
+        description=u"Teaser to introduce the campaign and convince users to interact",
+        content_css=content_css,
+        validators=[validators.Optional(), AllUrlsValid()])
+    blurb = TinyMce4Field(u"Blurb",
+        description=u"Teaser to introduce the campaign and convince users to interact",
+        content_css=content_css,
+        validators=[validators.Optional(), AllUrlsValid()])
+    description = TinyMce4Field(u"Description",
+        description=u"Optional additional content to follow after the blurb",
+        content_css=content_css,
+        validators=[validators.Optional(), AllUrlsValid()])
+    banner_image = URLField(__("Banner image URL"), validators=[validators.Optional()])  # TODO: Use ImgeeField
+
+
+class CampaignForm(Form):
+    title = TextField(__("Title"), description=__("A reference name for looking up this campaign again"))
+    start_at = DateTimeField(__("Start at"))
+    end_at = DateTimeField(__("End at"))
+    public = BooleanField(__("This campaign is live"))
+    position = RadioField(__("Display position"), choices=CAMPAIGN_POSITION.items(), coerce=int)
+    priority = IntegerField(__("Priority"), default=0,
+        description=__("A larger number is higher priority when multiple campaigns are running on the "
+            "same dates. 0 implies lowest priority"))
+    boards = QuerySelectMultipleField("Boards",
+        widget=ListWidget(), option_widget=CheckboxInput(),
+        query_factory=lambda: Board.query.order_by('title'), get_label='title',
+        validators=[validators.Optional()],
+        description=__(u"Select the boards this campaign is active on"))
+    geonameids = GeonameSelectMultiField("Locations",
+        description=__("This campaign will be targetted at jobs with matching locations"))
+
+    content = FormField(CampaignContentForm, __("Campaign content"))
+
+
+class CampaignActionForm(Form):
+    title = TextField(__("Title"), description=__("Contents of the call to action button"),
+        validators=[validators.Required("You must provide some text")])
+    type = RadioField(__("Type"), choices=CAMPAIGN_ACTION.items(), validators=[validators.Required()])
+    category = RadioField(__("Category"), validators=[validators.Required()], choices=[
+        (u'default', __(u"Default")),
+        (u'primary', __(u"Primary")),
+        (u'success', __(u"Success")),
+        (u'info', __(u"Info")),
+        (u'warning', __(u"Warning")),
+        (u'danger', __(u"Danger")),
+        ])
+    link = URLField(__("Link"), validators=[optional_url, validators.Length(min=0, max=250, message="%(max)d characters maximum"), ValidUrl()])
+    form = TextAreaField(__("Form JSON"), description=__("Form definition (for form type)"),
+        validators=[validators.Optional()])
 
 # --- Organization forms ------------------------------------------------------
 #

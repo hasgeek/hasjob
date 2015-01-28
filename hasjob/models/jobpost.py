@@ -508,7 +508,7 @@ class UserJobView(TimestampMixin, db.Model):
     jobpost_id = db.Column(None, db.ForeignKey('jobpost.id'), primary_key=True)
     jobpost = db.relationship(JobPost)
     #: User who saw this post
-    user_id = db.Column(None, db.ForeignKey('user.id'), primary_key=True)
+    user_id = db.Column(None, db.ForeignKey('user.id'), primary_key=True, index=True)
     user = db.relationship(User)
     #: Has the user viewed apply instructions?
     applied = db.Column(db.Boolean, default=False, nullable=False)
