@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from cStringIO import StringIO
+from pytz import UTC
 import unicodecsv
 from flask import g, request, flash, url_for, redirect, render_template, Markup
 from coaster.utils import buid
@@ -149,8 +150,9 @@ def campaign_view_counts(campaign):
         viewlist.append(row)
 
     viewlist.sort()  # Sorts by first column, the hour slot (datetime)
+    tz = g.user.tz
     for row in viewlist:
-        row[0] = row[0].isoformat()
+        row[0] = UTC.localize(row[0]).astimezone(tz).isoformat()
 
     outfile = StringIO()
     out = unicodecsv.writer(outfile, 'excel')
