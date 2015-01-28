@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from cStringIO import StringIO
+import unicodecsv
 from flask import g, request, flash, url_for, redirect, render_template, Markup
 from coaster.utils import buid
 from coaster.views import load_model, load_models
@@ -89,7 +91,7 @@ def campaign_action_new(campaign):
 @lastuser.requires_permission('siteadmin')
 @load_models(
     (Campaign, {'name': 'campaign'}, 'campaign'),
-    (CampaignAction, {'name': 'action'}, 'action'))
+    (CampaignAction, {'name': 'action', 'campaign': 'campaign'}, 'action'))
 def campaign_action_edit(campaign, action):
     form = CampaignActionForm(obj=action)
     if form.validate_on_submit():
@@ -107,12 +109,55 @@ def campaign_action_edit(campaign, action):
 @lastuser.requires_permission('siteadmin')
 @load_models(
     (Campaign, {'name': 'campaign'}, 'campaign'),
-    (CampaignAction, {'name': 'action'}, 'action'))
+    (CampaignAction, {'name': 'action', 'campaign': 'campaign'}, 'action'))
 def campaign_action_delete(campaign, action):
     return render_delete_sqla(action, db, title=u"Confirm delete",
         message=u"Delete campaign action '%s'?" % campaign.title,
         success=u"You have deleted campaign action '%s'." % campaign.title,
         next=url_for('campaign_view', campaign=campaign.name))
+
+
+# --- Campaign charts ---------------------------------------------------------
+
+@app.route('/admin/campaign/<campaign>/views.csv')
+@lastuser.requires_permission('siteadmin')
+@load_model(Campaign, {'name': 'campaign'}, 'campaign')
+def campaign_view_counts(campaign):
+    viewdict = {}
+    hourly_views = db.session.query('hour', 'count').from_statement(db.text(
+        '''SELECT date_trunc('hour', campaign_view.created_at) AS hour, count(*) AS count FROM campaign_view WHERE campaign_id=:campaign_id GROUP BY hour ORDER BY hour;'''
+    )).params(campaign_id=campaign.id)
+
+    for hour, count in hourly_views:
+        viewdict[hour] = {'_views': count}
+
+    action_names = []
+
+    for action in campaign.actions:
+        action_names.append(action.name)
+        hourly_views = db.session.query('hour', 'count').from_statement(db.text(
+            '''SELECT date_trunc('hour', campaign_user_action.created_at) AS hour, count(*) AS count FROM campaign_user_action WHERE action_id=:action_id GROUP BY hour ORDER BY hour;'''
+        )).params(action_id=action.id)
+        for hour, count in hourly_views:
+            viewdict.setdefault(hour, {})[action.name] = count
+
+    viewlist = []
+    for slot in viewdict:
+        row = [slot, viewdict[slot].get('_views', 0)]
+        for name in action_names:
+            row.append(viewdict[slot].get(name, 0))
+        viewlist.append(row)
+
+    viewlist.sort()  # Sorts by first column, the hour slot (datetime)
+    for row in viewlist:
+        row[0] = row[0].isoformat()
+
+    outfile = StringIO()
+    out = unicodecsv.writer(outfile, 'excel')
+    out.writerow(['_hour', '_views'] + action_names)
+    out.writerows(viewlist)
+
+    return outfile.getvalue(), 200, {'Content-Type': 'text/plain'}
 
 
 # --- Campaign actions --------------------------------------------------------

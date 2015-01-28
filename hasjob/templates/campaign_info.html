@@ -1,6 +1,10 @@
 {% extends "sheet.html" %}
 {% block title %}{{ campaign.title }}{% endblock %}
 
+{% block pageheaders %}
+  <link href="//cdnjs.cloudflare.com/ajax/libs/c3/0.4.9/c3.min.css" rel="stylesheet"/>
+{% endblock %}
+
 {% block content %}
   <div class="sheet">
     <div class="section first">
@@ -48,5 +52,40 @@
         </div>
       </div>
     </div>
+    <div class="section">
+      <div id="chart"></div>
+    </div>
   </div>
+{% endblock %}
+
+{% block footerscripts %}
+  <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/d3/3.5.3/d3.min.js"></script>
+  <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/c3/0.4.9/c3.min.js"></script>
+
+  <script type="text/javascript">
+    c3.generate({
+      bindto: '#chart',
+      data: {
+        url: {{ url_for('campaign_view_counts', campaign=campaign.name)|tojson }},
+        x: '_hour',
+        xFormat: '%Y-%m-%dT%H:%M:%S',
+        type: 'spline',
+        names: {
+          {%- for action in campaign.actions %}
+          {{ action.name|tojson }}: {{ action.title|tojson }},
+          {%- endfor %}
+          '_views': 'Views'
+          }
+      },
+      axis: {
+        x: {
+          type: 'timeseries',
+          localtime: false,
+          tick: {
+            format: '%m-%d %H:%M'
+          }
+        }
+      }
+    });
+  </script>
 {% endblock %}
