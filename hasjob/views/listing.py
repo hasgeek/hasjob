@@ -581,19 +581,23 @@ def editjob(hashid, key, form=None, post=None, validated=False):
         if g.board and not g.board.require_pay:
             form.job_pay_type.choices = [(-1, u'Confidential')] + PAY_TYPE.items()
     if post is None:
+        newpost = False
         post = JobPost.query.filter_by(hashid=hashid).first_or_404()
+    else:
+        newpost = True
     if not ((key is None and g.user is not None and post.admin_is(g.user)) or (key == post.edit_key)):
         abort(403)
 
     # Don't allow editing jobs that aren't on this board as that may be a loophole when
     # the board allows no pay.
-    with db.session.no_autoflush:
-        if g.board and post.link_to_board(g.board) is None and request.method == 'GET':
-            blink = post.postboards.first()
-            if blink:
-                return redirect(url_for('editjob', hashid=post.hashid, subdomain=blink.board.name, _external=True))
-            else:
-                return redirect(url_for('editjob', hashid=post.hashid, subdomain=None, _external=True))
+    if not newpost:
+        with db.session.no_autoflush:
+            if g.board and post.link_to_board(g.board) is None and request.method == 'GET':
+                blink = post.postboards.first()
+                if blink:
+                    return redirect(url_for('editjob', hashid=post.hashid, subdomain=blink.board.name, _external=True))
+                else:
+                    return redirect(url_for('editjob', hashid=post.hashid, subdomain=None, _external=True))
 
     # Don't allow email address to be changed once it's confirmed
     if post.status in POSTSTATUS.POSTPENDING:
@@ -691,6 +695,10 @@ def editjob(hashid, key, form=None, post=None, validated=False):
                 if form.company_logo_remove.data:
                     post.company_logo = None
 
+            if newpost:
+                db.session.add(post)
+                if g.board:
+                    post.add_to(g.board)
             db.session.commit()
             tag_jobpost.delay(post.id)    # Keywords
             tag_locations.delay(post.id)  # Locations
@@ -774,9 +782,6 @@ def newjob():
                        ipaddr=request.environ['REMOTE_ADDR'],
                        useragent=request.user_agent.string,
                        user=g.user)
-        db.session.add(post)
-        if g.board:
-            post.add_to(g.board)
         return editjob(post.hashid, post.edit_key, form, post, validated=True)
     elif request.method == 'POST' and request.form.get('form.id') != 'newheadline':
         # POST request from new job page, with errors
