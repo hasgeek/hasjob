@@ -141,13 +141,14 @@ class JobPost(BaseMixin, db.Model):
         defer('review_datetime'),
         defer('review_comments'),
         defer('language'),
+        defer('language_confidence'),
 
-        defer('pay_type'),
-        defer('pay_currency'),
-        defer('pay_cash_min'),
-        defer('pay_cash_max'),
-        defer('pay_equity_min'),
-        defer('pay_equity_max'),
+        # defer('pay_type'),
+        # defer('pay_currency'),
+        # defer('pay_cash_min'),
+        # defer('pay_cash_max'),
+        # defer('pay_equity_min'),
+        # defer('pay_equity_max'),
         ]
 
     @classmethod

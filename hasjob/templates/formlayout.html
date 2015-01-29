@@ -1,8 +1,6 @@
 {% extends "layout.html" -%}
-{% from "macros.html" import campaign_header, campaign_script with context %}
 {% block messages %}{% endblock %}
 {% block basecontent %}
-  {{ campaign_header() }}
   <div class="row">
     <div class="col-md-10 col-md-offset-1 col-xs-12 col-sm-12">
       {%- for category, msg in get_flashed_messages(with_categories=true) %}
@@ -20,7 +18,6 @@
   </div>
 {% endblock %}
 {% block layoutscripts %}
-  {{ campaign_script() }}
   {% assets "js_tinymce" %}<script src="{{ ASSET_URL }}" type="text/javascript"></script>{% endassets %}
   {% block footerscripts %}{% endblock %}
 {% endblock %}

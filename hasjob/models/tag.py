@@ -3,7 +3,7 @@
 from coaster.sqlalchemy import Query
 from coaster.utils import make_name, LabeledEnum
 from baseframe import __
-from . import db, TimestampMixin, BaseNameMixin
+from . import db, TimestampMixin, BaseNameMixin, POSTSTATUS
 from .jobpost import JobPost
 
 __all__ = ['TAG_TYPE', 'Tag', 'JobPostTag']
@@ -71,3 +71,22 @@ class JobPostTag(TimestampMixin, db.Model):
     @classmethod
     def get(cls, jobpost, tag):
         return cls.query.filter_by(jobpost=jobpost, tag=tag).one_or_none()
+
+
+def related_posts(self, limit=12):
+    return db.session.query(JobPost).from_statement(
+        '''SELECT jobpost.id, jobpost.hashid, jobpost.datetime, jobpost.headline, jobpost.location,
+            jobpost.company_name, jobpost.type_id, jobpost.category_id,
+            jobpost.pay_type, jobpost.pay_currency, jobpost.pay_cash_min, jobpost.pay_cash_max,
+            jobpost.pay_equity_min, jobpost.pay_equity_max
+            FROM (
+                SELECT jobpost_tag.jobpost_id AS jobpost_id, COUNT(*) AS count FROM jobpost_tag, jobpost
+                WHERE jobpost.id = jobpost_tag.jobpost_id AND tag_id IN (
+                    SELECT tag_id FROM jobpost_tag WHERE jobpost_id=:id)
+                AND jobpost_id != :id AND jobpost.status IN :listed
+                AND jobpost.datetime >= NOW() AT TIME ZONE 'UTC' - INTERVAL '30 days'
+                GROUP BY jobpost_tag.jobpost_id ORDER BY count DESC LIMIT :limit) AS matches, jobpost
+            WHERE jobpost.id = matches.jobpost_id;'''
+        ).params(id=self.id, listed=POSTSTATUS.LISTED, limit=limit)
+
+JobPost.related_posts = related_posts

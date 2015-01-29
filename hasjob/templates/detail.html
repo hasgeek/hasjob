@@ -1,6 +1,6 @@
 {% extends "sheet.html" %}
-{% from "baseframe/forms.html" import ajaxform %}
-{% from "macros.html" import jobheader %}
+{%- from "baseframe/forms.html" import ajaxform %}
+{%- from "macros.html" import jobheader, stickie %}
 {% block title %}{{ post.headline }}{% endblock %}
 {% block description %}{{ post.company_name }}, {{ post.location }}, {{ post.type.title }}, {{ post.category.title }}{% endblock %}
 {% block canonical_url %}
@@ -285,6 +285,17 @@
       </div>
     {%- endif %}
   </div>
+{% endblock %}
+{% block postcontent %}
+  {%- with relatedposts = post.related_posts() %}{% if relatedposts %}
+  <ul id="stickie-area" class="row">
+    {%- for post in relatedposts -%}
+      <li class="col-xs-12 col-md-3 col-sm-4">
+        {{ stickie(post, url_for('jobdetail', hashid=post.hashid), false, is_siteadmin=is_siteadmin) }}
+      </li>
+    {%- endfor -%}
+  </ul>
+  {%- endif %}{% endwith -%}
 {% endblock %}
 {% block footerscripts %}
 <script type="text/javascript">
