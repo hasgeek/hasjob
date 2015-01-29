@@ -2,10 +2,10 @@
 
 from cStringIO import StringIO
 import unicodecsv
-from flask import g, request, flash, url_for, redirect, render_template, Markup
+from flask import g, request, flash, url_for, redirect, render_template, Markup, abort
 from coaster.utils import buid
 from coaster.views import load_model, load_models
-from baseframe.forms import render_form, render_delete_sqla, render_redirect, render_message
+from baseframe.forms import render_form, render_delete_sqla, render_redirect
 from .. import app, lastuser
 from ..models import db, Campaign, CampaignAction, CampaignUserAction, CAMPAIGN_ACTION
 from ..forms import CampaignForm, CampaignActionForm
@@ -171,6 +171,25 @@ def campaign_view_counts(campaign):
 
 # --- Campaign actions --------------------------------------------------------
 
+@app.route('/go/c/<campaign>/<action>', subdomain='<subdomain>')
+@app.route('/go/c/<campaign>/<action>')
+@load_models(
+    (Campaign, {'name': 'campaign'}, 'campaign'),
+    (CampaignAction, {'name': 'action', 'campaign': 'campaign'}, 'action')
+    )
+def campaign_action_redirect(campaign, action):
+    if action.type != CAMPAIGN_ACTION.LINK:
+        abort(405)
+    if g.user:
+        cua = CampaignUserAction.get(action, g.user)
+        if not cua:
+            cua = CampaignUserAction(action=action, user=g.user)
+            db.session.add(cua)
+            db.session.commit()
+    return redirect(action.link, code=302)
+
+
+@app.route('/go/c/<campaign>', methods=['POST'], subdomain='<subdomain>')
 @app.route('/go/c/<campaign>', methods=['POST'])
 @load_model(Campaign, {'name': 'campaign'}, 'campaign')
 def campaign_action(campaign):
@@ -180,7 +199,9 @@ def campaign_action(campaign):
     action_name = request.form.get('action')
     action = CampaignAction.get(campaign, action_name)
     if not action:
-        return render_message("Unknown action selected")
+        return render_template('campaign_action_response.html',
+            campaign=campaign,
+            message=Markup("p>Unknown action selected</p>"))
     cua = None
     if g.user:
         cua = CampaignUserAction.get(action, g.user)
@@ -189,23 +210,29 @@ def campaign_action(campaign):
             db.session.add(cua)
     if action.type == CAMPAIGN_ACTION.LINK:
         db.session.commit()
-        return render_redirect(action.link, code=303)
+        return render_template('campaign_action_response.html', campaign=campaign, redirect=action.link)
     elif not g.user:  # All of the other types require a user
-        return render_redirect(url_for('login', next=request.referrer,
-            message=u"Please login so we can save your preferences"), code=303)
+        return render_template('campaign_action_response.html', campaign=campaign,
+            redirect=url_for('login', next=request.referrer, message=u"Please login so we can save your preferences"))
+
     if action.type in (CAMPAIGN_ACTION.RSVP_Y, CAMPAIGN_ACTION.RSVP_N, CAMPAIGN_ACTION.RSVP_M):
         for cua in campaign.useractions(g.user).values():
-            if cua.action != action and cua.action.type in (CAMPAIGN_ACTION.RSVP_Y, CAMPAIGN_ACTION.RSVP_N, CAMPAIGN_ACTION.RSVP_M):
+            if cua.action != action and cua.action.type in (
+                    CAMPAIGN_ACTION.RSVP_Y, CAMPAIGN_ACTION.RSVP_N, CAMPAIGN_ACTION.RSVP_M):
                 db.session.delete(cua)  # If user changed their RSVP answer, delete old answer
         db.session.commit()
-        return render_message("Saved", Markup(action.message))
+        return render_template('campaign_action_response.html', campaign=campaign,
+            message=Markup(action.message))
     elif action.type == CAMPAIGN_ACTION.DISMISS:
         view = campaign.view_for(g.user)
         if view:
             view.dismissed = True
             db.session.commit()
-        return render_message("Saved", Markup(action.message))
+        return render_template('campaign_action_response.html',
+            campaign=campaign, dismiss=True,
+            message=Markup(action.message))
     elif action.type == CAMPAIGN_ACTION.FORM:
         # Render a form here
         db.session.commit()
-        return render_message("Uh oh", "To be implemented")  # TODO
+        return render_template('campaign_action_response.html', campaign=campaign,
+            message=Markup("To be implemented"))  # TODO
