@@ -573,24 +573,24 @@ def withdraw(hashid, key):
 @app.route('/edit/<hashid>/<key>', methods=('GET', 'POST'), subdomain='<subdomain>')
 @app.route('/edit/<hashid>', methods=('GET', 'POST'), defaults={'key': None})
 @app.route('/edit/<hashid>/<key>', methods=('GET', 'POST'))
-def editjob(hashid, key, form=None, post=None, validated=False):
+def editjob(hashid, key, form=None, validated=False, newpost=None):
     if form is None:
         form = forms.ListingForm(request.form)
         form.job_type.choices = JobType.choices(g.board)
         form.job_category.choices = JobCategory.choices(g.board)
         if g.board and not g.board.require_pay:
             form.job_pay_type.choices = [(-1, u'Confidential')] + PAY_TYPE.items()
-    if post is None:
-        newpost = False
-        post = JobPost.query.filter_by(hashid=hashid).first_or_404()
-    else:
-        newpost = True
-    if not ((key is None and g.user is not None and post.admin_is(g.user)) or (key == post.edit_key)):
-        abort(403)
 
-    # Don't allow editing jobs that aren't on this board as that may be a loophole when
-    # the board allows no pay.
+    post = None
+    no_email = False
+
     if not newpost:
+        post = JobPost.query.filter_by(hashid=hashid).first_or_404()
+        if not ((key is None and g.user is not None and post.admin_is(g.user)) or (key == post.edit_key)):
+            abort(403)
+
+        # Don't allow editing jobs that aren't on this board as that may be a loophole when
+        # the board allows no pay.
         with db.session.no_autoflush:
             if g.board and post.link_to_board(g.board) is None and request.method == 'GET':
                 blink = post.postboards.first()
@@ -599,13 +599,11 @@ def editjob(hashid, key, form=None, post=None, validated=False):
                 else:
                     return redirect(url_for('editjob', hashid=post.hashid, subdomain=None, _external=True))
 
-    # Don't allow email address to be changed once it's confirmed
-    if post.status in POSTSTATUS.POSTPENDING:
-        no_email = True
-    else:
-        no_email = False
+        # Don't allow email address to be changed once it's confirmed
+        if post.status in POSTSTATUS.POSTPENDING:
+            no_email = True
 
-    if request.method == 'POST' and post.status in POSTSTATUS.POSTPENDING:
+    if request.method == 'POST' and post and post.status in POSTSTATUS.POSTPENDING:
         # del form.poster_name  # Deprecated 2013-11-20
         form.poster_email.data = post.email
     if request.method == 'POST' and (validated or form.validate()):
@@ -623,7 +621,7 @@ def editjob(hashid, key, form=None, post=None, validated=False):
                     JobPost.status.in_(POSTSTATUS.POSTPENDING)),
                 JobPost.status == POSTSTATUS.SPAM)).filter(
                     JobPost.datetime > datetime.utcnow() - agelimit).all():
-                if oldpost.id != post.id:
+                if not post or (oldpost.id != post.id):
                     if oldpost.words:
                         s = SequenceMatcher(None, form_words, oldpost.words)
                         if s.ratio() > 0.6:
@@ -634,6 +632,12 @@ def editjob(hashid, key, form=None, post=None, validated=False):
             flash("This post is very similar to an earlier post. You may not repost the same job "
                 "in less than %d days." % agelimit.days, category='interactive')
         else:
+            if newpost:
+                post = JobPost(**newpost)
+                db.session.add(post)
+                if g.board:
+                    post.add_to(g.board)
+
             post.headline = form.job_headline.data
             post.type_id = form.job_type.data
             post.category_id = form.job_category.data
@@ -695,10 +699,6 @@ def editjob(hashid, key, form=None, post=None, validated=False):
                 if form.company_logo_remove.data:
                     post.company_logo = None
 
-            if newpost:
-                db.session.add(post)
-                if g.board:
-                    post.add_to(g.board)
             db.session.commit()
             tag_jobpost.delay(post.id)    # Keywords
             tag_locations.delay(post.id)  # Locations
@@ -778,11 +778,13 @@ def newjob():
     if request.method == 'POST' and request.form.get('form.id') != 'newheadline' and form.validate():
         # POST request from new job page, with successful validation
         # Move it to the editjob page for handling here forward
-        post = JobPost(hashid=unique_hash(JobPost),
-                       ipaddr=request.environ['REMOTE_ADDR'],
-                       useragent=request.user_agent.string,
-                       user=g.user)
-        return editjob(post.hashid, post.edit_key, form, post, validated=True)
+        newpost = {
+            'hashid': unique_hash(JobPost),
+            'ipaddr': request.environ['REMOTE_ADDR'],
+            'useragent': request.user_agent.string,
+            'user': g.user
+            }
+        return editjob(hashid=None, key=None, form=form, validated=True, newpost=newpost)
     elif request.method == 'POST' and request.form.get('form.id') != 'newheadline':
         # POST request from new job page, with errors
         flash("Please review the indicated issues", category='interactive')
