@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from cStringIO import StringIO
-from pytz import UTC
 import unicodecsv
 from flask import g, request, flash, url_for, redirect, render_template, Markup
 from coaster.utils import buid
@@ -124,17 +123,19 @@ def campaign_action_delete(campaign, action):
 @lastuser.requires_permission('siteadmin')
 @load_model(Campaign, {'name': 'campaign'}, 'campaign')
 def campaign_view_counts(campaign):
+    timezone = g.user.timezone if g.user else 'UTC'
+
     viewdict = {}
     hourly_views = db.session.query('hour', 'count').from_statement(db.text(
-        '''SELECT date_trunc('hour', campaign_view.created_at) AS hour, COUNT(*) AS count FROM campaign_view WHERE campaign_id=:campaign_id GROUP BY hour ORDER BY hour;'''
-    )).params(campaign_id=campaign.id)
+        '''SELECT date_trunc('hour', campaign_view.created_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS hour, COUNT(*) AS count FROM campaign_view WHERE campaign_id=:campaign_id GROUP BY hour ORDER BY hour;'''
+    )).params(timezone=timezone, campaign_id=campaign.id)
 
     for hour, count in hourly_views:
         viewdict[hour] = {'_views': count}
 
     hourly_views = db.session.query('hour', 'count').from_statement(db.text(
-        '''SELECT date_trunc('hour', campaign_user_action.created_at) AS hour, COUNT(DISTINCT(user_id)) AS count FROM campaign_user_action WHERE action_id IN (SELECT id FROM campaign_action WHERE campaign_id = :campaign_id) GROUP BY hour ORDER BY hour;'''
-        )).params(campaign_id=campaign.id)
+        '''SELECT date_trunc('hour', campaign_user_action.created_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS hour, COUNT(DISTINCT(user_id)) AS count FROM campaign_user_action WHERE action_id IN (SELECT id FROM campaign_action WHERE campaign_id = :campaign_id) GROUP BY hour ORDER BY hour;'''
+        )).params(timezone=timezone, campaign_id=campaign.id)
 
     for hour, count in hourly_views:
         viewdict.setdefault(hour, {})['_combined'] = count
@@ -144,8 +145,8 @@ def campaign_view_counts(campaign):
     for action in campaign.actions:
         action_names.append(action.name)
         hourly_views = db.session.query('hour', 'count').from_statement(db.text(
-            '''SELECT date_trunc('hour', campaign_user_action.created_at) AS hour, COUNT(*) AS count FROM campaign_user_action WHERE action_id=:action_id GROUP BY hour ORDER BY hour;'''
-        )).params(action_id=action.id)
+            '''SELECT date_trunc('hour', campaign_user_action.created_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS hour, COUNT(*) AS count FROM campaign_user_action WHERE action_id=:action_id GROUP BY hour ORDER BY hour;'''
+        )).params(timezone=timezone, action_id=action.id)
         for hour, count in hourly_views:
             viewdict.setdefault(hour, {})[action.name] = count
 
@@ -157,9 +158,8 @@ def campaign_view_counts(campaign):
         viewlist.append(row)
 
     viewlist.sort()  # Sorts by first column, the hour slot (datetime)
-    tz = g.user.tz
     for row in viewlist:
-        row[0] = UTC.localize(row[0]).astimezone(tz).replace(tzinfo=None).isoformat()
+        row[0] = row[0].isoformat()
 
     outfile = StringIO()
     out = unicodecsv.writer(outfile, 'excel')
