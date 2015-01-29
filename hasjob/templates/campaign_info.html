@@ -55,6 +55,41 @@
     <div class="section">
       <div id="chart"></div>
     </div>
+    <div class="section" role="tabpanel">
+      <ul class="nav nav-pills">
+        {%- for action in campaign.actions %}{% if action.type in ('Y', 'N', 'M', 'F') %}
+          <li role="presentation" {%- if loop.first %} class="active" {%- endif %}><a href="#users-{{ action.name }}" aria-controls="users-{{ action.name }}" role="tab" data-toggle="pill">{{ action.title }}</a></li>
+        {% endif %}{%- endfor %}
+      </ul>
+      <div class="tab-content">
+        {%- for action in campaign.actions %}{% if action.type in ('Y', 'N', 'M', 'F') %}
+          <div role="tabpanel" class="tab-pane fade {%- if loop.first %} in active {%- endif %}" id="users-{{ action.name }}">
+            <table class="table table-responsive">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>User</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <th>When</th>
+                </tr>
+              </thead>
+              <tbody>
+                {%- for ua in action.useractions %}
+                  <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ ua.user.pickername }}</td>
+                    <td>{{ ua.user.email }}</td>
+                    <td>{{ ua.user.phone }}</td>
+                    <td>{{ ua.created_at|age }}
+                  </tr>
+                {%- endfor %}
+              </tbody>
+            </table>
+          </div>
+        {%- endif %}{%- endfor %}
+      </div>
+    </div>
   </div>
 {% endblock %}
 

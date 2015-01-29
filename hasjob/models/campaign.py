@@ -113,7 +113,7 @@ class Campaign(BaseNameMixin, db.Model):
         return CampaignView.get(campaign=self, user=user)
 
     @classmethod
-    def for_context(cls, position, board=None, post=None):
+    def for_context(cls, position, user=None, board=None, post=None):
         """
         Return a campaign suitable for this board and post
         """
@@ -197,7 +197,8 @@ class CampaignView(TimestampMixin, db.Model):
     __tablename__ = 'campaign_view'
     #: Campaign
     campaign_id = db.Column(None, db.ForeignKey('campaign.id'), nullable=False, primary_key=True)
-    campaign = db.relationship(Campaign, backref=db.backref('views', lazy='dynamic'))
+    campaign = db.relationship(Campaign, backref=db.backref('views', lazy='dynamic',
+        order_by='CampaignView.created_at.desc()'))
     #: User who saw this campaign
     user_id = db.Column(None, db.ForeignKey('user.id'), nullable=False, primary_key=True)
     user = db.relationship(User, backref=db.backref('campaign_views', lazy='dynamic'))
@@ -241,7 +242,8 @@ class CampaignUserAction(TimestampMixin, db.Model):
     #: Action the user selected
     action_id = db.Column(None, db.ForeignKey('campaign_action.id'), primary_key=True)
     action = db.relationship(CampaignAction,
-        backref=db.backref('useractions', cascade='all, delete-orphan', lazy='dynamic'))
+        backref=db.backref('useractions', cascade='all, delete-orphan', lazy='dynamic',
+            order_by='CampaignUserAction.created_at.desc()'))
     #: User who performed an action, null if anonymous
     user_id = db.Column(None, db.ForeignKey('user.id'), nullable=False, primary_key=True, index=True)
     user = db.relationship(User, backref=db.backref('campaign_useractions', lazy='dynamic'))
