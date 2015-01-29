@@ -77,6 +77,7 @@
           {%- for action in campaign.actions %}
           {{ action.name|tojson }}: {{ action.title|tojson }},
           {%- endfor %}
+          '_combined': 'Combined',
           '_views': 'Views'
           }
       },

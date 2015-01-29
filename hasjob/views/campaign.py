@@ -126,25 +126,32 @@ def campaign_action_delete(campaign, action):
 def campaign_view_counts(campaign):
     viewdict = {}
     hourly_views = db.session.query('hour', 'count').from_statement(db.text(
-        '''SELECT date_trunc('hour', campaign_view.created_at) AS hour, count(*) AS count FROM campaign_view WHERE campaign_id=:campaign_id GROUP BY hour ORDER BY hour;'''
+        '''SELECT date_trunc('hour', campaign_view.created_at) AS hour, COUNT(*) AS count FROM campaign_view WHERE campaign_id=:campaign_id GROUP BY hour ORDER BY hour;'''
     )).params(campaign_id=campaign.id)
 
     for hour, count in hourly_views:
         viewdict[hour] = {'_views': count}
+
+    hourly_views = db.session.query('hour', 'count').from_statement(db.text(
+        '''SELECT date_trunc('hour', campaign_user_action.created_at) AS hour, COUNT(DISTINCT(user_id)) AS count FROM campaign_user_action WHERE action_id IN (SELECT id FROM campaign_action WHERE campaign_id = :campaign_id) GROUP BY hour ORDER BY hour;'''
+        )).params(campaign_id=campaign.id)
+
+    for hour, count in hourly_views:
+        viewdict.setdefault(hour, {})['_combined'] = count
 
     action_names = []
 
     for action in campaign.actions:
         action_names.append(action.name)
         hourly_views = db.session.query('hour', 'count').from_statement(db.text(
-            '''SELECT date_trunc('hour', campaign_user_action.created_at) AS hour, count(*) AS count FROM campaign_user_action WHERE action_id=:action_id GROUP BY hour ORDER BY hour;'''
+            '''SELECT date_trunc('hour', campaign_user_action.created_at) AS hour, COUNT(*) AS count FROM campaign_user_action WHERE action_id=:action_id GROUP BY hour ORDER BY hour;'''
         )).params(action_id=action.id)
         for hour, count in hourly_views:
             viewdict.setdefault(hour, {})[action.name] = count
 
     viewlist = []
     for slot in viewdict:
-        row = [slot, viewdict[slot].get('_views', 0)]
+        row = [slot, viewdict[slot].get('_views', 0), viewdict[slot].get('_combined', 0)]
         for name in action_names:
             row.append(viewdict[slot].get(name, 0))
         viewlist.append(row)
@@ -156,7 +163,7 @@ def campaign_view_counts(campaign):
 
     outfile = StringIO()
     out = unicodecsv.writer(outfile, 'excel')
-    out.writerow(['_hour', '_views'] + action_names)
+    out.writerow(['_hour', '_views', '_combined'] + action_names)
     out.writerows(viewlist)
 
     return outfile.getvalue(), 200, {'Content-Type': 'text/plain'}
