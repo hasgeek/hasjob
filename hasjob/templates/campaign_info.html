@@ -79,8 +79,8 @@
                   <tr>
                     <td>{{ loop.index }}</td>
                     <td>{{ ua.user.pickername }}</td>
-                    <td>{{ ua.user.email }}</td>
-                    <td>{{ ua.user.phone }}</td>
+                    <td>{{ ua.user.email or '' }}</td>
+                    <td>{{ ua.user.phone or '' }}</td>
                     <td>{{ ua.created_at|age }}
                   </tr>
                 {%- endfor %}
