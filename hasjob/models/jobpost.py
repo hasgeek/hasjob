@@ -46,9 +46,9 @@ class JobPost(BaseMixin, db.Model):
     idref = 'post'
 
     # Metadata
-    user_id = db.Column(None, db.ForeignKey('user.id'), nullable=True)
+    user_id = db.Column(None, db.ForeignKey('user.id'), nullable=True, index=True)
     user = db.relationship(User, primaryjoin=user_id == User.id, backref=db.backref('jobposts', lazy='dynamic'))
-    org_id = db.Column(None, db.ForeignKey('organization.id', ondelete='SET NULL'), nullable=True)
+    org_id = db.Column(None, db.ForeignKey('organization.id', ondelete='SET NULL'), nullable=True, index=True)
     org = db.relationship(Organization, backref=db.backref('jobposts', lazy='dynamic'))
 
     hashid = db.Column(db.String(5), nullable=False, unique=True)
@@ -103,7 +103,7 @@ class JobPost(BaseMixin, db.Model):
     email_verified = db.Column(db.Boolean, nullable=False, default=False)
     payment_value = db.Column(db.Integer, nullable=False, default=0)
     payment_received = db.Column(db.Boolean, nullable=False, default=False)
-    reviewer_id = db.Column(None, db.ForeignKey('user.id'), nullable=True)
+    reviewer_id = db.Column(None, db.ForeignKey('user.id'), nullable=True, index=True)
     reviewer = db.relationship(User, primaryjoin=reviewer_id == User.id, backref="reviewed_posts")
     review_datetime = db.Column(db.DateTime, nullable=True)
     review_comments = db.Column(db.Unicode(250), nullable=True)
@@ -520,7 +520,7 @@ class JobApplication(BaseMixin, db.Model):
     #: Hash id (to hide database ids)
     hashid = db.Column(db.String(40), nullable=False, unique=True)
     #: User who applied for this post
-    user_id = db.Column(None, db.ForeignKey('user.id'), nullable=True)  # TODO: add unique=True
+    user_id = db.Column(None, db.ForeignKey('user.id'), nullable=True, index=True)  # TODO: add unique=True
     user = db.relationship(User, foreign_keys=user_id)
     #: Full name of the user (as it was at the time of the application)
     fullname = db.Column(db.Unicode(250), nullable=False)
@@ -542,7 +542,7 @@ class JobApplication(BaseMixin, db.Model):
     #: Bag of words, for spam analysis
     words = db.Column(db.UnicodeText, nullable=True)
     #: Jobpost admin who replied to this candidate
-    replied_by_id = db.Column(None, db.ForeignKey('user.id'), nullable=True)
+    replied_by_id = db.Column(None, db.ForeignKey('user.id'), nullable=True, index=True)
     replied_by = db.relationship(User, foreign_keys=replied_by_id)
     #: When they replied
     replied_at = db.Column(db.DateTime, nullable=True)
