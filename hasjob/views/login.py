@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 
+from sqlalchemy.exc import IntegrityError
 from flask import g, Response, redirect, flash
+from flask.ext.lastuser import signal_user_session_refreshed
 from coaster.views import get_next_url
 
 from .. import app, lastuser
 from ..signals import signal_login, signal_logout
-from ..models import db, Organization
+from ..models import db, Organization, UserActiveAt
 
 
 @app.route('/login')
@@ -47,3 +49,12 @@ def lastuser_error(error, error_description=None, error_uri=None):
                     u"Description: %s\n"
                     u"URI: %s" % (error, error_description, error_uri),
                     mimetype="text/plain")
+
+
+@signal_user_session_refreshed.connect
+def track_user(user):
+    db.session.add(UserActiveAt(user=user))
+    try:
+        db.session.commit()
+    except IntegrityError:  # Small but not impossible chance we got two parallel signals
+        db.session.rollback()
