@@ -207,7 +207,7 @@ class CampaignView(TimestampMixin, db.Model):
 
     @classmethod
     def get(cls, campaign, user):
-        return cls.query.filter_by(campaign=campaign, user=user).one_or_none()
+        return cls.query.get((campaign.id, user.id))
 
     @classmethod
     def exists(cls, campaign, user):
@@ -260,4 +260,4 @@ class CampaignUserAction(TimestampMixin, db.Model):
 
     @classmethod
     def get(cls, action, user):
-        return cls.query.filter_by(action=action, user=user).one_or_none()
+        return cls.query.get((action.id, user.id))
