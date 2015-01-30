@@ -319,6 +319,8 @@ def process_application(hashid, application):
                 else:
                     job_application.response = EMPLOYER_RESPONSE.REJECTED
                 job_application.response_message = response_form.response_message.data
+                job_application.replied_by = g.user
+                job_application.replied_at = datetime.utcnow()
 
                 email_html = email_transform(
                     render_template('respond_email.html',
@@ -349,7 +351,6 @@ def process_application(hashid, application):
                 msg.body = email_text
                 msg.html = email_html
                 mail.send(msg)
-                job_application.replied_by = g.user
                 db.session.commit()
         elif request.form.get('action') == 'ignore' and job_application.can_ignore():
             job_application.response = EMPLOYER_RESPONSE.IGNORED

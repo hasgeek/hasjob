@@ -541,9 +541,11 @@ class JobApplication(BaseMixin, db.Model):
     response_message = db.Column(db.UnicodeText, nullable=True)
     #: Bag of words, for spam analysis
     words = db.Column(db.UnicodeText, nullable=True)
-    #: Admin who replied for this post
+    #: Jobpost admin who replied to this candidate
     replied_by_id = db.Column(None, db.ForeignKey('user.id'), nullable=True)
     replied_by = db.relationship(User, foreign_keys=replied_by_id)
+    #: When they replied
+    replied_at = db.Column(db.DateTime, nullable=True)
 
     candidate_feedback = db.Column(db.SmallInteger, nullable=True)
 
