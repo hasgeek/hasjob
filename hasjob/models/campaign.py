@@ -61,9 +61,9 @@ class Campaign(BaseNameMixin, db.Model):
     user_id = db.Column(None, db.ForeignKey('user.id'), nullable=False)
     user = db.relationship(User, backref='campaigns')
     #: When does this campaign go on air?
-    start_at = db.Column(db.DateTime, nullable=False)
+    start_at = db.Column(db.DateTime, nullable=False, index=True)
     #: When does it go off air?
-    end_at = db.Column(db.DateTime, nullable=False)
+    end_at = db.Column(db.DateTime, nullable=False, index=True)
     #: Is this campaign live?
     public = db.Column(db.Boolean, nullable=False, default=False)
     #: Position to display campaign in
@@ -88,8 +88,49 @@ class Campaign(BaseNameMixin, db.Model):
     #: Banner location
     banner_location = db.Column(db.SmallInteger, nullable=False, default=BANNER_LOCATION.TOP)
 
+    # Flags
+    flag_is_new_since_day = db.Column(db.Boolean, nullable=True)
+    flag_is_new_since_month = db.Column(db.Boolean, nullable=True)
+    flag_is_not_new = db.Column(db.Boolean, nullable=True)
+
+    flag_is_candidate_alltime = db.Column(db.Boolean, nullable=True)
+    flag_is_candidate_day = db.Column(db.Boolean, nullable=True)
+    flag_is_candidate_month = db.Column(db.Boolean, nullable=True)
+    flag_is_candidate_past = db.Column(db.Boolean, nullable=True)
+
+    flag_has_jobapplication_response_alltime = db.Column(db.Boolean, nullable=True)
+    flag_has_jobapplication_response_day = db.Column(db.Boolean, nullable=True)
+    flag_has_jobapplication_response_month = db.Column(db.Boolean, nullable=True)
+    flag_has_jobapplication_response_past = db.Column(db.Boolean, nullable=True)
+
+    flag_is_employer_alltime = db.Column(db.Boolean, nullable=True)
+    flag_is_employer_day = db.Column(db.Boolean, nullable=True)
+    flag_is_employer_month = db.Column(db.Boolean, nullable=True)
+    flag_is_employer_past = db.Column(db.Boolean, nullable=True)
+
+    flag_has_jobpost_unconfirmed_alltime = db.Column(db.Boolean, nullable=True)
+    flag_has_jobpost_unconfirmed_day = db.Column(db.Boolean, nullable=True)
+    flag_has_jobpost_unconfirmed_month = db.Column(db.Boolean, nullable=True)
+
+    flag_has_responded_candidate_alltime = db.Column(db.Boolean, nullable=True)
+    flag_has_responded_candidate_day = db.Column(db.Boolean, nullable=True)
+    flag_has_responded_candidate_month = db.Column(db.Boolean, nullable=True)
+    flag_has_responded_candidate_past = db.Column(db.Boolean, nullable=True)
+
+    flag_is_new_lurker_within_day = db.Column(db.Boolean, nullable=True)
+    flag_is_new_lurker_within_month = db.Column(db.Boolean, nullable=True)
+    flag_is_lurker_since_past = db.Column(db.Boolean, nullable=True)
+    flag_is_lurker_since_alltime = db.Column(db.Boolean, nullable=True)
+    flag_is_inactive_since_day = db.Column(db.Boolean, nullable=True)
+    flag_is_inactive_since_month = db.Column(db.Boolean, nullable=True)
+
     @property
     def content(self):
+        """Form helper method"""
+        return self
+
+    @property
+    def flags(self):
         """Form helper method"""
         return self
 
@@ -114,19 +155,36 @@ class Campaign(BaseNameMixin, db.Model):
             return CampaignView.get(campaign=self, user=user)
 
     @classmethod
-    def for_context(cls, position, user=None, board=None, post=None):
+    def for_context(cls, position, board=None, user=None, post=None):
         """
         Return a campaign suitable for this board and post
         """
         now = datetime.utcnow()
         basequery = cls.query.filter(
             cls.start_at <= now, cls.end_at >= now, cls.position == position).filter_by(public=True)
+
         if board:
             basequery = basequery.filter(cls.boards.any(id=board.id))
 
         # TODO: This won't work for campaigns with no location, so defer for later
         # if post and post.geonameids:
         #     basequery = basequery.join(CampaignLocation).filter(CampaignLocation.geonameid.in_(post.geonameids))
+
+        if user is not None:
+            # XXX: The more campaigns we run, the more longer this list gets
+            basequery = basequery.filter(~Campaign.id.in_(db.session.query(CampaignView.campaign_id).filter(
+                CampaignView.user == user, CampaignView.dismissed == True)))  # NOQA
+
+            # Filter by user flags
+            for flag, value in user.flags.items():
+                if flag in cls.supported_flags:
+                    col = getattr(cls, 'flag_' + flag)
+                    basequery = basequery.filter(db.or_(col == None, col == value))  # NOQA
+
+        else:
+            # Don't show user-targeted campaigns if there's no user
+            basequery = basequery.filter_by(**{'flag_' + flag: None for flag in cls.supported_flags})
+
         return basequery.order_by(cls.priority.desc()).first()
 
     @classmethod
@@ -136,6 +194,9 @@ class Campaign(BaseNameMixin, db.Model):
     @classmethod
     def get(cls, name):
         return cls.query.filter_by(name=name).one_or_none()
+
+
+Campaign.supported_flags = [key[5:] for key in Campaign.__dict__ if key.startswith('flag_')]
 
 
 class CampaignLocation(TimestampMixin, db.Model):
@@ -201,7 +262,7 @@ class CampaignView(TimestampMixin, db.Model):
     campaign = db.relationship(Campaign, backref=db.backref('views', lazy='dynamic',
         order_by='CampaignView.created_at.desc()'))
     #: User who saw this campaign
-    user_id = db.Column(None, db.ForeignKey('user.id'), nullable=False, primary_key=True)
+    user_id = db.Column(None, db.ForeignKey('user.id'), nullable=False, primary_key=True, index=True)
     user = db.relationship(User, backref=db.backref('campaign_views', lazy='dynamic'))
     #: User dismissed this campaign. Don't show it
     dismissed = db.Column(db.Boolean, nullable=False, default=False)

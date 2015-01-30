@@ -1,8 +1,8 @@
 {% extends "layout.html" -%}
-{% from "macros.html" import campaign_header, campaign_script with context %}
+{% from "macros.html" import campaign_header, campaign_script %}
 {% block messages %}{% endblock %}
 {% block basecontent %}
-  {{ campaign_header() }}
+  {%- if header_campaign %}{{ campaign_header(g, header_campaign) }}{% endif %}
   <div class="row">
     <div class="col-md-10 col-md-offset-1 col-xs-12 col-sm-12">
       {%- for category, msg in get_flashed_messages(with_categories=true) %}
@@ -15,6 +15,6 @@
 {% endblock %}
 
 {% block layoutscripts %}
-  {{ campaign_script() }}
+  {%- if header_campaign %}{{ campaign_script() }}{% endif %}
   {% block footerscripts %}{% endblock %}
 {% endblock %}

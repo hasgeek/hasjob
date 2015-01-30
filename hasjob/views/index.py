@@ -16,7 +16,7 @@ from baseframe.staticdata import webmail_domains
 
 from .. import app, lastuser, redis_store
 from ..models import (db, JobCategory, JobPost, JobType, POSTSTATUS, newlimit, JobLocation,
-    Tag, JobPostTag)
+    Tag, JobPostTag, Campaign, CAMPAIGN_POSITION)
 from ..search import do_search
 from ..views.helper import getposts, getallposts, gettags, location_geodata
 from ..uploads import uploaded_logos
@@ -81,10 +81,20 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
         else:
             pinsandposts = [(post.pinned, post) for post in posts]
 
+    # Pick a header campaign
+    if not g.kiosk:
+        if g.preview_campaign:
+            header_campaign = g.preview_campaign
+        else:
+            header_campaign = Campaign.for_context(CAMPAIGN_POSITION.HEADER, board=g.board, user=g.user)
+    else:
+        header_campaign = None
+
     return render_template('index.html', pinsandposts=pinsandposts, grouped=grouped, now=now,
                            newlimit=newlimit, jobtype=type, jobcategory=category, title=title,
                            md5sum=md5sum, domain=domain, employer_name=employer_name,
                            location=location, showall=showall, tag=tag,
+                           header_campaign=header_campaign,
                            is_siteadmin=lastuser.has_permission('siteadmin'))
 
 

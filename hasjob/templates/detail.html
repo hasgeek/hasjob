@@ -156,7 +156,7 @@
                 </div>
               </div>
             {%- endif %}
-            {%- if g.user and g.user.has_boards %}
+            {%- if g.user and g.user.flags.has_boards %}
               <div class="list-group-item">
                 <a class="popup" href="#add-to-board">
                   <i class="fa fa-fw fa-plus"></i>&nbsp;&nbsp; Add to board

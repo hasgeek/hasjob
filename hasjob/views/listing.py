@@ -37,6 +37,7 @@ from hasjob.models import (
     ReportCode,
     UserJobView,
     JobApplication,
+    Campaign, CAMPAIGN_POSITION,
     unique_hash,
     viewstats_by_id_qhour,
     viewstats_by_id_hour,
@@ -137,10 +138,18 @@ def jobdetail(hashid):
     else:
         domain_mismatch = False
 
+    if not g.kiosk:
+        if g.preview_campaign:
+            header_campaign = g.preview_campaign
+        else:
+            header_campaign = Campaign.for_context(CAMPAIGN_POSITION.HEADER, board=g.board, user=g.user, post=post)
+    else:
+        header_campaign = None
+
     return render_template('detail.html', post=post, reportform=reportform, rejectform=rejectform,
         pinnedform=pinnedform, applyform=applyform, job_application=job_application,
         jobview=jobview, report=report, moderateform=moderateform,
-        domain_mismatch=domain_mismatch,
+        domain_mismatch=domain_mismatch, header_campaign=header_campaign,
         is_siteadmin=lastuser.has_permission('siteadmin')
         )
 

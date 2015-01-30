@@ -11,7 +11,7 @@ from flask import Markup, request, url_for, g, session
 from baseframe import cache
 from .. import app
 from ..models import (agelimit, newlimit, db, JobCategory, JobPost, JobType, POSTSTATUS, BoardJobPost, Tag, JobPostTag,
-    Campaign, CampaignView, CAMPAIGN_POSITION)
+    Campaign, CampaignView)
 from ..utils import scrubemail, redactemail
 
 
@@ -29,15 +29,6 @@ def request_flags():
     else:
         preview_campaign = None
 
-    if g.kiosk:
-        header_campaign = None
-    else:
-        # g.board is already set via a url value pre-processor
-        header_campaign = Campaign.for_context(CAMPAIGN_POSITION.HEADER, board=g.board)
-        if preview_campaign and preview_campaign.position == CAMPAIGN_POSITION.HEADER:
-            header_campaign = preview_campaign
-
-    g.header_campaign = header_campaign
     g.preview_campaign = preview_campaign
     g.campaign_views = []
 

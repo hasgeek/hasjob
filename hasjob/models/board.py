@@ -6,7 +6,6 @@ from flask import url_for
 from sqlalchemy.orm import defer
 from sqlalchemy.ext.associationproxy import association_proxy
 from coaster.sqlalchemy import make_timestamp_columns
-from baseframe import cache
 from . import db, TimestampMixin, BaseNameMixin
 from .user import User
 from .jobpost import JobPost
@@ -191,20 +190,6 @@ def _user_boards(self):
         defer(Board.description)).all()
 
 User.boards = _user_boards
-
-
-def _user_has_boards(self):
-    # Cached version of User.boards()
-    key = 'user/board/count/' + str(self.id)
-    count = cache.get(key)
-    if not count:
-        count = Board.query.filter(
-            Board.userid.in_(self.user_organizations_owned_ids())).options(
-            defer(Board.description)).count()
-        cache.set(key, count, timeout=300)
-    return bool(count)
-
-User.has_boards = property(_user_has_boards)
 
 
 class BoardJobPost(TimestampMixin, db.Model):

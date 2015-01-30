@@ -93,38 +93,38 @@
       {%- elif dismiss %}
         {#- FIXME: Find a way to refer to context instead of hardcoding #}
         <script type="text/javascript">
-          $("#header-campaign-actions").closest('.campaign-box').slideUp();
+          setTimeout(function() {$("#header-campaign-actions").closest('.campaign-box').slideUp();}, 1000);
         </script>
       {%- endif %}
     </div>
   {%- endwith %}
 {% endmacro %}
 
-{% macro campaign_header() %}
+{% macro campaign_header(g, campaign) %}
   {#- In campaign.banner_location, 0 = top, 1 = right, 2 = bottom, 3 = left. In here, add +1 to avoid matching 0 == false #}
-  {%- if g.header_campaign %}{% with c=g.header_campaign, view=c.view_for(g.user), i=c.banner_image and (c.banner_location + 1) %}
-    {% if not view or (c == g.preview_campaign) or (view and not view.dismissed) %}
+  {% with view=campaign.view_for(g.user), i=campaign.banner_image and (campaign.banner_location + 1) %}
+    {% if not view or (campaign == g.preview_campaign) or (view and not view.dismissed) %}
       <div class="row campaign-box">
         <div class="col-md-10 col-md-offset-1 col-xs-12 col-sm-12">
           <div class="flash">
             {% if i in [2, 4] %}
               <div class="row">
                 <div class="img-container col-xs-12 col-sm-3 col-md-2 {%- if i == 2 %} col-sm-push-9 col-md-push-10 {%- endif %}">
-                  <img src="{{ c.banner_image }}">
+                  <img src="{{ campaign.banner_image }}">
                 </div>
                 <div class="col-xs-12 col-sm-9 col-md-10 {%- if i == 2 %} col-sm-pull-3 col-md-pull-2 {%- endif %}">
             {%- elif i == 1 %}
-              <div><img src="{{ c.banner_image }}"/></div>
+              <div><img src="{{ campaign.banner_image }}"/></div>
             {%- endif %}
-            {% if c.subject %}<h2>{{ c.subject }}</h2>{% endif %}
-            {% if c.blurb %}{{ c.blurb|safe }}{% endif %}
-            {% if c.description %}<p class="read-more no-jshidden"><a title="Read more…" href="#"><i class="fa fa-ellipsis-h"></i></a>
-            <div class="jshidden read-more-text">{{ c.description|safe }}</div>
+            {% if campaign.subject %}<h2>{{ campaign.subject }}</h2>{% endif %}
+            {% if campaign.blurb %}{{ campaign.blurb|safe }}{% endif %}
+            {% if campaign.description %}<p class="read-more no-jshidden"><a title="Read more…" href="#"><i class="fa fa-ellipsis-h"></i></a>
+            <div class="jshidden read-more-text">{{ campaign.description|safe }}</div>
             {%- endif %}
             {%- if i == 3 %}
-              <div><img src="{{ c.banner_image }}"/></div>
+              <div><img src="{{ campaign.banner_image }}"/></div>
             {%- endif %}
-            {{ campaign_action_form(c, g.user) }}
+            {{ campaign_action_form(campaign, g.user) }}
             {%- if i in [2, 4] %}
                 </div>
               </div>
@@ -132,9 +132,9 @@
           </div>
         </div>
       </div>
-    {%- do g.campaign_views.append(g.header_campaign) %}
+    {%- do g.campaign_views.append(campaign) %}
     {%- endif %}
-  {%- endwith %}{% endif %}
+  {%- endwith %}
 {% endmacro %}
 
 {% macro campaign_header_postscript() %}
