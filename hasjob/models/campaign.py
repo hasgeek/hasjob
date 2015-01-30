@@ -110,7 +110,8 @@ class Campaign(BaseNameMixin, db.Model):
             return {}
 
     def view_for(self, user):
-        return CampaignView.get(campaign=self, user=user)
+        if user:
+            return CampaignView.get(campaign=self, user=user)
 
     @classmethod
     def for_context(cls, position, user=None, board=None, post=None):
