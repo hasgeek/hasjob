@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from collections import defaultdict
 from cStringIO import StringIO
 import unicodecsv
 from flask import g, request, flash, url_for, redirect, render_template, Markup, abort
@@ -125,20 +126,21 @@ def campaign_action_delete(campaign, action):
 def campaign_view_counts(campaign):
     timezone = g.user.timezone if g.user else 'UTC'
 
-    viewdict = {}
+    viewdict = defaultdict(dict)
+
     hourly_views = db.session.query('hour', 'count').from_statement(db.text(
         '''SELECT date_trunc('hour', campaign_view.created_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS hour, COUNT(*) AS count FROM campaign_view WHERE campaign_id=:campaign_id GROUP BY hour ORDER BY hour;'''
     )).params(timezone=timezone, campaign_id=campaign.id)
 
     for hour, count in hourly_views:
-        viewdict[hour] = {'_views': count}
+        viewdict[hour]['_views'] = count
 
     hourly_views = db.session.query('hour', 'count').from_statement(db.text(
         '''SELECT date_trunc('hour', campaign_user_action.created_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS hour, COUNT(DISTINCT(user_id)) AS count FROM campaign_user_action WHERE action_id IN (SELECT id FROM campaign_action WHERE campaign_id = :campaign_id) GROUP BY hour ORDER BY hour;'''
         )).params(timezone=timezone, campaign_id=campaign.id)
 
     for hour, count in hourly_views:
-        viewdict.setdefault(hour, {})['_combined'] = count
+        viewdict[hour]['_combined'] = count
 
     action_names = []
 
@@ -148,11 +150,22 @@ def campaign_view_counts(campaign):
             '''SELECT date_trunc('hour', campaign_user_action.created_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS hour, COUNT(*) AS count FROM campaign_user_action WHERE action_id=:action_id GROUP BY hour ORDER BY hour;'''
         )).params(timezone=timezone, action_id=action.id)
         for hour, count in hourly_views:
-            viewdict.setdefault(hour, {})[action.name] = count
+            viewdict[hour][action.name] = count
+
+    # Top-off with site-wide user presence (available since 31 Jan 2015 in user_active_at)
+    minhour = min(viewdict.keys())
+    maxhour = max(viewdict.keys())
+
+    hourly_views = db.session.query('hour', 'count').from_statement(db.text(
+        '''SELECT date_trunc('hour', user_active_at.active_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS hour, COUNT(DISTINCT(user_active_at.user_id)) AS count FROM user_active_at WHERE user_active_at.active_at >= :min AND user_active_at.active_at <= :max GROUP BY hour ORDER BY hour;'''
+        )).params(timezone=timezone, min=minhour, max=maxhour)
+
+    for hour, count in hourly_views:
+        viewdict[hour]['_site'] = count
 
     viewlist = []
     for slot in viewdict:
-        row = [slot, viewdict[slot].get('_views', 0), viewdict[slot].get('_combined', 0)]
+        row = [slot, viewdict[slot].get('_site', 0), viewdict[slot].get('_views', 0), viewdict[slot].get('_combined', 0)]
         for name in action_names:
             row.append(viewdict[slot].get(name, 0))
         viewlist.append(row)
@@ -163,7 +176,7 @@ def campaign_view_counts(campaign):
 
     outfile = StringIO()
     out = unicodecsv.writer(outfile, 'excel')
-    out.writerow(['_hour', '_views', '_combined'] + action_names)
+    out.writerow(['_hour', '_site', '_views', '_combined'] + action_names)
     out.writerows(viewlist)
 
     return outfile.getvalue(), 200, {'Content-Type': 'text/plain'}
