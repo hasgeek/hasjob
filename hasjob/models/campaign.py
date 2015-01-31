@@ -169,6 +169,30 @@ class Campaign(BaseNameMixin, db.Model):
     def description_for(self, user):
         return Markup(self.description).format(user=user)
 
+    def estimated_reach(self):
+        """
+        Returns the number of users this campaign could potentially reach (assuming users are all active)
+        """
+        plus_userids = set()
+        minus_userids = set()
+        for flag in Campaign.supported_flags:
+            setting = getattr(self, 'flag_' + flag)
+            if setting is True or setting is False:
+                query = getattr(UserFlags, flag).user_ids()
+            if setting is True:
+                userids = set(query.all())
+                if plus_userids:
+                    plus_userids = plus_userids.intersection(userids)
+                else:
+                    plus_userids = userids
+            elif setting is False:
+                userids = set(db.session.query(~User.userid.in_(query)).all())
+                if minus_userids:
+                    minus_userids = minus_userids.union(userids)
+                else:
+                    minus_userids = userids
+        return len(plus_userids - minus_userids)
+
     @classmethod
     def for_context(cls, position, board=None, user=None, post=None):
         """

@@ -48,6 +48,7 @@
             <a class="list-group-item" href="{{ url_for('campaign_delete', campaign=campaign.name) }}">
               <i class="fa fa-fw fa-trash-o"></i>&nbsp;&nbsp; Delete this
             </a>
+            <span class="list-group-item"><i class="fa fa-fw fa-bullhorn"></i>&nbsp;&nbsp; Target size: {% with reach=campaign.estimated_reach() %}{{ reach }} {{ ngettext("user", "users", reach) }}{% endwith %}</span>
           </div>
         </div>
       </div>
