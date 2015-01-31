@@ -191,6 +191,8 @@ class Campaign(BaseNameMixin, db.Model):
                     minus_userids = minus_userids.union(userids)
                 else:
                     minus_userids = userids
+        if not plus_userids and not minus_userids:
+            return None
         return len(plus_userids - minus_userids)
 
     @classmethod
@@ -291,6 +293,8 @@ class CampaignAction(BaseScopedNameMixin, db.Model):
     category = db.Column(db.Unicode(20), nullable=False, default=u'default')
     #: Icon to accompany text
     icon = db.Column(db.Unicode(20), nullable=True)
+    #: Group (for RSVP buttons)
+    group = db.Column(db.Unicode(20), nullable=True)
     #: Target link (for follow link actions; blank = ?)
     link = deferred(db.Column(db.Unicode(250), nullable=True))
     #: Form

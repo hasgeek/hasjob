@@ -607,6 +607,8 @@ class CampaignActionForm(Form):
         description=__("Optional Font-Awesome icon name"))
     public = BooleanField(__("This action is live"))
     type = RadioField(__("Type"), choices=CAMPAIGN_ACTION.items(), validators=[validators.Required()])
+    group = NullTextField(__("RSVP group"), validators=[validators.Optional()],
+        description=__("If you have multiple RSVP actions, add an optional group name"))
     category = RadioField(__("Category"), validators=[validators.Required()], choices=[
         (u'default', __(u"Default")),
         (u'primary', __(u"Primary")),

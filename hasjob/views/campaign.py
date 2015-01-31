@@ -230,7 +230,7 @@ def campaign_action(campaign):
 
     if action.type in (CAMPAIGN_ACTION.RSVP_Y, CAMPAIGN_ACTION.RSVP_N, CAMPAIGN_ACTION.RSVP_M):
         for cua in campaign.useractions(g.user).values():
-            if cua.action != action and cua.action.type in (
+            if cua.action != action and cua.action.group == action.group and cua.action.type in (
                     CAMPAIGN_ACTION.RSVP_Y, CAMPAIGN_ACTION.RSVP_N, CAMPAIGN_ACTION.RSVP_M):
                 db.session.delete(cua)  # If user changed their RSVP answer, delete old answer
         db.session.commit()
