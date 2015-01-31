@@ -5,13 +5,14 @@ from sqlalchemy import event
 from sqlalchemy.orm import deferred
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.orderinglist import ordering_list
-from flask import request
+from flask import request, Markup
 from coaster.utils import LabeledEnum
 from coaster.sqlalchemy import JsonDict
 from baseframe import __
 from . import db, TimestampMixin, BaseNameMixin, BaseScopedNameMixin, make_timestamp_columns
 from .user import User
 from .board import Board
+from .flags import UserFlags, UserFlag
 
 __all__ = ['CAMPAIGN_POSITION', 'CAMPAIGN_ACTION', 'BANNER_LOCATION',
     'Campaign', 'CampaignLocation', 'CampaignAction', 'CampaignView', 'CampaignUserAction']
@@ -159,6 +160,15 @@ class Campaign(BaseNameMixin, db.Model):
         if user:
             return CampaignView.get(campaign=self, user=user)
 
+    def subject_for(self, user):
+        return self.subject.format(user=user)
+
+    def blurb_for(self, user):
+        return Markup(self.blurb).format(user=user)
+
+    def description_for(self, user):
+        return Markup(self.description).format(user=user)
+
     @classmethod
     def for_context(cls, position, board=None, user=None, post=None):
         """
@@ -202,6 +212,11 @@ class Campaign(BaseNameMixin, db.Model):
 
 
 Campaign.supported_flags = [key[5:] for key in Campaign.__dict__ if key.startswith('flag_')]
+
+# Provide a sorted list of choices for use in the campaign form
+Campaign.flag_choices = [('flag_' + k, v.title) for k, v in sorted(
+    [(k, v) for k, v in UserFlags.__dict__.items() if isinstance(v, UserFlag) and k in Campaign.supported_flags],
+    key=lambda kv: (kv[1].category, kv[1].title))]
 
 
 @event.listens_for(Campaign, 'before_update')

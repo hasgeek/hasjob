@@ -67,6 +67,16 @@ h1 small, h2 small, h3 small
   border-bottom: 1px solid $color-sheet-border
   +box-shadow(0 2px 10px $color-shadow)
 
+  .table
+    th:first-child, td:first-child
+      padding-left: 0
+
+    th:last-child, td:last-child
+      padding-right: 0
+
+    // & > thead > tr > th
+    //   border-bottom-width: 1px
+
   .list-group
     margin: 0 -15px
     font-size: 80%

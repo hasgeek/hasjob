@@ -65,5 +65,5 @@ from .reportcode import *
 from .org import *
 from .jobpost import *
 from .board import *
-from .campaign import *
 from .flags import *
+from .campaign import *

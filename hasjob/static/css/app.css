@@ -212,6 +212,12 @@ h1 small, h2 small, h3 small {
   -webkit-box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
 }
+.sheet .table th:first-child, .sheet .table td:first-child {
+  padding-left: 0;
+}
+.sheet .table th:last-child, .sheet .table td:last-child {
+  padding-right: 0;
+}
 .sheet .list-group {
   margin: 0 -15px;
   font-size: 80%;

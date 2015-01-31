@@ -300,7 +300,16 @@ def view_application(hashid, application):
 
     statuses = set([app.status for app in post.applications])
 
+    if not g.kiosk:
+        if g.preview_campaign:
+            header_campaign = g.preview_campaign
+        else:
+            header_campaign = Campaign.for_context(CAMPAIGN_POSITION.HEADER, board=g.board, user=g.user, post=post)
+    else:
+        header_campaign = None
+
     return render_template('application.html', post=post, job_application=job_application,
+        header_campaign=header_campaign,
         response_form=response_form, statuses=statuses, is_siteadmin=lastuser.has_permission('siteadmin'))
 
 

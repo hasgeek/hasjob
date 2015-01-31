@@ -9,7 +9,7 @@ from flask import g, request, Markup
 from baseframe import __
 from baseframe.forms import (Form, ValidEmail, ValidUrl, AllUrlsValid, TinyMce4Field, UserSelectMultiField,
     AnnotatedTextField, FormField, NullTextField, ValidName, NoObfuscatedEmail, TextListField, GeonameSelectMultiField,
-    DateTimeField)
+    DateTimeField, RadioMatrixField)
 from baseframe.forms.sqlalchemy import AvailableName
 from baseframe.staticdata import webmail_domains
 from wtforms import (TextField, TextAreaField, RadioField, FileField, BooleanField, IntegerField,
@@ -21,7 +21,7 @@ from coaster.utils import getbool, get_email_domain
 from flask.ext.lastuser import LastuserResourceException
 
 from .models import (User, JobType, JobCategory, JobApplication, Board, EMPLOYER_RESPONSE, PAY_TYPE,
-    CAMPAIGN_POSITION, CAMPAIGN_ACTION, BANNER_LOCATION)
+    CAMPAIGN_POSITION, CAMPAIGN_ACTION, BANNER_LOCATION, Campaign)
 from .uploads import process_image, UploadNotAllowed
 
 from . import app, lastuser
@@ -587,6 +587,9 @@ class CampaignForm(Form):
     geonameids = GeonameSelectMultiField("Locations",
         description=__("This campaign will be targetted at jobs with matching locations (to be implemented)"))
 
+    flags = RadioMatrixField("Flags", coerce=getbool, fields=Campaign.flag_choices,
+        description=__("All selected flags must match the logged in user for the campaign to be shown"),
+        choices=[('None', __("N/A")), ('True', __("True")), ('False', __("False"))])
     content = FormField(CampaignContentForm, __("Campaign content"))
 
     def validate_geonameids(self, field):

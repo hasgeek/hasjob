@@ -116,10 +116,10 @@
             {%- elif i == 1 %}
               <div><img src="{{ campaign.banner_image }}"/></div>
             {%- endif %}
-            {% if campaign.subject %}<h2>{{ campaign.subject }}</h2>{% endif %}
-            {% if campaign.blurb %}{{ campaign.blurb|safe }}{% endif %}
+            {% if campaign.subject %}<h2>{{ campaign.subject_for(g.user) }}</h2>{% endif %}
+            {% if campaign.blurb %}{{ campaign.blurb_for(g.user) }}{% endif %}
             {% if campaign.description %}<p class="read-more no-jshidden"><a title="Read more…" href="#"><i class="fa fa-ellipsis-h"></i></a>
-            <div class="jshidden read-more-text">{{ campaign.description|safe }}</div>
+            <div class="jshidden read-more-text">{{ campaign.description_for(g.user) }}</div>
             {%- endif %}
             {%- if i == 3 %}
               <div><img src="{{ campaign.banner_image }}"/></div>
