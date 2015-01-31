@@ -186,7 +186,7 @@ class Campaign(BaseNameMixin, db.Model):
                 else:
                     plus_userids = userids
             elif setting is False:
-                userids = set(db.session.query(~User.userid.in_(query)).all())
+                userids = set(db.session.query(~User.id.in_(query)).all())
                 if minus_userids:
                     minus_userids = minus_userids.union(userids)
                 else:
