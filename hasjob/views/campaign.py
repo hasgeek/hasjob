@@ -3,6 +3,7 @@
 from collections import defaultdict
 from datetime import timedelta
 from cStringIO import StringIO
+from pytz import UTC
 import unicodecsv
 from flask import g, request, flash, url_for, redirect, render_template, Markup, abort
 from coaster.utils import buid
@@ -154,8 +155,8 @@ def campaign_view_counts(campaign):
             viewdict[hour][action.name] = count
 
     # Top-off with site-wide user presence (available since 31 Jan 2015 in user_active_at)
-    minhour = min(viewdict.keys())
-    maxhour = max(viewdict.keys()) + timedelta(seconds=3599)  # For up to 59m59s to fill the slot
+    minhour = g.user.tz.localize(min(viewdict.keys())).astimezone(UTC).replace(tzinfo=None)
+    maxhour = g.user.tz.localize(max(viewdict.keys()) + timedelta(seconds=3599)).astimezone(UTC).replace(tzinfo=None)
 
     hourly_views = db.session.query('hour', 'count').from_statement(db.text(
         '''SELECT date_trunc('hour', user_active_at.active_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS hour, COUNT(DISTINCT(user_active_at.user_id)) AS count FROM user_active_at WHERE user_active_at.active_at >= :min AND user_active_at.active_at <= :max GROUP BY hour ORDER BY hour;'''
