@@ -154,16 +154,17 @@ def campaign_view_counts(campaign):
         for hour, count in hourly_views:
             viewdict[hour][action.name] = count
 
-    # Top-off with site-wide user presence (available since 31 Jan 2015 in user_active_at)
-    minhour = g.user.tz.localize(min(viewdict.keys())).astimezone(UTC).replace(tzinfo=None)
-    maxhour = g.user.tz.localize(max(viewdict.keys()) + timedelta(seconds=3599)).astimezone(UTC).replace(tzinfo=None)
+    if viewdict:
+        # Top-off with site-wide user presence (available since 31 Jan 2015 in user_active_at)
+        minhour = g.user.tz.localize(min(viewdict.keys())).astimezone(UTC).replace(tzinfo=None)
+        maxhour = g.user.tz.localize(max(viewdict.keys()) + timedelta(seconds=3599)).astimezone(UTC).replace(tzinfo=None)
 
-    hourly_views = db.session.query('hour', 'count').from_statement(db.text(
-        '''SELECT date_trunc('hour', user_active_at.active_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS hour, COUNT(DISTINCT(user_active_at.user_id)) AS count FROM user_active_at WHERE user_active_at.active_at >= :min AND user_active_at.active_at <= :max GROUP BY hour ORDER BY hour;'''
-        )).params(timezone=timezone, min=minhour, max=maxhour)
+        hourly_views = db.session.query('hour', 'count').from_statement(db.text(
+            '''SELECT date_trunc('hour', user_active_at.active_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS hour, COUNT(DISTINCT(user_active_at.user_id)) AS count FROM user_active_at WHERE user_active_at.active_at >= :min AND user_active_at.active_at <= :max GROUP BY hour ORDER BY hour;'''
+            )).params(timezone=timezone, min=minhour, max=maxhour)
 
-    for hour, count in hourly_views:
-        viewdict[hour]['_site'] = count
+        for hour, count in hourly_views:
+            viewdict[hour]['_site'] = count
 
     viewlist = []
     for slot in viewdict:
