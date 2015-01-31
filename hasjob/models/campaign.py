@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from datetime import datetime
+from sqlalchemy import event
 from sqlalchemy.orm import deferred
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.orderinglist import ordering_list
@@ -72,6 +73,8 @@ class Campaign(BaseNameMixin, db.Model):
     boards = db.relationship(Board, secondary=board_campaign_table)
     #: Quick lookup locations to run this campaign in
     geonameids = association_proxy('locations', 'geonameid', creator=lambda l: CampaignLocation(geonameid=l))
+    #: Is this campaign location-based?
+    geotargeted = db.Column(db.Boolean, nullable=False, default=False)
     #: Priority, lower = less priority
     priority = db.Column(db.Integer, nullable=False, default=0)
 
@@ -123,6 +126,8 @@ class Campaign(BaseNameMixin, db.Model):
     flag_is_lurker_since_alltime = db.Column(db.Boolean, nullable=True)
     flag_is_inactive_since_day = db.Column(db.Boolean, nullable=True)
     flag_is_inactive_since_month = db.Column(db.Boolean, nullable=True)
+
+    __table_args__ = (db.CheckConstraint('end_at > start_at', name='campaign_start_at_end_at'),)
 
     @property
     def content(self):
@@ -197,6 +202,15 @@ class Campaign(BaseNameMixin, db.Model):
 
 
 Campaign.supported_flags = [key[5:] for key in Campaign.__dict__ if key.startswith('flag_')]
+
+
+@event.listens_for(Campaign, 'before_update')
+@event.listens_for(Campaign, 'before_insert')
+def _set_geotargeted(mapper, connection, target):
+    if target.geonameids:
+        target.geotargeted = True
+    else:
+        target.geotargeted = False
 
 
 class CampaignLocation(TimestampMixin, db.Model):

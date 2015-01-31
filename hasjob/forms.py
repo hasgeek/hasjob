@@ -585,9 +585,16 @@ class CampaignForm(Form):
         validators=[validators.Optional()],
         description=__(u"Select the boards this campaign is active on"))
     geonameids = GeonameSelectMultiField("Locations",
-        description=__("This campaign will be targetted at jobs with matching locations"))
+        description=__("This campaign will be targetted at jobs with matching locations (to be implemented)"))
 
     content = FormField(CampaignContentForm, __("Campaign content"))
+
+    def validate_geonameids(self, field):
+        field.data = [int(x) for x in field.data if x.isdigit()]
+
+    def validate_end_at(self, field):
+        if field.data <= self.start_at.data:
+            raise ValidationError(__(u"The campaign can’t end before it starts"))
 
 
 class CampaignActionForm(Form):
