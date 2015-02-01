@@ -21,3 +21,5 @@ class UserActiveAt(db.Model):
     active_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, primary_key=True)
     user_id = db.Column(None, db.ForeignKey('user.id'), nullable=False, primary_key=True, index=True)
     user = db.relationship(User)
+    board_id = db.Column(None, db.ForeignKey('board.id'), nullable=True, index=True)
+    board = db.relationship('Board')
