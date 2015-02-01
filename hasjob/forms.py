@@ -269,8 +269,8 @@ class ListingForm(Form):
             # Discard submission if equity checkbox is unchecked
             field.data = None
 
-    def validate(self, extra_validators=None):
-        success = super(ListingForm, self).validate(extra_validators)
+    def validate(self):
+        success = super(ListingForm, self).validate()
         if success:
             if (not self.job_type_ob.nopay_allowed) and self.job_pay_type.data == PAY_TYPE.NOCASH:
                 self.job_pay_type.errors.append(u"“%s” cannot pay nothing" % self.job_type_ob.title)
