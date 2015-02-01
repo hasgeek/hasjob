@@ -724,6 +724,11 @@ li:hover > .stickie.grouped.under:nth-of-type(5) {
   text-align: right;
 }
 
+#loadmore {
+  margin-bottom: 24px;
+  text-align: center;
+}
+
 @media screen and (min-width: 768px) {
   #stickie-area > li {
     margin-bottom: 30px;

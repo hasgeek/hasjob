@@ -1,19 +1,21 @@
 {%- from "macros.html" import stickie %}
-{% extends "layout.html" %}
-{% block titletags -%}
-  <title>{%if title %}{{ title }} &mdash; {% endif %}{% if g.board %}{{ g.board.title }}{% else %}{{ config['SITE_TITLE'] }}{% endif %}</title>
-  <meta name="DC.title" content="{%if title %}{{ title }} &mdash; {% endif %}{{ config['SITE_TITLE'] }}"/>
-{%- endblock %}
+{%- if not request.is_xhr -%}
+  {% extends "layout.html" %}
+  {% block titletags -%}
+    <title>{%if title %}{{ title }} &mdash; {% endif %}{% if g.board %}{{ g.board.title }}{% else %}{{ config['SITE_TITLE'] }}{% endif %}</title>
+    <meta name="DC.title" content="{%if title %}{{ title }} &mdash; {% endif %}{{ config['SITE_TITLE'] }}"/>
+  {%- endblock %}
 
-{% block pageheaders %}
-{%- if jobtype %}<link rel="alternate" type="application/atom+xml"  title="{{ jobtype.title }} – {{ config['SITE_TITLE']|e }}" href="{{ url_for('feed_by_type', name=jobtype.name) }}" />{% endif -%}
-{%- if jobcategory %}<link rel="alternate" type="application/atom+xml"  title="{{ jobcategory.title }} – {{ config['SITE_TITLE']|e }}" href="{{ url_for('feed_by_category', name=jobcategory.name) }}" />{% endif -%}
-{%- if md5sum %}<link rel="alternate" type="application/atom+xml" title="Jobs at {{ employer_name }} – {{ config['SITE_TITLE'] }}" href="{{ url_for('feed_by_email', md5sum=md5sum) }}" />{% endif -%}
-{%- if domain %}<link rel="alternate" type="application/atom+xml" title="Jobs at {{ employer_name }} – {{ config['SITE_TITLE'] }}" href="{{ url_for('feed_by_domain', domain=domain) }}" />{% endif -%}
-{%- if location %}<link rel="alternate" type="application/atom+xml" title="Jobs in {{ location['short_title'] }} – {{ config['SITE_TITLE'] }}" href="{{ url_for('feed_by_location', location=location['name']) }}" />{% endif -%}
-{% endblock %}
-
+  {% block pageheaders %}
+  {%- if jobtype %}<link rel="alternate" type="application/atom+xml"  title="{{ jobtype.title }} – {{ config['SITE_TITLE']|e }}" href="{{ url_for('feed_by_type', name=jobtype.name) }}" />{% endif -%}
+  {%- if jobcategory %}<link rel="alternate" type="application/atom+xml"  title="{{ jobcategory.title }} – {{ config['SITE_TITLE']|e }}" href="{{ url_for('feed_by_category', name=jobcategory.name) }}" />{% endif -%}
+  {%- if md5sum %}<link rel="alternate" type="application/atom+xml" title="Jobs at {{ employer_name }} – {{ config['SITE_TITLE'] }}" href="{{ url_for('feed_by_email', md5sum=md5sum) }}" />{% endif -%}
+  {%- if domain %}<link rel="alternate" type="application/atom+xml" title="Jobs at {{ employer_name }} – {{ config['SITE_TITLE'] }}" href="{{ url_for('feed_by_domain', domain=domain) }}" />{% endif -%}
+  {%- if location %}<link rel="alternate" type="application/atom+xml" title="Jobs in {{ location['short_title'] }} – {{ config['SITE_TITLE'] }}" href="{{ url_for('feed_by_location', location=location['name']) }}" />{% endif -%}
+  {% endblock %}
+{% endif %}
 {% block content %}
+{%- if not request.is_xhr -%}
   {%- if g.board and g.board.name != 'www' %}
     <div class="flash info">
       {{ g.board.description|safe }}
@@ -75,6 +77,7 @@
         </li>
       {%- endif -%}
     {%- endif -%}
+{%- endif -%}
     {%- if grouped %}
       {%- for grouping, group in grouped.items() -%}{%- with pinned, post=group[0] -%}
         {%- if group|length == 1 -%}
@@ -105,6 +108,12 @@
         </li>
       {%- endfor %}
     {%- endif -%}
+    {%- if loadmore -%}
+      <form id="loadmore" method="GET" data-appear-top-offset="100">
+        <button class="btn btn-default btn-lg" type="submit" name="startdate" value="{{ loadmore.isoformat() }}Z">Load more…</button>
+      </form>
+    {%- endif -%}
+{%- if not request.is_xhr -%}
   </ul>
   {%- if not showall -%}
     <div class="flash info">
@@ -114,8 +123,33 @@
       </p>
     </div>
   {%- endif -%}
-{% endblock %}
-{% block footerscripts %}
+{%- endif -%}
+{%- endblock -%}
+{%- macro loadmore_script() -%}
+  <script type="text/javascript">
+    $(function() {
+      $("#loadmore").attr('method', 'POST').ajaxForm({
+        target: '#loadmore',
+        replaceTarget: true,
+        beforeSubmit: function(formdata, form, options) {
+          form.find('button[type="submit"]').prop('disabled', true).addClass('submit-disabled').html('Loading more… <span class="loading">&nbsp;</span>');
+          return true;
+        },
+        error: function(context, xhr, status, errMsg) {
+          var form = $("#loadmore");
+          form.find('button[type="submit"]').prop('disabled', false).removeClass('submit-disabled').html('Load more…');
+          form.find('.loading').addClass('hidden');
+          form.append('<div class="alert alert-danger fade in"><a href="#" class="close" data-dismiss="alert">&times;</a> Could not load more posts. Please try again</div>');
+        }
+      });
+      $("#loadmore").appear().on('appear', function(event, element) {
+        element.find('button[type="submit"]').trigger('click');
+      });
+    })
+  </script>
+{%- endmacro -%}
+{%- block footerscripts -%}
+{%- if not request.is_xhr -%}
 <script type="text/javascript">
   $(function() {
     $('textarea').autosize();
@@ -132,4 +166,8 @@
     });
   });
 </script>
+{%- endif -%}
+{%- if loadmore -%}
+  {{ loadmore_script() }}
+{%- endif -%}
 {% endblock %}

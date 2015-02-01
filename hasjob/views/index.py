@@ -11,7 +11,7 @@ from flask import (
     url_for,
     g
     )
-from coaster.utils import getbool
+from coaster.utils import getbool, parse_isoformat
 from baseframe.staticdata import webmail_domains
 
 from .. import app, lastuser, redis_store
@@ -22,13 +22,14 @@ from ..views.helper import getposts, getallposts, gettags, location_geodata
 from ..uploads import uploaded_logos
 
 
-@app.route('/', subdomain='<subdomain>')
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'], subdomain='<subdomain>')
+@app.route('/', methods=['GET', 'POST'])
 def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
-        location=None, title=None, showall=True, statuses=None, tag=None):
+        location=None, title=None, showall=True, statuses=None, tag=None, batched=True):
     now = datetime.utcnow()
     if basequery is None and not (g.user or g.kiosk or (g.board and not g.board.require_login)):
         showall = False
+        batched = False
     posts = list(getposts(basequery, pinned=True, showall=showall, statuses=statuses))
 
     # Cache viewcounts (admin view or not)
@@ -90,24 +91,76 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
     else:
         header_campaign = None
 
+    loadmore = False
+    if batched:
+        # Figure out where the batch should start from
+        startdate = None
+        if 'startdate' in request.values:
+            try:
+                startdate = parse_isoformat(request.values['startdate'])
+            except ValueError:
+                pass
+
+        if request.method == 'GET':
+            batchsize = 15  # Skipping one for the special stickie that's on all pages
+        else:
+            batchsize = 16
+
+        # Depending on the display mechanism (grouped or ungrouped), extract the batch
+        if grouped:
+            if not startdate:
+                startindex = 0
+            else:
+                # Loop through group looking for start of next batch. See below to understand the
+                # nesting structure of 'grouped'
+                for startindex, row in enumerate(grouped.values()):
+                    # Skip examination of pinned listings (having row[0][0] = True)
+                    if (not row[0][0]) and row[0][1].datetime < startdate:
+                        break
+
+            batch = grouped.items()[startindex:startindex + batchsize]
+            if startindex + batchsize < len(grouped):
+                # Get the datetime of the last group's first item
+                # batch = [((type, domain), [(pinned, post), ...])]
+                # batch[-1] = ((type, domain), [(pinned, post), ...])
+                # batch[-1][1] = [(pinned, post), ...]
+                # batch[-1][1][0] = (pinned, post)
+                # batch[-1][1][0][1] = post
+                loadmore = batch[-1][1][0][1].datetime
+            grouped = OrderedDict(batch)
+        elif pinsandposts:
+            if not startdate:
+                startindex = 0
+            else:
+                for startindex, row in enumerate(pinsandposts):
+                    # Skip pinned posts when looking for starting index
+                    if (not row[0]) and row[1].datetime < startdate:
+                        break
+
+            batch = pinsandposts[startindex:startindex + batchsize]
+            if startindex + batchsize < len(pinsandposts):
+                # batch = [(pinned, post), ...]
+                loadmore = batch[-1][1].datetime
+            pinsandposts = batch
+
     return render_template('index.html', pinsandposts=pinsandposts, grouped=grouped, now=now,
                            newlimit=newlimit, jobtype=type, jobcategory=category, title=title,
                            md5sum=md5sum, domain=domain, employer_name=employer_name,
                            location=location, showall=showall, tag=tag,
-                           header_campaign=header_campaign,
+                           header_campaign=header_campaign, loadmore=loadmore,
                            is_siteadmin=lastuser.has_permission('siteadmin'))
 
 
-@app.route('/drafts', subdomain='<subdomain>')
-@app.route('/drafts')
+@app.route('/drafts', methods=['GET', 'POST'], subdomain='<subdomain>')
+@app.route('/drafts', methods=['GET', 'POST'])
 @lastuser.requires_login
 def browse_drafts():
     basequery = JobPost.query.filter_by(user=g.user)
     return index(basequery=basequery, statuses=[POSTSTATUS.DRAFT, POSTSTATUS.PENDING])
 
 
-@app.route('/type/<name>', subdomain='<subdomain>')
-@app.route('/type/<name>')
+@app.route('/type/<name>', methods=['GET', 'POST'], subdomain='<subdomain>')
+@app.route('/type/<name>', methods=['GET', 'POST'])
 def browse_by_type(name):
     if name == 'all':
         return redirect(url_for('index'))
@@ -116,8 +169,8 @@ def browse_by_type(name):
     return index(basequery=basequery, type=ob, title=ob.title)
 
 
-@app.route('/at/<domain>', subdomain='<subdomain>')
-@app.route('/at/<domain>')
+@app.route('/at/<domain>', methods=['GET', 'POST'], subdomain='<subdomain>')
+@app.route('/at/<domain>', methods=['GET', 'POST'])
 def browse_by_domain(domain):
     if not domain:
         abort(404)
@@ -125,8 +178,8 @@ def browse_by_domain(domain):
     return index(basequery=basequery, domain=domain, title=domain, showall=True)
 
 
-@app.route('/category/<name>', subdomain='<subdomain>')
-@app.route('/category/<name>')
+@app.route('/category/<name>', methods=['GET', 'POST'], subdomain='<subdomain>')
+@app.route('/category/<name>', methods=['GET', 'POST'])
 def browse_by_category(name):
     if name == 'all':
         return redirect(url_for('index'))
@@ -135,8 +188,8 @@ def browse_by_category(name):
     return index(basequery=basequery, category=ob, title=ob.title)
 
 
-@app.route('/by/<md5sum>', subdomain='<subdomain>')
-@app.route('/by/<md5sum>')
+@app.route('/by/<md5sum>', methods=['GET', 'POST'], subdomain='<subdomain>')
+@app.route('/by/<md5sum>', methods=['GET', 'POST'])
 def browse_by_email(md5sum):
     if not md5sum:
         abort(404)
@@ -144,8 +197,8 @@ def browse_by_email(md5sum):
     return index(basequery=basequery, md5sum=md5sum, showall=True)
 
 
-@app.route('/in/<location>', subdomain='<subdomain>')
-@app.route('/in/<location>')
+@app.route('/in/<location>', methods=['GET', 'POST'], subdomain='<subdomain>')
+@app.route('/in/<location>', methods=['GET', 'POST'])
 def browse_by_location(location):
     geodata = location_geodata(location)
     if not geodata:
@@ -155,15 +208,15 @@ def browse_by_location(location):
     return index(basequery=basequery, location=geodata, title=geodata['short_title'])
 
 
-@app.route('/in/anywhere', subdomain='<subdomain>')
-@app.route('/in/anywhere')
+@app.route('/in/anywhere', methods=['GET', 'POST'], subdomain='<subdomain>')
+@app.route('/in/anywhere', methods=['GET', 'POST'])
 def browse_by_anywhere():
     basequery = JobPost.query.filter(JobPost.remote_location == True)  # NOQA
     return index(basequery=basequery)
 
 
-@app.route('/tag/<tag>', subdomain='<subdomain>')
-@app.route('/tag/<tag>')
+@app.route('/tag/<tag>', methods=['GET', 'POST'], subdomain='<subdomain>')
+@app.route('/tag/<tag>', methods=['GET', 'POST'])
 def browse_by_tag(tag):
     tag = Tag.query.filter_by(name=tag).first_or_404()
     basequery = JobPost.query.filter(db.and_(
@@ -179,7 +232,7 @@ def browse_tags():
 
 @app.route('/feed', subdomain='<subdomain>')
 @app.route('/feed')
-def feed(basequery=None, type=None, category=None, md5sum=None, domain=None, location=None):
+def feed(basequery=None, type=None, category=None, md5sum=None, domain=None, location=None, tag=None, title=None):
     title = "All jobs"
     if type:
         title = type.title
@@ -189,6 +242,8 @@ def feed(basequery=None, type=None, category=None, md5sum=None, domain=None, loc
         title = u"Jobs at a single employer"
     elif location:
         title = u"Jobs in {location}".format(location=location['short_title'])
+    elif tag:
+        title = u"Jobs tagged {tag}".format(tag=title)
     posts = list(getposts(basequery, showall=True))
     if posts:  # Can't do this unless posts is a list
         updated = posts[0].datetime.isoformat() + 'Z'
@@ -247,6 +302,22 @@ def feed_by_location(location):
     basequery = JobPost.query.filter(db.and_(
         JobLocation.jobpost_id == JobPost.id, JobLocation.geonameid == geodata['geonameid']))
     return feed(basequery=basequery, location=geodata)
+
+
+@app.route('/in/anywhere/feed', subdomain='<subdomain>')
+@app.route('/in/anywhere/feed')
+def feed_by_anywhere():
+    basequery = JobPost.query.filter(JobPost.remote_location == True)  # NOQA
+    return feed(basequery=basequery)
+
+
+@app.route('/tag/<tag>/feed', subdomain='<subdomain>')
+@app.route('/tag/<tag>/feed')
+def feed_by_tag(tag):
+    tag = Tag.query.filter_by(name=tag).first_or_404()
+    basequery = JobPost.query.filter(db.and_(
+        JobPostTag.jobpost_id == JobPost.id, JobPostTag.tag == tag))
+    return feed(basequery=basequery, tag=tag, title=tag.title)
 
 
 @app.route('/archive')
