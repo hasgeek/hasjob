@@ -9,7 +9,7 @@ from flask import g, request, Markup
 from baseframe import __
 from baseframe.forms import (Form, ValidEmail, ValidUrl, AllUrlsValid, TinyMce4Field, UserSelectMultiField,
     AnnotatedTextField, FormField, NullTextField, ValidName, NoObfuscatedEmail, TextListField, GeonameSelectMultiField,
-    DateTimeField, RadioMatrixField)
+    DateTimeField, RadioMatrixField, InlineListWidget)
 from baseframe.forms.sqlalchemy import AvailableName
 from baseframe.staticdata import webmail_domains
 from wtforms import (TextField, TextAreaField, RadioField, FileField, BooleanField, IntegerField,
@@ -609,7 +609,8 @@ class CampaignActionForm(Form):
     type = RadioField(__("Type"), choices=CAMPAIGN_ACTION.items(), validators=[validators.Required()])
     group = NullTextField(__("RSVP group"), validators=[validators.Optional()],
         description=__("If you have multiple RSVP actions, add an optional group name"))
-    category = RadioField(__("Category"), validators=[validators.Required()], choices=[
+    category = RadioField(__("Category"), validators=[validators.Required()],
+        widget=InlineListWidget(class_='button-bar', class_prefix='btn btn-'), choices=[
         (u'default', __(u"Default")),
         (u'primary', __(u"Primary")),
         (u'success', __(u"Success")),
