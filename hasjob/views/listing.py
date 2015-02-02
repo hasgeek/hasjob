@@ -142,7 +142,8 @@ def jobdetail(hashid):
         if g.preview_campaign:
             header_campaign = g.preview_campaign
         else:
-            header_campaign = Campaign.for_context(CAMPAIGN_POSITION.HEADER, board=g.board, user=g.user, post=post)
+            header_campaign = Campaign.for_context(CAMPAIGN_POSITION.HEADER, board=g.board, user=g.user,
+                geonameids=post.geonameids)
     else:
         header_campaign = None
 
@@ -304,7 +305,8 @@ def view_application(hashid, application):
         if g.preview_campaign:
             header_campaign = g.preview_campaign
         else:
-            header_campaign = Campaign.for_context(CAMPAIGN_POSITION.HEADER, board=g.board, user=g.user, post=post)
+            header_campaign = Campaign.for_context(CAMPAIGN_POSITION.HEADER, board=g.board, user=g.user,
+                geonameids=post.geonameids)
     else:
         header_campaign = None
 

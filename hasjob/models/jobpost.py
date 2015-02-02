@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from werkzeug import cached_property
 from flask import url_for, g, escape, Markup
 from sqlalchemy.orm import defer
+from sqlalchemy.ext.associationproxy import association_proxy
 from coaster.sqlalchemy import make_timestamp_columns, JsonDict
 from baseframe import cache
 from baseframe.staticdata import webmail_domains
@@ -113,6 +114,8 @@ class JobPost(BaseMixin, db.Model):
     language_confidence = db.Column(db.Float, nullable=True)
 
     admins = db.relationship(User, secondary=lambda: jobpost_admin_table)
+    #: Quick lookup locations this post is referring to
+    geonameids = association_proxy('locations', 'geonameid', creator=lambda l: JobLocation(geonameid=l))
 
     _defercols = [
         defer('user_id'),

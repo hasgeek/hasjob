@@ -196,9 +196,9 @@ class Campaign(BaseNameMixin, db.Model):
         return len(plus_userids - minus_userids)
 
     @classmethod
-    def for_context(cls, position, board=None, user=None, post=None):
+    def for_context(cls, position, board=None, user=None, geonameids=None):
         """
-        Return a campaign suitable for this board and post
+        Return a campaign suitable for this board, user and locations (as geonameids).
         """
         now = datetime.utcnow()
         basequery = cls.query.filter(
@@ -207,13 +207,30 @@ class Campaign(BaseNameMixin, db.Model):
         if board:
             basequery = basequery.filter(cls.boards.any(id=board.id))
 
-        # TODO: This won't work for campaigns with no location, so defer for later
-        # if post and post.geonameids:
-        #     basequery = basequery.join(CampaignLocation).filter(CampaignLocation.geonameid.in_(post.geonameids))
+        if geonameids:
+            basequery = basequery.filter(db.or_(
+                cls.geotargeted == False,
+                db.and_(
+                    cls.geotargeted == True,
+                    cls.id.in_(db.session.query(CampaignLocation.campaign_id).filter(
+                        CampaignLocation.geonameid.in_(geonameids)))
+                )))  # NOQA
+
+            # In the following version, a low priority geotargeted campaign returns above a high priority
+            # non-geotargeted campaign, which isn't the intended behaviour.
+
+            # basequery = basequery.join(CampaignLocation).filter(db.or_(
+            #     cls.geotargeted == False,
+            #     db.and_(
+            #         cls.geotargeted == True,
+            #         CampaignLocation.geonameid.in_(geonameids)
+            #     )))  # NOQA
+        else:
+            basequery = basequery.filter(cls.geotargeted == False)  # NOQA
 
         if user is not None:
             # XXX: The more campaigns we run, the more longer this list gets
-            basequery = basequery.filter(~Campaign.id.in_(db.session.query(CampaignView.campaign_id).filter(
+            basequery = basequery.filter(~cls.id.in_(db.session.query(CampaignView.campaign_id).filter(
                 CampaignView.user == user, CampaignView.dismissed == True)))  # NOQA
 
             # Filter by user flags

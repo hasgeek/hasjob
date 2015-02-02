@@ -87,7 +87,12 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
         if g.preview_campaign:
             header_campaign = g.preview_campaign
         else:
-            header_campaign = Campaign.for_context(CAMPAIGN_POSITION.HEADER, board=g.board, user=g.user)
+            if location:
+                geonameids = [location['geonameid']]
+            else:
+                geonameids = None
+            header_campaign = Campaign.for_context(CAMPAIGN_POSITION.HEADER, board=g.board, user=g.user,
+                geonameids=geonameids)
     else:
         header_campaign = None
 
