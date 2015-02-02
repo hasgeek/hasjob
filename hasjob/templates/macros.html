@@ -82,7 +82,7 @@
               <button name="action" value="{{ action.name }}" type="submit" class="btn btn-sm btn-{{ action.category }}">{% if action.icon %}<i class="fa fa-{{ action.icon }}"></i> {% endif %}{{ action.title }}{% if action.name in ua %} <i class="fa fa-check"></i>{% endif %}</button>
             {%- endif %}
           {%- endif %}{%- endfor %}
-          <button type="submit" name="dismiss" value="dismiss" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          {% if user %}<button type="submit" name="dismiss" value="dismiss" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>{% endif %}
           <span class="loading hidden">&nbsp;</span>
         </p>
       </form>
