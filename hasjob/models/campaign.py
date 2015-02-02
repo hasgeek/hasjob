@@ -9,6 +9,7 @@ from flask import request, Markup
 from coaster.utils import LabeledEnum
 from coaster.sqlalchemy import JsonDict
 from baseframe import __
+from baseframe.forms import Form
 from . import db, TimestampMixin, BaseNameMixin, BaseScopedNameMixin, make_timestamp_columns
 from .user import User
 from .board import Board
@@ -194,6 +195,10 @@ class Campaign(BaseNameMixin, db.Model):
         if not plus_userids and not minus_userids:
             return None
         return len(plus_userids - minus_userids)
+
+    def form(self):
+        """Convenience method for action form CSRF"""
+        return Form()
 
     @classmethod
     def for_context(cls, position, board=None, user=None, geonameids=None):

@@ -144,6 +144,11 @@ footer .container {
 .flash h2, .guide h2 {
   margin: 0;
 }
+.flash .close, .guide .close {
+  position: absolute;
+  top: 2px;
+  right: 5px;
+}
 
 .flash.info {
   padding-left: 15px;

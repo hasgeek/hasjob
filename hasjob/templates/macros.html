@@ -73,6 +73,7 @@
   {%- with ua=campaign.useractions(user) %}
     <div id="header-campaign-actions">
       <form id="header-campaign-form" action="{{ url_for('campaign_action', campaign=campaign.name) }}" method="POST">
+        {{ campaign.form().hidden_tag() }}
         <p class="button-bar">
           {%- for action in campaign.actions %}{% if action.public %}
             {%- if action.type == 'L' %}
@@ -81,6 +82,7 @@
               <button name="action" value="{{ action.name }}" type="submit" class="btn btn-sm btn-{{ action.category }}">{% if action.icon %}<i class="fa fa-{{ action.icon }}"></i> {% endif %}{{ action.title }}{% if action.name in ua %} <i class="fa fa-check"></i>{% endif %}</button>
             {%- endif %}
           {%- endif %}{%- endfor %}
+          <button type="submit" name="dismiss" value="dismiss" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
           <span class="loading hidden">&nbsp;</span>
         </p>
       </form>
@@ -93,7 +95,7 @@
       {%- elif dismiss %}
         {#- FIXME: Find a way to refer to context instead of hardcoding #}
         <script type="text/javascript">
-          setTimeout(function() {$("#header-campaign-actions").closest('.campaign-box').slideUp();}, 1000);
+          $("#header-campaign-actions").closest('.campaign-box').slideUp();
         </script>
       {%- endif %}
     </div>
@@ -124,11 +126,11 @@
             {%- if i == 3 %}
               <div><img src="{{ campaign.banner_image }}"/></div>
             {%- endif %}
-            {{ campaign_action_form(campaign, g.user) }}
             {%- if i in [2, 4] %}
                 </div>
               </div>
             {%- endif %}
+            {{ campaign_action_form(campaign, g.user) }}
           </div>
         </div>
       </div>

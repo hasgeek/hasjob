@@ -212,12 +212,28 @@ def campaign_action(campaign):
     """
     First level submission.
     """
+    form = campaign.form()
+    if not form.validate():
+        return render_template('campaign_action_response.html',
+            campaign=campaign,
+            message=Markup("<p>This form timed out. Please try again</p>"))
+
+    dismissed = 'dismiss' in request.form
+    if dismissed:
+        if g.user:
+            view = campaign.view_for(g.user)
+            if view:
+                view.dismissed = True
+                db.session.commit()
+        return render_template('campaign_action_response.html',
+            campaign=campaign, dismiss=True)
+
     action_name = request.form.get('action')
     action = CampaignAction.get(campaign, action_name)
     if not action:
         return render_template('campaign_action_response.html',
             campaign=campaign,
-            message=Markup("p>Unknown action selected</p>"))
+            message=Markup("<p>Unknown action selected</p>"))
     cua = None
     if g.user:
         cua = CampaignUserAction.get(action, g.user)
