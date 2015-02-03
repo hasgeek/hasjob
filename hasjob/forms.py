@@ -12,7 +12,7 @@ from baseframe.forms import (Form, ValidEmail, ValidUrl, AllUrlsValid, TinyMce4F
     DateTimeField, RadioMatrixField, InlineListWidget)
 from baseframe.forms.sqlalchemy import AvailableName
 from baseframe.staticdata import webmail_domains
-from wtforms import (TextField, TextAreaField, RadioField, FileField, BooleanField, IntegerField,
+from wtforms import (TextField, TextAreaField, RadioField, FileField, BooleanField, IntegerField, SelectField,
     ValidationError, validators)
 from wtforms.widgets import CheckboxInput, ListWidget
 from wtforms.fields.html5 import EmailField, URLField
@@ -69,6 +69,13 @@ class ListingPayCurrencyField(RadioField):
 
 def invalid_urls():
     return app.config.get('INVALID_URLS', [])
+
+
+class SearchForm(Form):
+    """Form for sidebar search"""
+    search = TextField()
+    type = SelectField(__("Type"))
+    location = SelectField(__("Location"))
 
 
 class ListingForm(Form):

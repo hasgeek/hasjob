@@ -17,6 +17,7 @@ from baseframe.staticdata import webmail_domains
 from .. import app, lastuser, redis_store
 from ..models import (db, JobCategory, JobPost, JobType, POSTSTATUS, newlimit, JobLocation,
     Tag, JobPostTag, Campaign, CAMPAIGN_POSITION)
+from ..forms import SearchForm
 from ..search import do_search
 from ..views.helper import getposts, getallposts, gettags, location_geodata
 from ..uploads import uploaded_logos
@@ -81,6 +82,11 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
                 pinsandposts.append((pinned, post))
         else:
             pinsandposts = [(post.pinned, post) for post in posts]
+
+    # Search form for sidebar
+    search_form = SearchForm()
+    search_form.type.choices = [(jt.name, jt.title) for jt in JobType.query.order_by('seq')]
+    search_form.location.choices = [(jl.geonameid, jl.geonameid) for jl in JobLocation.query.order_by('geonameid')]
 
     # Pick a header campaign
     if not g.kiosk:
@@ -151,7 +157,7 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
     return render_template('index.html', pinsandposts=pinsandposts, grouped=grouped, now=now,
                            newlimit=newlimit, jobtype=type, jobcategory=category, title=title,
                            md5sum=md5sum, domain=domain, employer_name=employer_name,
-                           location=location, showall=showall, tag=tag,
+                           location=location, showall=showall, tag=tag, search_form=search_form,
                            header_campaign=header_campaign, loadmore=loadmore,
                            is_siteadmin=lastuser.has_permission('siteadmin'))
 

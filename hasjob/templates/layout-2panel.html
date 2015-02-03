@@ -1,6 +1,7 @@
 {% extends "baseframe-2panel.html" %}
 {% from "macros.html" import campaign_header, campaign_script %}
 {% from "baseframe/components.html" import hgpanel with context %}
+{% from "baseframe/forms.html" import renderform %}
 
 {% block doctypehtml -%}
 <!DOCTYPE html>
@@ -32,6 +33,9 @@
 <div class="container-fluid sidebar">
   <div class="row-fluid">
     <div class="col-xs-12">
+      {% if search_form %}
+      {{ renderform(search_form) }}
+      {% else %}
       <form>
         <fieldset>
           <div class="form-group">
@@ -49,9 +53,10 @@
               <option>Location</option>
             </select>
           </div>
-          <button type="submit" class="btn btn-primary">Search</button>
+          <button id="search-form-submit"type="submit" class="btn btn-primary">Search</button>
         </fieldset>
       </form>
+      {% endif %}
     </div>
   </div>
 </div>
