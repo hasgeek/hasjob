@@ -86,7 +86,9 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
     # Search form for sidebar
     search_form = SearchForm()
     search_form.type.choices = [(jt.name, jt.title) for jt in JobType.query.order_by('seq')]
-    search_form.location.choices = [(jl.geonameid, jl.geonameid) for jl in JobLocation.query.order_by('geonameid')]
+
+    # TODO: Need a better way to list locations
+    # search_form.location.choices = [(jl.geonameid, jl.geonameid) for jl in JobLocation.query.order_by('geonameid')]
 
     # Pick a header campaign
     if not g.kiosk:

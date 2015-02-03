@@ -73,9 +73,9 @@ def invalid_urls():
 
 class SearchForm(Form):
     """Form for sidebar search"""
-    search = TextField()
+    search = TextField(__("Search"))
     type = SelectField(__("Type"))
-    location = SelectField(__("Location"))
+    location = TextField(__("Location"))
 
 
 class ListingForm(Form):

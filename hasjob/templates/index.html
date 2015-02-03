@@ -165,6 +165,16 @@
       $(this).val($(this).val().replace(/(\r\n|\n|\r)/gm," ").replace(/\s+/g," "));
     });
   });
+      ( function($) {
+
+          $("#search-form").on("submit", function(e){
+            e.preventDefault();
+            var form = $("#search-form");
+            var values = [form.find('#search').val(),form.find('#type').val(),form.find('#location').val()];
+            window.location.href = encodeURI("/search?q="+values.join(" "));
+            });
+        }
+      )(jQuery);
 </script>
 {%- endif -%}
 {%- if loadmore -%}
