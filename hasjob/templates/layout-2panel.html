@@ -1,0 +1,148 @@
+{% extends "baseframe-2panel.html" %}
+{% from "macros.html" import campaign_header, campaign_script %}
+{% from "baseframe/components.html" import hgpanel with context %}
+
+{% block doctypehtml -%}
+<!DOCTYPE html>
+<!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="en" {% block manifest %}{%- if g.kiosk %} manifest="{{ url_for('kiosk_manifest') }}" {%- endif %}{% endblock %}> <![endif]-->
+<!--[if IE 7]>    <html class="no-js lt-ie9 lt-ie8" lang="en" {{ self.manifest() }}> <![endif]-->
+<!--[if IE 8]>    <html class="no-js lt-ie9" lang="en" {{ self.manifest() }}> <![endif]-->
+<!--[if gt IE 8]><!--> <html lang="en" class="no-js {%- if g.user %} userlogin {%- else %} no-userlogin {%- endif %}" {{ self.manifest() }}> <!--<![endif]-->
+{%- endblock %}
+
+{%- block titletags %}
+  <title>{% block title %}{{ title }}{% endblock %} — {% if g.board %}{{ g.board.title }}{% else %}{{ config['SITE_TITLE'] }}{% endif %}</title>
+  <meta name="DC.title" content="{{ self.title()|e }}" />
+  <meta property="og:title" content="{{ self.title()|e }}" />
+{%- endblock %}
+
+{%- block layoutheaders %}
+  <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Walter+Turncoat|McLaren|Source+Sans+Pro:400,600">
+  <!-- Feed and search -->
+  <link rel="alternate" type="application/atom+xml" title="All jobs – {% if g.board -%} {{ g.board.title }} {%- else -%} {{ config['SITE_TITLE']|e }} {%- endif %}" href="{{ url_for('feed') }}" />
+  <link rel="search" type="application/opensearchdescription+xml" href="{{ url_for('static', filename='opensearch.xml') }}" title="Hasjob Search" />
+  {% block pageheaders %}{% endblock %}
+{%- endblock %}
+
+{% block logo -%}
+  <div class="logo"><img src="{{ url_for('static', filename='img/logo.png') }}" alt=""></div>
+{%- endblock %}
+
+{% block sidebar -%}
+<div class="container-fluid sidebar">
+  <div class="row-fluid">
+    <div class="col-xs-12">
+      <form>
+        <fieldset>
+          <div class="form-group">
+            <select class="form-control">
+              <option>Keyword</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <select class="form-control">
+              <option>Type</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <select class="form-control">
+              <option>Location</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary">Search</button>
+        </fieldset>
+      </form>
+    </div>
+  </div>
+</div>
+{%- endblock %}
+
+{% block headerbox -%}
+<header>
+  {% block networkbar -%}
+  {% macro site_title() %}
+    <div class="page-header">
+      <h1>
+        <a href="{{ url_for('index') }}">
+          {%- if g.board -%}
+            {{ g.board.title }} <small>
+              {%- if g.board.caption -%} {{ g.board.caption }} {%- else -%} Powered by Hasjob {%- endif -%}
+            </small>
+          {%- else -%}
+            Hasjob <small>The HasGeek Job Board</small>
+          {%- endif -%}
+        </a>
+      </h1>
+    </div>
+  {% endmacro %}
+    {{ hgpanel(site_title=site_title()) }}
+  {%- endblock %}<!-- 
+  <div class="container">
+    <div class="row">
+      <div class="col-xs-12 col-sm-6 col-md-8 col-lg-9">
+        <h1><a href="{{ url_for('index') }}">
+          {%- if g.board -%}
+            {{ g.board.title }} <small>
+              {%- if g.board.caption -%} {{ g.board.caption }} {%- else -%} Powered by Hasjob {%- endif -%}
+            </small>
+          {%- else -%}
+            Hasjob <small>The HasGeek Job Board</small>
+          {%- endif -%}
+        </a></h1>
+      </div>
+      <div class="col-xs-12 col-sm-6 col-md-4 col-lg-3">
+        <form id="search" action="{{ url_for('search') }}" class="form-inline" role="form">
+          <label for="search-input" class="sr-only">Search</label>
+          <div class="input-group input-group-sm">
+            <input id="search-input" type="text" placeholder="Find a job…" name="q" value="{{ request.args.q }}" class="form-control"/>
+            <span class="input-group-btn">
+              <input type="submit" class="btn btn-default" value="Go"/>
+            </span>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div> -->
+</header>
+{%- endblock %}
+
+{%- block image_src %}
+  <link rel="image_src" href="{{ url_for('static', filename='img/logo_og.png') }}" />
+  <meta property="og:image" content="{{ url_for('static', filename='img/logo_og.png') }}" />
+{%- endblock %}
+
+{% block messages %}
+  {%- for category, msg in get_flashed_messages(with_categories=true) %}
+    <div class="flash flash-{{ category }}"><p>{{ msg }}</p></div>
+  {%- endfor %}
+{% endblock %}
+
+{% block basecontent -%}
+  {%- if header_campaign %}{{ campaign_header(g, header_campaign) }}{% endif %}
+  {% block content %}{% endblock %}
+{%- endblock %}
+
+{% block footer %}
+<p>
+  {%- if g.kiosk %}
+    Hasjob is a service of HasGeek. You are in kiosk mode with a limited view of posts.
+  {%- elif g.board %}
+    Powered by <a href="https://hasjob.co/">Hasjob</a>, a service of <a href="https://hasgeek.com/">HasGeek</a>.
+    Subscribe to <a href="{{ url_for('feed') }}">the feed</a> or follow
+    <a href="https://twitter.com/hasjob">@hasjob on Twitter</a>
+    to find out when new jobs are posted. Hosted by
+    <a href="http://e2enetworks.com/">E2E Networks</a>.
+  {%- else %}
+    Hasjob is a service of <a href="https://hasgeek.com/">HasGeek</a>.
+    Subscribe to <a href="{{ url_for('feed') }}">the feed</a> or follow
+    <a href="https://twitter.com/hasjob">@hasjob on Twitter</a>
+    to find out when new jobs are posted. Hosted by
+    <a href="http://e2enetworks.com/">E2E Networks</a>.
+  {%- endif %}
+</p>
+{% endblock %}
+
+{% block layoutscripts %}
+  {%- if header_campaign %}{{ campaign_script() }}{% endif %}
+  {% block footerscripts %}{% endblock %}
+{% endblock %}
