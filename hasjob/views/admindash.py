@@ -31,8 +31,8 @@ def admin_dashboard_historical_userdays(q):
 
     outfile = StringIO()
     out = unicodecsv.writer(outfile, 'excel')
-    out.writerow(['month', '50%c', '60%c', '70%c', '80%c', '90%c',
-        '91%c', '92%c', '93%c', '94%c', '95%c', '96%c', '97%c', '98%c', '99%c', '100%c', 'users'])
+    out.writerow(['month', '50%', '60%', '70%', '80%', '90%',
+        '91%', '92%', '93%', '94%', '95%', '96%', '97%', '98%', '99%', '100%', 'users'])
 
     for month, users, centile in userdays:
         out.writerow([month.strftime('%Y-%m')] + [round(c, 2) for c in centile] + [users])
