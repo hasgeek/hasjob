@@ -129,11 +129,12 @@
   <script type="text/javascript">
     $(function() {
       $("#loadmore").attr('method', 'POST').ajaxForm({
-        target: '#loadmore',
-        replaceTarget: true,
         beforeSubmit: function(formdata, form, options) {
           form.find('button[type="submit"]').prop('disabled', true).addClass('submit-disabled').html('Loading more… <span class="loading">&nbsp;</span>');
           return true;
+        },
+        success: function(responseText, statusText, xhr, form) {
+          target = $("#loadmore").replaceWith(responseText.trim());
         },
         error: function(context, xhr, status, errMsg) {
           var form = $("#loadmore");

@@ -1,7 +1,7 @@
 $(function() {
   var handleGroupClick = function(){
     // replaces the group with individual stickies when clicked
-    $('#stickie-area li.grouped').one('click', function(e){
+    $('#stickie-area').on('click', 'li.grouped', function(e){
       e.preventDefault();
       var group = $(this);
       $($.map(group.children(), function(node){
