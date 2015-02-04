@@ -344,7 +344,7 @@ class ApplicationForm(Form):
         description=u"Please provide all details the employer has requested. To add a resume, "
         u"post it on LinkedIn or host the file on Dropbox and insert the link here")
     apply_optin = BooleanField("Optional: sign me up for a better Hasjob experience",
-        description=u"Hasjob’s maintainers may contact about new features and can see this application for reference")
+        description=u"Hasjob’s maintainers may contact you about new features and can see this application for reference")
 
     def __init__(self, *args, **kwargs):
         super(ApplicationForm, self).__init__(*args, **kwargs)
