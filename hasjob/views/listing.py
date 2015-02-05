@@ -562,8 +562,9 @@ def confirm_email(hashid, key):
                 tweet.delay(post.headline, url_for('jobdetail', hashid=post.hashid,
                     _external=True), post.location, dict(post.parsed_location or {}))
             add_to_boards.delay(post.id)
-            flash("Congratulations! Your job post has been published. You can now see how your post is performing "
-                "relative to others. Look for numbers in the stickies and the graph in the sidebar", "interactive")
+            flash("Congratulations! Your job post has been published. As a bonus for being an employer on Hasjob, "
+                "you can now see how your post is performing relative to others. Look in the sidebar of any post.",
+                "interactive")
     return redirect(url_for('jobdetail', hashid=post.hashid), code=302)
 
 
