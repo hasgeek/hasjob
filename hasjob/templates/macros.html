@@ -1,4 +1,4 @@
-{%- macro stickie(post, url, pinned, groupedunder=false, dataurl=none, is_siteadmin=false) %}
+{%- macro stickie(post, url, pinned, groupedunder=false, dataurl=none, show_viewcounts=false, show_pay=false) %}
   {%- if groupedunder %}
     <div class="stickie {%- if post.is_announcement() %} announcement{% endif %} grouped under" {%- if dataurl %} data-href="{{ dataurl }}"{% endif %}>
   {%- else %}
@@ -8,7 +8,7 @@
     <span class="annotation top-left">{{ post.location }}</span>
     <span class="annotation top-right">{{ post.datetime|shortdate }}</span>
     <span class="headline">{{ post.headline }}</span>
-    {% if is_siteadmin %}<span class="count">{{ post.viewcounts['viewed'] }}&middot;{{ post.viewcounts['opened'] }}&middot;{{ post.viewcounts['applied'] }} &middot; {{ post.viewcounts['pay_label'] }}</span>{% endif %}
+    {% if show_viewcounts or show_pay %}<span class="count">{% if show_viewcounts %}{{ post.viewcounts['viewed'] }}&middot;{{ post.viewcounts['opened'] }}&middot;{{ post.viewcounts['applied'] }}{% endif %}{% if show_viewcounts and show_pay %} &middot; {% endif %}{% if show_pay %}{{ post.viewcounts['pay_label'] }}{% endif %}</span>{% endif %}
     <span class="annotation bottom-right">{{ post.company_name }}</span>
     {%- if post.is_new() -%}
       <span class="new annotation bottom-left">New!</span>

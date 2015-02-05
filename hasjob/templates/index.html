@@ -82,17 +82,17 @@
       {%- for grouping, group in grouped.items() -%}{%- with pinned, post=group[0] -%}
         {%- if group|length == 1 -%}
           <li class="col-xs-12 col-md-3 col-sm-4">
-            {{ stickie(post, url_for('jobdetail', hashid=post.hashid), pinned, is_siteadmin=is_siteadmin) }}
+            {{ stickie(post, url_for('jobdetail', hashid=post.hashid), pinned, show_viewcounts=is_siteadmin or g.user and g.user.flags.is_employer_month, show_pay=is_siteadmin) }}
           </li>
         {%- else -%}
           <li class="grouped col-xs-12 col-md-3 col-sm-4">
             {%- if grouping[0] in ['sd', 'nd'] -%}
-              {{ stickie(post, url_for('browse_by_domain', domain=grouping[1]), pinned, dataurl=url_for('jobdetail', hashid=post.hashid), is_siteadmin=is_siteadmin) }}
+              {{ stickie(post, url_for('browse_by_domain', domain=grouping[1]), pinned, dataurl=url_for('jobdetail', hashid=post.hashid), show_viewcounts=is_siteadmin or g.user and g.user.flags.is_employer_month, show_pay=is_siteadmin) }}
             {%- elif grouping[0] in ['se', 'ne'] -%}
-              {{ stickie(post, url_for('browse_by_email', md5sum=grouping[1]), pinned, dataurl=url_for('jobdetail', hashid=post.hashid), is_siteadmin=is_siteadmin) }}
+              {{ stickie(post, url_for('browse_by_email', md5sum=grouping[1]), pinned, dataurl=url_for('jobdetail', hashid=post.hashid), show_viewcounts=is_siteadmin or g.user and g.user.flags.is_employer_month, show_pay=is_siteadmin) }}
             {%- endif -%}
             {%- for pinned, post in group[1:] -%}
-              {{ stickie(post, none, false, groupedunder=true, dataurl=url_for('jobdetail', hashid=post.hashid), is_siteadmin=is_siteadmin) }}
+              {{ stickie(post, none, false, groupedunder=true, dataurl=url_for('jobdetail', hashid=post.hashid), show_viewcounts=is_siteadmin or g.user and g.user.flags.is_employer_month, show_pay=is_siteadmin) }}
             {%- endfor -%}
           </li>
         {%- endif %}
@@ -100,7 +100,7 @@
     {%- else %}
       {%- for pinned, post in pinsandposts -%}
         <li class="col-xs-12 col-md-3 col-sm-4">
-          {{ stickie(post, url_for('jobdetail', hashid=post.hashid), pinned, is_siteadmin=is_siteadmin) }}
+          {{ stickie(post, url_for('jobdetail', hashid=post.hashid), pinned, show_viewcounts=is_siteadmin or g.user and g.user.flags.is_employer_month, show_pay=is_siteadmin) }}
         </li>
       {%- else -%}
         <li class="col-xs-12 col-md-3 col-sm-4">
@@ -146,7 +146,7 @@
       $("#loadmore").appear().on('appear', function(event, element) {
         element.find('button[type="submit"]').trigger('click');
       });
-    })
+    });
   </script>
 {%- endmacro -%}
 {%- block footerscripts -%}
