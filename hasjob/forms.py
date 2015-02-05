@@ -270,7 +270,7 @@ class ListingForm(Form):
             field.data = None
 
     def validate(self):
-        success = super(ListingForm, self).validate()
+        success = super(ListingForm, self).validate(send_signals=False)
         if success:
             if (not self.job_type_ob.nopay_allowed) and self.job_pay_type.data == PAY_TYPE.NOCASH:
                 self.job_pay_type.errors.append(u"“%s” cannot pay nothing" % self.job_type_ob.title)
@@ -327,6 +327,7 @@ class ListingForm(Form):
                         self.job_pay_equity_max.errors.append(
                             u"Please select a narrower range, with maximum within %d× minimum" % multiplier)
                         success = False
+        self.send_signals()
         return success
 
 
