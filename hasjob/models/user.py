@@ -151,15 +151,21 @@ class UserEvent(BaseMixin, db.Model):
     event_session_id = db.Column(None, db.ForeignKey('event_session.id'), nullable=False)
     event_session = db.relationship(EventSession,
         backref=db.backref('events', lazy='dynamic', order_by='UserEvent.created_at'))
+    #: User's IP address
+    ipaddr = db.Column(db.Unicode(45), nullable=True, default=lambda: request and request.environ['REMOTE_ADDR'][:45])
+    #: User's browser
+    useragent = db.Column(db.Unicode(250), nullable=True, default=lambda: request and request.user_agent.string[:250])
     #: URL
-    url = db.Column(db.Unicode(2038), nullable=True, default=lambda: request and request.url)
+    url = db.Column(db.Unicode(2038), nullable=True, default=lambda: request and request.url[:2038])
     #: Referrer
-    referrer = db.Column(db.Unicode(2038), nullable=True, default=lambda: request and request.referrer)
+    referrer = db.Column(db.Unicode(2038), nullable=True,
+        default=lambda: request and ((request.referrer or '')[:2038] or None))
     #: HTTP Method
-    method = db.Column(db.Unicode(10), nullable=True, default=lambda: request and request.method)
+    method = db.Column(db.Unicode(10), nullable=True, default=lambda: request and request.method[:10])
     #: Status code
     status_code = db.Column(db.SmallInteger, nullable=True)
     #: Event name
-    name = db.Column(db.Unicode(80), nullable=False, default=lambda: request and ('endpoint/' + request.endpoint)[:80])
+    name = db.Column(db.Unicode(80), nullable=False,
+        default=lambda: request and ('endpoint/' + (request.endpoint or '')[:80]))
     #: Custom event data (null = no data saved)
     data = db.Column(JsonDict, nullable=True)
