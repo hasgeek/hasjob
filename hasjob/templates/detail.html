@@ -186,8 +186,10 @@
                   {%- endif -%}
                 </a>
               {%- endif %}{% endwith -%}
+            {%- endif %}
+            {%- if is_siteadmin or post.admin_is(g.user) or (g.user and g.user.flags.is_employer_month) %}
               <div class="list-group-item no-border">
-                <i class="fa fa-fw fa-bar-chart-o"></i>&nbsp;&nbsp; <span title="Viewed">{{ post.viewcounts['viewed'] }}</span> &middot; <span title="Opened form">{{ post.viewcounts['opened'] }}</span> &middot; <span title="Applied">{{ post.viewcounts['applied'] }}</span> &middot;
+                <i class="fa fa-fw fa-bar-chart-o"></i>&nbsp;&nbsp; <span title="Viewed">{{ post.viewcounts['viewed'] }}</span> &rsaquo; <span title="Opened form">{{ post.viewcounts['opened'] }}</span> &rsaquo; <span title="Applied">{{ post.viewcounts['applied'] }}</span> &middot;
                 {%- with unittype = post.viewstats[0] %}
                   {%- if unittype == 'q' %} Per 15m:
                   {%- elif unittype == 'h' %} Per hour:
@@ -374,7 +376,7 @@
     {% include "inc/tinymce.js" %}
   </script>
 {% endif %}
-{%- if is_siteadmin or post.admin_is(g.user) %}{% with stats = post.viewstats[1], max = stats.max|tojson %}
+{%- if is_siteadmin or post.admin_is(g.user) or (g.user and g.user.flags.is_employer_month) %}{% with stats = post.viewstats[1], max = stats.max|tojson %}
   <script type="text/javascript">
     $(function() {
       $("#statsline").removeClass('hidden').sparkline(
