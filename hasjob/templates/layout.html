@@ -86,6 +86,10 @@
     to find out when new jobs are posted. Hosted by
     <a href="http://e2enetworks.com/">E2E Networks</a>.
   {%- endif %}
+  {%- if not g.user and not g.anon_user %}
+    <img src="{{ url_for('sniffle') }}" width="1" height="1" alt=""/>
+    }
+  {%- endif %}
 </p>
 {% endblock %}
 

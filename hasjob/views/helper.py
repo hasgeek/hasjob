@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from os import path
 from datetime import datetime
 from urlparse import urljoin
@@ -9,10 +11,31 @@ from sqlalchemy.exc import IntegrityError
 from flask import Markup, request, url_for, g, session
 
 from baseframe import cache
+from baseframe.signals import form_validation_error
+
 from .. import app
 from ..models import (agelimit, newlimit, db, JobCategory, JobPost, JobType, POSTSTATUS, BoardJobPost, Tag, JobPostTag,
-    Campaign, CampaignView)
+    Campaign, CampaignView, EventSession, UserEvent)
 from ..utils import scrubemail, redactemail
+
+
+gif1x1 = 'R0lGODlhAQABAJAAAP8AAAAAACH5BAUQAAAALAAAAAABAAEAAAICBAEAOw=='.decode('base64')
+
+
+@app.route('/_sniffle.gif')
+def sniffle():
+    return gif1x1, 200, {
+        'Content-Type': 'image/gif',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+        }
+
+
+@form_validation_error.connect
+def event_form_validation_error(form):
+    g.event_data['form_validation'] = 'error'
+    g.event_data['form_errors'] = form.errors  # Dict of field: [errors]. Hopefully serializes into JSON
 
 
 @app.before_request
@@ -34,8 +57,11 @@ def request_flags():
 
 
 @app.after_request
-def record_campaign_views(response):
-    if hasattr(g, 'user') and g.user:
+def record_views_and_events(response):
+    if g.campaign_views:
+        g.event_data['campaign_views'] = [c.id for c in g.campaign_views]
+
+    if g.user:
         for campaign in g.campaign_views:
             if not CampaignView.exists(campaign, g.user):
                 try:
@@ -43,6 +69,14 @@ def record_campaign_views(response):
                     db.session.commit()
                 except IntegrityError:  # Race condition from parallel requests
                     db.session.rollback()
+
+    if g.user or g.anon_user:
+        es = EventSession.get_session(user=g.user, anon_user=g.anon_user)
+        es.events.append(UserEvent(status_code=response.status_code, data=g.event_data or None))
+        try:
+            db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
 
     return response
 
@@ -182,10 +216,10 @@ def usessl(url):
     """
     if not app.config.get('USE_SSL'):
         return url
-    if url.startswith('//'): # //www.example.com/path
+    if url.startswith('//'):  # //www.example.com/path
         return 'https:' + url
-    if url.startswith('/'): # /path
+    if url.startswith('/'):  # /path
         url = path.join(request.url_root, url[1:])
-    if url.startswith('http:'): # http://www.example.com
+    if url.startswith('http:'):  # http://www.example.com
         url = 'https:' + url[5:]
     return url
