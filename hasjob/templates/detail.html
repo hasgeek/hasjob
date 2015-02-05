@@ -291,7 +291,7 @@
   <ul id="stickie-area" class="row">
     {%- for post in relatedposts -%}
       <li class="col-xs-12 col-md-3 col-sm-4">
-        {{ stickie(post, url_for('jobdetail', hashid=post.hashid), false, is_siteadmin=is_siteadmin) }}
+        {{ stickie(post, url_for('jobdetail', hashid=post.hashid), false, show_viewcounts=is_siteadmin or g.user and g.user.flags.is_employer_month, show_pay=is_siteadmin) }}
       </li>
     {%- endfor -%}
   </ul>
