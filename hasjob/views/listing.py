@@ -36,6 +36,7 @@ from hasjob.models import (
     PAY_TYPE,
     ReportCode,
     UserJobView,
+    AnonJobView,
     JobApplication,
     Campaign, CAMPAIGN_POSITION,
     unique_hash,
@@ -69,7 +70,7 @@ def jobdetail(hashid):
     if post.status in POSTSTATUS.GONE:
         abort(410)
     if g.user:
-        jobview = UserJobView.query.get((post.id, g.user.id))
+        jobview = UserJobView.get(post, g.user)
         if jobview is None:
             jobview = UserJobView(user=g.user, jobpost=post)
             post.uncache_viewcounts('viewed')
@@ -81,10 +82,19 @@ def jobdetail(hashid):
                 db.session.commit()
             except IntegrityError:
                 db.session.rollback()
-                pass  # User opened two tabs at once? We don't really know
             post.viewcounts  # Re-populate cache
     else:
         jobview = None
+
+    if g.anon_user:
+        anonview = AnonJobView.get(post, g.anon_user)
+        if not anonview:
+            anonview = AnonJobView(jobpost=post, anon_user=g.anon_user)
+            db.session.add(anonview)
+            try:
+                db.session.commit()
+            except IntegrityError:
+                db.session.rollback()
 
     if g.user:
         report = JobPostReport.query.filter_by(post=post, user=g.user).first()

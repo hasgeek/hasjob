@@ -6,7 +6,7 @@ from werkzeug import cached_property
 from flask import url_for, g, escape, Markup
 from sqlalchemy.orm import defer
 from sqlalchemy.ext.associationproxy import association_proxy
-from coaster.sqlalchemy import make_timestamp_columns, JsonDict
+from coaster.sqlalchemy import make_timestamp_columns, Query, JsonDict
 from baseframe import cache
 from baseframe.staticdata import webmail_domains
 import tldextract
@@ -14,11 +14,11 @@ from .. import redis_store
 from . import newlimit, agelimit, db, POSTSTATUS, EMPLOYER_RESPONSE, PAY_TYPE, BaseMixin, TimestampMixin
 from .jobtype import JobType
 from .jobcategory import JobCategory
-from .user import User
+from .user import User, AnonUser
 from .org import Organization
 from ..utils import random_long_key, random_hash_key
 
-__all__ = ['JobPost', 'JobLocation', 'UserJobView', 'JobApplication',
+__all__ = ['JobPost', 'JobLocation', 'UserJobView', 'AnonJobView', 'JobApplication',
     'unique_hash', 'viewstats_by_id_qhour', 'viewstats_by_id_hour', 'viewstats_by_id_day']
 
 
@@ -516,6 +516,28 @@ class UserJobView(TimestampMixin, db.Model):
     user = db.relationship(User)
     #: Has the user viewed apply instructions?
     applied = db.Column(db.Boolean, default=False, nullable=False)
+
+    @classmethod
+    def get(cls, jobpost, user):
+        return cls.query.get((jobpost.id, user.id))
+
+
+class AnonJobView(db.Model):
+    __tablename__ = 'anon_job_view'
+    query_class = Query
+
+    #: Job post that was seen
+    jobpost_id = db.Column(None, db.ForeignKey('jobpost.id'), primary_key=True)
+    jobpost = db.relationship(JobPost)
+    #: User who saw this post
+    anon_user_id = db.Column(None, db.ForeignKey('anon_user.id'), primary_key=True, index=True)
+    anon_user = db.relationship(AnonUser)
+    #: Timestamp
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
+
+    @classmethod
+    def get(cls, jobpost, anon_user):
+        return cls.query.get((jobpost.id, anon_user.id))
 
 
 class JobApplication(BaseMixin, db.Model):

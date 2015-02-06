@@ -1,0 +1,54 @@
+{% extends "dashlayout.html" %}
+{% block title %}Admin dashboard{% endblock %}
+
+{% block tabcontent %}
+  <div class="section first">
+    <h1>{{ self.title() }}</h1>
+    <p>Realtime stats for Hasjob</p>
+  </div>
+  <div class="section">
+    <div id="chart"></div>
+  </div>
+{% endblock %}
+
+{% block footerscripts %}
+  <script type="text/javascript">
+    c3.generate({
+      bindto: '#chart',
+      data: {
+        url: {{ url_for('admin_dashboard_daystats')|tojson }},
+        x: 'hour',
+        xFormat: '%Y-%m-%dT%H:%M:%S',
+        type: 'spline',
+        types: {
+          jobs: 'bar',
+          applications: 'bar',
+          replies: 'bar',
+          rejections: 'bar'
+        },
+        names: {
+          users: "Active users",
+          newusers: "New users",
+          asessions: "Anon sessions",
+          usessions: "User sessions",
+          jobs: "New jobs",
+          applications: "Applications",
+          replies: "Replies",
+          rejections: "Rejections"
+        },
+        groups: [
+          ['replies', 'rejections']
+        ]
+      },
+      axis: {
+        x: {
+          type: 'timeseries',
+          localtime: true,
+          tick: {
+            format: '%a %Hh'
+          }
+        }
+      },
+    });
+  </script>
+{% endblock %}

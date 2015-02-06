@@ -69,6 +69,42 @@ h1 small, h2 small, h3 small
   border-bottom: 1px solid $color-sheet-border
   +box-shadow(0 2px 10px $color-shadow)
 
+  .nav-tabs-top
+    background-color: #ebe7e4
+    border-bottom: 0
+    +box-shadow(0 0 10px rgba(0,0,0,0.1) inset)
+
+    & > li
+      margin-bottom: 0
+      float: left
+      margin-left: 0
+      margin-right: 0
+
+      & > a
+        color: inherit
+        font-variant: small-caps
+        text-transform: lowercase
+        border: none
+        border-radius: 0
+
+  .nav-tabs-top>li.active>a
+    +box-shadow(0 10px 10px -10px rgba(0,0,0,0.1) inset)
+    border: none
+
+  .nav-tabs-top>li:first-child.active>a
+    +box-shadow(0 10px 10px -10px rgba(0,0,0,0.1) inset, 10px 0 10px -10px rgba(0,0,0,0.1) inset)
+
+  .nav-tabs-top>li>a:hover
+    +box-shadow(0 10px 10px -10px rgba(0,0,0,0.1) inset, 0 -10px 10px -10px rgba(0,0,0,0.1) inset)
+
+  .nav-tabs-top>li.active>a:hover, .nav-tabs-top>li.active>a:focus
+    +box-shadow(0 10px 10px -10px rgba(0,0,0,0.1) inset)
+    border: none
+
+  .nav-tabs-top>li:first-child.active>a:hover, .nav-tabs-top>li:first-child.active>a:focus
+    +box-shadow(0 10px 10px -10px rgba(0,0,0,0.1) inset, 10px 0 10px -10px rgba(0,0,0,0.1) inset)
+
+
   .table
     th:first-child, td:first-child
       padding-left: 0
@@ -172,6 +208,13 @@ h1 small, h2 small, h3 small
     border: 1px solid $color-sheet-border
     +border-radius(4px)
     +box-shadow(0 2px 10px $color-shadow, 0 0 10px rgba(0, 0, 0, 0.1) inset)
+
+    .nav-tabs
+      +border-top-left-radius(4px)
+      +border-top-right-radius(4px)
+
+      & > li > a
+        +border-radius(4px 4px 0 0)
 
   .section
     padding: 12px 30px 0

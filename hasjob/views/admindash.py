@@ -1,16 +1,95 @@
 # -*- coding: utf-8 -*-
 
+from collections import defaultdict
 from cStringIO import StringIO
 import unicodecsv
-from flask import render_template
-from ..models import db, EMPLOYER_RESPONSE
+from flask import g, render_template
+from ..models import db, EMPLOYER_RESPONSE, POSTSTATUS, EMPLOYER_RESPONSE
 from .. import app, lastuser
+
+
+@app.route('/admin/dashboard')
+@lastuser.requires_permission('siteadmin')
+def admin_dashboard():
+    return render_template('admin_dashboard.html')
 
 
 @app.route('/admin/dashboard/historical')
 @lastuser.requires_permission('siteadmin')
 def admin_dashboard_historical():
     return render_template('admin_historical.html')
+
+
+@app.route('/admin/dashboard/daystats.csv')
+@lastuser.requires_permission('siteadmin')
+def admin_dashboard_daystats():
+    daystats = defaultdict(dict)
+
+    stats = db.session.query('hour', 'count').from_statement(
+        '''SELECT DATE_TRUNC('hour', user_active_at.active_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS hour, COUNT(DISTINCT(user_active_at.user_id)) AS count FROM user_active_at WHERE user_active_at.active_at > DATE_TRUNC('hour', NOW() AT TIME ZONE 'UTC' - INTERVAL '4 days') GROUP BY hour'''
+        ).params(timezone=g.user.timezone)
+    for hour, count in stats:
+        daystats[hour]['users'] = count
+
+    stats = db.session.query('hour', 'count').from_statement(
+        '''SELECT DATE_TRUNC('hour', "user".created_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS hour, COUNT(*) AS count FROM "user" WHERE "user".created_at > DATE_TRUNC('hour', NOW() AT TIME ZONE 'UTC' - INTERVAL '4 days') GROUP BY hour'''
+        ).params(timezone=g.user.timezone)
+    for hour, count in stats:
+        daystats[hour]['newusers'] = count
+
+    stats = db.session.query('hour', 'count').from_statement(
+        '''SELECT DATE_TRUNC('hour', jobpost.datetime AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS hour, COUNT(*) AS count FROM jobpost WHERE jobpost.status IN :listed AND jobpost.datetime > DATE_TRUNC('hour', NOW() AT TIME ZONE 'UTC' - INTERVAL '4 days') GROUP BY hour'''
+        ).params(timezone=g.user.timezone, listed=POSTSTATUS.LISTED)
+    for hour, count in stats:
+        daystats[hour]['jobs'] = count
+
+    stats = db.session.query('hour', 'count').from_statement(
+        '''SELECT DATE_TRUNC('hour', event_session.created_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS hour, COUNT(*) AS count FROM event_session WHERE event_session.user_id IS NOT NULL AND event_session.created_at > DATE_TRUNC('hour', NOW() AT TIME ZONE 'UTC' - INTERVAL '4 days') GROUP BY hour'''
+        ).params(timezone=g.user.timezone)
+    for hour, count in stats:
+        daystats[hour]['usessions'] = count
+
+    stats = db.session.query('hour', 'count').from_statement(
+        '''SELECT DATE_TRUNC('hour', event_session.created_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS hour, COUNT(*) AS count FROM event_session WHERE event_session.anon_user_id IS NOT NULL AND event_session.created_at > DATE_TRUNC('hour', NOW() AT TIME ZONE 'UTC' - INTERVAL '4 days') GROUP BY hour'''
+        ).params(timezone=g.user.timezone)
+    for hour, count in stats:
+        daystats[hour]['asessions'] = count
+
+    stats = db.session.query('hour', 'count').from_statement(
+        '''SELECT DATE_TRUNC('hour', job_application.created_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS hour, COUNT(*) AS count FROM job_application WHERE job_application.created_at > DATE_TRUNC('hour', NOW() AT TIME ZONE 'UTC' - INTERVAL '4 days') GROUP BY hour'''
+        ).params(timezone=g.user.timezone)
+    for hour, count in stats:
+        daystats[hour]['applications'] = count
+
+    stats = db.session.query('hour', 'count').from_statement(
+        '''SELECT DATE_TRUNC('hour', job_application.replied_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS hour, COUNT(*) AS count FROM job_application WHERE job_application.response = :response AND job_application.replied_at > DATE_TRUNC('hour', NOW() AT TIME ZONE 'UTC' - INTERVAL '4 days') GROUP BY hour'''
+        ).params(timezone=g.user.timezone, response=EMPLOYER_RESPONSE.REPLIED)
+    for hour, count in stats:
+        daystats[hour]['replies'] = count
+
+    stats = db.session.query('hour', 'count').from_statement(
+        '''SELECT DATE_TRUNC('hour', job_application.replied_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS hour, COUNT(*) AS count FROM job_application WHERE job_application.response = :response AND job_application.replied_at > DATE_TRUNC('hour', NOW() AT TIME ZONE 'UTC' - INTERVAL '4 days') GROUP BY hour'''
+        ).params(timezone=g.user.timezone, response=EMPLOYER_RESPONSE.REJECTED)
+    for hour, count in stats:
+        daystats[hour]['rejections'] = count
+
+    outfile = StringIO()
+    out = unicodecsv.writer(outfile, 'excel')
+    out.writerow(['hour', 'users', 'newusers', 'asessions', 'usessions', 'jobs', 'applications', 'replies', 'rejections'])
+
+    for hour, c in daystats.items():
+        out.writerow([hour.isoformat(),
+            c.get('users', 0),
+            c.get('newusers', 0),
+            c.get('asessions', 0),
+            c.get('usessions', 0),
+            c.get('jobs', 0),
+            c.get('applications', 0),
+            c.get('replies', 0),
+            c.get('rejections', 0),
+            ])
+
+    return outfile.getvalue(), 200, {'Content-Type': 'text/plain'}
 
 
 @app.route('/admin/dashboard/historical/userdays_all.csv', defaults={'q': 'a'})
