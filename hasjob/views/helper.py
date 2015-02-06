@@ -11,7 +11,7 @@ from sqlalchemy.exc import IntegrityError
 from flask import Markup, request, url_for, g, session
 
 from baseframe import cache
-from baseframe.signals import form_validation_error
+from baseframe.signals import form_validation_error, form_validation_success
 
 from .. import app
 from ..models import (agelimit, newlimit, db, JobCategory, JobPost, JobType, POSTSTATUS, BoardJobPost, Tag, JobPostTag,
@@ -30,6 +30,11 @@ def sniffle():
         'Pragma': 'no-cache',
         'Expires': '0'
         }
+
+
+@form_validation_success.connect
+def event_form_validation_success(form):
+    g.event_data['form_validation'] = 'ok'
 
 
 @form_validation_error.connect
