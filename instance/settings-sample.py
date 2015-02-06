@@ -42,6 +42,9 @@ MAIL_SENDER = 'test@example.com'
 ADMINS = []
 #: Log file
 LOGFILE = 'error.log'
+#: Fluentd settings
+#: FLUENTD_SERVER_HOST : If specified, will enable logging to fluentd
+#: FLUENTD_SERVER_PORT : Default 24224
 #: Use SSL for some URLs
 USE_SSL = False
 #: Twitter integration (register as a "client" app)
