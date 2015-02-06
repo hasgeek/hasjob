@@ -7,17 +7,19 @@
     <p>Realtime stats for Hasjob</p>
   </div>
   <div class="section">
-    <div id="chart"></div>
+    <div id="chart1"></div>
+    <div id="chart2"></div>
   </div>
 {% endblock %}
 
 {% block footerscripts %}
   <script type="text/javascript">
+  {%- for period, divid, format in (('day', 'chart1', '%Hh'), ('week', 'chart2', '%a %d')) %}
     c3.generate({
-      bindto: '#chart',
+      bindto: '#{{ divid }}',
       data: {
-        url: {{ url_for('admin_dashboard_daystats')|tojson }},
-        x: 'hour',
+        url: {{ url_for('admin_dashboard_daystats', period=period)|tojson }},
+        x: 'slot',
         xFormat: '%Y-%m-%dT%H:%M:%S',
         type: 'spline',
         types: {
@@ -45,10 +47,11 @@
           type: 'timeseries',
           localtime: true,
           tick: {
-            format: '%a %Hh'
+            format: {{ format|tojson }}
           }
         }
       },
     });
+  {%- endfor %}
   </script>
 {% endblock %}

@@ -4,7 +4,7 @@ from collections import defaultdict
 from cStringIO import StringIO
 import unicodecsv
 from flask import g, render_template
-from ..models import db, EMPLOYER_RESPONSE, POSTSTATUS, EMPLOYER_RESPONSE
+from ..models import db, POSTSTATUS, EMPLOYER_RESPONSE
 from .. import app, lastuser
 
 
@@ -20,65 +20,73 @@ def admin_dashboard_historical():
     return render_template('admin_historical.html')
 
 
-@app.route('/admin/dashboard/daystats.csv')
+@app.route('/admin/dashboard/daystats.csv', defaults={'period': 'day'})
+@app.route('/admin/dashboard/weekstats.csv', defaults={'period': 'week'})
 @lastuser.requires_permission('siteadmin')
-def admin_dashboard_daystats():
-    daystats = defaultdict(dict)
+def admin_dashboard_daystats(period):
+    if period == 'day':
+        trunc = 'hour'
+        interval = '1 day'
+    else:
+        trunc = 'day'
+        interval = '1 week'
 
-    stats = db.session.query('hour', 'count').from_statement(
-        '''SELECT DATE_TRUNC('hour', user_active_at.active_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS hour, COUNT(DISTINCT(user_active_at.user_id)) AS count FROM user_active_at WHERE user_active_at.active_at > DATE_TRUNC('hour', NOW() AT TIME ZONE 'UTC' - INTERVAL '4 days') GROUP BY hour'''
-        ).params(timezone=g.user.timezone)
-    for hour, count in stats:
-        daystats[hour]['users'] = count
+    stats = defaultdict(dict)
 
-    stats = db.session.query('hour', 'count').from_statement(
-        '''SELECT DATE_TRUNC('hour', "user".created_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS hour, COUNT(*) AS count FROM "user" WHERE "user".created_at > DATE_TRUNC('hour', NOW() AT TIME ZONE 'UTC' - INTERVAL '4 days') GROUP BY hour'''
-        ).params(timezone=g.user.timezone)
-    for hour, count in stats:
-        daystats[hour]['newusers'] = count
+    statsq = db.session.query('slot', 'count').from_statement(
+        '''SELECT DATE_TRUNC(:trunc, user_active_at.active_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS slot, COUNT(DISTINCT(user_active_at.user_id)) AS count FROM user_active_at WHERE user_active_at.active_at > DATE_TRUNC(:trunc, NOW() AT TIME ZONE 'UTC' - INTERVAL :interval) GROUP BY slot ORDER BY slot'''
+        ).params(trunc=trunc, interval=interval, timezone=g.user.timezone)
+    for slot, count in statsq:
+        stats[slot]['users'] = count
 
-    stats = db.session.query('hour', 'count').from_statement(
-        '''SELECT DATE_TRUNC('hour', jobpost.datetime AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS hour, COUNT(*) AS count FROM jobpost WHERE jobpost.status IN :listed AND jobpost.datetime > DATE_TRUNC('hour', NOW() AT TIME ZONE 'UTC' - INTERVAL '4 days') GROUP BY hour'''
-        ).params(timezone=g.user.timezone, listed=POSTSTATUS.LISTED)
-    for hour, count in stats:
-        daystats[hour]['jobs'] = count
+    statsq = db.session.query('slot', 'count').from_statement(
+        '''SELECT DATE_TRUNC(:trunc, "user".created_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS slot, COUNT(*) AS count FROM "user" WHERE "user".created_at > DATE_TRUNC(:trunc, NOW() AT TIME ZONE 'UTC' - INTERVAL :interval) GROUP BY slot ORDER BY slot'''
+        ).params(trunc=trunc, interval=interval, timezone=g.user.timezone)
+    for slot, count in statsq:
+        stats[slot]['newusers'] = count
 
-    stats = db.session.query('hour', 'count').from_statement(
-        '''SELECT DATE_TRUNC('hour', event_session.created_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS hour, COUNT(*) AS count FROM event_session WHERE event_session.user_id IS NOT NULL AND event_session.created_at > DATE_TRUNC('hour', NOW() AT TIME ZONE 'UTC' - INTERVAL '4 days') GROUP BY hour'''
-        ).params(timezone=g.user.timezone)
-    for hour, count in stats:
-        daystats[hour]['usessions'] = count
+    statsq = db.session.query('slot', 'count').from_statement(
+        '''SELECT DATE_TRUNC(:trunc, jobpost.datetime AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS slot, COUNT(*) AS count FROM jobpost WHERE jobpost.status IN :listed AND jobpost.datetime > DATE_TRUNC(:trunc, NOW() AT TIME ZONE 'UTC' - INTERVAL :interval) GROUP BY slot ORDER BY slot'''
+        ).params(trunc=trunc, interval=interval, timezone=g.user.timezone, listed=POSTSTATUS.LISTED)
+    for slot, count in statsq:
+        stats[slot]['jobs'] = count
 
-    stats = db.session.query('hour', 'count').from_statement(
-        '''SELECT DATE_TRUNC('hour', event_session.created_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS hour, COUNT(*) AS count FROM event_session WHERE event_session.anon_user_id IS NOT NULL AND event_session.created_at > DATE_TRUNC('hour', NOW() AT TIME ZONE 'UTC' - INTERVAL '4 days') GROUP BY hour'''
-        ).params(timezone=g.user.timezone)
-    for hour, count in stats:
-        daystats[hour]['asessions'] = count
+    statsq = db.session.query('slot', 'count').from_statement(
+        '''SELECT DATE_TRUNC(:trunc, event_session.created_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS slot, COUNT(*) AS count FROM event_session WHERE event_session.user_id IS NOT NULL AND event_session.created_at > DATE_TRUNC(:trunc, NOW() AT TIME ZONE 'UTC' - INTERVAL :interval) GROUP BY slot ORDER BY slot'''
+        ).params(trunc=trunc, interval=interval, timezone=g.user.timezone)
+    for slot, count in statsq:
+        stats[slot]['usessions'] = count
 
-    stats = db.session.query('hour', 'count').from_statement(
-        '''SELECT DATE_TRUNC('hour', job_application.created_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS hour, COUNT(*) AS count FROM job_application WHERE job_application.created_at > DATE_TRUNC('hour', NOW() AT TIME ZONE 'UTC' - INTERVAL '4 days') GROUP BY hour'''
-        ).params(timezone=g.user.timezone)
-    for hour, count in stats:
-        daystats[hour]['applications'] = count
+    statsq = db.session.query('slot', 'count').from_statement(
+        '''SELECT DATE_TRUNC(:trunc, event_session.created_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS slot, COUNT(*) AS count FROM event_session WHERE event_session.anon_user_id IS NOT NULL AND event_session.created_at > DATE_TRUNC(:trunc, NOW() AT TIME ZONE 'UTC' - INTERVAL :interval) GROUP BY slot ORDER BY slot'''
+        ).params(trunc=trunc, interval=interval, timezone=g.user.timezone)
+    for slot, count in statsq:
+        stats[slot]['asessions'] = count
 
-    stats = db.session.query('hour', 'count').from_statement(
-        '''SELECT DATE_TRUNC('hour', job_application.replied_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS hour, COUNT(*) AS count FROM job_application WHERE job_application.response = :response AND job_application.replied_at > DATE_TRUNC('hour', NOW() AT TIME ZONE 'UTC' - INTERVAL '4 days') GROUP BY hour'''
-        ).params(timezone=g.user.timezone, response=EMPLOYER_RESPONSE.REPLIED)
-    for hour, count in stats:
-        daystats[hour]['replies'] = count
+    statsq = db.session.query('slot', 'count').from_statement(
+        '''SELECT DATE_TRUNC(:trunc, job_application.created_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS slot, COUNT(*) AS count FROM job_application WHERE job_application.created_at > DATE_TRUNC(:trunc, NOW() AT TIME ZONE 'UTC' - INTERVAL :interval) GROUP BY slot ORDER BY slot'''
+        ).params(trunc=trunc, interval=interval, timezone=g.user.timezone)
+    for slot, count in statsq:
+        stats[slot]['applications'] = count
 
-    stats = db.session.query('hour', 'count').from_statement(
-        '''SELECT DATE_TRUNC('hour', job_application.replied_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS hour, COUNT(*) AS count FROM job_application WHERE job_application.response = :response AND job_application.replied_at > DATE_TRUNC('hour', NOW() AT TIME ZONE 'UTC' - INTERVAL '4 days') GROUP BY hour'''
-        ).params(timezone=g.user.timezone, response=EMPLOYER_RESPONSE.REJECTED)
-    for hour, count in stats:
-        daystats[hour]['rejections'] = count
+    statsq = db.session.query('slot', 'count').from_statement(
+        '''SELECT DATE_TRUNC(:trunc, job_application.replied_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS slot, COUNT(*) AS count FROM job_application WHERE job_application.response = :response AND job_application.replied_at > DATE_TRUNC(:trunc, NOW() AT TIME ZONE 'UTC' - INTERVAL :interval) GROUP BY slot ORDER BY slot'''
+        ).params(trunc=trunc, interval=interval, timezone=g.user.timezone, response=EMPLOYER_RESPONSE.REPLIED)
+    for slot, count in statsq:
+        stats[slot]['replies'] = count
+
+    statsq = db.session.query('slot', 'count').from_statement(
+        '''SELECT DATE_TRUNC(:trunc, job_application.replied_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS slot, COUNT(*) AS count FROM job_application WHERE job_application.response = :response AND job_application.replied_at > DATE_TRUNC(:trunc, NOW() AT TIME ZONE 'UTC' - INTERVAL :interval) GROUP BY slot ORDER BY slot'''
+        ).params(trunc=trunc, interval=interval, timezone=g.user.timezone, response=EMPLOYER_RESPONSE.REJECTED)
+    for slot, count in statsq:
+        stats[slot]['rejections'] = count
 
     outfile = StringIO()
     out = unicodecsv.writer(outfile, 'excel')
-    out.writerow(['hour', 'users', 'newusers', 'asessions', 'usessions', 'jobs', 'applications', 'replies', 'rejections'])
+    out.writerow(['slot', 'users', 'newusers', 'asessions', 'usessions', 'jobs', 'applications', 'replies', 'rejections'])
 
-    for hour, c in daystats.items():
-        out.writerow([hour.isoformat(),
+    for slot, c in sorted(stats.items()):
+        out.writerow([slot.isoformat(),
             c.get('users', 0),
             c.get('newusers', 0),
             c.get('asessions', 0),
