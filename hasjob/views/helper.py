@@ -58,6 +58,27 @@ def request_flags():
 
 @app.after_request
 def record_views_and_events(response):
+    # We're not sure why, but the g.* variables are sometimes missing in production.
+    # Keep track so we can investigate
+    missing_in_context = []
+    if not hasattr(g, 'campaign_views'):
+        g.campaign_views = []
+        missing_in_context.append('campaign_views')
+    if not hasattr(g, 'user'):
+        g.user = None
+        missing_in_context.append('user')
+    if not hasattr(g, 'anon_user'):
+        g.anon_user = None
+        missing_in_context.append('anon_user')
+    if not hasattr(g, 'event_data'):
+        g.event_data = {}
+        missing_in_context.append('event_data')
+
+    if missing_in_context:
+        g.event_data['missing_in_context'] = missing_in_context
+
+    # Now process the response
+
     if g.campaign_views:
         g.event_data['campaign_views'] = [c.id for c in g.campaign_views]
 
