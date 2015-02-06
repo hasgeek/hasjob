@@ -118,12 +118,13 @@ class EventSession(BaseMixin, db.Model):
 
             # Campaign parameters changed? End the session again. See Google's documentation for reasoning
             # https://developers.google.com/analytics/devguides/collection/gajs/gaTrackingCampaigns
-            for param in ('utm_source', 'utm_medium', 'utm_term', 'utm_content', 'utm_id', 'utm_campaign', 'gclid'):
-                pvalue = request.args.get(param, '')[:250] or None
-                if pvalue and pvalue != getattr(ues, param):
-                    ues.ended_at = datetime.utcnow()
-                    ues = None
-                    break
+            if ues is not None:
+                for param in ('utm_source', 'utm_medium', 'utm_term', 'utm_content', 'utm_id', 'utm_campaign', 'gclid'):
+                    pvalue = request.args.get(param, '')[:250] or None
+                    if pvalue and pvalue != getattr(ues, param):
+                        ues.ended_at = datetime.utcnow()
+                        ues = None
+                        break
 
         if not ues:
             ues = cls(
