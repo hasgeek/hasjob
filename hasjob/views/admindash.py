@@ -52,16 +52,10 @@ def admin_dashboard_daystats(period):
         stats[slot]['jobs'] = count
 
     statsq = db.session.query('slot', 'count').from_statement(
-        '''SELECT DATE_TRUNC(:trunc, event_session.created_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS slot, COUNT(*) AS count FROM event_session WHERE event_session.user_id IS NOT NULL AND event_session.created_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone > DATE_TRUNC(:trunc, NOW() AT TIME ZONE :timezone - INTERVAL :interval) GROUP BY slot ORDER BY slot'''
+        '''SELECT DATE_TRUNC(:trunc, event_session.created_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS slot, COUNT(DISTINCT(anon_user_id)) AS count FROM event_session WHERE event_session.anon_user_id IS NOT NULL AND event_session.created_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone > DATE_TRUNC(:trunc, NOW() AT TIME ZONE :timezone - INTERVAL :interval) GROUP BY slot ORDER BY slot'''
         ).params(trunc=trunc, interval=interval, timezone=g.user.timezone)
     for slot, count in statsq:
-        stats[slot]['usessions'] = count
-
-    statsq = db.session.query('slot', 'count').from_statement(
-        '''SELECT DATE_TRUNC(:trunc, event_session.created_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS slot, COUNT(*) AS count FROM event_session WHERE event_session.anon_user_id IS NOT NULL AND event_session.created_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone > DATE_TRUNC(:trunc, NOW() AT TIME ZONE :timezone - INTERVAL :interval) GROUP BY slot ORDER BY slot'''
-        ).params(trunc=trunc, interval=interval, timezone=g.user.timezone)
-    for slot, count in statsq:
-        stats[slot]['asessions'] = count
+        stats[slot]['anon_users'] = count
 
     statsq = db.session.query('slot', 'count').from_statement(
         '''SELECT DATE_TRUNC(:trunc, job_application.created_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS slot, COUNT(*) AS count FROM job_application WHERE job_application.created_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone > DATE_TRUNC(:trunc, NOW() AT TIME ZONE :timezone - INTERVAL :interval) GROUP BY slot ORDER BY slot'''
@@ -83,14 +77,13 @@ def admin_dashboard_daystats(period):
 
     outfile = StringIO()
     out = unicodecsv.writer(outfile, 'excel')
-    out.writerow(['slot', 'users', 'newusers', 'asessions', 'usessions', 'jobs', 'applications', 'replies', 'rejections'])
+    out.writerow(['slot', 'newusers', 'users', 'anon_users', 'jobs', 'applications', 'replies', 'rejections'])
 
     for slot, c in sorted(stats.items()):
         out.writerow([slot.isoformat(),
-            c.get('users', 0),
             c.get('newusers', 0),
-            c.get('asessions', 0),
-            c.get('usessions', 0),
+            c.get('users', 0),
+            c.get('anon_users', 0),
             c.get('jobs', 0),
             c.get('applications', 0),
             c.get('replies', 0),
