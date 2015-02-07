@@ -49,6 +49,7 @@
               <i class="fa fa-fw fa-trash-o"></i>&nbsp;&nbsp; Delete this
             </a>
             {% with reach=campaign.estimated_reach() %}{% if reach != none %}<span class="list-group-item"><i class="fa fa-fw fa-bullhorn"></i>&nbsp;&nbsp; Target size: {{ reach }} {{ ngettext("user", "users", reach) }}</span>{% endif %}{% endwith %}
+            <span class="list-group-item"><i class="fa fa-fw fa-info-circle"></i>&nbsp;&nbsp; Views: {{ campaign.views.count() }}</span>
           </div>
         </div>
       </div>
