@@ -8,12 +8,14 @@ TYPEKIT_CODE = ''
 #: Google Analytics code UA-XXXXXX-X
 GA_CODE = ''
 #: Database backend
-SQLALCHEMY_DATABASE_URI = 'sqlite:///'
+SQLALCHEMY_DATABASE_URI = 'postgres://localhost/hasgeek_hasjob'
 #: Secret key
 SECRET_KEY = 'make this something random'
 #: Timezone
 TIMEZONE = 'Asia/Kolkata'
-#: Static resource subdomain (defaults to 'static')
+#: Static resource subdomain (defauls to 'static')
+SERVER_NAME = "hasjob.karthik.local:5000"
+
 STATIC_SUBDOMAIN = 'static'
 #: Upload path
 UPLOADED_LOGOS_DEST = '/tmp/uploads'
@@ -41,6 +43,10 @@ MAIL_SENDER = 'test@example.com'
 ADMINS = []
 #: Log file
 LOGFILE = 'error.log'
+#: If specified, will enable logging to fluentd
+FLUENTD_SERVER_HOST = 'localhost'
+FLUENTD_SERVER_PORT = 24224  #: Default 24224
+FLUENTD_TAG = 'coaster.app'
 #: Use SSL for some URLs
 USE_SSL = False
 #: Twitter integration (register as a "client" app)
@@ -87,6 +93,6 @@ INVALID_URLS = [
 #: LastUser server
 LASTUSER_SERVER = 'https://auth.hasgeek.com/'
 #: LastUser client id
-LASTUSER_CLIENT_ID = ''
+LASTUSER_CLIENT_ID = 'uTgOOhomRly6pf0o38EDeQ'
 #: LastUser client secret
-LASTUSER_CLIENT_SECRET = ''
+LASTUSER_CLIENT_SECRET = 'kiQICYnGSlibOjh5LVaBfQ2zQ9uSicTom8jBVz9DytCQ'

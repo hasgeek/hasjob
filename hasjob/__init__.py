@@ -30,6 +30,7 @@ assets['hasjob.css'][version] = 'css/app.css'
 
 from . import models, views  # NOQA
 from .models import db
+from . import signals
 
 
 # Configure the app
