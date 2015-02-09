@@ -107,9 +107,9 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
                 pass
 
         if request.method == 'GET':
-            batchsize = 15  # Skipping one for the special stickie that's on all pages
+            batchsize = 31  # Skipping one for the special stickie that's on all pages
         else:
-            batchsize = 16
+            batchsize = 32
 
         # Depending on the display mechanism (grouped or ungrouped), extract the batch
         if grouped:
