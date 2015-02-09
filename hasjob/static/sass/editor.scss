@@ -1,13 +1,15 @@
 @import "colors";
 @import "fonts";
 // We don't know of a clean way to NOT hardcode this URL here
-@import url("https://static.hasgeek.co.in/asset?asset=firasans.css&asset=baseframe-firasans.css");
+// @import url("https://static.hasgeek.co.in/asset?asset=firasans.css&asset=baseframe-firasans.css");
+@import url("//fonts.googleapis.com/css?family=Fira+Sans:400,700,400italic,700italic");
 
 body {
     margin: 5px;
     font-size: 16px;
     line-height: 24px;
     color: #444;
+    font-family: "Fira Sans", "Arial", sans-serif;
 }
 
 p, ul, ol, blockquote {
