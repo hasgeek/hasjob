@@ -84,6 +84,9 @@ def record_views_and_events(response):
 
     # Now process the response
 
+    if response.status_code in (301, 302, 303, 307, 308):
+        g.event_data['location'] = response.headers.get('Location')
+
     if g.campaign_views:
         g.event_data['campaign_views'] = [c.id for c in g.campaign_views]
 
