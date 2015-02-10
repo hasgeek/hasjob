@@ -461,7 +461,7 @@ class BoardOptionsForm(Form):
         description=u"These users will be allowed to post jobs on this board under the following terms",
         usermodel=User, lastuser=lastuser)
     # Allow turning this off only in siteadmin-approved boards (deleted in the view for non-siteadmins)
-    require_pay = BooleanField(u"Require pay data for post on this board?", default=True,
+    require_pay = BooleanField(u"Require pay data for posting on this board?", default=True,
         description=u"Hasjob requires employers to reveal what they intend to pay, "
             u"but you can make it optional for jobs posted from this board. "
             u"Pay data is used to match candidates to jobs. We recommend you collect it")
