@@ -21,7 +21,7 @@
         </p>
       {%- endif %}
     </div>
-    <form id="newjob" class="form-horizontal" enctype="multipart/form-data" method="POST">
+    <form data-parsley-validate id="newjob" class="form-horizontal" enctype="multipart/form-data" method="POST">
       <input type="hidden" name="_charset_"/>
       <input type="hidden" name="form.id" value="newjob"/>
       {{ form.hidden_tag() }}
@@ -436,4 +436,5 @@
       {{ widgetscripts(form, script=false) }}
     });
   </script>
+  <script src="{{ 'parsley.js'|ext_asset_url }}" type="text/javascript"></script>
 {% endblock %}
