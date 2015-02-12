@@ -464,7 +464,7 @@ def rejectjob(hashid):
             flash(flashmsg, "interactive")
     elif request.method == 'POST' and request.is_xhr:
         return render_template('inc/rejectform.html', post=post, rejectform=rejectform)
-    return redirect(url_for('jobdetail', hashid=post.hashid))
+    return redirect(url_for('jobdetail', hashid=post.hashid), code=303)
 
 
 @app.route('/moderate/<hashid>', methods=('GET', 'POST'), subdomain='<subdomain>')
@@ -495,7 +495,7 @@ def moderatejob(hashid):
             return "<p>%s</p>" % flashmsg
     elif request.method == 'POST' and request.is_xhr:
         return render_template('inc/moderateform.html', post=post, moderateform=moderateform)
-    return redirect(url_for('jobdetail', hashid=post.hashid))
+    return redirect(url_for('jobdetail', hashid=post.hashid), code=303)
 
 
 @app.route('/confirm/<hashid>', methods=('GET', 'POST'), subdomain='<subdomain>')
@@ -503,14 +503,16 @@ def moderatejob(hashid):
 def confirm(hashid):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
     form = forms.ConfirmForm()
-    if post.status in [POSTSTATUS.REJECTED, POSTSTATUS.SPAM]:
+    if post.status in POSTSTATUS.GONE:
         abort(410)
-    elif post.status in [POSTSTATUS.DRAFT, POSTSTATUS.PENDING]:
+    elif post.status in POSTSTATUS.UNPUBLISHED:
         if not (post.edit_key in session.get('userkeys', []) or post.admin_is(g.user)):
             abort(403)
     else:
         # Any other status: no confirmation required (via this handler)
         return redirect(url_for('jobdetail', hashid=post.hashid), code=302)
+
+    # We get here if it's (a) POSTSTATUS.UNPUBLISHED and (b) the user is confirmed authorised
     if 'form.id' in request.form and form.validate_on_submit():
         # User has accepted terms of service. Now send email and/or wait for payment
         # Also (re-)set the verify key, just in case they changed their email
