@@ -183,6 +183,10 @@ h1 small, h2 small, h3 small {
   max-width: 100%;
 }
 
+.label {
+  padding: 0 0.6em;
+}
+
 .list-group-item .badge {
   float: right;
 }
@@ -199,6 +203,7 @@ h1 small, h2 small, h3 small {
   -moz-box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
   -webkit-box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+  text-rendering: optimizeLegibility;
 }
 .sheet .nav-tabs-top {
   background: #ebe7e4 url('../img/paper.jpg?1400098749');
