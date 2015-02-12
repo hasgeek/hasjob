@@ -311,6 +311,10 @@ class CampaignAction(BaseScopedNameMixin, db.Model):
     #: Action type
     type = db.Column(db.Enum(*CAMPAIGN_ACTION.keys(), name='campaign_action_type_enum'), nullable=False,
         default=CAMPAIGN_ACTION)
+    # type = db.Column(db.Char(1),
+    #     db.CheckConstraint('type IN (%s)' % ', '.join(["'%s'" % k for k in CAMPAIGN_ACTION.keys()])),
+    #     nullable=False,
+    #     default=CAMPAIGN_ACTION)
     #: Action category (for buttons)
     category = db.Column(db.Unicode(20), nullable=False, default=u'default')
     #: Icon to accompany text
