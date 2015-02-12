@@ -40,7 +40,7 @@ def optional_url(form, field):
     if not field.data:
         raise forms.validators.StopValidation()
     else:
-        if ':' not in field.data:
+        if '://' not in field.data:
             field.data = 'http://' + field.data
         validator = forms.validators.URL(message="This does not appear to be a valid URL.")
         try:
@@ -122,9 +122,10 @@ class ListingForm(forms.Form):
         description=u"Optional — Your organization’s logo will appear at the top of your post.",
         )  # validators=[file_allowed(uploaded_logos, "That image type is not supported")])
     company_logo_remove = forms.BooleanField("Remove existing logo")
-    company_url = forms.StringField("URL",
-        description=u"Example: http://www.google.com",
-        validators=[optional_url, forms.validators.Length(min=0, max=255, message="%(max)d characters maximum"), forms.validators.ValidUrl()])
+    company_url = forms.URLField("URL",
+        description=u"Your organization’s website",
+        validators=[forms.validators.DataRequired(), optional_url,
+            forms.validators.Length(max=255, message="%(max)d characters maximum"), forms.validators.ValidUrl()])
     hr_contact = forms.RadioField(u"Is it okay for recruiters and other "
         u"intermediaries to contact you about this post?", coerce=getbool,
         description=u"We’ll display a notice to this effect on the post",

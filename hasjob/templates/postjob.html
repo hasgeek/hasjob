@@ -55,8 +55,8 @@
             <div class="col-xs-6 col-sm-8 sliderholder"><div id="cashslider"></div></div>
             <div class="col-xs-3 col-sm-2">{{ form.job_pay_cash_max(class="form-control input-xs-small") }}</div>
           </div>
-          {% for error in form.job_pay_cash_min.errors %}<div class="help-error">{{ error }}</div>{% endfor %}
-          {% for error in form.job_pay_cash_max.errors %}<div class="help-error">{{ error }}</div>{% endfor %}
+          {% for error in form.job_pay_cash_min.errors %}<div><p class="help-error">{{ error }}</p></div>{% endfor %}
+          {% for error in form.job_pay_cash_max.errors %}<div><p class="help-error">{{ error }}</p></div>{% endfor %}
         </div>
         
         {{ renderfield(form.job_pay_equity, style="wide") }}
@@ -66,8 +66,8 @@
             <div class="col-xs-6 col-sm-8 sliderholder"><div id="equityslider"></div></div>
             <div class="col-xs-3 col-sm-2">{{ form.job_pay_equity_max(class="form-control") }}</div>
           </div>
-          {% for error in form.job_pay_equity_min.errors %}<div class="help-error">{{ error }}</div>{% endfor %}
-          {% for error in form.job_pay_equity_max.errors %}<div class="help-error">{{ error }}</div>{% endfor %}
+          {% for error in form.job_pay_equity_min.errors %}<div><p class="help-error">{{ error }}</p></div>{% endfor %}
+          {% for error in form.job_pay_equity_max.errors %}<div><p class="help-error">{{ error }}</p></div>{% endfor %}
         </div>
         <p class="help-block">
           Pay data is <em>not</em> revealed to candidates. This data is for an upcoming feature to
@@ -104,6 +104,7 @@
         <p>
           <strong>Warning:</strong> Many recruiters will ignore your preference and contact you anyway.
           Do not reveal your phone number in the post. If you receive an email, please report it
+          to <a href="mailto:{{ config['SUPPORT_EMAIL'] }}">{{ config['SUPPORT_EMAIL'] }}</a>
           and we will block their account
         </p>
         {{ rendersubmit([(None, "Review your post…", 'btn-primary')], style="wide", csrf_error=form.csrf_token.errors) }}
