@@ -1,13 +1,13 @@
 @charset "UTF-8";
 body {
   font-family: "Fira Sans", arial, sans-serif;
-  background: #e8e7e6 url('../img/canvas.jpg?1400098749');
+  background: #e8e7e6 url('../img/canvas.jpg?1416495026');
 }
 
 header {
   padding-top: 50px;
   margin-bottom: 0;
-  background: #ebe7e4 url('../img/paper.jpg?1400098749');
+  background: #ebe7e4 url('../img/paper.jpg?1416495026');
   border-bottom: none;
   -moz-box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
   -webkit-box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
@@ -42,7 +42,7 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
   overflow: hidden;
   text-align: left;
   text-transform: capitalize;
-  background-image: url('../img/logo-star.png?1343882941');
+  background-image: url('../img/logo-star.png?1416495026');
   background-repeat: no-repeat;
   background-position: 50% 50%;
   width: 170px;
@@ -56,7 +56,7 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
   overflow: hidden;
   text-align: left;
   text-transform: capitalize;
-  background-image: url('../img/logo-star.png?1343882941');
+  background-image: url('../img/logo-star.png?1416495026');
   background-repeat: no-repeat;
   background-position: 50% 50%;
   width: 170px;
@@ -87,7 +87,7 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
   line-height: 36px;
 }
 #search input[type="text"] {
-  background: white url('../img/search.png?1343882941') 4px center no-repeat;
+  background: white url('../img/search.png?1416495026') 4px center no-repeat;
   padding: 7px 10px 3px 20px;
 }
 #search .btn {
@@ -104,7 +104,7 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
 }
 
 footer .footer-inner {
-  background: #ebe7e4 url('../img/paper.jpg?1400098749');
+  background: #ebe7e4 url('../img/paper.jpg?1416495026');
   -moz-box-shadow: 0 -1px 5px rgba(0, 0, 0, 0.4);
   -webkit-box-shadow: 0 -1px 5px rgba(0, 0, 0, 0.4);
   box-shadow: 0 -1px 5px rgba(0, 0, 0, 0.4);
@@ -134,7 +134,7 @@ footer .container {
 .flash.info {
   padding-left: 15px;
   padding-right: 15px;
-  background: url('../img/paper.jpg?1400098749');
+  background: url('../img/paper.jpg?1416495026');
   border: none;
   -moz-box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4), 0 0 10px rgba(0, 0, 0, 0.1) inset;
   -webkit-box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4), 0 0 10px rgba(0, 0, 0, 0.1) inset;
@@ -206,7 +206,7 @@ h1 small, h2 small, h3 small {
   text-rendering: optimizeLegibility;
 }
 .sheet .nav-tabs-top {
-  background: #ebe7e4 url('../img/paper.jpg?1400098749');
+  background: #ebe7e4 url('../img/paper.jpg?1416495026');
   border-bottom: 0;
   -moz-box-shadow: 0 0 10px rgba(0, 0, 0, 0.1) inset;
   -webkit-box-shadow: 0 0 10px rgba(0, 0, 0, 0.1) inset;
@@ -791,6 +791,18 @@ li:hover > .stickie.grouped.under:nth-of-type(5) {
     margin-bottom: 30px;
   }
 }
+#newpost_headline::-webkit-input-placeholder {
+  color: #333333;
+}
+
+#newpost_headline::-moz-placeholder {
+  color: #333333;
+}
+
+#newpost_headline:-ms-input-placeholder {
+  color: #333333;
+}
+
 #main-40x {
   text-align: center;
 }
