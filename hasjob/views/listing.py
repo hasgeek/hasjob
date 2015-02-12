@@ -50,6 +50,7 @@ from hasjob.uploads import uploaded_logos
 from hasjob.utils import get_word_bag, redactemail, random_long_key
 from hasjob.views import ALLOWED_TAGS
 from hasjob.nlp import identify_language
+from hasjob.views.helper import gif1x1
 
 
 @app.route('/view/<hashid>', methods=('GET', 'POST'), subdomain='<subdomain>')
@@ -262,7 +263,9 @@ def applyjob(hashid):
                 msg = Message(subject=u"Job application: {fullname}".format(fullname=job_application.fullname),
                     recipients=[post.email])
                 if not job_application.user:
-                    # Also BCC the candidate
+                    # Also BCC the candidate (for kiosk mode)
+                    # FIXME: This should be a separate copy of the email as the tracking gif is now shared
+                    # between both employer and candidate
                     msg.bcc = [job_application.email]
                 msg.body = email_text
                 msg.html = email_html
@@ -288,6 +291,35 @@ def managejob(post):
         return redirect(url_for('view_application', hashid=post.hashid, application=post.applications[0].hashid))
     else:
         return redirect(url_for('jobdetail', hashid=post.hashid))
+
+
+@app.route('/view/<hashid>/<application>/track.gif', subdomain='<subdomain>')
+@app.route('/view/<hashid>/<application>/track.gif')
+def view_application_email_gif(hashid, application):
+    post = JobPost.query.filter_by(hashid=hashid).one_or_none()
+    if post:
+        # FIXME: Can't use one_or_none() until we ensure jobpost_id+user_id is unique
+        job_application = JobApplication.query.filter_by(hashid=application, jobpost=post).first()
+    else:
+        job_application = None
+
+    if job_application is not None:
+        if job_application.response == EMPLOYER_RESPONSE.NEW:
+            job_application.response = EMPLOYER_RESPONSE.PENDING
+            db.session.commit()
+        return gif1x1, 200, {
+            'Content-Type': 'image/gif',
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+            }
+    else:
+        return gif1x1, 404, {
+            'Content-Type': 'image/gif',
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+            }
 
 
 @app.route('/view/<hashid>/<application>', subdomain='<subdomain>')
