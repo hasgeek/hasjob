@@ -65,13 +65,11 @@
             <input type="hidden" name="_charset_"/>
             <input type="hidden" name="form.id" value="newheadline"/>
             <label class="annotation top-left" for="newpost_headline">Post a job</label>
-            <textarea id="newpost_headline" name="job_headline" class="form-control">
-              {%- if g.board and g.board.newjob_headline -%}
-                {{ g.board.newjob_headline }}
-              {%- else -%}
-                Pragmatic programmer wanted at outstanding organisation
-              {%- endif -%}
-            </textarea>
+            {%- if g.board and g.board.newjob_headline -%}
+              <textarea id="newpost_headline" name="job_headline" class="form-control" placeholder="{{ g.board.newjob_headline }}"></textarea>
+            {%- else -%}
+              <textarea id="newpost_headline" name="job_headline" class="form-control" placeholder="Pragmatic programmer wanted at outstanding organisation"></textarea>
+            {%- endif -%}
             <div id="newpost_details" class="jshidden"><input type="submit" class="btn btn-default btn-sm" value="Add details…"/></div>
           </form>
         </li>
