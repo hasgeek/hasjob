@@ -6,6 +6,7 @@
   {{ renderfield(response_form.response_message, style="wide", widget_css_class="tinymce", nolabel=true) }}
   <button id="appl-send" class="btn btn-primary" type="submit" name="action" value="">Send</button>
   <button id="appl-cancel" class="btn btn-default">Cancel</button>
+  <span class="loading hidden">&nbsp;</span>
   {%- if response_form.csrf_token.errors -%}
     <div><p class="help-error">{% trans -%}
       This form has timed out. Please submit again to confirm

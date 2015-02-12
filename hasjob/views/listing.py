@@ -367,14 +367,14 @@ def process_application(hashid, application):
                     site=app.config['SITE_TITLE'])
 
                 if job_application.is_replied():
-                    msg = Message(subject=u"Regarding your job application for {headline}".format(headline=post.headline),
+                    msg = Message(subject=u"Job response: {headline}".format(headline=post.headline),
                         sender=(sender_formatted, app.config['MAIL_SENDER']),
                         reply_to=(sender_name, post.email),
                         recipients=[job_application.email],
                         bcc=[post.email])
                     flashmsg = "We sent your message to the candidate and copied you. Their email and phone number are below"
                 else:
-                    msg = Message(subject=u"Regarding your job application for {headline}".format(headline=post.headline),
+                    msg = Message(subject=u"Job declined: {headline}".format(headline=post.headline),
                         sender=(sender_formatted, app.config['MAIL_SENDER']),
                         bcc=[job_application.email, post.email])
                     flashmsg = "We sent your message to the candidate and copied you"

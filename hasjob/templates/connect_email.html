@@ -1,10 +1,4 @@
-{% extends "inc/email_layout.html" %}
-
-{% block title %}Job Connection: {{ post.company_name }}{% endblock %}
-
-{% block preview -%}
-  {{ job_application.fullname }}, meet {{ post.fullname or post.company_name }}
-{%- endblock %}
+{% extends "inc/email_layout_lite.html" %}
 
 {% block content -%}
 <p>

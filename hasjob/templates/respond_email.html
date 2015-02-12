@@ -1,19 +1,14 @@
-{% extends "inc/email_layout.html" %}
-
-{% block title %}Regarding your job application for {{ post.headline }}{% endblock %}
-
-{% block preview -%}
-  {%- if job_application.is_replied() %}
-    {{ g.user.fullname if post.admin_is(g.user) else post.fullname or post.company_name }} has responded to your application for <a href="{{ url_for('jobdetail', hashid=post.hashid) }}">{{ post.headline }}</a>. You can reply to this email to continue the conversation
-  {%- elif job_application.is_rejected() %}
-    {{ g.user.fullname if post.admin_is(g.user) else post.fullname or post.company_name }} has declined your application for <a href="{{ url_for('jobdetail', hashid=post.hashid) }}">{{ post.headline }}</a>
-  {%- endif %}
-{%- endblock %}
+{% extends "inc/email_layout_lite.html" %}
 
 {% block content -%}
   <p>
-    <em>{{ self.preview() }}</em>
+  {%- if job_application.is_replied() %}
+    <em>{{ g.user.fullname if post.admin_is(g.user) else post.fullname or post.company_name }} has responded to your application for <a href="{{ url_for('jobdetail', hashid=post.hashid, _external=True) }}">{{ post.headline }}</a>. You can reply to this email to continue the conversation</em>
+  {%- elif job_application.is_rejected() %}
+    <em>{{ g.user.fullname if post.admin_is(g.user) else post.fullname or post.company_name }} has declined your application for <a href="{{ url_for('jobdetail', hashid=post.hashid, _external=True) }}">{{ post.headline }}</a></em>
+  {%- endif %}
   </p>
+  <hr>
   {{ job_application.response_message|safe }}
   <hr>
   <p>
