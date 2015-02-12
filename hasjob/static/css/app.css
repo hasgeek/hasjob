@@ -1,13 +1,13 @@
 @charset "UTF-8";
 body {
   font-family: "Fira Sans", arial, sans-serif;
-  background: #e8e7e6 url('../img/canvas.jpg?1416495026');
+  background: #e8e7e6 url('../img/canvas.jpg?1400098749');
 }
 
 header {
   padding-top: 50px;
   margin-bottom: 0;
-  background: #ebe7e4 url('../img/paper.jpg?1416495026');
+  background: #ebe7e4 url('../img/paper.jpg?1400098749');
   border-bottom: none;
   -moz-box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
   -webkit-box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
@@ -42,7 +42,7 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
   overflow: hidden;
   text-align: left;
   text-transform: capitalize;
-  background-image: url('../img/logo-star.png?1416495026');
+  background-image: url('../img/logo-star.png?1343882941');
   background-repeat: no-repeat;
   background-position: 50% 50%;
   width: 170px;
@@ -56,7 +56,7 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
   overflow: hidden;
   text-align: left;
   text-transform: capitalize;
-  background-image: url('../img/logo-star.png?1416495026');
+  background-image: url('../img/logo-star.png?1343882941');
   background-repeat: no-repeat;
   background-position: 50% 50%;
   width: 170px;
@@ -87,7 +87,7 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
   line-height: 36px;
 }
 #search input[type="text"] {
-  background: white url('../img/search.png?1416495026') 4px center no-repeat;
+  background: white url('../img/search.png?1343882941') 4px center no-repeat;
   padding: 7px 10px 3px 20px;
 }
 #search .btn {
@@ -104,7 +104,7 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
 }
 
 footer .footer-inner {
-  background: #ebe7e4 url('../img/paper.jpg?1416495026');
+  background: #ebe7e4 url('../img/paper.jpg?1400098749');
   -moz-box-shadow: 0 -1px 5px rgba(0, 0, 0, 0.4);
   -webkit-box-shadow: 0 -1px 5px rgba(0, 0, 0, 0.4);
   box-shadow: 0 -1px 5px rgba(0, 0, 0, 0.4);
@@ -134,7 +134,7 @@ footer .container {
 .flash.info {
   padding-left: 15px;
   padding-right: 15px;
-  background: url('../img/paper.jpg?1416495026');
+  background: url('../img/paper.jpg?1400098749');
   border: none;
   -moz-box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4), 0 0 10px rgba(0, 0, 0, 0.1) inset;
   -webkit-box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4), 0 0 10px rgba(0, 0, 0, 0.1) inset;
@@ -206,7 +206,7 @@ h1 small, h2 small, h3 small {
   text-rendering: optimizeLegibility;
 }
 .sheet .nav-tabs-top {
-  background: #ebe7e4 url('../img/paper.jpg?1416495026');
+  background: #ebe7e4 url('../img/paper.jpg?1400098749');
   border-bottom: 0;
   -moz-box-shadow: 0 0 10px rgba(0, 0, 0, 0.1) inset;
   -webkit-box-shadow: 0 0 10px rgba(0, 0, 0, 0.1) inset;
@@ -758,14 +758,10 @@ li:hover > .stickie.grouped.under:nth-of-type(5) {
   -moz-box-shadow: none;
   -webkit-box-shadow: none;
   box-shadow: none;
-  -moz-transition-property: background-color, box-shadow;
-  -o-transition-property: background-color, box-shadow;
-  -webkit-transition-property: background-color, box-shadow;
-  transition-property: background-color, box-shadow;
-  -moz-transition-duration: 0.5s;
-  -o-transition-duration: 0.5s;
-  -webkit-transition-duration: 0.5s;
-  transition-duration: 0.5s;
+  -moz-transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, height 0.2s ease-in-out;
+  -o-transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, height 0.2s ease-in-out;
+  -webkit-transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, height 0.2s ease-in-out;
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, height 0.2s ease-in-out;
 }
 #newpost_headline:hover, #newpost_headline:focus {
   border-color: #66afe9;
@@ -773,6 +769,61 @@ li:hover > .stickie.grouped.under:nth-of-type(5) {
   -moz-box-shadow: 0 0 8px rgba(102, 175, 233, 0.6);
   -webkit-box-shadow: 0 0 8px rgba(102, 175, 233, 0.6);
   box-shadow: 0 0 8px rgba(102, 175, 233, 0.6);
+  -moz-transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, height 0.2s ease-in-out;
+  -o-transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, height 0.2s ease-in-out;
+  -webkit-transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, height 0.2s ease-in-out;
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, height 0.2s ease-in-out;
+}
+
+#newpost_headline::-webkit-input-placeholder {
+  color: #555;
+  opacity: 1;
+  -moz-transition: opacity 0.2s ease-in-out;
+  -o-transition: opacity 0.2s ease-in-out;
+  -webkit-transition: opacity 0.2s ease-in-out;
+  transition: opacity 0.2s ease-in-out;
+}
+
+#newpost_headline:focus::-webkit-input-placeholder {
+  opacity: 0.4;
+  -moz-transition: opacity 0.2s ease-in-out;
+  -o-transition: opacity 0.2s ease-in-out;
+  -webkit-transition: opacity 0.2s ease-in-out;
+  transition: opacity 0.2s ease-in-out;
+}
+
+#newpost_headline::-moz-placeholder {
+  color: #555;
+  opacity: 1;
+  -moz-transition: opacity 0.2s ease-in-out;
+  -o-transition: opacity 0.2s ease-in-out;
+  -webkit-transition: opacity 0.2s ease-in-out;
+  transition: opacity 0.2s ease-in-out;
+}
+
+#newpost_headline:focus::-moz-placeholder {
+  opacity: 0.4;
+  -moz-transition: opacity 0.2s ease-in-out;
+  -o-transition: opacity 0.2s ease-in-out;
+  -webkit-transition: opacity 0.2s ease-in-out;
+  transition: opacity 0.2s ease-in-out;
+}
+
+#newpost_headline:-ms-input-placeholder {
+  color: #555;
+  opacity: 1;
+  -moz-transition: opacity 0.2s ease-in-out;
+  -o-transition: opacity 0.2s ease-in-out;
+  -webkit-transition: opacity 0.2s ease-in-out;
+  transition: opacity 0.2s ease-in-out;
+}
+
+#newpost_headline:focus:-ms-input-placeholder {
+  opacity: 0.4;
+  -moz-transition: opacity 0.2s ease-in-out;
+  -o-transition: opacity 0.2s ease-in-out;
+  -webkit-transition: opacity 0.2s ease-in-out;
+  transition: opacity 0.2s ease-in-out;
 }
 
 #newpost_details {
@@ -791,18 +842,6 @@ li:hover > .stickie.grouped.under:nth-of-type(5) {
     margin-bottom: 30px;
   }
 }
-#newpost_headline::-webkit-input-placeholder {
-  color: #333333;
-}
-
-#newpost_headline::-moz-placeholder {
-  color: #333333;
-}
-
-#newpost_headline:-ms-input-placeholder {
-  color: #333333;
-}
-
 #main-40x {
   text-align: center;
 }

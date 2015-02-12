@@ -198,12 +198,39 @@
   min-height: 0
   padding: 0
   +box-shadow(none)
-  +transition-property(background-color, box-shadow)
-  +transition-duration(0.5s)
+  +transition(border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, height 0.2s ease-in-out)
   &:hover, &:focus
     border-color: #66afe9
     outline: 0
     +box-shadow(0 0 8px rgba(102,175,233,0.6))
+    +transition(border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, height 0.2s ease-in-out)
+
+#newpost_headline::-webkit-input-placeholder
+  color: $color-stickie-main-text
+  opacity: 1.0
+  +transition(opacity 0.2s ease-in-out)
+
+#newpost_headline:focus::-webkit-input-placeholder
+  opacity: 0.4
+  +transition(opacity 0.2s ease-in-out)
+
+#newpost_headline::-moz-placeholder
+  color: $color-stickie-main-text
+  opacity: 1.0
+  +transition(opacity 0.2s ease-in-out)
+
+#newpost_headline:focus::-moz-placeholder
+  opacity: 0.4
+  +transition(opacity 0.2s ease-in-out)
+
+#newpost_headline:-ms-input-placeholder
+  color: $color-stickie-main-text
+  opacity: 1.0
+  +transition(opacity 0.2s ease-in-out)
+
+#newpost_headline:focus:-ms-input-placeholder
+  opacity: 0.4
+  +transition(opacity 0.2s ease-in-out)
 
 #newpost_details
   // position: relative
@@ -219,12 +246,3 @@
 @media screen and (min-width: 768px)
   #stickie-area > li
     margin-bottom: 30px
-
-#newpost_headline::-webkit-input-placeholder
-  color: $color-stickie-main-text
-
-#newpost_headline::-moz-placeholder
-  color: $color-stickie-main-text
-
-#newpost_headline:-ms-input-placeholder
-  color: $color-stickie-main-text
