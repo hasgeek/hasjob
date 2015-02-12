@@ -283,7 +283,7 @@
       <div class="section unmarked" id="tagcloud">
         <p>
         {%- for taglink in post.taglinks %}{% with label=taglink.status_label %}
-          <a href="/tag/{{ taglink.tag.name }}" class="label label-default tag-{{ label.name }}">{{ taglink.tag.title }}</a>
+          <a href="/tag/{{ taglink.tag.name }}" class="label label-info tag-{{ label.name }}">{{ taglink.tag.title }}</a>
         {% endwith %}{%- endfor %}
         </p>
       </div>
