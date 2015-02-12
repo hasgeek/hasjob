@@ -319,6 +319,10 @@ h1 small, h2 small, h3 small {
 .section.first {
   border-top: none;
 }
+.section.unmarked {
+  border-top: none;
+  padding-top: 0;
+}
 .section h1:first-child, .section h2:first-child, .section h3:first-child {
   margin-top: 0;
 }

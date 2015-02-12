@@ -68,13 +68,6 @@
   <div class="sheet">
     <div class="section first">
       {{ jobheader(post, kiosk=g.kiosk) }}
-      {%- if is_siteadmin %}
-        <p>
-        {%- for taglink in post.taglinks %}{% with label=taglink.status_label %}
-          <a href="/tag/{{ taglink.tag.name }}"><span class="label label-default tag-{{ label.name }}" title="{{ label.title }}">{{ taglink.tag.title }}</span></a>
-        {% endwith %}{%- endfor %}
-        </p>
-      {%- endif %}
     </div>
     <div class="section">
       <div class="row">
@@ -283,6 +276,15 @@
       <div class="section" id="recruiter-notice">
         <p>
           This is a special announcement from {{ post.company_name }}
+        </p>
+      </div>
+    {%- endif %}
+    {%- if is_siteadmin %}
+      <div class="section unmarked" id="tagcloud">
+        <p>
+        {%- for taglink in post.taglinks %}{% with label=taglink.status_label %}
+          <a href="/tag/{{ taglink.tag.name }}" class="label label-default tag-{{ label.name }}">{{ taglink.tag.title }}</a>
+        {% endwith %}{%- endfor %}
         </p>
       </div>
     {%- endif %}
