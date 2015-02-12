@@ -122,10 +122,14 @@ def getposts(basequery=None, pinned=False, showall=False, statuses=None):
     if showall:
         query = query.filter(JobPost.datetime > datetime.utcnow() - agelimit)
     else:
-        query = query.filter(
-            db.or_(
-                db.and_(JobPost.pinned == True, JobPost.datetime > datetime.utcnow() - agelimit),
-                db.and_(JobPost.pinned == False, JobPost.datetime > datetime.utcnow() - newlimit)))  # NOQA
+        if pinned:
+            # FIXME: Also check for g.board here
+            query = query.filter(
+                db.or_(
+                    db.and_(JobPost.pinned == True, JobPost.datetime > datetime.utcnow() - agelimit),
+                    db.and_(JobPost.pinned == False, JobPost.datetime > datetime.utcnow() - newlimit)))  # NOQA
+        else:
+            query = query.filter(JobPost.datetime > datetime.utcnow() - newlimit)
 
     if g.board and g.board.name != u'www':
         query = query.join(JobPost.postboards).filter(BoardJobPost.board == g.board)

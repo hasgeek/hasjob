@@ -249,7 +249,7 @@ def feed(basequery=None, type=None, category=None, md5sum=None, domain=None, loc
         title = u"Jobs in {location}".format(location=location['short_title'])
     elif tag:
         title = u"Jobs tagged {tag}".format(tag=title)
-    posts = list(getposts(basequery, showall=True))
+    posts = list(getposts(basequery, showall=False))
     if posts:  # Can't do this unless posts is a list
         updated = posts[0].datetime.isoformat() + 'Z'
         if md5sum:
