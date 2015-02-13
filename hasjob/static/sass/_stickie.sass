@@ -29,23 +29,6 @@
     color: inherit
     border-bottom: 0
 
-  &:before, &:after
-    content: ""
-    position: absolute
-    z-index: -2
-    bottom: 15px
-    left: 10px
-    width: 50%
-    height: 20%
-    max-width: 300px
-    +box-shadow(0 15px 10px $color-shadow)
-    +rotate(-3deg)
-
-  &:after
-    right: 10px
-    left: auto
-    +rotate(3deg)
-
   label
     font-weight: normal
 
@@ -263,3 +246,22 @@
 @media screen and (min-width: 768px)
   #stickie-area > li
     margin-bottom: 30px
+
+  // Shadows only on larger screens (make mobile rendering lighter)
+  .stickie
+    &:before, &:after
+      content: ""
+      position: absolute
+      z-index: -2
+      bottom: 15px
+      left: 10px
+      width: 50%
+      height: 20%
+      max-width: 300px
+      +box-shadow(0 15px 10px $color-shadow)
+      +rotate(-3deg)
+
+    &:after
+      right: 10px
+      left: auto
+      +rotate(3deg)

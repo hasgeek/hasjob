@@ -564,31 +564,6 @@ h1 small, h2 small, h3 small {
   color: inherit;
   border-bottom: 0;
 }
-.stickie:before, .stickie:after {
-  content: "";
-  position: absolute;
-  z-index: -2;
-  bottom: 15px;
-  left: 10px;
-  width: 50%;
-  height: 20%;
-  max-width: 300px;
-  -moz-box-shadow: 0 15px 10px rgba(0, 0, 0, 0.4);
-  -webkit-box-shadow: 0 15px 10px rgba(0, 0, 0, 0.4);
-  box-shadow: 0 15px 10px rgba(0, 0, 0, 0.4);
-  -moz-transform: rotate(-3deg);
-  -ms-transform: rotate(-3deg);
-  -webkit-transform: rotate(-3deg);
-  transform: rotate(-3deg);
-}
-.stickie:after {
-  right: 10px;
-  left: auto;
-  -moz-transform: rotate(3deg);
-  -ms-transform: rotate(3deg);
-  -webkit-transform: rotate(3deg);
-  transform: rotate(3deg);
-}
 .stickie label {
   font-weight: normal;
 }
@@ -869,6 +844,32 @@ li:hover > .stickie.grouped.under:nth-of-type(5) {
 @media screen and (min-width: 768px) {
   #stickie-area > li {
     margin-bottom: 30px;
+  }
+
+  .stickie:before, .stickie:after {
+    content: "";
+    position: absolute;
+    z-index: -2;
+    bottom: 15px;
+    left: 10px;
+    width: 50%;
+    height: 20%;
+    max-width: 300px;
+    -moz-box-shadow: 0 15px 10px rgba(0, 0, 0, 0.4);
+    -webkit-box-shadow: 0 15px 10px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 15px 10px rgba(0, 0, 0, 0.4);
+    -moz-transform: rotate(-3deg);
+    -ms-transform: rotate(-3deg);
+    -webkit-transform: rotate(-3deg);
+    transform: rotate(-3deg);
+  }
+  .stickie:after {
+    right: 10px;
+    left: auto;
+    -moz-transform: rotate(3deg);
+    -ms-transform: rotate(3deg);
+    -webkit-transform: rotate(3deg);
+    transform: rotate(3deg);
   }
 }
 #main-40x {
