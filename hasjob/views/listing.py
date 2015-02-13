@@ -172,7 +172,10 @@ def starjob(hashid):
         g.user.starred_jobs.append(post)
         is_starred = True
 
-    return jsonify(is_starred=is_starred)
+    response = jsonify(is_starred=is_starred)
+    if is_starred:
+        response.status_code = 201
+    return response
 
 
 @app.route('/reveal/<hashid>', subdomain='<subdomain>')
