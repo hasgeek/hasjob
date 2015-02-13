@@ -198,18 +198,18 @@ class JobPost(BaseMixin, db.Model):
     def pay_type_label(self):
         return PAY_TYPE.get(self.pay_type)
 
-    def url_for(self, action='view', _external=False):
+    def url_for(self, action='view', _external=False, **kwargs):
         if action == 'view':
-            return url_for('jobdetail', hashid=self.hashid, _external=_external)
+            return url_for('jobdetail', hashid=self.hashid, _external=_external, **kwargs)
         elif action == 'edit':
-            return url_for('editjob', hashid=self.hashid, _external=_external)
+            return url_for('editjob', hashid=self.hashid, _external=_external, **kwargs)
         elif action == 'confirm':
-            return url_for('confirm', hashid=self.hashid, _external=_external)
+            return url_for('confirm', hashid=self.hashid, _external=_external, **kwargs)
         elif action == 'browse':
             if self.email_domain in webmail_domains:
-                return url_for('browse_by_email', md5sum=self.md5sum, _external=_external)
+                return url_for('browse_by_email', md5sum=self.md5sum, _external=_external, **kwargs)
             else:
-                return url_for('browse_by_domain', domain=self.email_domain, _external=_external)
+                return url_for('browse_by_domain', domain=self.email_domain, _external=_external, **kwargs)
 
     def permissions(self, user, inherited=None):
         perms = super(JobPost, self).permissions(user, inherited)

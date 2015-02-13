@@ -80,10 +80,13 @@
         </div>
         <div class="col-md-3">{% if not g.kiosk %}
           <div class="list-group">
-            <a class="list-group-item" href="mailto:?subject=Job%3A%20{{ post.headline|urlquote }}&amp;body={{ request.url|urlquote }}">
+            <a class="list-group-item" href="mailto:?subject=Job%3A%20{{ post.headline|urlquoteplus }}&amp;body={{ post.url_for('view', utm_campaign='share', utm_medium='email', _external=true)|urlquoteplus }}">
               <i class="fa fa-fw fa-envelope"></i>&nbsp;&nbsp; Email this
             </a>
-            <a class="list-group-item" target="_blank" href="https://twitter.com/share?url={{ request.url|urlquote }}&amp;counturl={{ request.url|urlquote }}&amp;via=hasjob&amp;related=hasjob:HasGeek%20Job%20Board&amp;text=Job%3A%20{{ post.headline|urlquote }}">
+            <a class="list-group-item visible-xs-block visible-sm-block" href="whatsapp://send?text={{ post.headline|urlquoteplus }}+{{ post.url_for('view', utm_campaign='share', utm_medium='whatsapp', _external=true)|urlquoteplus }}">
+              <i class="fa fa-fw fa-whatsapp"></i>&nbsp;&nbsp; WhatsApp this
+            </a>
+            <a class="list-group-item" target="_blank" href="https://twitter.com/share?url={{ post.url_for('view', utm_campaign='share', utm_medium='twitter', _external=true)|urlquoteplus }}&amp;counturl={{ post.url_for('view')|urlquoteplus }}&amp;via=hasjob&amp;related=hasjob:HasGeek%20Job%20Board&amp;text=Job%3A%20{{ post.headline|urlquoteplus }}">
               <span class="badge" id="tweet-count"></span><i class="fa fa-fw fa-twitter"></i>&nbsp;&nbsp; Tweet this
             </a>
             {%- if not g.kiosk and not post.is_announcement() %}
