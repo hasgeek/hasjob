@@ -20,6 +20,7 @@ header h1 {
   margin-bottom: 0;
 }
 header h1 small {
+  display: inline-block;
   color: #816894;
   font-size: 70%;
   font-weight: bold;
@@ -72,6 +73,9 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
   header {
     padding-top: 0;
     margin-bottom: 12px;
+  }
+  header h1 small {
+    display: inline;
   }
 }
 .input-group-btn > .btn {
