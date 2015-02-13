@@ -13,7 +13,6 @@ function star_click(e) {
       // TODO: Show error
     },
     success: function(data) {
-      console.log(data);
       if (data.is_starred === true) {
         starlink.removeClass('fa-star-o').addClass('fa-star');
       } else {
@@ -26,18 +25,31 @@ function star_click(e) {
 };
 
 $(function() {
+  var outerTemplate = document.createElement('li');
+  outerTemplate.setAttribute('class', 'col-xs-12 col-md-3 col-sm-4 animated shake');
+  var innerTemplate = document.createElement('a');
+  innerTemplate.setAttribute('class', 'stickie');
+  innerTemplate.setAttribute('rel', 'bookmark');
+
   var handleGroupClick = function(){
     // replaces the group with individual stickies when clicked
     $('#stickie-area').on('click', 'li.grouped', function(e){
       e.preventDefault();
-      var group = $(this);
-      $($.map(group.children(), function(node){
-        return "<li class='col-xs-12 col-md-3 col-sm-4 animated shake'>" +
-                 "<a class='stickie' href="+$(node).data('href')+" rel='bookmark'>" + $(node).html() + "</a> \
-               </li>";
-        }).join(""))
-      .insertBefore(group);
-      $(group).remove();
+      var group = this, parent=group.parentNode;
+
+      for (var i = 0; i < group.children.length; i++) {
+        var node = group.children[i];
+        outer = outerTemplate.cloneNode(false);
+        inner = innerTemplate.cloneNode(false);
+        inner.setAttribute('href', node.getAttribute('data-href'));
+        while (node.firstChild) {
+          inner.appendChild(node.firstChild);
+        }
+        outer.appendChild(inner);
+        parent.insertBefore(outer, group);
+      }
+
+      parent.removeChild(group);
       $(".pstar").off().click(star_click);
     });
   };
