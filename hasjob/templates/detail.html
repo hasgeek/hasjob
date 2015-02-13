@@ -89,6 +89,9 @@
             <a class="list-group-item" target="_blank" href="https://twitter.com/share?url={{ post.url_for('view', utm_campaign='share', utm_medium='twitter', _external=true)|urlquoteplus }}&amp;counturl={{ post.url_for('view', _external=True)|urlquoteplus }}&amp;via=hasjob&amp;related=hasjob:HasGeek%20Job%20Board&amp;text=Job%3A%20{{ post.headline|urlquoteplus }}">
               <span class="badge" id="tweet-count"></span><i class="fa fa-fw fa-twitter"></i>&nbsp;&nbsp; Tweet this
             </a>
+            <a class="list-group-item" href="javascript:fbShare('{{post.url_for('view', utm_campaign='share', utm_medium='facebook', _external=true)}}', 520, 350)">
+              <i class="fa fa-fw fa-facebook"></i>&nbsp;&nbsp; Share on Facebook
+            </a>
             {%- if not g.kiosk and not post.is_announcement() %}
               <div class="list-group-item">
                 <a class="popup" href="#report">
@@ -307,6 +310,12 @@
 {% block footerscripts %}
 <script type="text/javascript">
   $(function() {
+    window.fbShare = function(url, winWidth, winHeight) {
+      var winTop = (screen.height / 2) - (winHeight / 2);
+      var winLeft = (screen.width / 2) - (winWidth / 2);
+      window.open('http://www.facebook.com/sharer.php?s=100&p[url]=' + url, 'sharer', 'top=' + winTop + ',left=' + winLeft + ',toolbar=0,status=0,width=' + winWidth + ',height=' + winHeight);
+    };
+
     {%- if g.kiosk %}
       $('.jobdescription a').contents().unwrap();
     {%- endif %}
