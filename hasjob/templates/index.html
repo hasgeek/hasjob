@@ -64,6 +64,7 @@
           <form id="newpost" action="{{ url_for('newjob')|usessl }}" method="POST" class="stickie special">
             <input type="hidden" name="_charset_"/>
             <input type="hidden" name="form.id" value="newheadline"/>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             <label class="annotation top-left" for="newpost_headline">Post a job</label>
             {%- if gboard and gboard.newjob_headline -%}
               <textarea id="newpost_headline" name="job_headline" class="form-control" placeholder="{{ gboard.newjob_headline }}"></textarea>
