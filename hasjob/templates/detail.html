@@ -12,6 +12,12 @@
     <meta property="og:url" content="{{ request.base_url }}" />
   {%- endif %}
 {% endblock %}
+{%- block image_src %}
+  {%- if post.company_logo %}
+    <link rel="image_src" href="{{ url_for('logoimage', hashid=post.hashid, _external=true) }}" />
+    <meta property="og:image" content="{{ url_for('logoimage', hashid=post.hashid, _external=true) }}" />
+  {%- endif %}
+{%- endblock %}
 {% block pageheaders %}
   {%- if post.is_old() %}
     <meta name="robots" content="nofollow" />
