@@ -8,17 +8,7 @@ from html2text import html2text
 from premailer import transform as email_transform
 
 from sqlalchemy.exc import IntegrityError
-from flask import (
-    abort,
-    flash,
-    g,
-    redirect,
-    render_template,
-    request,
-    url_for,
-    session,
-    Markup,
-    )
+from flask import abort, flash, g, redirect, render_template, request, url_for, session, Markup, jsonify
 from flask.ext.mail import Message
 from baseframe import cache
 from coaster.utils import get_email_domain, md5sum, base_domain_matches
@@ -164,6 +154,25 @@ def jobdetail(hashid):
         domain_mismatch=domain_mismatch, header_campaign=header_campaign,
         is_siteadmin=lastuser.has_permission('siteadmin')
         )
+
+
+@app.route('/star/<hashid>', methods=['POST'], subdomain='<subdomain>')
+@app.route('/star/<hashid>', methods=['POST'])
+@lastuser.requires_login
+def starjob(hashid):
+    """
+    Star/unstar a job
+    """
+    is_starred = None
+    post = JobPost.query.filter_by(hashid=hashid).first_or_404()
+    if post in g.user.starred_jobs:
+        g.user.starred_jobs.remove(post)
+        is_starred = False
+    else:
+        g.user.starred_jobs.append(post)
+        is_starred = True
+
+    return jsonify(is_starred=is_starred)
 
 
 @app.route('/reveal/<hashid>', subdomain='<subdomain>')

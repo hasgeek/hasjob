@@ -747,6 +747,31 @@ li:hover > .stickie.grouped.under:nth-of-type(5) {
   background-color: #ffff2c;
 }
 
+.pstar {
+  color: #df5e0e;
+  cursor: pointer;
+  -moz-transition: opacity 0.2s ease-in-out;
+  -o-transition: opacity 0.2s ease-in-out;
+  -webkit-transition: opacity 0.2s ease-in-out;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.stickie .pstar.fa-star-o {
+  opacity: 0.1;
+}
+
+.stickie:hover .pstar.fa-star-o {
+  opacity: 0.3;
+}
+
+.stickie .pstar.fa-star-o:hover {
+  opacity: 1;
+}
+
+.stickie .pstar.fa-spin {
+  opacity: 1;
+}
+
 #newpost {
   font-family: inherit;
 }

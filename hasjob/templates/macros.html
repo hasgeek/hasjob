@@ -1,4 +1,4 @@
-{%- macro stickie(post, url, pinned, groupedunder=false, dataurl=none, show_viewcounts=false, show_pay=false) %}
+{%- macro stickie(post, url, pinned, groupedunder=false, dataurl=none, show_viewcounts=false, show_pay=false, starred=false) %}
   {%- if groupedunder %}
     <div class="stickie {%- if post.is_announcement() %} announcement{% endif %} grouped under" {%- if dataurl %} data-href="{{ dataurl }}"{% endif %}>
   {%- else %}
@@ -10,9 +10,7 @@
     <span class="headline">{{ post.headline }}</span>
     {% if show_viewcounts or show_pay %}<span class="count">{% if show_viewcounts %}<span title="Viewed › Opened form › Applied">{{ post.viewcounts['viewed'] }} › {{ post.viewcounts['opened'] }} › {{ post.viewcounts['applied'] }}</span>{% endif %}{% if show_viewcounts and show_pay %} &middot; {% endif %}{% if show_pay %}{{ post.viewcounts['pay_label'] }}{% endif %}</span>{% endif %}
     <span class="annotation bottom-right">{{ post.company_name }}</span>
-    {%- if post.is_new() -%}
-      <span class="new annotation bottom-left">New!</span>
-    {%- endif %}
+    <span class="annotation bottom-left"><i class="fa fa-star{% if not starred %}-o{% endif %} pstar" data-id="{{ post.hashid }}"></i> {%- if post.is_new() %} <span class="new">New!</span>{%- endif %}</span>
   {%- if groupedunder %}
     </div>
   {%- else %}
@@ -36,7 +34,7 @@
   {%- endif -%}
 {%- endmacro %}
 
-{%- macro jobheader(post, kiosk=false, return=false) %}
+{%- macro jobheader(post, kiosk=false, return=false, user=none) %}
   {%- if post.company_logo %}
     <div class="row">
       <div class="img-container col-xs-12 col-sm-3 col-sm-push-9 post-company-logo">
@@ -61,6 +59,9 @@
       {% if not post.is_announcement() %}
         &middot; <a href="{{ url_for('browse_by_type', name=post.type.name) }}">{{ post.type.title }}</a>
         &middot; <a href="{{ url_for('browse_by_category', name=post.category.name) }}">{{ post.category.title }}</a>
+      {%- endif %}
+      {%- if user %}
+        <i class="fa fa-star{% if post not in user.starred_jobs %}-o{% endif %} pstar" data-id="{{ post.hashid }}"></i>
       {%- endif %}
     </p>
   {%- if post.company_logo %}

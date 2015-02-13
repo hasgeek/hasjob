@@ -12,16 +12,18 @@ from flask import (
     g
     )
 from coaster.utils import getbool, parse_isoformat
+from baseframe import csrf
 from baseframe.staticdata import webmail_domains
 
 from .. import app, lastuser, redis_store
-from ..models import (db, JobCategory, JobPost, JobType, POSTSTATUS, newlimit, JobLocation,
+from ..models import (db, JobCategory, JobPost, JobType, POSTSTATUS, newlimit, agelimit, JobLocation,
     Tag, JobPostTag, Campaign, CAMPAIGN_POSITION)
 from ..search import do_search
 from ..views.helper import getposts, getallposts, gettags, location_geodata
 from ..uploads import uploaded_logos
 
 
+@csrf.exempt
 @app.route('/', methods=['GET', 'POST'], subdomain='<subdomain>')
 @app.route('/', methods=['GET', 'POST'])
 def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
@@ -44,6 +46,11 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
         employer_name = posts[0].company_name
     else:
         employer_name = u'a single employer'
+
+    if g.user:
+        g.starred_ids = set(g.user.starred_job_ids(agelimit))
+    else:
+        g.starred_ids = set()
 
     # Make lookup slightly faster in the loop below since 'g' is a proxy
     board = g.board
@@ -156,6 +163,7 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
                            is_siteadmin=lastuser.has_permission('siteadmin'))
 
 
+@csrf.exempt
 @app.route('/drafts', methods=['GET', 'POST'], subdomain='<subdomain>')
 @app.route('/drafts', methods=['GET', 'POST'])
 @lastuser.requires_login
@@ -164,6 +172,7 @@ def browse_drafts():
     return index(basequery=basequery, statuses=[POSTSTATUS.DRAFT, POSTSTATUS.PENDING])
 
 
+@csrf.exempt
 @app.route('/type/<name>', methods=['GET', 'POST'], subdomain='<subdomain>')
 @app.route('/type/<name>', methods=['GET', 'POST'])
 def browse_by_type(name):
@@ -174,6 +183,7 @@ def browse_by_type(name):
     return index(basequery=basequery, type=ob, title=ob.title)
 
 
+@csrf.exempt
 @app.route('/at/<domain>', methods=['GET', 'POST'], subdomain='<subdomain>')
 @app.route('/at/<domain>', methods=['GET', 'POST'])
 def browse_by_domain(domain):
@@ -183,6 +193,7 @@ def browse_by_domain(domain):
     return index(basequery=basequery, domain=domain, title=domain, showall=True)
 
 
+@csrf.exempt
 @app.route('/category/<name>', methods=['GET', 'POST'], subdomain='<subdomain>')
 @app.route('/category/<name>', methods=['GET', 'POST'])
 def browse_by_category(name):
@@ -193,6 +204,7 @@ def browse_by_category(name):
     return index(basequery=basequery, category=ob, title=ob.title)
 
 
+@csrf.exempt
 @app.route('/by/<md5sum>', methods=['GET', 'POST'], subdomain='<subdomain>')
 @app.route('/by/<md5sum>', methods=['GET', 'POST'])
 def browse_by_email(md5sum):
@@ -202,6 +214,7 @@ def browse_by_email(md5sum):
     return index(basequery=basequery, md5sum=md5sum, showall=True)
 
 
+@csrf.exempt
 @app.route('/in/<location>', methods=['GET', 'POST'], subdomain='<subdomain>')
 @app.route('/in/<location>', methods=['GET', 'POST'])
 def browse_by_location(location):
@@ -213,6 +226,7 @@ def browse_by_location(location):
     return index(basequery=basequery, location=geodata, title=geodata['short_title'])
 
 
+@csrf.exempt
 @app.route('/in/anywhere', methods=['GET', 'POST'], subdomain='<subdomain>')
 @app.route('/in/anywhere', methods=['GET', 'POST'])
 def browse_by_anywhere():
@@ -220,6 +234,7 @@ def browse_by_anywhere():
     return index(basequery=basequery)
 
 
+@csrf.exempt
 @app.route('/tag/<tag>', methods=['GET', 'POST'], subdomain='<subdomain>')
 @app.route('/tag/<tag>', methods=['GET', 'POST'])
 def browse_by_tag(tag):

@@ -41,7 +41,8 @@ def init_for(env):
         ext_requires=['baseframe-bs3',
             ('jquery.autosize', 'jquery.sparkline', 'jquery.liblink', 'jquery.wnumb', 'jquery.nouislider', 'jquery.appear'),
             'baseframe-firasans',
-            'fontawesome>=4.0.0'])
+            'fontawesome>=4.3.0'],
+        enable_csrf=True)
     # TinyMCE has to be loaded by itself, unminified, or it won't be able to find its assets
     app.assets.register('js_tinymce', assets.require('!jquery.js', 'tinymce.js>=4.0.0', 'jquery.tinymce.js>=4.0.0'))
     app.assets.register('css_editor', Bundle('css/editor.css',

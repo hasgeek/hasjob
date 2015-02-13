@@ -186,6 +186,23 @@
 .stickie.announcement
   background-color: $color-stickie-announcement
 
+.pstar
+  color: $color-title-has
+  cursor: pointer
+  +transition(opacity 0.2s ease-in-out)
+
+.stickie .pstar.fa-star-o
+  opacity: 0.1
+
+.stickie:hover .pstar.fa-star-o
+  opacity: 0.3
+
+.stickie .pstar.fa-star-o:hover
+  opacity: 1.0
+
+.stickie .pstar.fa-spin
+  opacity: 1.0
+
 #newpost
   font-family: inherit
 

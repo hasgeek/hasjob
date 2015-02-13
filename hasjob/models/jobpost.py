@@ -42,6 +42,22 @@ def number_abbreviate(number, indian=False):
             return number_format(number / 100000000.0, 'b')
 
 
+starred_job_table = db.Table('starred_job', db.Model.metadata,
+    db.Column('user_id', None, db.ForeignKey('user.id'), primary_key=True),
+    db.Column('jobpost_id', None, db.ForeignKey('jobpost.id'), primary_key=True),
+    db.Column('created_at', db.DateTime, default=datetime.utcnow),
+    )
+
+
+def starred_job_ids(user, agelimit):
+    return [r[0] for r in db.session.query(starred_job_table.c.jobpost_id).filter(
+        starred_job_table.c.user_id == user.id,
+        starred_job_table.c.created_at > datetime.utcnow() - agelimit).all()]
+
+
+User.starred_job_ids = starred_job_ids
+
+
 class JobPost(BaseMixin, db.Model):
     __tablename__ = 'jobpost'
     idref = 'post'
@@ -113,7 +129,10 @@ class JobPost(BaseMixin, db.Model):
     language = db.Column(db.CHAR(2), nullable=True)
     language_confidence = db.Column(db.Float, nullable=True)
 
-    admins = db.relationship(User, secondary=lambda: jobpost_admin_table)
+    admins = db.relationship(User, secondary=lambda: jobpost_admin_table,
+        backref=db.backref('admin_of', lazy='dynamic'))
+    starred_by = db.relationship(User, lazy='dynamic', secondary=starred_job_table,
+        backref=db.backref('starred_jobs', lazy='dynamic'))
     #: Quick lookup locations this post is referring to
     geonameids = association_proxy('locations', 'geonameid', creator=lambda l: JobLocation(geonameid=l))
 

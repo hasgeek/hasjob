@@ -14,12 +14,12 @@
   {%- if location %}<link rel="alternate" type="application/atom+xml" title="Jobs in {{ location['short_title'] }} – {{ config['SITE_TITLE'] }}" href="{{ url_for('feed_by_location', location=location['name']) }}" />{% endif -%}
   {% endblock %}
 {% endif %}
-{% block content %}
+{% block content %}{% with gkiosk=g.kiosk, gboard=g.board, guser=g.user, gstarred_ids=g.starred_ids %}
 {%- if not request.is_xhr -%}
-  {%- if g.board and g.board.name != 'www' %}
+  {%- if gboard and gboard.name != 'www' %}
     <div class="flash info">
-      {{ g.board.description|safe }}
-      {%- if g.kiosk and g.peopleflow_url %}
+      {{ gboard.description|safe }}
+      {%- if gkiosk and g.peopleflow_url %}
         <p>If you find a job worth applying for here, tap your badge on the reader attached to this kiosk and we’ll send an email connecting you with the employer.</p>
       {%- endif %}
     </div>
@@ -59,14 +59,14 @@
         </a>
       </li>
     {%- else -%}
-      {%- if (not g.kiosk) and ((g.board and 'new-job' in g.board.permissions(g.user)) or (not g.board)) -%}
+      {%- if (not gkiosk) and ((gboard and 'new-job' in gboard.permissions(guser)) or (not gboard)) -%}
         <li class="col-xs-12 col-md-3 col-sm-4">
           <form id="newpost" action="{{ url_for('newjob')|usessl }}" method="POST" class="stickie special">
             <input type="hidden" name="_charset_"/>
             <input type="hidden" name="form.id" value="newheadline"/>
             <label class="annotation top-left" for="newpost_headline">Post a job</label>
-            {%- if g.board and g.board.newjob_headline -%}
-              <textarea id="newpost_headline" name="job_headline" class="form-control" placeholder="{{ g.board.newjob_headline }}"></textarea>
+            {%- if gboard and gboard.newjob_headline -%}
+              <textarea id="newpost_headline" name="job_headline" class="form-control" placeholder="{{ gboard.newjob_headline }}"></textarea>
             {%- else -%}
               <textarea id="newpost_headline" name="job_headline" class="form-control" placeholder="Pragmatic programmer wanted at outstanding organisation"></textarea>
             {%- endif -%}
@@ -80,17 +80,17 @@
       {%- for grouping, group in grouped.items() -%}{%- with pinned, post=group[0] -%}
         {%- if group|length == 1 -%}
           <li class="col-xs-12 col-md-3 col-sm-4">
-            {{ stickie(post, url_for('jobdetail', hashid=post.hashid), pinned, show_viewcounts=is_siteadmin or g.user and g.user.flags.is_employer_month, show_pay=is_siteadmin) }}
+            {{ stickie(post, url_for('jobdetail', hashid=post.hashid), pinned, show_viewcounts=is_siteadmin or guser and guser.flags.is_employer_month, show_pay=is_siteadmin, starred=post.id in gstarred_ids) }}
           </li>
         {%- else -%}
           <li class="grouped col-xs-12 col-md-3 col-sm-4">
             {%- if grouping[0] in ['sd', 'nd'] -%}
-              {{ stickie(post, url_for('browse_by_domain', domain=grouping[1]), pinned, dataurl=url_for('jobdetail', hashid=post.hashid), show_viewcounts=is_siteadmin or g.user and g.user.flags.is_employer_month, show_pay=is_siteadmin) }}
+              {{ stickie(post, url_for('browse_by_domain', domain=grouping[1]), pinned, dataurl=url_for('jobdetail', hashid=post.hashid), show_viewcounts=is_siteadmin or guser and guser.flags.is_employer_month, show_pay=is_siteadmin, starred=post.id in gstarred_ids) }}
             {%- elif grouping[0] in ['se', 'ne'] -%}
-              {{ stickie(post, url_for('browse_by_email', md5sum=grouping[1]), pinned, dataurl=url_for('jobdetail', hashid=post.hashid), show_viewcounts=is_siteadmin or g.user and g.user.flags.is_employer_month, show_pay=is_siteadmin) }}
+              {{ stickie(post, url_for('browse_by_email', md5sum=grouping[1]), pinned, dataurl=url_for('jobdetail', hashid=post.hashid), show_viewcounts=is_siteadmin or guser and guser.flags.is_employer_month, show_pay=is_siteadmin, starred=post.id in gstarred_ids) }}
             {%- endif -%}
             {%- for pinned, post in group[1:] -%}
-              {{ stickie(post, none, false, groupedunder=true, dataurl=url_for('jobdetail', hashid=post.hashid), show_viewcounts=is_siteadmin or g.user and g.user.flags.is_employer_month, show_pay=is_siteadmin) }}
+              {{ stickie(post, none, false, groupedunder=true, dataurl=url_for('jobdetail', hashid=post.hashid), show_viewcounts=is_siteadmin or guser and guser.flags.is_employer_month, show_pay=is_siteadmin, starred=post.id in gstarred_ids) }}
             {%- endfor -%}
           </li>
         {%- endif %}
@@ -98,7 +98,7 @@
     {%- else %}
       {%- for pinned, post in pinsandposts -%}
         <li class="col-xs-12 col-md-3 col-sm-4">
-          {{ stickie(post, url_for('jobdetail', hashid=post.hashid), pinned, show_viewcounts=is_siteadmin or g.user and g.user.flags.is_employer_month, show_pay=is_siteadmin) }}
+          {{ stickie(post, url_for('jobdetail', hashid=post.hashid), pinned, show_viewcounts=is_siteadmin or guser and guser.flags.is_employer_month, show_pay=is_siteadmin, starred=post.id in gstarred_ids) }}
         </li>
       {%- else -%}
         <li class="col-xs-12 col-md-3 col-sm-4">
@@ -122,10 +122,12 @@
     </div>
   {%- endif -%}
 {%- endif -%}
-{%- endblock -%}
+{%- endwith %}{%- endblock -%}
+
 {%- macro loadmore_script() -%}
   <script type="text/javascript">
     $(function() {
+      $(".pstar").off().click(star_click);
       $("#loadmore").attr('method', 'POST').ajaxForm({
         beforeSubmit: function(formdata, form, options) {
           form.find('button[type="submit"]').prop('disabled', true).addClass('submit-disabled').html('Loading more… <span class="loading">&nbsp;</span>');
