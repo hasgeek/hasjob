@@ -16,6 +16,8 @@
   <meta property="og:title" content="{{ self.title()|e }}" />
 {%- endblock %}
 
+{%- block description %}{% if g.board and g.board.description %}{{ g.board.description|firstline }}{% else %}Hasjob is India’s best job board for tech startups{% endif %}{% endblock %}
+
 {%- block image_src %}
   <link rel="image_src" href="{{ url_for('static', filename='img/logo-star.png', _external=true) }}" />
   <meta property="og:image" content="{{ url_for('static', filename='img/logo-star.png', _external=true) }}" />
