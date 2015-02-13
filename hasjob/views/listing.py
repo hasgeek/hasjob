@@ -148,6 +148,11 @@ def jobdetail(hashid):
     else:
         header_campaign = None
 
+    if g.user and not g.kiosk:
+        g.starred_ids = set(g.user.starred_job_ids(agelimit))
+    else:
+        g.starred_ids = set()
+
     return render_template('detail.html', post=post, reportform=reportform, rejectform=rejectform,
         pinnedform=pinnedform, applyform=applyform, job_application=job_application,
         jobview=jobview, report=report, moderateform=moderateform,
