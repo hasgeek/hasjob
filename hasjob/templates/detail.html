@@ -84,12 +84,12 @@
               <i class="fa fa-fw fa-envelope"></i>&nbsp;&nbsp; Email this
             </a>
             <a class="list-group-item visible-xs-block visible-sm-block" href="whatsapp://send?text={{ post.headline|urlquoteplus }}+{{ post.url_for('view', utm_campaign='share', utm_medium='whatsapp', _external=true)|urlquoteplus }}">
-              <i class="fa fa-fw fa-whatsapp"></i>&nbsp;&nbsp; WhatsApp this
+              <i class="fa fa-fw fa-whatsapp"></i>&nbsp;&nbsp; Share on WhatsApp
             </a>
-            <a class="list-group-item" target="_blank" href="https://twitter.com/share?url={{ post.url_for('view', utm_campaign='share', utm_medium='twitter', _external=true)|urlquoteplus }}&amp;counturl={{ post.url_for('view', _external=True)|urlquoteplus }}&amp;via=hasjob&amp;related=hasjob:HasGeek%20Job%20Board&amp;text=Job%3A%20{{ post.headline|urlquoteplus }}">
+            <a class="list-group-item share-popup" data-width="550" data-height="250" target="_blank" href="https://twitter.com/share?url={{ post.url_for('view', utm_campaign='share', utm_medium='twitter', _external=true)|urlquoteplus }}&amp;counturl={{ post.url_for('view', _external=True)|urlquoteplus }}&amp;via=hasjob&amp;related=hasjob:HasGeek%20Job%20Board&amp;text=Job%3A%20{{ post.headline|urlquoteplus }}">
               <span class="badge" id="tweet-count"></span><i class="fa fa-fw fa-twitter"></i>&nbsp;&nbsp; Tweet this
             </a>
-            <a class="list-group-item" href="javascript:fbShare('{{post.url_for('view', utm_campaign='share', utm_medium='facebook', _external=true)}}', 520, 350)">
+            <a class="list-group-item share-popup" data-width="520" data-height="230" target="_blank" href="http://www.facebook.com/sharer.php?s=100&p[url]={{ post.url_for('view', utm_campaign='share', utm_medium='facebook', _external=true)|urlquoteplus }}">
               <i class="fa fa-fw fa-facebook"></i>&nbsp;&nbsp; Share on Facebook
             </a>
             {%- if not g.kiosk and not post.is_announcement() %}
@@ -179,7 +179,7 @@
               {%- endif %}
               {%- with appl=post.viewcounts['applied'], newappl=post.new_applications %}{% if appl %}
                 <a class="list-group-item" href="{{ url_for('managejob', hashid=post.hashid) }}">
-                  <i class="fa fa-fw fa-file-text-o"></i>&nbsp;&nbsp;View candidates
+                  <i class="fa fa-fw fa-file-text-o"></i>&nbsp;&nbsp; View candidates
                   {%- if newappl %} <span class="badge badge-new">{{ newappl }}/{{ appl }}</span>
                   {%- else %} <span class="badge">{{ appl }}</span>
                   {%- endif -%}
@@ -310,34 +310,24 @@
 {% block footerscripts %}
 <script type="text/javascript">
   $(function() {
-    window.fbShare = function(url, winWidth, winHeight) {
-      var winTop = (screen.height / 2) - (winHeight / 2);
-      var winLeft = (screen.width / 2) - (winWidth / 2);
-      window.open('http://www.facebook.com/sharer.php?s=100&p[url]=' + url, 'sharer', 'top=' + winTop + ',left=' + winLeft + ',toolbar=0,status=0,width=' + winWidth + ',height=' + winHeight);
-    };
-
     {%- if g.kiosk %}
       $('.jobdescription a').contents().unwrap();
     {%- endif %}
     jQuery.getJSON(
-      '//cdn.api.twitter.com/1/urls/count.json?url={{ request.url|urlquote }}&callback=?',
+      '//cdn.api.twitter.com/1/urls/count.json?url={{ post.url_for(_external=True)|urlquoteplus }}&callback=?',
       function (data) {
-        if (data.count>0) {
+        if (data.count > 0) {
           $("#tweet-count").html(data.count);
         }
       }
     );
-    $("#sidebar-tweet").click(function() {
-      var d=550,a=450;
-      var c=screen.height;
-      var b=screen.width;
-      var h=Math.round((b/2)-(d/2));
-      var g=0;
-      if (c>a) {
-        g=Math.round((c/2)-(a/2))
-      }
-      window.open($(this).attr("href"), "twitter_tweet",
-        "left="+h+",top="+g+",width="+d+",height="+a+",personalbar=0,toolbar=0,scrollbars=1,resizable=1");
+    $('.share-popup').click(function(e) {
+      var winWidth = $(this).data('width') || 550, winHeight = $(this).data('height') || 250;
+      var left = Math.round((screen.width / 2) - (winWidth / 2));
+      var top = (screen.height > winHeight) ? Math.round((screen.height / 2) - (winHeight / 2)) : 0;
+      window.open($(this).attr('href'), 'share',
+        'left=' + left + ',top=' + top + ',width=' + winWidth + ',height=' + winHeight + ',personalbar=0,toolbar=0,scrollbars=1,resizable=1');
+      e.preventDefault();
       return false;
     });
   });
