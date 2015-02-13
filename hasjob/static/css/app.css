@@ -620,7 +620,7 @@ h1 small, h2 small, h3 small {
 .stickie .bottom-right {
   right: 0.5em;
   bottom: 0.25em;
-  width: 80%;
+  width: 75%;
   text-align: right;
 }
 .stickie .bottom-left {
