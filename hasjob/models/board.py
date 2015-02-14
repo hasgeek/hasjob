@@ -113,7 +113,7 @@ class Board(BaseNameMixin, db.Model):
     categories = db.relationship(JobCategory, secondary=board_jobcategory_table, order_by=JobCategory.seq)
 
     #: Automatic tagging domains
-    domains = db.relationship(BoardDomain, backref='board', cascade='all, delete-orphan')
+    domains = db.relationship(BoardDomain, backref='board', cascade='all, delete-orphan', order_by=BoardDomain.domain)
     tag_domains = association_proxy('domains', 'domain', creator=lambda d: BoardDomain(domain=d))
     #: Automatic tagging locations
     locations = db.relationship(BoardLocation, backref='board', cascade='all, delete-orphan')
