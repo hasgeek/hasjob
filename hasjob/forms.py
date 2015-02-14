@@ -505,7 +505,9 @@ class BoardTaggingForm(forms.Form):
         for item in relist:
             if item:
                 r = tldextract.extract(item.lower())
-                domains.add(u'.'.join([r.domain, r.suffix]))
+                d = u'.'.join([r.domain, r.suffix])
+                if d not in webmail_domains:
+                    domains.add(d)
         field.data = list(domains)
 
     def validate_geonameids(self, field):
