@@ -539,7 +539,7 @@ h1 small, h2 small, h3 small {
 #stickie-area > li {
   margin-bottom: 20px;
   float: none;
-  display: inline-block;
+  display: block;
   vertical-align: top;
 }
 
@@ -664,7 +664,7 @@ h1 small, h2 small, h3 small {
   left: 1.5em;
   right: 1.5em;
 }
-li:hover > .stickie.grouped.under {
+.no-touch li:hover > .stickie.grouped.under {
   top: 0px;
   left: 15px;
   right: 15px;
@@ -682,31 +682,31 @@ li:hover > .stickie.grouped.under {
   -webkit-transition-timing-function: ease-out;
   transition-timing-function: ease-out;
 }
-li:hover > .stickie.grouped.under:nth-of-type(1) {
+.no-touch li:hover > .stickie.grouped.under:nth-of-type(1) {
   top: -15px;
   left: 0px;
   right: 30px;
   bottom: 15px;
 }
-li:hover > .stickie.grouped.under:nth-of-type(2) {
+.no-touch li:hover > .stickie.grouped.under:nth-of-type(2) {
   top: 15px;
   left: 30px;
   right: 0px;
   bottom: -15px;
 }
-li:hover > .stickie.grouped.under:nth-of-type(3) {
+.no-touch li:hover > .stickie.grouped.under:nth-of-type(3) {
   top: -10px;
   left: 20px;
   right: 5px;
   bottom: 10px;
 }
-li:hover > .stickie.grouped.under:nth-of-type(4) {
+.no-touch li:hover > .stickie.grouped.under:nth-of-type(4) {
   top: 10px;
   left: 5px;
   right: 25px;
   bottom: -10px;
 }
-li:hover > .stickie.grouped.under:nth-of-type(5) {
+.no-touch li:hover > .stickie.grouped.under:nth-of-type(5) {
   top: -25px;
   left: 15px;
   right: 15px;
@@ -847,6 +847,7 @@ li:hover > .stickie.grouped.under:nth-of-type(5) {
 
 @media screen and (min-width: 768px) {
   #stickie-area > li {
+    display: inline-block;
     margin-bottom: 30px;
   }
 
