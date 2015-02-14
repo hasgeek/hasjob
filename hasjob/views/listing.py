@@ -10,7 +10,7 @@ from premailer import transform as email_transform
 from sqlalchemy.exc import IntegrityError
 from flask import abort, flash, g, redirect, render_template, request, url_for, session, Markup, jsonify
 from flask.ext.mail import Message
-from baseframe import cache
+from baseframe import cache, csrf
 from coaster.utils import get_email_domain, md5sum, base_domain_matches
 from coaster.views import load_model
 from hasjob import app, forms, mail, lastuser
@@ -547,6 +547,7 @@ def moderatejob(hashid):
     return redirect(url_for('jobdetail', hashid=post.hashid), code=303)
 
 
+@csrf.exempt
 @app.route('/confirm/<hashid>', methods=('GET', 'POST'), subdomain='<subdomain>')
 @app.route('/confirm/<hashid>', methods=('GET', 'POST'))
 def confirm(hashid):
