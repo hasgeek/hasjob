@@ -155,27 +155,8 @@
           prefix: '¤'
         })
       });
-      cashslider.Link('lower').to($('#job_pay_cash_min'))
-      cashslider.Link('upper').to($('#job_pay_cash_max'))
-      /*
-        serialization: {
-          lower: [
-            new $.noUiSlider.Link({
-              target: $("#job_pay_cash_min")
-            })
-          ],
-          upper: [
-            new $.noUiSlider.Link({
-              target: $("#job_pay_cash_max")
-            })
-          ],
-          format: {
-            decimals: 0,
-            thousand: ',',
-            prefix: '¤'
-          }
-        }
-      */
+      cashslider.Link('lower').to($('#job_pay_cash_min'));
+      cashslider.Link('upper').to($('#job_pay_cash_max'));
 
       var equityslider = $("#equityslider").noUiSlider({
         start: [{{ (form.job_pay_equity_min.data or 0)|tojson }}, {{ (form.job_pay_equity_max.data or 100)|tojson }}],
@@ -193,24 +174,6 @@
       });
       $('#equityslider').Link('lower').to($('#job_pay_equity_min'));
       $('#equityslider').Link('upper').to($('#job_pay_equity_max'));
-      /*
-        serialization: {
-          lower: [
-            new $.noUiSlider.Link({
-              target: $("#job_pay_equity_min")
-            })
-          ],
-          upper: [
-            new $.noUiSlider.Link({
-              target: $("#job_pay_equity_max")
-            })
-          ],
-          format: {
-            decimals: 1,
-            postfix: '%'
-          }
-        }
-      */
       $("#job_pay_cash_min").keydown(function(e) {
         // Convert the string to a number.
         var value = Number(cashslider.val()[0].slice(1).replace(',', ''));
@@ -337,29 +300,9 @@
               edit: encoder
             })
           }, true);
-        }
-        cashslider.Link('lower').to($('#job_pay_cash_min'))
-        cashslider.Link('upper').to($('#job_pay_cash_max'))
-        /*
-          serialization: {
-            lower: [
-              new $.noUiSlider.Link({
-                // TODO: Figure out encoder+decoder at http://refreshless.com/nouislider/number-formatting
-                target: $("#job_pay_cash_min")
-                // target: function(val) {
-                //   $("#job_pay_cash_min").val(val.lastIndexOf('₹', 0) === 0 ? indian_rupee_encoder(val.substr(1)) : val);
-                // }
-              })
-            ],
-            upper: [
-              new $.noUiSlider.Link({
-                target: $("#job_pay_cash_max")
-                // target: function(val) {
-                //   $("#job_pay_cash_max").val(val.lastIndexOf('₹', 0) === 0 ? indian_rupee_encoder(val.substr(1)) : val);
-                // }
-              })
-            ],
-        */
+        };
+        cashslider.Link('lower').to($('#job_pay_cash_min'));
+        cashslider.Link('upper').to($('#job_pay_cash_max'));
       };
       currency_options($("input[type=radio][name=job_pay_currency]:checked"));
       $("input[type=radio][name=job_pay_currency]").on('change', function() {
