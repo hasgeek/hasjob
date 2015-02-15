@@ -88,7 +88,7 @@ class Board(BaseNameMixin, db.Model):
     """
     __tablename__ = 'board'
     #: Reserved board names
-    reserved_names = ['www', 'static', 'beta']
+    reserved_names = ['static', 'beta']
     #: Caption
     caption = db.Column(db.Unicode(250), nullable=True)
     #: Lastuser organization userid that owns this
