@@ -28,7 +28,7 @@ def remove_subdomain_parameter(endpoint, values):
 def add_subdomain_parameter(endpoint, values):
     if app.url_map.is_endpoint_expecting(endpoint, 'subdomain'):
         if 'subdomain' not in values:
-            values['subdomain'] = g.board.name if g.board else None
+            values['subdomain'] = g.board.name if g.board and g.board.not_root else None
 
 
 @app.route('/board', methods=['GET', 'POST'])
@@ -113,4 +113,4 @@ def board_add(board, jobpost):
     board.add(jobpost)
     db.session.commit()
     flash(u"You’ve added this job to %s" % board.title, 'interactive')
-    return redirect(url_for('jobdetail', hashid=jobpost.hashid, subdomain=board.name))
+    return redirect(jobpost.url_for(subdomain=board.name))

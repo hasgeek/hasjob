@@ -43,7 +43,7 @@ def kiosk_manifest():
 
         # Posts
         for post in getposts(None, showall=True):
-            lines.append(url_for('jobdetail', hashid=post.hashid))
+            lines.append(post.url_for())
 
         # Static resources
         lines.append(url_for('static', filename='img/logo-star.png'))

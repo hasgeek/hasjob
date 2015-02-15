@@ -27,7 +27,7 @@
   <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Walter+Turncoat|McLaren" />
   <link rel="stylesheet" type="text/css" href="//code.cdn.mozilla.net/fonts/fira.css">
   <!-- Feed and search -->
-  <link rel="alternate" type="application/atom+xml" title="All jobs – {% if g.board -%} {{ g.board.title }} {%- else -%} {{ config['SITE_TITLE']|e }} {%- endif %}" href="{{ url_for('feed') }}" />
+  <link rel="alternate" type="application/atom+xml" title="All jobs – {% if g.board -%} {{ g.board.title }} {%- else -%} {{ config['SITE_TITLE'] }} {%- endif %}" href="{{ url_for('feed') }}" />
   <link rel="search" type="application/opensearchdescription+xml" href="{{ url_for('static', filename='opensearch.xml') }}" title="Hasjob Search" />
   {% block pageheaders %}{% endblock %}
 {%- endblock %}
@@ -81,7 +81,7 @@
 <p>
   {%- if g.kiosk %}
     Hasjob is a service of HasGeek. You are in kiosk mode with a limited view of posts.
-  {%- elif g.board %}
+  {%- elif g.board and g.board.not_root %}
     Powered by <a href="https://hasjob.co/">Hasjob</a>, a service of <a href="https://hasgeek.com/">HasGeek</a>.
     Subscribe to <a href="{{ url_for('feed') }}">the feed</a> or follow
     <a href="https://twitter.com/hasjob">@hasjob on Twitter</a>

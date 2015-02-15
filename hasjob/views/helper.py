@@ -119,20 +119,25 @@ def getposts(basequery=None, pinned=False, showall=False, statuses=None):
 
     query = basequery.filter(JobPost.status.in_(statuses)).options(*JobPost._defercols)
 
+    if g.board:
+        query = query.join(JobPost.postboards).filter(BoardJobPost.board == g.board)
+
     if showall:
         query = query.filter(JobPost.datetime > datetime.utcnow() - agelimit)
     else:
         if pinned:
-            # FIXME: Also check for g.board here
-            query = query.filter(
-                db.or_(
-                    db.and_(JobPost.pinned == True, JobPost.datetime > datetime.utcnow() - agelimit),
-                    db.and_(JobPost.pinned == False, JobPost.datetime > datetime.utcnow() - newlimit)))  # NOQA
+            if g.board:
+                query = query.filter(
+                    db.or_(
+                        db.and_(BoardJobPost.pinned == True, JobPost.datetime > datetime.utcnow() - agelimit),
+                        db.and_(BoardJobPost.pinned == False, JobPost.datetime > datetime.utcnow() - newlimit)))  # NOQA
+            else:
+                query = query.filter(
+                    db.or_(
+                        db.and_(JobPost.pinned == True, JobPost.datetime > datetime.utcnow() - agelimit),
+                        db.and_(JobPost.pinned == False, JobPost.datetime > datetime.utcnow() - newlimit)))  # NOQA
         else:
             query = query.filter(JobPost.datetime > datetime.utcnow() - newlimit)
-
-    if g.board and g.board.name != u'www':
-        query = query.join(JobPost.postboards).filter(BoardJobPost.board == g.board)
 
     if pinned:
         if g.board:
@@ -184,7 +189,7 @@ def location_geodata(location):
 @app.template_filter('urlfor')
 def url_from_ob(ob):
     if isinstance(ob, JobPost):
-        return url_for('jobdetail', hashid=ob.hashid)
+        return ob.url_for()
     elif isinstance(ob, JobType):
         return url_for('browse_by_type', name=ob.name)
     elif isinstance(ob, JobCategory):

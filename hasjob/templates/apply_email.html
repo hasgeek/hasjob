@@ -1,7 +1,7 @@
 {% extends "inc/email_layout_lite.html" %}
 {% block content %}
 <p>
-  <em><strong>{{ job_application.fullname }}</strong> has applied for <a href="{{ url_for('jobdetail', hashid=post.hashid, _external=True) }}" target="_blank">{{ post.headline }}</a>:</em>
+  <em><strong>{{ job_application.fullname }}</strong> has applied for <a href="{{ post.url_for(_external=true) }}" target="_blank">{{ post.headline }}</a>:</em>
 </p>
 <hr>
 {{ job_application.message|safe }}
@@ -9,10 +9,10 @@
 <p>
   <a class="btn" href="{{ archive_url }}" target="_blank">Respond&nbsp;to&nbsp;candidate</a>
   or
-  <a class="btn" href="{{ archive_url }}" target="_blank">report&nbsp;this</a>
+  <a class="btn" href="{{ archive_url }}" target="_blank">Report&nbsp;this</a>
 </p>
 <p>
   <strong>Note:</strong> The message above is exactly as the candidate submitted it. We do not accept attachments or reformat documents.
-  <img src="{{ url_for('view_application_email_gif', hashid=post.hashid, application=job_application.hashid, _external=True) }}" alt="" width="1" height="1">
+  <img src="{{ url_for('view_application_email_gif', hashid=post.hashid, application=job_application.hashid, _external=true) }}" alt="" width="1" height="1">
 </p>
 {% endblock %}

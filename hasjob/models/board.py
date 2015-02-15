@@ -123,6 +123,14 @@ class Board(BaseNameMixin, db.Model):
         return '<Board %s "%s">' % (self.name, self.title)
 
     @property
+    def is_root(self):
+        return self.name == u'www'
+
+    @property
+    def not_root(self):
+        return self.name != u'www'
+
+    @property
     def options(self):
         """Form helper method (see BoardOptionsForm)"""
         return self
@@ -217,6 +225,11 @@ JobPost.link_to_board = _jobpost_link_to_board
 
 def _jobpost_add_to(self, board):
     with db.session.no_autoflush:
+        if isinstance(board, basestring):
+            board = Board.get(board)
+        if not board:
+            return
+
         link = self.link_to_board(board)
         if not link:
             link = BoardJobPost(jobpost=self, board=board)

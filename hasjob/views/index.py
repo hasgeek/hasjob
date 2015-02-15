@@ -415,7 +415,7 @@ def sitemap():
     # Add live posts to sitemap
     for post in getposts(showall=True):
         sitemapxml += '  <url>\n'\
-                      '    <loc>%s</loc>\n' % url_for('jobdetail', hashid=post.hashid, _external=True) + \
+                      '    <loc>%s</loc>\n' % post.url_for(_external=True) + \
                       '    <lastmod>%s</lastmod>\n' % (post.datetime.isoformat() + 'Z') + \
                       '    <changefreq>monthly</changefreq>\n'\
                       '  </url>\n'
