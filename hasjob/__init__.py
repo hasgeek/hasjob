@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import os.path
+import geoip2.database
 from flask import Flask
 from flask.ext.assets import Bundle
 from flask.ext.rq import RQ
@@ -35,6 +37,14 @@ from .models import db
 # Configure the app
 def init_for(env):
     coaster.app.init_app(app, env)
+
+    app.geoip = None
+    if 'GEOIP_PATH' in app.config:
+        geoip_database_path = os.path.join(app.config['GEOIP_PATH'], 'GeoLite2-City.mmdb')
+        if not os.path.exists(geoip_database_path):
+            app.logger.warn("GeoIP database missing at " + geoip_database_path)
+        app.geoip = geoip2.database.Reader(geoip_database_path)
+
     RQ(app)
 
     baseframe.init_app(app, requires=['hasjob'],

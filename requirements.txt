@@ -24,6 +24,7 @@ premailer
 langid>=1.1.4dev
 tldextract
 unicodecsv
+geoip2
 Flask-Script==0.5.3
 https://github.com/hasgeek/coaster/zipball/master
 https://github.com/hasgeek/flask-lastuser/zipball/master

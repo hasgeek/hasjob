@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from os import path
-from datetime import datetime
+from datetime import datetime, timedelta
 from urlparse import urljoin
 import bleach
 import requests
@@ -9,6 +9,7 @@ from pytz import utc, timezone
 from urllib import quote, quote_plus
 from sqlalchemy.exc import IntegrityError
 from flask import Markup, request, url_for, g, session
+from geoip2.errors import AddressNotFoundError
 
 from baseframe import cache
 from baseframe.signals import form_validation_error, form_validation_success
@@ -60,6 +61,35 @@ def request_flags():
     g.preview_campaign = preview_campaign
     g.campaign_views = []
 
+    # Look up user's location
+    if app.geoip:
+        ipaddr = session.get('ipaddr')
+        ipts = session.get('ipts')
+        now = datetime.utcnow()
+        if (not ipts
+                or ipaddr != request.environ['REMOTE_ADDR']
+                or 'geonameids' not in session
+                or (ipts < now - timedelta(days=7))):
+            # IP has changed or timed out or wasn't saved to the user's session. Look up location
+            ipaddr = request.environ['REMOTE_ADDR']
+            try:
+                ipdata = app.geoip.city(ipaddr)
+                geonameids = [item.geoname_id
+                    for sublist in [[ipdata.city], ipdata.subdivisions, [ipdata.country], [ipdata.continent]]
+                    for item in sublist
+                    if item.geoname_id]
+            except AddressNotFoundError:
+                # Private IP range (127.0.0.1, etc). Should only happen in dev mode
+                geonameids = []
+            session['ipaddr'] = ipaddr
+            session['geonameids'] = geonameids
+            session['ipts'] = now
+            g.user_geonameids = geonameids
+        else:
+            g.user_geonameids = session['geonameids']
+    else:
+        g.user_geonameids = []
+
 
 @app.after_request
 def record_views_and_events(response):
@@ -78,6 +108,9 @@ def record_views_and_events(response):
     if not hasattr(g, 'event_data'):
         g.event_data = {}
         missing_in_context.append('event_data')
+    if not hasattr(g, 'user_geonameids'):
+        g.user_geonameids = {}
+        missing_in_context.append('user_geonameids')
 
     if missing_in_context:
         g.event_data['missing_in_context'] = missing_in_context
@@ -89,6 +122,9 @@ def record_views_and_events(response):
 
     if g.campaign_views:
         g.event_data['campaign_views'] = [c.id for c in g.campaign_views]
+
+    if g.user_geonameids:
+        g.event_data['user_geonameids'] = g.user_geonameids
 
     if g.user:
         for campaign in g.campaign_views:

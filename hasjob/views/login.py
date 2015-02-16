@@ -86,6 +86,7 @@ def load_anon_user(user):
     else:
         if not session.get('au'):
             session['au'] = 'test'
+            g.event_data['anon_cookie_test'] = 'test'
         elif session['au'] == 'test':  # This client sent us back our test cookie, so set a real value now
             g.anon_user = AnonUser()
             db.session.add(g.anon_user)
@@ -93,6 +94,7 @@ def load_anon_user(user):
             anon_user = AnonUser.query.get(session['au'])
             if not anon_user:
                 # XXX: We got a fake value? This shouldn't happen
+                g.event_data['anon_cookie_test'] = session['au']
                 session['au'] = 'test'  # Try again
             else:
                 g.anon_user = anon_user
