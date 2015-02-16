@@ -26,10 +26,10 @@ def admin_dashboard_historical():
 def admin_dashboard_daystats(period):
     if period == 'day':
         trunc = 'hour'
-        interval = '1 day'
+        interval = '2 days'
     else:
         trunc = 'day'
-        interval = '1 week'
+        interval = '2 weeks'
 
     stats = defaultdict(dict)
 
