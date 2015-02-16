@@ -4,7 +4,8 @@ from collections import defaultdict
 from urlparse import urljoin
 import requests
 from flask.ext.rq import job
-from coaster.nlp import extract_text_blocks, extract_named_entities
+from coaster.utils import text_blocks
+from coaster.nlp import extract_named_entities
 from . import app
 from .models import (db, JobPost, JobLocation, Board, BoardDomain, BoardLocation,
     Tag, JobPostTag, TAG_TYPE)
@@ -73,7 +74,7 @@ def add_to_boards(jobpost_id):
 
 
 def tag_named_entities(post):
-        entities = extract_named_entities(extract_text_blocks(post.tag_content()))
+        entities = extract_named_entities(text_blocks(post.tag_content()))
         links = set()
         for entity in entities:
             tag = Tag.get(entity, create=True)
