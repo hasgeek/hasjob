@@ -82,6 +82,7 @@ INVALID_URLS = [
         re.compile(r'freelancer\.com'),
         re.compile(r'hirist\.com/j/'),
         re.compile(r'iimjobs\.com/j/'),
+        re.compile(r'.*\.workable.com/jobs'),
         ], u"Candidates must apply via Hasjob")
 ]
 #: LastUser server
