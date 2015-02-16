@@ -86,16 +86,16 @@
         </div>
         <div class="col-md-3">{% if not g.kiosk %}
           <div class="list-group">
-            <a class="list-group-item" href="mailto:?subject=Job%3A%20{{ post.headline|urlquoteplus }}&amp;body={{ post.url_for('view', utm_campaign='share', utm_medium='email', _external=true)|urlquoteplus }}">
+            <a class="list-group-item" href="mailto:?subject=Job%3A%20{{ post.headline|urlquoteplus }}&amp;body={{ post.url_for(utm_campaign='share', utm_medium='email', _external=true)|urlquoteplus }}">
               <i class="fa fa-fw fa-envelope"></i>&nbsp;&nbsp; Email this
             </a>
-            <a class="list-group-item visible-xs-block visible-sm-block" href="whatsapp://send?text={{ post.headline|urlquoteplus }}+{{ post.url_for('view', utm_campaign='share', utm_medium='whatsapp', _external=true)|urlquoteplus }}">
+            <a class="list-group-item visible-xs-block visible-sm-block" href="whatsapp://send?text={{ post.headline|urlquoteplus }}+{{ post.url_for(utm_campaign='share', utm_medium='whatsapp', _external=true)|urlquoteplus }}">
               <i class="fa fa-fw fa-whatsapp"></i>&nbsp;&nbsp; Share on WhatsApp
             </a>
             <a class="list-group-item share-popup" data-width="550" data-height="250" target="_blank" href="https://twitter.com/share?url={{ post.url_for(utm_campaign='share', utm_medium='twitter', _external=true)|urlquoteplus }}&amp;counturl={{ post.url_for(_external=true)|urlquoteplus }}&amp;via=hasjob&amp;related=hasjob:HasGeek%20Job%20Board&amp;text=Job%3A%20{{ post.headline|urlquoteplus }}">
               <span class="badge" id="tweet-count"></span><i class="fa fa-fw fa-twitter"></i>&nbsp;&nbsp; Tweet this
             </a>
-            <a class="list-group-item share-popup" data-width="520" data-height="230" target="_blank" href="http://www.facebook.com/sharer.php?s=100&p[url]={{ post.url_for('view', utm_campaign='share', utm_medium='facebook', _external=true)|urlquoteplus }}">
+            <a class="list-group-item share-popup" data-width="520" data-height="230" target="_blank" href="http://www.facebook.com/sharer.php?s=100&p[url]={{ post.url_for(utm_campaign='share', utm_medium='facebook', _external=true)|urlquoteplus }}">
               <i class="fa fa-fw fa-facebook"></i>&nbsp;&nbsp; Share on Facebook
             </a>
             {%- if not g.kiosk and not post.is_announcement() %}
@@ -124,9 +124,11 @@
               <a class="list-group-item" href="{{ post.url_for('edit') }}">
                 <i class="fa fa-fw fa-pencil"></i>&nbsp;&nbsp; Edit this
               </a>
-              <a class="list-group-item" href="{{ post.url_for('withdraw') }}">
-                <i class="fa fa-fw fa-trash-o"></i>&nbsp;&nbsp; Withdraw this
-              </a>
+              {%- if post.is_public() %}
+                <a class="list-group-item" href="{{ post.url_for('withdraw') }}">
+                  <i class="fa fa-fw fa-trash-o"></i>&nbsp;&nbsp; Withdraw this
+                </a>
+              {%- endif %}
             {%- endif %}
             {%- if is_siteadmin %}
               <div class="list-group-item">
@@ -184,7 +186,7 @@
                 </span>
               {%- endif %}
               {%- with appl=post.viewcounts['applied'], newappl=post.new_applications %}{% if appl %}
-                <a class="list-group-item" href="{{ url_for('managejob', hashid=post.hashid) }}">
+                <a class="list-group-item" href="{{ post.url_for('manage') }}">
                   <i class="fa fa-fw fa-file-text-o"></i>&nbsp;&nbsp; View candidates
                   {%- if newappl %} <span class="badge badge-new">{{ newappl }}/{{ appl }}</span>
                   {%- else %} <span class="badge">{{ appl }}</span>
@@ -245,10 +247,10 @@
               {% if jobview.applied %}{# User has already hit the reveal button #}
                 {{ post.how_to_apply|hideemail }}
               {%- else %}
-                <a class="btn btn-primary" id="reveal-button" href="{{ url_for('revealjob', hashid=post.hashid) }}">Show instructions</a>
+                <a class="btn btn-primary" id="reveal-button" href="{{ post.url_for('reveal') }}">Show instructions</a>
               {%- endif %}
             {%- else %}
-              <a class="btn btn-primary" href="{{ url_for('revealjob', hashid=post.hashid) }}">Login with Twitter or Google</a>
+              <a class="btn btn-primary" href="{{ post.url_for('reveal') }}">Login with Twitter or Google</a>
               to see instructions on how to apply.
               Your identity will not be revealed to the employer.
             {%- endif %}

@@ -26,7 +26,7 @@
         </p>
         {{ job_application.message|safe }}
         <hr>
-        <form id="response_form" method="POST" action="{{ url_for('process_application', hashid=post.hashid, application=job_application.hashid) }}">
+        <form id="response_form" method="POST" action="{{ job_application.url_for('process') }}">
           <input type="hidden" name="_charset_"/>
           <input type="hidden" name="form.id" value="process_application_form"/>
           {{ response_form.hidden_tag() }}
@@ -97,7 +97,7 @@
       <div class="col-md-3">
         <div class="list-group">
           {%- for appl in post.applications %}
-            <a class="list-group-item status_{{ appl.status|lower }}" href="{{ url_for('view_application', hashid=post.hashid, application=appl.hashid) }}">
+            <a class="list-group-item status_{{ appl.status|lower }}" href="{{ appl.url_for() }}">
               {%- if appl == job_application -%}
                 <strong>{{ appl.fullname }}</strong>
               {%- else -%}

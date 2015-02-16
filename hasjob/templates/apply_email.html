@@ -13,6 +13,6 @@
 </p>
 <p>
   <strong>Note:</strong> The message above is exactly as the candidate submitted it. We do not accept attachments or reformat documents.
-  <img src="{{ url_for('view_application_email_gif', hashid=post.hashid, application=job_application.hashid, _external=true) }}" alt="" width="1" height="1">
+  <img src="{{ job_application.url_for('track-open', _external=true) }}" alt="" width="1" height="1">
 </p>
 {% endblock %}

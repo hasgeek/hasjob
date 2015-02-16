@@ -43,9 +43,11 @@ from hasjob.nlp import identify_language
 from hasjob.views.helper import gif1x1
 
 
-@app.route('/view/<hashid>', methods=('GET', 'POST'), subdomain='<subdomain>')
-@app.route('/view/<hashid>', methods=('GET', 'POST'))
-def jobdetail(hashid):
+@app.route('/<domain>/<hashid>', methods=('GET', 'POST'), subdomain='<subdomain>')
+@app.route('/<domain>/<hashid>', methods=('GET', 'POST'))
+@app.route('/view/<hashid>', defaults={'domain': None}, methods=('GET', 'POST'), subdomain='<subdomain>')
+@app.route('/view/<hashid>', defaults={'domain': None}, methods=('GET', 'POST'))
+def jobdetail(domain, hashid):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
 
     # If we're on a board (that's now 'www') and this post isn't on this board,
@@ -59,8 +61,12 @@ def jobdetail(hashid):
         else:
             return redirect(post.url_for(subdomain=None, _external=True))
 
+    # If this post is past pending state and the domain doesn't match, redirect there
+    if post.status not in POSTSTATUS.UNPUBLISHED and post.email_domain != domain:
+        return redirect(post.url_for(), code=301)
+
     if post.status in [POSTSTATUS.DRAFT, POSTSTATUS.PENDING]:
-        if not ((g.user and post.admin_is(g.user)) or post.edit_key in session.get('userkeys', [])):
+        if not ((g.user and post.admin_is(g.user))):
             abort(403)
     if post.status in POSTSTATUS.GONE:
         abort(410)
@@ -165,10 +171,12 @@ def jobdetail(hashid):
         )
 
 
-@app.route('/star/<hashid>', methods=['POST'], subdomain='<subdomain>')
-@app.route('/star/<hashid>', methods=['POST'])
+@app.route('/<domain>/<hashid>/star', defaults={'domain': None}, methods=['POST'], subdomain='<subdomain>')
+@app.route('/<domain>/<hashid>/star', defaults={'domain': None}, methods=['POST'])
+@app.route('/star/<hashid>', defaults={'domain': None}, methods=['POST'], subdomain='<subdomain>')
+@app.route('/star/<hashid>', defaults={'domain': None}, methods=['POST'])
 @lastuser.requires_login
-def starjob(hashid):
+def starjob(domain, hashid):
     """
     Star/unstar a job
     """
@@ -187,14 +195,20 @@ def starjob(hashid):
     return response
 
 
-@app.route('/reveal/<hashid>', subdomain='<subdomain>')
-@app.route('/reveal/<hashid>')
+@app.route('/<domain>/<hashid>/reveal', subdomain='<subdomain>')
+@app.route('/<domain>/<hashid>/reveal')
+@app.route('/reveal/<hashid>', defaults={'domain': None}, subdomain='<subdomain>')
+@app.route('/reveal/<hashid>', defaults={'domain': None})
 @lastuser.requires_login
-def revealjob(hashid):
+def revealjob(domain, hashid):
     """
     This view is a GET request and that is intentional.
     """
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
+    # If the domain doesn't match, redirect to correct URL
+    if post.email_domain != domain:
+        return redirect(post.url_for('reveal'), code=301)
+
     if post.status in [POSTSTATUS.REJECTED, POSTSTATUS.WITHDRAWN, POSTSTATUS.SPAM]:
         abort(410)
     jobview = UserJobView.query.get((post.id, g.user.id))
@@ -225,13 +239,19 @@ def revealjob(hashid):
         return redirect(post.url_for(), 303)
 
 
-@app.route('/apply/<hashid>', methods=['POST'], subdomain='<subdomain>')
-@app.route('/apply/<hashid>', methods=['POST'])
-def applyjob(hashid):
+@app.route('/<domain>/<hashid>/apply', methods=['POST'], subdomain='<subdomain>')
+@app.route('/<domain>/<hashid>/apply', methods=['POST'])
+@app.route('/apply/<hashid>', defaults={'domain': None}, methods=['POST'], subdomain='<subdomain>')
+@app.route('/apply/<hashid>', defaults={'domain': None}, methods=['POST'])
+def applyjob(domain, hashid):
     """
     Apply to a job (including in kiosk mode)
     """
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
+    # If the domain doesn't match, redirect to correct URL
+    if post.email_domain != domain:
+        return redirect(post.url_for('apply'), code=301)
+
     if g.user:
         job_application = JobApplication.query.filter_by(user=g.user, jobpost=post).first()
     else:
@@ -274,9 +294,7 @@ def applyjob(hashid):
                 email_html = email_transform(
                     render_template('apply_email.html',
                         post=post, job_application=job_application,
-                        archive_url=url_for('view_application',
-                            hashid=post.hashid, application=job_application.hashid,
-                            _external=True)),
+                        archive_url=job_application.url_for(_external=True)),
                     base_url=request.url_root)
                 email_text = html2text(email_html)
                 flashmsg = "Your application has been sent to the employer"
@@ -304,19 +322,28 @@ def applyjob(hashid):
             return redirect(post.url_for(), 303)
 
 
-@app.route('/manage/<hashid>', methods=('GET', 'POST'), defaults={'key': None}, subdomain='<subdomain>')
-@app.route('/manage/<hashid>', methods=('GET', 'POST'), defaults={'key': None})
-@load_model(JobPost, {'hashid': 'hashid'}, 'post', permission=('manage', 'siteadmin'), addlperms=lastuser.permissions)
-def managejob(post):
+@app.route('/<domain>/<hashid>/manage', methods=('GET', 'POST'), defaults={'key': None}, subdomain='<subdomain>')
+@app.route('/<domain>/<hashid>/manage', methods=('GET', 'POST'), defaults={'key': None})
+@app.route('/manage/<hashid>', methods=('GET', 'POST'), defaults={'key': None, 'domain': None}, subdomain='<subdomain>')
+@app.route('/manage/<hashid>', methods=('GET', 'POST'), defaults={'key': None, 'domain': None})
+@load_model(JobPost, {'hashid': 'hashid'}, 'post', permission=('manage', 'siteadmin'), addlperms=lastuser.permissions,
+    kwargs=True)
+def managejob(post, kwargs):
+    # If the domain doesn't match, redirect to correct URL
+    if post.email_domain != kwargs.get('domain'):
+        return redirect(post.url_for('manage'), code=301)
+
     if post.applications:
-        return redirect(url_for('view_application', hashid=post.hashid, application=post.applications[0].hashid))
+        return redirect(post.applications[0].url_for(), code=303)
     else:
         return redirect(post.url_for())
 
 
-@app.route('/view/<hashid>/<application>/track.gif', subdomain='<subdomain>')
-@app.route('/view/<hashid>/<application>/track.gif')
-def view_application_email_gif(hashid, application):
+@app.route('/<domain>/<hashid>/appl/<application>/track.gif', subdomain='<subdomain>')
+@app.route('/<domain>/<hashid>/appl/<application>/track.gif')
+@app.route('/view/<hashid>/<application>/track.gif', defaults={'domain': None}, subdomain='<subdomain>')
+@app.route('/view/<hashid>/<application>/track.gif', defaults={'domain': None})
+def view_application_email_gif(domain, hashid, application):
     post = JobPost.query.filter_by(hashid=hashid).one_or_none()
     if post:
         # FIXME: Can't use one_or_none() until we ensure jobpost_id+user_id is unique
@@ -343,9 +370,11 @@ def view_application_email_gif(hashid, application):
             }
 
 
-@app.route('/view/<hashid>/<application>', subdomain='<subdomain>')
-@app.route('/view/<hashid>/<application>')
-def view_application(hashid, application):
+@app.route('/<domain>/<hashid>/appl/<application>', subdomain='<subdomain>')
+@app.route('/<domain>/<hashid>/appl/<application>')
+@app.route('/view/<hashid>/<application>', defaults={'domain': None}, subdomain='<subdomain>')
+@app.route('/view/<hashid>/<application>', defaults={'domain': None})
+def view_application(domain, hashid, application):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
     # Transition code until we force all employers to login before posting
     if post.user and not (post.admin_is(g.user) or lastuser.has_permission('siteadmin')):
@@ -354,6 +383,11 @@ def view_application(hashid, application):
         else:
             abort(403)
     job_application = JobApplication.query.filter_by(hashid=application, jobpost=post).first_or_404()
+
+    # If this domain doesn't match, redirect to correct URL
+    if post.email_domain != domain:
+        return redirect(job_application.url_for(), code=301)
+
     if job_application.response == EMPLOYER_RESPONSE.NEW:
         # If the application is pending, mark it as opened.
         # However, don't do this if the user is a siteadmin, unless they also own the post.
@@ -378,9 +412,11 @@ def view_application(hashid, application):
         response_form=response_form, statuses=statuses, is_siteadmin=lastuser.has_permission('siteadmin'))
 
 
-@app.route('/apply/<hashid>/<application>', methods=['POST'], subdomain='<subdomain>')
-@app.route('/apply/<hashid>/<application>', methods=['POST'])
-def process_application(hashid, application):
+@app.route('/<domain>/<hashid>/appl/<application>/process', methods=['POST'], subdomain='<subdomain>')
+@app.route('/<domain>/<hashid>/appl/<application>/process', methods=['POST'])
+@app.route('/apply/<hashid>/<application>', defaults={'domain': None}, methods=['POST'], subdomain='<subdomain>')
+@app.route('/apply/<hashid>/<application>', defaults={'domain': None}, methods=['POST'])
+def process_application(domain, hashid, application):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
     if post.user and not post.admin_is(g.user):
         if not g.user:
@@ -408,9 +444,7 @@ def process_application(hashid, application):
                 email_html = email_transform(
                     render_template('respond_email.html',
                         post=post, job_application=job_application,
-                        archive_url=url_for('view_application',
-                            hashid=post.hashid, application=job_application.hashid,
-                            _external=True)),
+                        archive_url=job_application.url_for(_external=True)),
                     base_url=request.url_root)
                 email_text = html2text(email_html)
 
@@ -451,13 +485,15 @@ def process_application(hashid, application):
         else:
             flash(flashmsg, 'interactive')
 
-    return redirect(url_for('view_application', hashid=post.hashid, application=job_application.hashid), 303)
+    return redirect(job_application.url_for(), 303)
 
 
-@app.route('/pinned/<hashid>', methods=['POST'], subdomain='<subdomain>')
-@app.route('/pinned/<hashid>', methods=['POST'])
+@app.route('/<domain>/<hashid>/pin', methods=['POST'], subdomain='<subdomain>')
+@app.route('/<domain>/<hashid>/pin', methods=['POST'])
+@app.route('/pinned/<hashid>', defaults={'domain': None}, methods=['POST'], subdomain='<subdomain>')
+@app.route('/pinned/<hashid>', defaults={'domain': None}, methods=['POST'])
 @lastuser.requires_permission('siteadmin')
-def pinnedjob(hashid):
+def pinnedjob(domain, hashid):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
     if g.board:
         obj = post.link_to_board(g.board)
@@ -482,14 +518,15 @@ def pinnedjob(hashid):
         return redirect(post.url_for(), 303)
 
 
-@app.route('/reject/<hashid>', methods=('GET', 'POST'), subdomain='<subdomain>')
-@app.route('/reject/<hashid>', methods=('GET', 'POST'))
+@app.route('/<domain>/<hashid>/reject', methods=('GET', 'POST'), subdomain='<subdomain>')
+@app.route('/<domain>/<hashid>/reject', methods=('GET', 'POST'))
+@app.route('/reject/<hashid>', defaults={'domain': None}, methods=('GET', 'POST'), subdomain='<subdomain>')
+@app.route('/reject/<hashid>', defaults={'domain': None}, methods=('GET', 'POST'))
 @lastuser.requires_permission('siteadmin')
-def rejectjob(hashid):
+def rejectjob(domain, hashid):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
-    if post.status in [POSTSTATUS.DRAFT, POSTSTATUS.PENDING]:
-        if post.edit_key not in session.get('userkeys', []):
-            abort(403)
+    if post.status in [POSTSTATUS.DRAFT, POSTSTATUS.PENDING] and not post.admin_is(g.user):
+        abort(403)
     if post.status in [POSTSTATUS.REJECTED, POSTSTATUS.WITHDRAWN, POSTSTATUS.SPAM]:
         abort(410)
     rejectform = forms.RejectForm()
@@ -520,14 +557,15 @@ def rejectjob(hashid):
     return redirect(post.url_for(), code=303)
 
 
-@app.route('/moderate/<hashid>', methods=('GET', 'POST'), subdomain='<subdomain>')
-@app.route('/moderate/<hashid>', methods=('GET', 'POST'))
+@app.route('/<domain>/<hashid>/moderate', methods=('GET', 'POST'), subdomain='<subdomain>')
+@app.route('/<domain>/<hashid>/moderate', methods=('GET', 'POST'))
+@app.route('/moderate/<hashid>', defaults={'domain': None}, methods=('GET', 'POST'), subdomain='<subdomain>')
+@app.route('/moderate/<hashid>', defaults={'domain': None}, methods=('GET', 'POST'))
 @lastuser.requires_permission('siteadmin')
-def moderatejob(hashid):
+def moderatejob(domain, hashid):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
     if post.status in [POSTSTATUS.DRAFT, POSTSTATUS.PENDING]:
-        if post.edit_key not in session.get('userkeys', []):
-            abort(403)
+        abort(403)
     if post.status in [POSTSTATUS.REJECTED, POSTSTATUS.WITHDRAWN, POSTSTATUS.SPAM]:
         abort(410)
     moderateform = forms.ModerateForm()
@@ -552,15 +590,16 @@ def moderatejob(hashid):
 
 
 @csrf.exempt
-@app.route('/confirm/<hashid>', methods=('GET', 'POST'), subdomain='<subdomain>')
-@app.route('/confirm/<hashid>', methods=('GET', 'POST'))
-def confirm(hashid):
+@app.route('/<domain>/<hashid>/confirm', methods=('GET', 'POST'), subdomain='<subdomain>')
+@app.route('/<domain>/<hashid>/confirm', methods=('GET', 'POST'))
+@app.route('/confirm/<hashid>', defaults={'domain': None}, methods=('GET', 'POST'), subdomain='<subdomain>')
+@app.route('/confirm/<hashid>', defaults={'domain': None}, methods=('GET', 'POST'))
+def confirm(domain, hashid):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
     form = forms.ConfirmForm()
     if post.status in POSTSTATUS.GONE:
         abort(410)
-    elif post.status in POSTSTATUS.UNPUBLISHED:
-        if not (post.edit_key in session.get('userkeys', []) or post.admin_is(g.user)):
+    elif post.status in POSTSTATUS.UNPUBLISHED and not post.admin_is(g.user):
             abort(403)
     else:
         # Any other status: no confirmation required (via this handler)
@@ -581,18 +620,15 @@ def confirm(hashid):
         post.status = POSTSTATUS.PENDING
         db.session.commit()
 
-        try:
-            session.get('userkeys', []).remove(post.edit_key)
-            session.modified = True  # Since it won't detect changes to lists
-        except ValueError:
-            pass
         return render_template('mailsent.html', post=post)
     return render_template('confirm.html', post=post, form=form)
 
 
-@app.route('/confirm/<hashid>/<key>', subdomain='<subdomain>')
-@app.route('/confirm/<hashid>/<key>')
-def confirm_email(hashid, key):
+@app.route('/<domain>/<hashid>/confirm/<key>', subdomain='<subdomain>')
+@app.route('/<domain>/<hashid>/confirm/<key>')
+@app.route('/confirm/<hashid>/<key>', defaults={'domain': None}, subdomain='<subdomain>')
+@app.route('/confirm/<hashid>/<key>', defaults={'domain': None})
+def confirm_email(domain, hashid, key):
     # If post is in pending state and email key is correct, convert to published
     # and update post.datetime to utcnow() so it'll show on top of the stack
     # This function expects key to be email_verify_key, not edit_key like the others
@@ -605,7 +641,7 @@ def confirm_email(hashid, key):
     elif post.status == POSTSTATUS.DRAFT:
         # This should not happen. The user doesn't have this URL until they
         # pass the confirm form
-        return redirect(url_for('confirm', hashid=post.hashid), code=302)
+        return redirect(post.url_for('confirm'), code=302)
     elif post.status == POSTSTATUS.PENDING:
         if key != post.email_verify_key:
             abort(403)
@@ -634,11 +670,13 @@ def confirm_email(hashid, key):
     return redirect(post.url_for(), code=302)
 
 
-@app.route('/withdraw/<hashid>', methods=('GET', 'POST'), defaults={'key': None}, subdomain='<subdomain>')
-@app.route('/withdraw/<hashid>/<key>', methods=('GET', 'POST'), subdomain='<subdomain>')
-@app.route('/withdraw/<hashid>', methods=('GET', 'POST'), defaults={'key': None})
-@app.route('/withdraw/<hashid>/<key>', methods=('GET', 'POST'))
-def withdraw(hashid, key):
+@app.route('/<domain>/<hashid>/withdraw', methods=('GET', 'POST'), defaults={'key': None}, subdomain='<subdomain>')
+@app.route('/<domain>/<hashid>/withdraw', methods=('GET', 'POST'), defaults={'key': None})
+@app.route('/withdraw/<hashid>', methods=('GET', 'POST'), defaults={'key': None, 'domain': None}, subdomain='<subdomain>')
+@app.route('/withdraw/<hashid>/<key>', defaults={'domain': None}, methods=('GET', 'POST'), subdomain='<subdomain>')
+@app.route('/withdraw/<hashid>', methods=('GET', 'POST'), defaults={'key': None, 'domain': None})
+@app.route('/withdraw/<hashid>/<key>', defaults={'domain': None}, methods=('GET', 'POST'))
+def withdraw(domain, hashid, key):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
     form = forms.WithdrawForm()
     if not ((key is None and g.user is not None and post.admin_is(g.user)) or (key == post.edit_key)):
@@ -658,11 +696,13 @@ def withdraw(hashid, key):
     return render_template("withdraw.html", post=post, form=form)
 
 
-@app.route('/edit/<hashid>', methods=('GET', 'POST'), defaults={'key': None}, subdomain='<subdomain>')
-@app.route('/edit/<hashid>/<key>', methods=('GET', 'POST'), subdomain='<subdomain>')
-@app.route('/edit/<hashid>', methods=('GET', 'POST'), defaults={'key': None})
-@app.route('/edit/<hashid>/<key>', methods=('GET', 'POST'))
-def editjob(hashid, key, form=None, validated=False, newpost=None):
+@app.route('/<domain>/<hashid>/edit', methods=('GET', 'POST'), defaults={'key': None}, subdomain='<subdomain>')
+@app.route('/<domain>/<hashid>/edit', methods=('GET', 'POST'), defaults={'key': None})
+@app.route('/edit/<hashid>', methods=('GET', 'POST'), defaults={'key': None, 'domain': None}, subdomain='<subdomain>')
+@app.route('/edit/<hashid>/<key>', defaults={'domain': None}, methods=('GET', 'POST'), subdomain='<subdomain>')
+@app.route('/edit/<hashid>', methods=('GET', 'POST'), defaults={'key': None, 'domain': None})
+@app.route('/edit/<hashid>/<key>', defaults={'domain': None}, methods=('GET', 'POST'))
+def editjob(hashid, key, domain=None, form=None, validated=False, newpost=None):
     if form is None:
         form = forms.ListingForm(request.form)
         form.job_type.choices = JobType.choices(g.board)
@@ -677,6 +717,10 @@ def editjob(hashid, key, form=None, validated=False, newpost=None):
         post = JobPost.query.filter_by(hashid=hashid).first_or_404()
         if not ((key is None and g.user is not None and post.admin_is(g.user)) or (key == post.edit_key)):
             abort(403)
+
+        # Once this post is published, require editing at /domain/<hashid>/edit
+        if not key and post.status not in POSTSTATUS.UNPUBLISHED and post.email_domain != domain:
+            return redirect(post.url_for('edit'), code=301)
 
         # Don't allow editing jobs that aren't on this board as that may be a loophole when
         # the board allows no pay (except in the 'www' root board, where editing is always allowed)
@@ -794,9 +838,7 @@ def editjob(hashid, key, form=None, validated=False, newpost=None):
             tag_jobpost.delay(post.id)    # Keywords
             tag_locations.delay(post.id)  # Locations
             post.uncache_viewcounts('pay_label')
-            userkeys = session.get('userkeys', [])
-            userkeys.append(post.edit_key)
-            session['userkeys'] = userkeys
+            session.pop('userkeys', None)  # Remove legacy userkeys dict
             session.permanent = True
             return redirect(post.url_for(), code=303)
     elif request.method == 'POST':

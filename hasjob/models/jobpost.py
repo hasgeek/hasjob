@@ -199,6 +199,9 @@ class JobPost(BaseMixin, db.Model):
         return (self.status in POSTSTATUS.LISTED) and (
             self.datetime > now - agelimit)
 
+    def is_public(self):
+        return self.status in POSTSTATUS.LISTED
+
     def is_flagged(self):
         return self.status == POSTSTATUS.FLAGGED
 
@@ -218,16 +221,38 @@ class JobPost(BaseMixin, db.Model):
         return PAY_TYPE.get(self.pay_type)
 
     def url_for(self, action='view', _external=False, **kwargs):
+        if self.status in POSTSTATUS.UNPUBLISHED and action in ('view', 'edit'):
+            domain = None
+        else:
+            domain = self.email_domain
+
         if action == 'view':
-            return url_for('jobdetail', hashid=self.hashid, _external=_external, **kwargs)
+            return url_for('jobdetail', hashid=self.hashid, domain=domain, _external=_external, **kwargs)
+        elif action == 'reveal':
+            return url_for('revealjob', hashid=self.hashid, domain=domain, _external=_external, **kwargs)
+        elif action == 'apply':
+            return url_for('applyjob', hashid=self.hashid, domain=domain, _external=_external, **kwargs)
         elif action == 'edit':
-            return url_for('editjob', hashid=self.hashid, _external=_external, **kwargs)
+            return url_for('editjob', hashid=self.hashid, domain=domain, _external=_external, **kwargs)
         elif action == 'withdraw':
-            return url_for('withdraw', hashid=self.hashid, _external=_external, **kwargs)
+            return url_for('withdraw', hashid=self.hashid, domain=domain, _external=_external, **kwargs)
+        elif action == 'moderate':
+            return url_for('moderatejob', hashid=self.hashid, domain=domain, _external=_external, **kwargs)
+        elif action == 'pin':
+            return url_for('pinnedjob', hashid=self.hashid, domain=domain, _external=_external, **kwargs)
+        elif action == 'reject':
+            return url_for('rejectjob', hashid=self.hashid, domain=domain, _external=_external, **kwargs)
         elif action == 'confirm':
             return url_for('confirm', hashid=self.hashid, _external=_external, **kwargs)
         elif action == 'logo':
-            return url_for('logoimage', hashid=self.hashid, _external=True, **kwargs)
+            return url_for('logoimage', hashid=self.hashid, domain=domain, _external=_external, **kwargs)
+        elif action == 'confirm-link':
+            return url_for('confirm_email', hashid=self.hashid, domain=domain,
+                key=self.email_verify_key, _external=True, **kwargs)
+        elif action == 'star':
+            return url_for('starjob', hashid=self.hashid, domain=domain, _external=_external, **kwargs)
+        elif action == 'manage':
+            return url_for('managejob', hashid=self.hashid, domain=domain, _external=_external, **kwargs)
         elif action == 'browse':
             if self.email_domain in webmail_domains:
                 return url_for('browse_by_email', md5sum=self.md5sum, _external=_external, **kwargs)
@@ -667,6 +692,18 @@ class JobApplication(BaseMixin, db.Model):
             'spam': counts[EMPLOYER_RESPONSE.SPAM],
             'rejected': counts[EMPLOYER_RESPONSE.REJECTED],
             }
+
+    def url_for(self, action='view', _external=False, **kwargs):
+        domain = self.jobpost.email_domain
+        if action == 'view':
+            return url_for('view_application', hashid=self.jobpost.hashid, domain=domain, application=self.hashid,
+                _external=_external, **kwargs)
+        elif action == 'process':
+            return url_for('process_application', hashid=self.jobpost.hashid, domain=domain, application=self.hashid,
+                _external=_external, **kwargs)
+        elif action == 'track-open':
+            return url_for('view_application_email_gif', hashid=self.jobpost.hashid, domain=domain, application=self.hashid,
+                _external=_external, **kwargs)
 
 
 JobApplication.jobpost = db.relationship(JobPost,

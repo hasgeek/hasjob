@@ -6,7 +6,7 @@ This is a confirmation email for the job you listed at {% if g.board -%} {{ g.bo
 
 [Click here to confirm your email address and publish the job][confirm]
 
-[confirm]: {{ url_for('confirm_email', _external=true, hashid=post.hashid, key=post.email_verify_key) }}
+[confirm]: {{ post.url_for('confirm-link', _external=true) }}
 
 Save this email for the next 30 days while the post is active. Use these
 links if you need to edit the post, or if the position has been filled

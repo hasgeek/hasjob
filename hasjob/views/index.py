@@ -184,13 +184,19 @@ def browse_by_type(name):
 
 
 @csrf.exempt
-@app.route('/at/<domain>', methods=['GET', 'POST'], subdomain='<subdomain>')
-@app.route('/at/<domain>', methods=['GET', 'POST'])
+@app.route('/<domain>', methods=['GET', 'POST'], subdomain='<subdomain>')
+@app.route('/<domain>', methods=['GET', 'POST'])
 def browse_by_domain(domain):
-    if not domain:
+    if not domain or '.' not in domain:
         abort(404)
     basequery = JobPost.query.filter_by(email_domain=domain)
     return index(basequery=basequery, domain=domain, title=domain, showall=True)
+
+
+@app.route('/at/<domain>', methods=['GET', 'POST'], subdomain='<subdomain>')
+@app.route('/at/<domain>', methods=['GET', 'POST'])
+def browse_by_domain_legacy(domain):
+    return redirect(url_for('browse_by_domain', domain=domain), code=301)
 
 
 @csrf.exempt

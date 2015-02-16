@@ -1,5 +1,5 @@
 {% from "baseframe/forms.html" import renderfield, ajaxform %}
-<form id="moderateform" method="POST" action="{{ url_for('moderatejob', hashid=post.hashid) }}" class="form-horizontal">
+<form id="moderateform" method="POST" action="{{ post.url_for('moderate') }}" class="form-horizontal">
   <input type="hidden" name="_charset_"/>
   <input type="hidden" name="form.id" value="moderateform"/>
   {{ moderateform.hidden_tag() }}

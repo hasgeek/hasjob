@@ -1,5 +1,5 @@
 {% from "baseframe/forms.html" import renderfield %}
-<form id="replyform" method="POST" class="form-horizontal" action="{{ url_for('process_application', hashid=post.hashid, application=job_application.hashid) }}">
+<form id="replyform" method="POST" class="form-horizontal" action="{{ job_application.url_for('process') }}">
   <input type="hidden" name="_charset_"/>
   <input type="hidden" name="form.id" value="response_form"/>
   {{ response_form.hidden_tag() }}
