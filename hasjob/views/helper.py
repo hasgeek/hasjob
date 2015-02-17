@@ -228,24 +228,25 @@ def save_impressions(sessionid, impressions):
     """
     Save impressions against each job and session.
     """
-    for pinned, postid in impressions:
-        ji = JobImpression.query.get((postid, sessionid))
-        if ji is None:
-            ji = JobImpression(jobpost_id=postid, event_session_id=sessionid, pinned=False)
-            db.session.add(ji)
-        # Never set pinned=False on an existing JobImpression instance. The pinned status
-        # could change during a session. We are only interested in knowing if it was
-        # rendered as pinned at least once during a session.
-        if pinned:
-            ji.pinned = True
-        # We commit once per impresssion (typically 32+ impressions per request)
-        # This is inefficient, but is the only way to handle integrity errors per item
-        # from race conditions in the absence of a database-provided UPSERT. This
-        # is why this function runs as a background job instead of in-process.
-        try:
-            db.session.commit()
-        except IntegrityError:  # Parallel request, skip this and move on
-            db.session.rollback()
+    with app.test_request_context():
+        for pinned, postid in impressions:
+            ji = JobImpression.query.get((postid, sessionid))
+            if ji is None:
+                ji = JobImpression(jobpost_id=postid, event_session_id=sessionid, pinned=False)
+                db.session.add(ji)
+            # Never set pinned=False on an existing JobImpression instance. The pinned status
+            # could change during a session. We are only interested in knowing if it was
+            # rendered as pinned at least once during a session.
+            if pinned:
+                ji.pinned = True
+            # We commit once per impresssion (typically 32+ impressions per request)
+            # This is inefficient, but is the only way to handle integrity errors per item
+            # from race conditions in the absence of a database-provided UPSERT. This
+            # is why this function runs as a background job instead of in-process.
+            try:
+                db.session.commit()
+            except IntegrityError:  # Parallel request, skip this and move on
+                db.session.rollback()
 
 
 @cache.memoize(timeout=86400)
