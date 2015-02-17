@@ -140,6 +140,9 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
                 # batch[-1][1][0][1] = post
                 loadmore = batch[-1][1][0][1].datetime
             grouped = OrderedDict(batch)
+            g.impressions = [(pinflag, post.id)
+                for grouping, group in batch
+                for pinflag, post in group]
         elif pinsandposts:
             if not startdate:
                 startindex = 0
@@ -154,6 +157,7 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
                 # batch = [(pinned, post), ...]
                 loadmore = batch[-1][1].datetime
             pinsandposts = batch
+            g.impressions = [(pinflag, post.id) for pinflag, post in batch]
 
     return render_template('index.html', pinsandposts=pinsandposts, grouped=grouped, now=now,
                            newlimit=newlimit, jobtype=type, jobcategory=category, title=title,

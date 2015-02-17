@@ -14,11 +14,11 @@ from .. import redis_store
 from . import newlimit, agelimit, db, POSTSTATUS, EMPLOYER_RESPONSE, PAY_TYPE, BaseMixin, TimestampMixin
 from .jobtype import JobType
 from .jobcategory import JobCategory
-from .user import User, AnonUser
+from .user import User, AnonUser, EventSession
 from .org import Organization
 from ..utils import random_long_key, random_hash_key
 
-__all__ = ['JobPost', 'JobLocation', 'UserJobView', 'AnonJobView', 'JobApplication',
+__all__ = ['JobPost', 'JobLocation', 'UserJobView', 'AnonJobView', 'JobImpression', 'JobApplication',
     'unique_hash', 'viewstats_by_id_qhour', 'viewstats_by_id_hour', 'viewstats_by_id_day']
 
 
@@ -586,6 +586,18 @@ class AnonJobView(db.Model):
     @classmethod
     def get(cls, jobpost, anon_user):
         return cls.query.get((jobpost.id, anon_user.id))
+
+
+class JobImpression(TimestampMixin, db.Model):
+    __tablename__ = 'job_impression'
+    #: Job post that was impressed
+    jobpost_id = db.Column(None, db.ForeignKey('jobpost.id'), primary_key=True)
+    jobpost = db.relationship(JobPost)
+    #: Event session in which it was impressed
+    event_session_id = db.Column(None, db.ForeignKey('event_session.id'), primary_key=True, index=True)
+    event_session = db.relationship(EventSession)
+    #: Whether it was pinned at any time in this session
+    pinned = db.Column(db.Boolean, nullable=False, default=False)
 
 
 class JobApplication(BaseMixin, db.Model):

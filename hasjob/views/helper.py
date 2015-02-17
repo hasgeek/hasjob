@@ -8,15 +8,16 @@ import requests
 from pytz import utc, timezone
 from urllib import quote, quote_plus
 from sqlalchemy.exc import IntegrityError
-from flask import Markup, request, url_for, g, session
 from geoip2.errors import AddressNotFoundError
+from flask import Markup, request, url_for, g, session
+from flask.ext.rq import job
 
 from baseframe import cache
 from baseframe.signals import form_validation_error, form_validation_success
 
 from .. import app
 from ..models import (agelimit, newlimit, db, JobCategory, JobPost, JobType, POSTSTATUS, BoardJobPost, Tag, JobPostTag,
-    Campaign, CampaignView, EventSession, UserEvent)
+    Campaign, CampaignView, EventSession, UserEvent, JobImpression)
 from ..utils import scrubemail, redactemail
 
 
@@ -53,6 +54,7 @@ def request_flags():
     g.peopleflow_url = session.get('peopleflow')
 
     g.viewcounts = {}
+    g.impressions = []
     if 'preview' in request.args:
         preview_campaign = Campaign.get(request.args['preview'])
     else:
@@ -111,6 +113,9 @@ def record_views_and_events(response):
     if not hasattr(g, 'user_geonameids'):
         g.user_geonameids = {}
         missing_in_context.append('user_geonameids')
+    if not hasattr(g, 'impressions'):
+        g.impressions = []
+        missing_in_context.append('impressions')
 
     if missing_in_context:
         g.event_data['missing_in_context'] = missing_in_context
@@ -125,6 +130,9 @@ def record_views_and_events(response):
 
     if g.user_geonameids:
         g.event_data['user_geonameids'] = g.user_geonameids
+
+    if g.impressions:
+        g.event_data['impressions'] = g.impressions
 
     if g.user:
         for campaign in g.campaign_views:
@@ -142,6 +150,9 @@ def record_views_and_events(response):
             db.session.commit()
         except IntegrityError:
             db.session.rollback()
+
+        if g.impressions:
+            save_impressions.delay(es.id, g.impressions)
 
     return response
 
@@ -210,6 +221,31 @@ def gettags(alltime=False):
     if g.board:
         query = query.join(JobPost.postboards).filter(BoardJobPost.board == g.board)
     return query.all()
+
+
+@job('hasjob')
+def save_impressions(sessionid, impressions):
+    """
+    Save impressions against each job and session.
+    """
+    for pinned, postid in impressions:
+        ji = JobImpression.query.get((postid, sessionid))
+        if ji is None:
+            ji = JobImpression(jobpost_id=postid, event_session_id=sessionid, pinned=False)
+            db.session.add(ji)
+        # Never set pinned=False on an existing JobImpression instance. The pinned status
+        # could change during a session. We are only interested in knowing if it was
+        # rendered as pinned at least once during a session.
+        if pinned:
+            ji.pinned = True
+        # We commit once per impresssion (typically 32+ impressions per request)
+        # This is inefficient, but is the only way to handle integrity errors per item
+        # from race conditions in the absence of a database-provided UPSERT. This
+        # is why this function runs as a background job instead of in-process.
+        try:
+            db.session.commit()
+        except IntegrityError:  # Parallel request, skip this and move on
+            db.session.rollback()
 
 
 @cache.memoize(timeout=86400)
