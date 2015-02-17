@@ -64,11 +64,10 @@ def tag_locations(jobpost_id):
 @job('hasjob')
 def add_to_boards(jobpost_id):
     with app.test_request_context():
-        post = JobPost.query.get(jobpost_id)
-        for board in Board.query.join(BoardDomain).join(BoardLocation).filter(db.or_(
-                BoardDomain.domain == post.email_domain,
-                BoardLocation.geonameid.in_([l.geonameid for l in post.locations])
-                )):
+        post = JobPost.query.options(db.load_only('email_domain'), db.joinedload('locations')).get(jobpost_id)
+        for board in Board.query.join(BoardDomain).filter(
+                BoardDomain.domain == post.email_domain).union(
+                Board.query.join(BoardLocation).filter(BoardLocation.geonameid.in_(post.geonameids))):
             board.add(post)
         db.session.commit()
 
