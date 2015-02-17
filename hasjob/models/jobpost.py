@@ -45,7 +45,7 @@ def number_abbreviate(number, indian=False):
 starred_job_table = db.Table('starred_job', db.Model.metadata,
     db.Column('user_id', None, db.ForeignKey('user.id'), primary_key=True),
     db.Column('jobpost_id', None, db.ForeignKey('jobpost.id'), primary_key=True),
-    db.Column('created_at', db.DateTime, default=datetime.utcnow),
+    db.Column('created_at', db.DateTime, default=datetime.utcnow, nullable=False),
     )
 
 
