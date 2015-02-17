@@ -433,9 +433,11 @@ def sitemap():
     return Response(sitemapxml, content_type='text/xml; charset=utf-8')
 
 
-@app.route('/logo/<hashid>', subdomain='<subdomain>')
-@app.route('/logo/<hashid>')
-def logoimage(hashid):
+@app.route('/<domain>/<hashid>/logo', subdomain='<subdomain>')
+@app.route('/<domain>/<hashid>/logo')
+@app.route('/logo/<hashid>', defaults={'domain': None}, subdomain='<subdomain>')
+@app.route('/logo/<hashid>', defaults={'domain': None})
+def logoimage(domain, hashid):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
     if not post.company_logo:
         # If there's no logo (perhaps it was deleted), don't try to show one
