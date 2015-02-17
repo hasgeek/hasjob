@@ -8,7 +8,7 @@
     <span class="annotation top-left">{{ post.location }}</span>
     <span class="annotation top-right">{{ post.datetime|shortdate }}</span>
     <span class="headline">{{ post.headline }}</span>
-    {% if show_viewcounts or show_pay %}<span class="count">{% if show_viewcounts %}<span title="Viewed › Opened form › Applied">{{ post.viewcounts['viewed'] }} › {{ post.viewcounts['opened'] }} › {{ post.viewcounts['applied'] }}</span>{% endif %}{% if show_viewcounts and show_pay %} &middot; {% endif %}{% if show_pay %}{{ post.viewcounts['pay_label'] }}{% endif %}</span>{% endif %}
+    {% if show_viewcounts or show_pay %}<span class="count">{% if show_viewcounts %}<span title="Impressions › Viewed › Opened form › Applied">{{ post.viewcounts['impressions'] }} › {{ post.viewcounts['viewed'] }} › {{ post.viewcounts['opened'] }} › {{ post.viewcounts['applied'] }}</span>{% endif %}{% if show_viewcounts and show_pay %} &middot; {% endif %}{% if show_pay %}{{ post.viewcounts['pay_label'] }}{% endif %}</span>{% endif %}
     <span class="annotation bottom-right">{{ post.company_name }}</span>
     <span class="annotation bottom-left">{% if starred is not none %}<i class="fa fa-star{% if not starred %}-o{% endif %} pstar" data-id="{{ post.hashid }}"></i>{% endif %} {%- if post.is_new() %} <span class="new">New!</span>{%- endif %}</span>
   {%- if groupedunder %}

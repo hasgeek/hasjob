@@ -15,9 +15,9 @@ from flask.ext.rq import job
 from baseframe import cache
 from baseframe.signals import form_validation_error, form_validation_success
 
-from .. import app
+from .. import app, redis_store
 from ..models import (agelimit, newlimit, db, JobCategory, JobPost, JobType, POSTSTATUS, BoardJobPost, Tag, JobPostTag,
-    Campaign, CampaignView, EventSession, UserEvent, JobImpression)
+    Campaign, CampaignView, EventSession, UserEvent, JobImpression, EventSession)
 from ..utils import scrubemail, redactemail
 
 
@@ -231,9 +231,11 @@ def save_impressions(sessionid, impressions):
     with app.test_request_context():
         for pinned, postid in impressions:
             ji = JobImpression.query.get((postid, sessionid))
+            new_impression = False
             if ji is None:
                 ji = JobImpression(jobpost_id=postid, event_session_id=sessionid, pinned=False)
                 db.session.add(ji)
+                new_impression = True
             # Never set pinned=False on an existing JobImpression instance. The pinned status
             # could change during a session. We are only interested in knowing if it was
             # rendered as pinned at least once during a session.
@@ -245,6 +247,14 @@ def save_impressions(sessionid, impressions):
             # is why this function runs as a background job instead of in-process.
             try:
                 db.session.commit()
+
+                # Replicate post.viewcounts's query here because we don't want to load the post from db just to
+                # access a class instance method
+                if new_impression:
+                    redis_store.hset('hasjob/viewcounts/%d' % postid, 'impressions',
+                        db.session.query(db.func.count(db.func.distinct(EventSession.user_id))).filter(
+                            EventSession.user_id != None).join(JobImpression).filter(  # NOQA
+                            JobImpression.jobpost_id == postid).first()[0])
             except IntegrityError:  # Parallel request, skip this and move on
                 db.session.rollback()
 

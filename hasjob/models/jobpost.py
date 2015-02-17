@@ -371,7 +371,8 @@ class JobPost(BaseMixin, db.Model):
 
     @property
     def viewcounts_key(self):
-        return 'hasjob/viewcounts/%s' % self.hashid
+        # Also see views.helper.save_impressions for a copy of this key
+        return 'hasjob/viewcounts/%d' % self.id
 
     @cached_property  # For multiple accesses in a single request
     def viewcounts(self):
@@ -379,6 +380,14 @@ class JobPost(BaseMixin, db.Model):
         values = g.viewcounts.get(cache_key) if g else None
         if values is None:
             values = redis_store.hgetall(cache_key)
+        if 'impressions' not in values:
+            # Also see views.helper.save_impressions for a copy of this query
+            values['impressions'] = db.session.query(db.func.count(db.func.distinct(EventSession.user_id))).filter(
+                EventSession.user_id != None).join(JobImpression).filter(JobImpression.jobpost == self).first()[0]  # NOQA
+            redis_store.hset(cache_key, 'impressions', values['impressions'])
+            redis_store.expire(cache_key, 86400)
+        else:
+            values['impressions'] = int(values['impressions'])
         if 'viewed' not in values:
             values['viewed'] = UserJobView.query.filter_by(jobpost=self).count()
             redis_store.hset(cache_key, 'viewed', values['viewed'])
