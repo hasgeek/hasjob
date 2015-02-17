@@ -17,7 +17,7 @@ from baseframe.signals import form_validation_error, form_validation_success
 
 from .. import app, redis_store
 from ..models import (agelimit, newlimit, db, JobCategory, JobPost, JobType, POSTSTATUS, BoardJobPost, Tag, JobPostTag,
-    Campaign, CampaignView, EventSession, UserEvent, JobImpression, EventSession)
+    Campaign, CampaignView, EventSession, UserEvent, JobImpression)
 from ..utils import scrubemail, redactemail
 
 
@@ -253,8 +253,8 @@ def save_impressions(sessionid, impressions):
                 if new_impression:
                     redis_store.hset('hasjob/viewcounts/%d' % postid, 'impressions',
                         db.session.query(db.func.count(db.func.distinct(EventSession.user_id))).filter(
-                            EventSession.user_id != None).join(JobImpression).filter(  # NOQA
-                            JobImpression.jobpost_id == postid).first()[0])
+                            EventSession.user_id != None).join(JobImpression).filter(
+                            JobImpression.jobpost_id == postid).first()[0])  # NOQA
             except IntegrityError:  # Parallel request, skip this and move on
                 db.session.rollback()
 

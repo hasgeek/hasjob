@@ -305,7 +305,7 @@
   </div>
 {% endblock %}
 {% block postcontent %}
-  {%- with relatedposts = post.related_posts() %}{% if relatedposts %}
+  {%- if relatedposts %}
   <ul id="stickie-area" class="row">
     {%- for post in relatedposts -%}
       <li class="col-xs-12 col-md-3 col-sm-4">
@@ -313,7 +313,7 @@
       </li>
     {%- endfor -%}
   </ul>
-  {%- endif %}{% endwith -%}
+  {%- endif %}
 {% endblock %}
 {% block footerscripts %}
 <script type="text/javascript">

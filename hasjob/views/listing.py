@@ -163,10 +163,14 @@ def jobdetail(domain, hashid):
     else:
         g.starred_ids = set()
 
+    related_posts = post.related_posts()
+    g.impressions = [(False, rp.id) for rp in related_posts]
+
     return render_template('detail.html', post=post, reportform=reportform, rejectform=rejectform,
         pinnedform=pinnedform, applyform=applyform, job_application=job_application,
         jobview=jobview, report=report, moderateform=moderateform,
         domain_mismatch=domain_mismatch, header_campaign=header_campaign,
+        related_posts=related_posts,
         is_siteadmin=lastuser.has_permission('siteadmin')
         )
 

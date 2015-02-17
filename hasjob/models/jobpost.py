@@ -383,7 +383,8 @@ class JobPost(BaseMixin, db.Model):
         if 'impressions' not in values:
             # Also see views.helper.save_impressions for a copy of this query
             values['impressions'] = db.session.query(db.func.count(db.func.distinct(EventSession.user_id))).filter(
-                EventSession.user_id != None).join(JobImpression).filter(JobImpression.jobpost == self).first()[0]  # NOQA
+                EventSession.user_id != None).join(JobImpression).filter(  # NOQA
+                JobImpression.jobpost == self).first()[0]
             redis_store.hset(cache_key, 'impressions', values['impressions'])
             redis_store.expire(cache_key, 86400)
         else:
