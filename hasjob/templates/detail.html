@@ -86,6 +86,13 @@
         </div>
         <div class="col-md-3">{% if not g.kiosk %}
           <div class="list-group">
+            {%- if g.user %}
+              <a class="list-group-item js-pstar-list-group-item" href="javascript:void(0);">
+                <i class="fa fa-star{% if post not in g.user.starred_jobs %}-o{% endif %} pstar sidebar-pstar"
+                   data-id="{{ post.hashid }}"></i>
+                &nbsp;&nbsp; Favourite this
+              </a>
+            {%- endif %}
             <a class="list-group-item" href="mailto:?subject=Job%3A%20{{ post.headline|urlquoteplus }}&amp;body={{ post.url_for(utm_campaign='share', utm_medium='email', _external=true)|urlquoteplus }}">
               <i class="fa fa-fw fa-envelope"></i>&nbsp;&nbsp; Email this
             </a>
@@ -340,6 +347,10 @@
     });
   });
   $(function() {
+    $('.js-pstar-list-group-item').click(function(){
+      $('.pstar').click();
+    });
+
     $('#post-location').tooltip();
     $(".popup-box").hide();
     $(".popup-box:target").show();
