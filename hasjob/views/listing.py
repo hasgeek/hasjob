@@ -8,6 +8,7 @@ from html2text import html2text
 from premailer import transform as email_transform
 
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm.exc import StaleDataError
 from flask import abort, flash, g, redirect, render_template, request, url_for, session, Markup, jsonify
 from flask.ext.mail import Message
 from baseframe import cache, csrf
@@ -186,12 +187,20 @@ def starjob(domain, hashid):
     """
     is_starred = None
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
-    if post in g.user.starred_jobs:
-        g.user.starred_jobs.remove(post)
-        is_starred = False
-    else:
-        g.user.starred_jobs.append(post)
-        is_starred = True
+    # Handle IntegrityError/StaleDataError caused by users double clicking
+    passed = False
+    while not passed:
+        if post in g.user.starred_jobs:
+            g.user.starred_jobs.remove(post)
+            is_starred = False
+        else:
+            g.user.starred_jobs.append(post)
+            is_starred = True
+        try:
+            db.session.commit()
+            passed = True
+        except (IntegrityError, StaleDataError):
+            pass
 
     response = jsonify(is_starred=is_starred)
     if is_starred:
