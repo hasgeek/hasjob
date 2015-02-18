@@ -157,6 +157,15 @@ def record_views_and_events(response):
     return response
 
 
+def cache_viewcounts(posts):
+    redis_pipe = redis_store.connection.pipeline()
+    viewcounts_keys = [p.viewcounts_key for p in posts]
+    for key in viewcounts_keys:
+        redis_pipe.hgetall(key)
+    viewcounts_values = redis_pipe.execute()
+    g.viewcounts = dict(zip(viewcounts_keys, viewcounts_values))
+
+
 def getposts(basequery=None, pinned=False, showall=False, statuses=None):
     if not statuses:
         statuses = POSTSTATUS.LISTED

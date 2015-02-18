@@ -15,11 +15,11 @@ from coaster.utils import getbool, parse_isoformat
 from baseframe import csrf
 from baseframe.staticdata import webmail_domains
 
-from .. import app, lastuser, redis_store
+from .. import app, lastuser
 from ..models import (db, JobCategory, JobPost, JobType, POSTSTATUS, newlimit, agelimit, JobLocation,
     Tag, JobPostTag, Campaign, CAMPAIGN_POSITION)
 from ..search import do_search
-from ..views.helper import getposts, getallposts, gettags, location_geodata
+from ..views.helper import getposts, getallposts, gettags, location_geodata, cache_viewcounts
 from ..uploads import uploaded_logos
 
 
@@ -35,12 +35,7 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
     posts = list(getposts(basequery, pinned=True, showall=showall, statuses=statuses))
 
     # Cache viewcounts (admin view or not)
-    redis_pipe = redis_store.connection.pipeline()
-    viewcounts_keys = [p.viewcounts_key for p in posts]
-    for key in viewcounts_keys:
-        redis_pipe.hgetall(key)
-    viewcounts_values = redis_pipe.execute()
-    g.viewcounts = dict(zip(viewcounts_keys, viewcounts_values))
+    cache_viewcounts(posts)
 
     if posts:
         employer_name = posts[0].company_name

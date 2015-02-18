@@ -41,7 +41,7 @@ from hasjob.uploads import uploaded_logos
 from hasjob.utils import get_word_bag, redactemail, random_long_key
 from hasjob.views import ALLOWED_TAGS
 from hasjob.nlp import identify_language
-from hasjob.views.helper import gif1x1
+from hasjob.views.helper import gif1x1, cache_viewcounts
 
 
 @app.route('/<domain>/<hashid>', methods=('GET', 'POST'), subdomain='<subdomain>')
@@ -165,6 +165,7 @@ def jobdetail(domain, hashid):
         g.starred_ids = set()
 
     related_posts = post.related_posts()
+    cache_viewcounts(related_posts)
     g.impressions = [(False, rp.id) for rp in related_posts]
 
     return render_template('detail.html', post=post, reportform=reportform, rejectform=rejectform,
