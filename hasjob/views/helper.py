@@ -3,6 +3,7 @@
 from os import path
 from datetime import datetime, timedelta
 from urlparse import urljoin
+import uuid
 import bleach
 import requests
 from pytz import utc, timezone
@@ -11,13 +12,15 @@ from sqlalchemy.exc import IntegrityError
 from geoip2.errors import AddressNotFoundError
 from flask import Markup, request, url_for, g, session
 from flask.ext.rq import job
+from flask.ext.lastuser import signal_user_looked_up
 
 from baseframe import cache
 from baseframe.signals import form_validation_error, form_validation_success
 
 from .. import app, redis_store
 from ..models import (agelimit, newlimit, db, JobCategory, JobPost, JobType, POSTSTATUS, BoardJobPost, Tag, JobPostTag,
-    Campaign, CampaignView, EventSession, UserEvent, JobImpression)
+    Campaign, CampaignView, EventSessionBase, EventSession, UserEventBase, UserEvent, JobImpression,
+    AnonUser)
 from ..utils import scrubemail, redactemail
 
 
@@ -45,23 +48,86 @@ def event_form_validation_error(form):
     g.event_data['form_errors'] = form.errors  # Dict of field: [errors]. Hopefully serializes into JSON
 
 
-@app.before_request
-def request_flags():
+@signal_user_looked_up.connect
+def load_user_data(user):
+    """
+    All pre-request utilities, run after g.user becomes available.
+
+    Part 1: Load anon user:
+
+    1. If there's g.user and session['anon_user'], it loads that anon_user and tags with user=g.user, then removes anon
+    2. If there's no g.user and no session['anon_user'], sets session['anon_user'] = 'test'
+    3. If there's no g.user and there is session['anon_user'] = 'test', creates a new anon user, then saves to cookie
+    4. If there's no g.user and there is session['anon_user'] != 'test', loads g.anon_user
+
+    Part 2: Are we in kiosk mode? Is there a preview campaign?
+    Part 3: Look up user's IP address location as geonameids for use in targeting.
+    """
+    g.anon_user = None  # Could change below
+    g.event_data = {}   # Views can add data to the current pageview event
+    g.esession = None
+    g.viewcounts = {}
+    g.impressions = []
+    g.campaign_views = []
+    g.jobpost_viewed = None
+    g.bgroup = None
+
+    if request.endpoint not in ('static', 'baseframe.static'):
+        # Loading an anon user only if we're not rendering static resources
+        if user:
+            if 'au' in session and session['au'] is not None and not unicode(session['au']).startswith(u'test-'):
+                anon_user = AnonUser.query.get(session['au'])
+                if anon_user:
+                    anon_user.user = user
+            session.pop('au', None)
+        else:
+            if not session.get('au'):
+                session['au'] = u'test-' + unicode(uuid.uuid4())
+                g.esession = EventSessionBase.new_from_request(request)
+                g.event_data['anon_cookie_test'] = session['au']
+            elif unicode(session['au']).startswith('test-'):
+                # This client sent us back our test cookie, so set a real value now
+                g.anon_user = AnonUser()
+                db.session.add(g.anon_user)
+                g.esession = EventSession.new_from_request(request)
+                g.esession.anon_user = g.anon_user
+                db.session.add(g.esession)
+                g.esession.load_from_cache(session['au'], UserEvent)
+                # We'll update session['au'] below after database commit
+            else:
+                anon_user = AnonUser.query.get(session['au'])
+                if not anon_user:
+                    # XXX: We got a fake value? This shouldn't happen
+                    g.event_data['anon_cookie_test'] = session['au']
+                    session['au'] = u'test-' + unicode(uuid.uuid4())  # Try again
+                    g.esession = EventSessionBase.new_from_request(request)
+                else:
+                    g.anon_user = anon_user
+
+    # Prepare event session if it's not already present
+    if g.user or g.anon_user and not g.esession:
+        g.esession = EventSession.get_session(user=g.user, anon_user=g.anon_user)
+
+    db.session.commit()
+
+    if g.anon_user:
+        session['au'] = g.anon_user.id
+        session.permanent = True
+
+    # We have a user, now look up everything else
+
     if session.get('kiosk'):
         g.kiosk = True
     else:
         g.kiosk = False
     g.peopleflow_url = session.get('peopleflow')
 
-    g.viewcounts = {}
-    g.impressions = []
     if 'preview' in request.args:
         preview_campaign = Campaign.get(request.args['preview'])
     else:
         preview_campaign = None
 
     g.preview_campaign = preview_campaign
-    g.campaign_views = []
 
     # Look up user's location
     if app.geoip:
@@ -95,8 +161,10 @@ def request_flags():
 
 @app.after_request
 def record_views_and_events(response):
-    # We're not sure why, but the g.* variables are sometimes missing in production.
-    # Keep track so we can investigate
+    # We had a few error reports with g.* variables missing in this function, so now
+    # we look again and make note if something is missing. We haven't encountered
+    # this problem ever since after several days of logging, but this bit of code
+    # remains just in case something turns up in future.
     missing_in_context = []
     if not hasattr(g, 'campaign_views'):
         g.campaign_views = []
@@ -116,6 +184,9 @@ def record_views_and_events(response):
     if not hasattr(g, 'impressions'):
         g.impressions = []
         missing_in_context.append('impressions')
+    if not hasattr(g, 'jobpost_viewed'):
+        g.jobpost_viewed = None
+        missing_in_context.append('jobpost_viewed')
 
     if missing_in_context:
         g.event_data['missing_in_context'] = missing_in_context
@@ -143,16 +214,26 @@ def record_views_and_events(response):
                 except IntegrityError:  # Race condition from parallel requests
                     db.session.rollback()
 
-    if g.user or g.anon_user:
-        es = EventSession.get_session(user=g.user, anon_user=g.anon_user)
-        es.events.append(UserEvent(status_code=response.status_code, data=g.event_data or None))
-        try:
-            db.session.commit()
-        except IntegrityError:
-            db.session.rollback()
+    if g.esession:  # Will be None for anon static requests
+        if g.user or g.anon_user:
+            ue = UserEvent.new_from_request(request)
+        else:
+            ue = UserEventBase.new_from_request(request)
+        ue.status_code = response.status_code
+        ue.data = g.event_data or None
+        g.esession.events.append(ue)
 
-        if g.impressions:
-            save_impressions.delay(es.id, g.impressions)
+        if g.esession.persistent:
+            try:
+                db.session.commit()
+            except IntegrityError:
+                db.session.rollback()
+
+            if g.impressions:
+                save_impressions.delay(g.esession.id, g.impressions)
+
+        else:
+            g.esession.save_to_cache(session['au'])
 
     return response
 

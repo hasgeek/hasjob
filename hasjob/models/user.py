@@ -4,10 +4,10 @@ from datetime import datetime, timedelta
 from flask import request
 from flask.ext.lastuser.sqlalchemy import UserBase2, TeamBase2
 from coaster.sqlalchemy import JsonDict
-from baseframe import _
+from baseframe import _, cache
 from . import db, BaseMixin
 
-__all__ = ['User', 'Team', 'UserActiveAt', 'AnonUser', 'EventSession', 'UserEvent']
+__all__ = ['User', 'Team', 'UserActiveAt', 'AnonUser', 'EventSessionBase', 'EventSession', 'UserEventBase', 'UserEvent']
 
 
 class User(UserBase2, db.Model):
@@ -65,10 +65,58 @@ class AnonUser(BaseMixin, db.Model):
     title = fullname
 
 
-class EventSession(BaseMixin, db.Model):
+class EventSessionBase(object):
+    persistent = False  # This won't be saved to db
+
+    @classmethod
+    def new_from_request(cls, request):
+        instance = cls()
+        instance.created_at = datetime.utcnow()
+        instance.referrer = request.referrer
+        instance.utm_source = request.args.get('utm_source', '')[:250] or None
+        instance.utm_medium = request.args.get('utm_medium', '')[:250] or None
+        instance.utm_term = request.args.get('utm_term', '')[:250] or None
+        instance.utm_content = request.args.get('utm_content', '')[:250] or None
+        instance.utm_id = request.args.get('utm_id', '')[:250] or None
+        instance.utm_campaign = request.args.get('utm_campaign', '')[:250] or None
+        instance.gclid = request.args.get('gclid', '')[:250] or None
+        instance.active_at = datetime.utcnow()
+        instance.events = []
+        return instance
+
+    def as_dict(self):
+        return {
+            'referrer': self.referrer,
+            'utm_source': self.utm_source,
+            'utm_medium': self.utm_medium,
+            'utm_term': self.utm_term,
+            'utm_content': self.utm_content,
+            'utm_id': self.utm_id,
+            'utm_campaign': self.utm_campaign,
+            'gclid': self.gclid,
+            'events': [e.as_dict() for e in self.events]
+            }
+
+    def save_to_cache(self, key):
+        # Use cache instead of redis_store because we're too lazy to handle type marshalling
+        # manually. Redis only stores string values in a hash and we have some integer data.
+        cache.set('anon/' + key, self.as_dict(), timeout=120)
+
+    def load_from_cache(self, key, eventclass):
+        result = cache.get('anon/' + key)
+        for key in result:
+            if key != 'events':
+                setattr(self, key, result[key])
+            else:
+                self.events = [eventclass(**kwargs) for kwargs in result[key]]
+
+
+class EventSession(EventSessionBase, BaseMixin, db.Model):
     """
     A user's event session. Groups together user activity within a single time period.
     """
+    persistent = True  # This will be saved to db
+
     # See https://support.google.com/analytics/answer/2731565?hl=en for source of inspiration
     __tablename__ = 'event_session'
     # Who is this user? If known
@@ -127,24 +175,30 @@ class EventSession(BaseMixin, db.Model):
                         break
 
         if not ues:
-            ues = cls(
-                user=user,
-                anon_user=anon_user,
-                referrer=request.referrer,
-                utm_source=request.args.get('utm_source', '')[:250] or None,
-                utm_medium=request.args.get('utm_medium', '')[:250] or None,
-                utm_term=request.args.get('utm_term', '')[:250] or None,
-                utm_content=request.args.get('utm_content', '')[:250] or None,
-                utm_id=request.args.get('utm_id', '')[:250] or None,
-                utm_campaign=request.args.get('utm_campaign', '')[:250] or None,
-                gclid=request.args.get('gclid', '')[:250] or None
-                )
+            ues = cls.new_from_request(request)
+            ues.user = user
+            ues.anon_user = anon_user
             db.session.add(ues)
         ues.active_at = datetime.utcnow()
         return ues
 
 
-class UserEvent(BaseMixin, db.Model):
+class UserEventBase(object):
+    @classmethod
+    def new_from_request(cls, request):
+        instance = cls()
+        instance.ipaddr = request and request.environ['REMOTE_ADDR'][:45]
+        instance.useragent = request and request.user_agent.string[:250]
+        instance.url = request and request.url[:2038]
+        instance.method = request and request.method[:10]
+        instance.name = request and ('endpoint/' + (request.endpoint or '')[:80])
+        return instance
+
+    def as_dict(self):
+        return dict(self.__dict__)
+
+
+class UserEvent(UserEventBase, BaseMixin, db.Model):
     """
     An event, anything from a page load (typical) to an activity within that page load.
     """
@@ -153,20 +207,19 @@ class UserEvent(BaseMixin, db.Model):
     event_session = db.relationship(EventSession,
         backref=db.backref('events', lazy='dynamic', order_by='UserEvent.created_at'))
     #: User's IP address
-    ipaddr = db.Column(db.Unicode(45), nullable=True, default=lambda: request and request.environ['REMOTE_ADDR'][:45])
+    ipaddr = db.Column(db.Unicode(45), nullable=True)
     #: User's browser
-    useragent = db.Column(db.Unicode(250), nullable=True, default=lambda: request and request.user_agent.string[:250])
+    useragent = db.Column(db.Unicode(250), nullable=True)
     #: URL
-    url = db.Column(db.Unicode(2038), nullable=True, default=lambda: request and request.url[:2038])
+    url = db.Column(db.Unicode(2038), nullable=True)
     #: Referrer
     referrer = db.Column(db.Unicode(2038), nullable=True,
         default=lambda: request and ((request.referrer or '')[:2038] or None))
     #: HTTP Method
-    method = db.Column(db.Unicode(10), nullable=True, default=lambda: request and request.method[:10])
+    method = db.Column(db.Unicode(10), nullable=True)
     #: Status code
     status_code = db.Column(db.SmallInteger, nullable=True)
     #: Event name
-    name = db.Column(db.Unicode(80), nullable=False,
-        default=lambda: request and ('endpoint/' + (request.endpoint or '')[:80]))
+    name = db.Column(db.Unicode(80), nullable=False)
     #: Custom event data (null = no data saved)
     data = db.Column(JsonDict, nullable=True)
