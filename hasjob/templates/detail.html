@@ -16,6 +16,8 @@
   {%- if post.company_logo %}
     <link rel="image_src" href="{{ post.url_for('logo', _external=true) }}" />
     <meta property="og:image" content="{{ post.url_for('logo', _external=true) }}" />
+  {%- else %}
+    {{ super() }}
   {%- endif %}
 {%- endblock %}
 {% block pageheaders %}
