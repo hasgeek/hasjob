@@ -87,7 +87,7 @@
         <div class="col-md-3">{% if not g.kiosk %}
           <div class="list-group">
             {%- if g.user %}
-              <a class="list-group-item js-pstar-list-group-item" href="javascript:void(0);">
+              <a class="list-group-item pstar-list-group-item">
                 <i class="fa fa-star{% if post not in g.user.starred_jobs %}-o{% endif %} pstar sidebar-pstar"
                    data-id="{{ post.hashid }}"></i>
                 &nbsp;&nbsp; Favourite this
@@ -347,7 +347,7 @@
     });
   });
   $(function() {
-    $('.js-pstar-list-group-item').click(function(){
+    $('.pstar-list-group-item').click(function(){
       $('.pstar').click();
     });
 

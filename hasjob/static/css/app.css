@@ -735,6 +735,10 @@ h1 small, h2 small, h3 small {
   transition: opacity 0.2s ease-in-out;
 }
 
+.pstar-list-group-item {
+  cursor: pointer;
+}
+
 .sidebar-pstar {
   color: #000;
 }
