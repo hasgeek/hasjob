@@ -19,7 +19,8 @@ from .. import app, lastuser
 from ..models import (db, JobCategory, JobPost, JobType, POSTSTATUS, newlimit, agelimit, JobLocation,
     Tag, JobPostTag, Campaign, CAMPAIGN_POSITION)
 from ..search import do_search
-from ..views.helper import getposts, getallposts, gettags, location_geodata, cache_viewcounts
+from ..views.helper import (getposts, getallposts, gettags, location_geodata, cache_viewcounts, session_jobpost_ab,
+    bgroup)
 from ..uploads import uploaded_logos
 
 
@@ -28,6 +29,7 @@ from ..uploads import uploaded_logos
 @app.route('/', methods=['GET', 'POST'])
 def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
         location=None, title=None, showall=True, statuses=None, tag=None, batched=True):
+
     now = datetime.utcnow()
     if basequery is None and not (g.user or g.kiosk or (g.board and not g.board.require_login)):
         showall = False
@@ -47,6 +49,8 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
     else:
         g.starred_ids = set()
 
+    jobpost_ab = session_jobpost_ab()
+
     # Make lookup slightly faster in the loop below since 'g' is a proxy
     board = g.board
 
@@ -61,14 +65,18 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
                     pinned = blink.pinned
             if pinned:
                 # Make pinned posts appear in a group of one
-                grouped.setdefault(('s', post.hashid), []).append((pinned, post))
+                grouped.setdefault(('s', post.hashid), []).append(
+                    (pinned, post, bgroup(jobpost_ab, post)))
             elif post.status == POSTSTATUS.ANNOUNCEMENT:
                 # Make announcements also appear in a group of one
-                grouped.setdefault(('a', post.hashid), []).append((pinned, post))
+                grouped.setdefault(('a', post.hashid), []).append(
+                    (pinned, post, bgroup(jobpost_ab, post)))
             elif post.email_domain in webmail_domains:
-                grouped.setdefault(('ne', post.md5sum), []).append((pinned, post))
+                grouped.setdefault(('ne', post.md5sum), []).append(
+                    (pinned, post, bgroup(jobpost_ab, post)))
             else:
-                grouped.setdefault(('nd', post.email_domain), []).append((pinned, post))
+                grouped.setdefault(('nd', post.email_domain), []).append(
+                    (pinned, post, bgroup(jobpost_ab, post)))
         pinsandposts = None
     else:
         grouped = None
@@ -80,9 +88,9 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
                     blink = post.link_to_board(board)
                     if blink is not None:
                         pinned = blink.pinned
-                pinsandposts.append((pinned, post))
+                pinsandposts.append((pinned, post, bgroup(jobpost_ab, post)))
         else:
-            pinsandposts = [(post.pinned, post) for post in posts]
+            pinsandposts = [(post.pinned, post, bgroup(jobpost_ab, post)) for post in posts]
 
     # Pick a header campaign
     if not g.kiosk:
@@ -128,16 +136,13 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
             batch = grouped.items()[startindex:startindex + batchsize]
             if startindex + batchsize < len(grouped):
                 # Get the datetime of the last group's first item
-                # batch = [((type, domain), [(pinned, post), ...])]
-                # batch[-1] = ((type, domain), [(pinned, post), ...])
-                # batch[-1][1] = [(pinned, post), ...]
-                # batch[-1][1][0] = (pinned, post)
+                # batch = [((type, domain), [(pinned, post, bgroup), ...])]
+                # batch[-1] = ((type, domain), [(pinned, post, bgroup), ...])
+                # batch[-1][1] = [(pinned, post, bgroup), ...]
+                # batch[-1][1][0] = (pinned, post, bgroup)
                 # batch[-1][1][0][1] = post
                 loadmore = batch[-1][1][0][1].datetime
             grouped = OrderedDict(batch)
-            g.impressions = [(pinflag, post.id)
-                for grouping, group in batch
-                for pinflag, post in group]
         elif pinsandposts:
             if not startdate:
                 startindex = 0
@@ -152,7 +157,13 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
                 # batch = [(pinned, post), ...]
                 loadmore = batch[-1][1].datetime
             pinsandposts = batch
-            g.impressions = [(pinflag, post.id) for pinflag, post in batch]
+
+    if grouped:
+        g.impressions = {post.id: (pinflag, post.id, is_bgroup)
+            for group in grouped.itervalues()
+            for pinflag, post, is_bgroup in group}
+    elif pinsandposts:
+        g.impressions = {post.id: (pinflag, post.id, is_bgroup) for pinflag, post, is_bgroup in batch}
 
     return render_template('index.html', pinsandposts=pinsandposts, grouped=grouped, now=now,
                            newlimit=newlimit, jobtype=type, jobcategory=category, title=title,

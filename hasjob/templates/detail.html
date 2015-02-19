@@ -1,7 +1,7 @@
 {% extends "sheet.html" %}
 {%- from "baseframe/forms.html" import ajaxform %}
 {%- from "macros.html" import jobheader, stickie %}
-{% block title %}{{ post.headline }}{% endblock %}
+{% block title %}{{ headline }}{% endblock %}
 {% block description %}{{ post.company_name }}, {{ post.location }}, {{ post.type.title }}, {{ post.category.title }}{% endblock %}
 {% block canonical_url %}
   {%- if g.board and g.board.not_root %}
@@ -75,7 +75,7 @@
 
   <div class="sheet">
     <div class="section first">
-      {{ jobheader(post, kiosk=g.kiosk, user=g.user) }}
+      {{ jobheader(post, kiosk=g.kiosk, user=g.user, headline=headline) }}
     </div>
     <div class="section">
       <div class="row">
@@ -88,13 +88,13 @@
         </div>
         <div class="col-md-3">{% if not g.kiosk %}
           <div class="list-group">
-            <a class="list-group-item" href="mailto:?subject=Job%3A%20{{ post.headline|urlquoteplus }}&amp;body={{ post.url_for(utm_campaign='share', utm_medium='email', _external=true)|urlquoteplus }}">
+            <a class="list-group-item" href="mailto:?subject=Job%3A%20{{ headline|urlquoteplus }}&amp;body={{ post.url_for(utm_campaign='share', utm_medium='email', _external=true)|urlquoteplus }}">
               <i class="fa fa-fw fa-envelope"></i>&nbsp;&nbsp; Email this
             </a>
-            <a class="list-group-item visible-xs-block visible-sm-block" href="whatsapp://send?text={{ post.headline|urlquoteplus }}+{{ post.url_for(utm_campaign='share', utm_medium='whatsapp', _external=true)|urlquoteplus }}">
+            <a class="list-group-item visible-xs-block visible-sm-block" href="whatsapp://send?text={{ headline|urlquoteplus }}+{{ post.url_for(utm_campaign='share', utm_medium='whatsapp', _external=true)|urlquoteplus }}">
               <i class="fa fa-fw fa-whatsapp"></i>&nbsp;&nbsp; Share on WhatsApp
             </a>
-            <a class="list-group-item share-popup" data-width="550" data-height="250" target="_blank" href="https://twitter.com/share?url={{ post.url_for(utm_campaign='share', utm_medium='twitter', _external=true)|urlquoteplus }}&amp;counturl={{ post.url_for(_external=true)|urlquoteplus }}&amp;via=hasjob&amp;related=hasjob:HasGeek%20Job%20Board&amp;text=Job%3A%20{{ post.headline|urlquoteplus }}">
+            <a class="list-group-item share-popup" data-width="550" data-height="250" target="_blank" href="https://twitter.com/share?url={{ post.url_for(utm_campaign='share', utm_medium='twitter', _external=true)|urlquoteplus }}&amp;counturl={{ post.url_for(_external=true)|urlquoteplus }}&amp;via=hasjob&amp;related=hasjob:HasGeek%20Job%20Board&amp;text=Job%3A%20{{ headline|urlquoteplus }}">
               <span class="badge" id="tweet-count"></span><i class="fa fa-fw fa-twitter"></i>&nbsp;&nbsp; Tweet this
             </a>
             <a class="list-group-item share-popup" data-width="520" data-height="230" target="_blank" href="http://www.facebook.com/sharer.php?s=100&p[url]={{ post.url_for(utm_campaign='share', utm_medium='facebook', _external=true)|urlquoteplus }}">
@@ -195,6 +195,9 @@
                   {%- endif -%}
                 </a>
               {%- endif %}{% endwith -%}
+              {%- if post.headlineb %}{% with ab_views=post.ab_views %}
+                <span class="list-group-item" title="Headline A/B test"><i class="fa fa-fw fa-hand-o-up"></i>&nbsp;&nbsp; {{ ab_views.NA }} NA &middot; {{ ab_views.A }} A &middot; {{ ab_views.B }} B</span>
+              {%- endwith %}{% endif %}
             {%- endif %}
             {%- if is_siteadmin or post.admin_is(g.user) or (g.user and g.user.flags.is_employer_month) %}
               <div class="list-group-item no-border">

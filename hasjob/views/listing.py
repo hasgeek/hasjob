@@ -12,7 +12,7 @@ from sqlalchemy.orm.exc import StaleDataError
 from flask import abort, flash, g, redirect, render_template, request, url_for, session, Markup, jsonify
 from flask.ext.mail import Message
 from baseframe import cache, csrf
-from coaster.utils import get_email_domain, md5sum, base_domain_matches
+from coaster.utils import getbool, get_email_domain, md5sum, base_domain_matches
 from coaster.views import load_model
 from hasjob import app, forms, mail, lastuser
 from hasjob.models import (
@@ -41,7 +41,7 @@ from hasjob.uploads import uploaded_logos
 from hasjob.utils import get_word_bag, redactemail, random_long_key
 from hasjob.views import ALLOWED_TAGS
 from hasjob.nlp import identify_language
-from hasjob.views.helper import gif1x1, cache_viewcounts
+from hasjob.views.helper import gif1x1, cache_viewcounts, session_jobpost_ab, bgroup
 
 
 @app.route('/<domain>/<hashid>', methods=('GET', 'POST'), subdomain='<subdomain>')
@@ -102,6 +102,8 @@ def jobdetail(domain, hashid):
         report = JobPostReport.query.filter_by(post=post, user=g.user).first()
     else:
         report = None
+
+    g.jobpost_viewed = (post, getbool(request.args.get('b')))
 
     reportform = forms.ReportForm(obj=report)
     reportform.report_code.choices = [(ob.id, ob.title) for ob in ReportCode.query.filter_by(public=True).order_by('seq')]
@@ -164,15 +166,18 @@ def jobdetail(domain, hashid):
     else:
         g.starred_ids = set()
 
+    jobpost_ab = session_jobpost_ab()
     related_posts = post.related_posts()
     cache_viewcounts(related_posts)
-    g.impressions = [(False, rp.id) for rp in related_posts]
+    is_bgroup = getbool(request.args.get('b'))
+    headline = post.headlineb if is_bgroup and post.headlineb else post.headline
+    g.impressions = {rp.id: (False, rp.id, bgroup(jobpost_ab, rp)) for rp in related_posts}
 
-    return render_template('detail.html', post=post, reportform=reportform, rejectform=rejectform,
+    return render_template('detail.html', post=post, headline=headline, reportform=reportform, rejectform=rejectform,
         pinnedform=pinnedform, applyform=applyform, job_application=job_application,
         jobview=jobview, report=report, moderateform=moderateform,
         domain_mismatch=domain_mismatch, header_campaign=header_campaign,
-        related_posts=related_posts,
+        related_posts=related_posts, is_bgroup=is_bgroup,
         is_siteadmin=lastuser.has_permission('siteadmin')
         )
 
@@ -675,8 +680,14 @@ def confirm_email(domain, hashid, key):
             post.datetime = datetime.utcnow()
             db.session.commit()
             if app.config['TWITTER_ENABLED']:
-                tweet.delay(post.headline, post.url_for(_external=True),
-                    post.location, dict(post.parsed_location or {}))
+                if post.headlineb:
+                    tweet.delay(post.headline, post.url_for(b=0, _external=True),
+                        post.location, dict(post.parsed_location or {}))
+                    tweet.delay(post.headlineb, post.url_for(b=1, _external=True),
+                        post.location, dict(post.parsed_location or {}))
+                else:
+                    tweet.delay(post.headline, post.url_for(_external=True),
+                        post.location, dict(post.parsed_location or {}))
             add_to_boards.delay(post.id)
             flash("Congratulations! Your job post has been published. As a bonus for being an employer on Hasjob, "
                 "you can now see how your post is performing relative to others. Look in the sidebar of any post.",
@@ -788,6 +799,7 @@ def editjob(hashid, key, domain=None, form=None, validated=False, newpost=None):
                         post.add_to('www')
 
             post.headline = form.job_headline.data
+            post.headlineb = form.job_headlineb.data
             post.type_id = form.job_type.data
             post.category_id = form.job_category.data
             post.location = form.job_location.data
@@ -860,6 +872,7 @@ def editjob(hashid, key, domain=None, form=None, validated=False, newpost=None):
     elif request.method == 'GET':
         # Populate form from model
         form.job_headline.data = post.headline
+        form.job_headlineb.data = post.headlineb
         form.job_type.data = post.type_id
         form.job_category.data = post.category_id
         form.job_location.data = post.location

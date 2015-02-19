@@ -70,8 +70,14 @@ def invalid_urls():
 class ListingForm(forms.Form):
     """Form for new job posts"""
     job_headline = forms.StringField("Headline",
-        description="A single-line summary. This goes to the front page and across the network",
+        description=Markup("A single-line summary. This goes to the front page and across the network. "
+            """<a id="abtest" class="no-jshidden" href="#">A/B test it?</a>"""),
         validators=[forms.validators.DataRequired("A headline is required"),
+            forms.validators.Length(min=1, max=100, message="%(max)d characters maximum"),
+            forms.validators.NoObfuscatedEmail(u"Do not include contact information in the post")])
+    job_headlineb = forms.NullTextField("Headline B",
+        description=u"An alternate headline that will be shown to 50% of users. You’ll get a count of views per headline",
+        validators=[forms.validators.Optional(),
             forms.validators.Length(min=1, max=100, message="%(max)d characters maximum"),
             forms.validators.NoObfuscatedEmail(u"Do not include contact information in the post")])
     job_type = forms.RadioField("Type", coerce=int, validators=[forms.validators.InputRequired("The job type must be specified")])
@@ -194,6 +200,9 @@ class ListingForm(forms.Form):
             for word in word_list:
                 if word in field.data.lower():
                     raise forms.ValidationError(message)
+
+    def validate_job_headlineb(self, field):
+        return self.validate_job_headline(field)
 
     def validate_job_location(form, field):
         if QUOTES_RE.search(field.data) is not None:

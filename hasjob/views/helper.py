@@ -20,8 +20,8 @@ from baseframe.signals import form_validation_error, form_validation_success
 from .. import app, redis_store
 from ..models import (agelimit, newlimit, db, JobCategory, JobPost, JobType, POSTSTATUS, BoardJobPost, Tag, JobPostTag,
     Campaign, CampaignView, EventSessionBase, EventSession, UserEventBase, UserEvent, JobImpression,
-    AnonUser)
-from ..utils import scrubemail, redactemail
+    JobViewSession, AnonUser)
+from ..utils import scrubemail, redactemail, randbool
 
 
 gif1x1 = 'R0lGODlhAQABAJAAAP8AAAAAACH5BAUQAAAALAAAAAABAAEAAAICBAEAOw=='.decode('base64')
@@ -67,9 +67,9 @@ def load_user_data(user):
     g.event_data = {}   # Views can add data to the current pageview event
     g.esession = None
     g.viewcounts = {}
-    g.impressions = []
+    g.impressions = {}
     g.campaign_views = []
-    g.jobpost_viewed = None
+    g.jobpost_viewed = None, None
     g.bgroup = None
 
     if request.endpoint not in ('static', 'baseframe.static'):
@@ -113,6 +113,10 @@ def load_user_data(user):
     if g.anon_user:
         session['au'] = g.anon_user.id
         session.permanent = True
+        if 'impressions' in session:
+            # Run this in the foreground since we need this later in the request for A/B display consistency.
+            # This is most likely being called from the UI-non-blocking sniffle.gif anyway.
+            save_impressions(g.esession.id, session.pop('impressions').values())
 
     # We have a user, now look up everything else
 
@@ -182,10 +186,10 @@ def record_views_and_events(response):
         g.user_geonameids = {}
         missing_in_context.append('user_geonameids')
     if not hasattr(g, 'impressions'):
-        g.impressions = []
+        g.impressions = {}
         missing_in_context.append('impressions')
     if not hasattr(g, 'jobpost_viewed'):
-        g.jobpost_viewed = None
+        g.jobpost_viewed = None, None
         missing_in_context.append('jobpost_viewed')
 
     if missing_in_context:
@@ -203,7 +207,7 @@ def record_views_and_events(response):
         g.event_data['user_geonameids'] = g.user_geonameids
 
     if g.impressions:
-        g.event_data['impressions'] = g.impressions
+        g.event_data['impressions'] = g.impressions.values()
 
     if g.user:
         for campaign in g.campaign_views:
@@ -230,12 +234,42 @@ def record_views_and_events(response):
                 db.session.rollback()
 
             if g.impressions:
-                save_impressions.delay(g.esession.id, g.impressions)
+                save_impressions.delay(g.esession.id, g.impressions.values())
 
+            if g.jobpost_viewed != (None, None):
+                jvs = JobViewSession.get(jobpost=g.jobpost_viewed[0], event_session=g.esession)
+                if jvs is None:
+                    jvs = JobViewSession(jobpost=g.jobpost_viewed[0], event_session=g.esession)
+                    db.session.add(jvs)
+
+                jvs.bgroup = g.jobpost_viewed[1]
+                try:
+                    db.session.commit()
+                except IntegrityError:
+                    db.session.rollback()
         else:
             g.esession.save_to_cache(session['au'])
+            if g.impressions:
+                # Save impressions to user's cookie session to write to db later
+                session['impressions'] = g.impressions
 
     return response
+
+
+def session_jobpost_ab():
+    """
+    Returns the user's B-group assignment (NA, True, False) for all jobs shown to the user
+    in the current event session (impressions or views) as a dictionary of {id: bgroup}
+    """
+    if not g.esession.persistent:
+        return {key: value[2] for key, value in session.get('impressions', {}).items()}
+    result = {ji.jobpost_id: ji.bgroup for ji in JobImpression.query.filter_by(event_session=g.esession)}
+    result.update({jvs.jobpost_id: jvs.bgroup for jvs in JobViewSession.query.filter_by(event_session=g.esession)})
+    return result
+
+
+def bgroup(jobpost_ab, post):
+    return jobpost_ab.get(post.id) or randbool() if post.headlineb else None
 
 
 def cache_viewcounts(posts):
@@ -319,11 +353,11 @@ def save_impressions(sessionid, impressions):
     Save impressions against each job and session.
     """
     with app.test_request_context():
-        for pinned, postid in impressions:
+        for pinned, postid, bgroup in impressions:
             ji = JobImpression.query.get((postid, sessionid))
             new_impression = False
             if ji is None:
-                ji = JobImpression(jobpost_id=postid, event_session_id=sessionid, pinned=False)
+                ji = JobImpression(jobpost_id=postid, event_session_id=sessionid, pinned=False, bgroup=bgroup)
                 db.session.add(ji)
                 new_impression = True
             # Never set pinned=False on an existing JobImpression instance. The pinned status
@@ -331,6 +365,8 @@ def save_impressions(sessionid, impressions):
             # rendered as pinned at least once during a session.
             if pinned:
                 ji.pinned = True
+            if bgroup is not None:
+                ji.bgroup = bgroup
             # We commit once per impresssion (typically 32+ impressions per request)
             # This is inefficient, but is the only way to handle integrity errors per item
             # from race conditions in the absence of a database-provided UPSERT. This
