@@ -75,7 +75,7 @@ def load_user_data(user):
     if request.endpoint not in ('static', 'baseframe.static'):
         # Loading an anon user only if we're not rendering static resources
         if user:
-            if 'au' in session and session['au'] is not None and not unicode(session['au']).startswith(u'test-'):
+            if 'au' in session and session['au'] is not None and not unicode(session['au']).startswith(u'test'):
                 anon_user = AnonUser.query.get(session['au'])
                 if anon_user:
                     anon_user.user = user
@@ -85,7 +85,14 @@ def load_user_data(user):
                 session['au'] = u'test-' + unicode(uuid.uuid4())
                 g.esession = EventSessionBase.new_from_request(request)
                 g.event_data['anon_cookie_test'] = session['au']
-            elif unicode(session['au']).startswith('test-'):
+            elif session['au'] == 'test':  # Legacy test cookie, original request now lost
+                g.anon_user = AnonUser()
+                db.session.add(g.anon_user)
+                g.esession = EventSession.new_from_request(request)
+                g.esession.anon_user = g.anon_user
+                db.session.add(g.esession)
+                # We'll update session['au'] below after database commit
+            elif unicode(session['au']).startswith('test-'):  # Newer redis-backed test cookie
                 # This client sent us back our test cookie, so set a real value now
                 g.anon_user = AnonUser()
                 db.session.add(g.anon_user)
