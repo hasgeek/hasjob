@@ -170,6 +170,9 @@ def record_views_and_events(response):
     # this problem ever since after several days of logging, but this bit of code
     # remains just in case something turns up in future.
     missing_in_context = []
+    if not hasattr(g, 'esession'):
+        g.esession = None
+        missing_in_context.append('esession')
     if not hasattr(g, 'campaign_views'):
         g.campaign_views = []
         missing_in_context.append('campaign_views')
