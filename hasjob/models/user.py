@@ -104,11 +104,12 @@ class EventSessionBase(object):
 
     def load_from_cache(self, key, eventclass):
         result = cache.get('anon/' + key)
-        for key in result:
-            if key != 'events':
-                setattr(self, key, result[key])
-            else:
-                self.events = [eventclass(**kwargs) for kwargs in result[key]]
+        if result:
+            for key in result:
+                if key != 'events':
+                    setattr(self, key, result[key])
+                else:
+                    self.events = [eventclass(**kwargs) for kwargs in result[key]]
 
 
 class EventSession(EventSessionBase, BaseMixin, db.Model):
