@@ -12,7 +12,7 @@ INDEXABLE = (models.JobPost,)
 ES_INDEX = 'hasjob_dev'
 
 
-def classname_from_idref(idref):
+def type_from_idref(idref):
     return idref.split('/')[0]
 
 
@@ -44,7 +44,7 @@ def update_index(data):
         if change == 'insert' or change == 'update':
             es.bulk([es.update_op(doc=mapping, id=mapping['idref'], upsert=mapping, doc_as_upsert=True)],
                     index=ES_INDEX,
-                    doc_type=classname_from_idref(mapping['idref']))
+                    doc_type=type_from_idref(mapping['idref']))
 
 
 def on_models_committed(sender, changes):
@@ -64,9 +64,9 @@ def on_models_committed(sender, changes):
 @job("hasjob-search")
 def delete_from_index(oblist):
     for mapping in oblist:
-        es.bulk([es.delete_op(id=mapping['idref'], index=ES_INDEX, doc_type=classname_from_idref(mapping['idref']))],
+        es.bulk([es.delete_op(id=mapping['idref'], index=ES_INDEX, doc_type=type_from_idref(mapping['idref']))],
                 index=ES_INDEX,
-                doc_type=classname_from_idref(mapping['idref']))
+                doc_type=type_from_idref(mapping['idref']))
 
 
 def configure_once():
