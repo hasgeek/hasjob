@@ -30,6 +30,10 @@
   <link rel="alternate" type="application/atom+xml" title="All jobs – {% if g.board -%} {{ g.board.title }} {%- else -%} {{ config['SITE_TITLE'] }} {%- endif %}" href="{{ url_for('feed') }}" />
   <link rel="search" type="application/opensearchdescription+xml" href="{{ url_for('static', filename='opensearch.xml') }}" title="Hasjob Search" />
   {% block pageheaders %}{% endblock %}
+  {%- block twittercards %}
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:site" content="@hasjob" />
+  {%- endblock %}
 {%- endblock %}
 
 {% block headerbox -%}

@@ -2,8 +2,9 @@
 {%- if not request.is_xhr -%}
   {% extends "layout.html" %}
   {% block titletags -%}
-    <title>{%if title %}{{ title }} &mdash; {% endif %}{% if g.board %}{{ g.board.title }}{% else %}{{ config['SITE_TITLE'] }}{% endif %}</title>
-    <meta name="DC.title" content="{%if title %}{{ title }} &mdash; {% endif %}{{ config['SITE_TITLE'] }}"/>
+    <title>{% block title %}{% if title %}{{ title }} &mdash; {% endif %}{% if g.board %}{{ g.board.title }}{% else %}{{ config['SITE_TITLE'] }}{% endif %}{% endblock %}</title>
+    <meta name="DC.title" content="{{ self.title() }}" />
+    <meta property="og:title" content="{{ self.title() }}" />
   {%- endblock %}
 
   {% block pageheaders %}
