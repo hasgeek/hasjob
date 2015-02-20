@@ -797,7 +797,7 @@ def unique_hash(model=JobPost):
     with db.session.no_autoflush:
         while 1:
             hashid = random_hash_key()
-            if not model.query.filter_by(hashid=hashid).notempty():
+            if not hashid.isdigit() and model.query.filter_by(hashid=hashid).isempty():
                 break
     return hashid
 
@@ -809,6 +809,6 @@ def unique_long_hash(model=JobApplication):
     with db.session.no_autoflush:
         while 1:
             hashid = random_long_key()
-            if not model.query.filter_by(hashid=hashid).notempty():
+            if not hashid.isdigit() and model.query.filter_by(hashid=hashid).isempty():
                 break
     return hashid
