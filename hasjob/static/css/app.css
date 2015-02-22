@@ -43,7 +43,7 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
   overflow: hidden;
   text-align: left;
   text-transform: capitalize;
-  background-image: url('../img/logo-star.png?1343882941');
+  background-image: url('../img/logo-star.png?1424602497');
   background-repeat: no-repeat;
   background-position: 50% 50%;
   width: 170px;
@@ -57,7 +57,7 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
   overflow: hidden;
   text-align: left;
   text-transform: capitalize;
-  background-image: url('../img/logo-star.png?1343882941');
+  background-image: url('../img/logo-star.png?1424602497');
   background-repeat: no-repeat;
   background-position: 50% 50%;
   width: 170px;
@@ -726,7 +726,7 @@ h1 small, h2 small, h3 small {
   background-color: #ffff2c;
 }
 
-.pstar {
+.stickie .pstar {
   color: #df5e0e;
   cursor: pointer;
   -moz-transition: opacity 0.2s ease-in-out;

@@ -60,9 +60,6 @@
         &middot; <a href="{{ url_for('browse_by_type', name=post.type.name) }}">{{ post.type.title }}</a>
         &middot; <a href="{{ url_for('browse_by_category', name=post.category.name) }}">{{ post.category.title }}</a>
       {%- endif %}
-      {%- if user %}
-        <i class="fa fa-star{% if post not in user.starred_jobs %}-o{% endif %} pstar" data-id="{{ post.hashid }}"></i>
-      {%- endif %}
     </p>
   {%- if post.company_logo %}
       </div>
