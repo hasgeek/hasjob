@@ -15,7 +15,7 @@ def tweet(title, url, location=None, parsed_location=None):
     auth.set_access_token(app.config['TWITTER_ACCESS_KEY'], app.config['TWITTER_ACCESS_SECRET'])
     api = API(auth)
     urllength = 23  # Current Twitter standard for HTTPS (as of Oct 2014)
-    maxlength = 140 - urllength - 1 # == 116
+    maxlength = 140 - urllength - 1  # == 116
     locationtag = u''
     if parsed_location:
         locationtags = []
@@ -34,7 +34,7 @@ def tweet(title, url, location=None, parsed_location=None):
         maxlength -= len(locationtag) + 1
 
     if len(title) > maxlength:
-        text = title[:maxlength-1] + u'…'
+        text = title[:maxlength - 1] + u'…'
     else:
         text = title[:maxlength]
     text = text + ' ' + url  # Don't shorten URLs, now that there's t.co
@@ -50,8 +50,8 @@ def shorten(url):
         return res['url']
     else:
         req = urllib2.Request("https://www.googleapis.com/urlshortener/v1/url",
-            headers = {"Content-Type": "application/json",},
-            data = json.dumps({'longUrl' : url}))
+            headers={"Content-Type": "application/json"},
+            data=json.dumps({'longUrl': url}))
         request_result = urllib2.urlopen(req)
         result = request_result.read()
         result_json = json.loads(result)

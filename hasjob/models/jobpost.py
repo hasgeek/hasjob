@@ -16,10 +16,11 @@ from .jobtype import JobType
 from .jobcategory import JobCategory
 from .user import User, AnonUser, EventSession
 from .org import Organization
+from .domain import Domain
 from ..utils import random_long_key, random_hash_key
 
 __all__ = ['JobPost', 'JobLocation', 'UserJobView', 'AnonJobView', 'JobImpression', 'JobApplication',
-    'unique_hash', 'viewstats_by_id_qhour', 'viewstats_by_id_hour', 'viewstats_by_id_day']
+    'JobViewSession', 'unique_hash', 'viewstats_by_id_qhour', 'viewstats_by_id_hour', 'viewstats_by_id_day']
 
 
 number_format = lambda number, suffix: str(int(number)) + suffix if int(number) == number else str(round(number, 2)) + suffix
@@ -52,7 +53,7 @@ starred_job_table = db.Table('starred_job', db.Model.metadata,
 def starred_job_ids(user, agelimit):
     return [r[0] for r in db.session.query(starred_job_table.c.jobpost_id).filter(
         starred_job_table.c.user_id == user.id,
-        starred_job_table.c.created_at > datetime.utcnow() - agelimit).all()]
+        starred_job_table.c.created_at > datetime.utcnow() - agelimit)]
 
 
 User.starred_job_ids = starred_job_ids
@@ -77,6 +78,7 @@ class JobPost(BaseMixin, db.Model):
 
     # Job description
     headline = db.Column(db.Unicode(100), nullable=False)
+    headlineb = db.Column(db.Unicode(100), nullable=True)
     type_id = db.Column(None, db.ForeignKey('jobtype.id'), nullable=False)
     type = db.relation(JobType, primaryjoin=type_id == JobType.id)
     category_id = db.Column(None, db.ForeignKey('jobcategory.id'), nullable=False)
@@ -106,6 +108,8 @@ class JobPost(BaseMixin, db.Model):
     fullname = db.Column(db.Unicode(80), nullable=True)  # Deprecated field, used before user_id was introduced
     email = db.Column(db.Unicode(80), nullable=False)
     email_domain = db.Column(db.Unicode(80), nullable=False, index=True)
+    domain_id = db.Column(None, db.ForeignKey('domain.id'), nullable=False)
+    domain = db.relationship(Domain, backref=db.backref('jobposts', lazy='dynamic'))
     md5sum = db.Column(db.String(32), nullable=False, index=True)
 
     # Payment, audit and workflow fields
@@ -225,6 +229,13 @@ class JobPost(BaseMixin, db.Model):
             domain = None
         else:
             domain = self.email_domain
+
+        # A/B test flag for permalinks
+        if 'b' in kwargs:
+            if kwargs['b'] is not None:
+                kwargs['b'] = unicode(int(kwargs['b']))
+            else:
+                kwargs.pop('b')
 
         if action == 'view':
             return url_for('jobdetail', hashid=self.hashid, domain=domain, _external=_external, **kwargs)
@@ -423,6 +434,20 @@ class JobPost(BaseMixin, db.Model):
         else:
             redis_store.hdel(cache_key, key)
 
+    @cached_property
+    def ab_views(self):
+        na_count = JobViewSession.query.filter_by(jobpost=self, bgroup=None).count()
+        counts = db.session.query(
+            JobViewSession.bgroup.label('bgroup'), db.func.count(JobViewSession.bgroup).label('count')).filter(
+            JobViewSession.jobpost == self, JobViewSession.bgroup != None).group_by(JobViewSession.bgroup)  # NOQA
+        results = {'NA': na_count, 'A': 0, 'B': 0}
+        for row in counts:
+            if row.bgroup is False:
+                results['A'] = row.count
+            elif row.bgroup is True:
+                results['B'] = row.count
+        return results
+
     @property
     def sort_score(self):
         """
@@ -608,6 +633,32 @@ class JobImpression(TimestampMixin, db.Model):
     event_session = db.relationship(EventSession)
     #: Whether it was pinned at any time in this session
     pinned = db.Column(db.Boolean, nullable=False, default=False)
+    #: Was this rendering in the B group of an A/B test? (null = no test conducted)
+    bgroup = db.Column(db.Boolean, nullable=True)
+
+    @classmethod
+    def get(cls, jobpost, event_session):
+        # See views.helper.save_impressions, which doesn't use this method and depends on
+        # (jobpost_id, event_session_id) primary key order.
+        return cls.query.get((jobpost.id, event_session.id))
+
+
+class JobViewSession(TimestampMixin, db.Model):
+    __tablename__ = 'job_view_session'
+    #: Event session in which jobpost was viewed
+    #: This takes precedence as we'll be loading all instances
+    #: matching the current session in each index request
+    event_session_id = db.Column(None, db.ForeignKey('event_session.id'), primary_key=True)
+    event_session = db.relationship(EventSession)
+    #: Job post that was viewed
+    jobpost_id = db.Column(None, db.ForeignKey('jobpost.id'), primary_key=True, index=True)
+    jobpost = db.relationship(JobPost)
+    #: Was this view in the B group of an A/B test? (null = no test conducted)
+    bgroup = db.Column(db.Boolean, nullable=True)
+
+    @classmethod
+    def get(cls, event_session, jobpost):
+        return cls.query.get((event_session.id, jobpost.id))
 
 
 class JobApplication(BaseMixin, db.Model):
@@ -749,7 +800,7 @@ def unique_hash(model=JobPost):
     with db.session.no_autoflush:
         while 1:
             hashid = random_hash_key()
-            if not model.query.filter_by(hashid=hashid).notempty():
+            if not hashid.isdigit() and model.query.filter_by(hashid=hashid).isempty():
                 break
     return hashid
 
@@ -761,6 +812,6 @@ def unique_long_hash(model=JobApplication):
     with db.session.no_autoflush:
         while 1:
             hashid = random_long_key()
-            if not model.query.filter_by(hashid=hashid).notempty():
+            if not hashid.isdigit() and model.query.filter_by(hashid=hashid).isempty():
                 break
     return hashid

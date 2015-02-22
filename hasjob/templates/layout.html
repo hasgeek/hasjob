@@ -18,7 +18,7 @@
 
 {%- block description %}{% if g.board and g.board.description %}{{ g.board.description|firstline }}{% else %}Hasjob is India’s best job board for tech startups{% endif %}{% endblock %}
 
-{%- block image_src %}
+{% block image_src -%}
   <link rel="image_src" href="{{ url_for('static', filename='img/logo-star.png', _external=true) }}" />
   <meta property="og:image" content="{{ url_for('static', filename='img/logo-star.png', _external=true) }}" />
 {%- endblock %}
@@ -30,13 +30,24 @@
   <link rel="alternate" type="application/atom+xml" title="All jobs – {% if g.board -%} {{ g.board.title }} {%- else -%} {{ config['SITE_TITLE'] }} {%- endif %}" href="{{ url_for('feed') }}" />
   <link rel="search" type="application/opensearchdescription+xml" href="{{ url_for('static', filename='opensearch.xml') }}" title="Hasjob Search" />
   {% block pageheaders %}{% endblock %}
+  {%- block twittercards %}
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:site" content="@hasjob" />
+  {%- endblock %}
 {%- endblock %}
 
 {% block headerbox -%}
 <header>
-  {% block networkbar -%}{% if not g.kiosk %}
-    {{ responsive_networkbar(siteid=config['SITE_ID'], login=true) }}
-  {%- endif %}{%- endblock %}
+  {% block networkbar -%}
+    {% if not g.kiosk %}
+      {% with links = [] %}
+        {%- if g.user and g.user.flags.has_jobpost_unconfirmed_month %}
+          {% set links = links + [{'title': "Drafts", 'url': url_for('browse_drafts')}] %}
+        {%- endif %}
+        {{ responsive_networkbar(siteid=config['SITE_ID'], login=true, links=links) }}
+      {% endwith %}
+    {%- endif %}
+  {%- endblock %}
   <div class="container">
     <div class="row">
       <div class="col-xs-12 col-sm-6 col-md-8 col-lg-9">

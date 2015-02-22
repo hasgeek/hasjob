@@ -1,13 +1,13 @@
 @charset "UTF-8";
 body {
   font-family: "Fira Sans", arial, sans-serif;
-  background: #e8e7e6 url('../img/canvas.jpg?1416495026');
+  background: #e8e7e6 url('../img/canvas.jpg?1400098749');
 }
 
 header {
   padding-top: 50px;
   margin-bottom: 0;
-  background: #ebe7e4 url('../img/paper.jpg?1416495026');
+  background: #ebe7e4 url('../img/paper.jpg?1400098749');
   border-bottom: none;
   -moz-box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
   -webkit-box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
@@ -43,7 +43,7 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
   overflow: hidden;
   text-align: left;
   text-transform: capitalize;
-  background-image: url('../img/logo-star.png?1416495026');
+  background-image: url('../img/logo-star.png?1424602497');
   background-repeat: no-repeat;
   background-position: 50% 50%;
   width: 170px;
@@ -57,7 +57,7 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
   overflow: hidden;
   text-align: left;
   text-transform: capitalize;
-  background-image: url('../img/logo-star.png?1416495026');
+  background-image: url('../img/logo-star.png?1424602497');
   background-repeat: no-repeat;
   background-position: 50% 50%;
   width: 170px;
@@ -91,7 +91,7 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
   line-height: 36px;
 }
 #search input[type="text"] {
-  background: white url('../img/search.png?1416495026') 4px center no-repeat;
+  background: white url('../img/search.png?1343882941') 4px center no-repeat;
   padding: 7px 10px 3px 20px;
 }
 #search .btn {
@@ -108,7 +108,7 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
 }
 
 footer .footer-inner {
-  background: #ebe7e4 url('../img/paper.jpg?1416495026');
+  background: #ebe7e4 url('../img/paper.jpg?1400098749');
   -moz-box-shadow: 0 -1px 5px rgba(0, 0, 0, 0.4);
   -webkit-box-shadow: 0 -1px 5px rgba(0, 0, 0, 0.4);
   box-shadow: 0 -1px 5px rgba(0, 0, 0, 0.4);
@@ -138,7 +138,7 @@ footer .container {
 .flash.info {
   padding-left: 15px;
   padding-right: 15px;
-  background: url('../img/paper.jpg?1416495026');
+  background: url('../img/paper.jpg?1400098749');
   border: none;
   -moz-box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4), 0 0 10px rgba(0, 0, 0, 0.1) inset;
   -webkit-box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4), 0 0 10px rgba(0, 0, 0, 0.1) inset;
@@ -210,7 +210,7 @@ h1 small, h2 small, h3 small {
   text-rendering: optimizeLegibility;
 }
 .sheet .nav-tabs-top {
-  background: #ebe7e4 url('../img/paper.jpg?1416495026');
+  background: #ebe7e4 url('../img/paper.jpg?1400098749');
   border-bottom: 0;
   -moz-box-shadow: 0 0 10px rgba(0, 0, 0, 0.1) inset;
   -webkit-box-shadow: 0 0 10px rgba(0, 0, 0, 0.1) inset;
@@ -726,21 +726,13 @@ h1 small, h2 small, h3 small {
   background-color: #ffff2c;
 }
 
-.pstar {
+.stickie .pstar {
   color: #df5e0e;
   cursor: pointer;
   -moz-transition: opacity 0.2s ease-in-out;
   -o-transition: opacity 0.2s ease-in-out;
   -webkit-transition: opacity 0.2s ease-in-out;
   transition: opacity 0.2s ease-in-out;
-}
-
-.pstar-list-group-item {
-  cursor: pointer;
-}
-
-.sidebar-pstar {
-  color: #000;
 }
 
 .stickie .pstar.fa-star-o {

@@ -13,13 +13,13 @@ window.Hasjob.JobPost = {
       dataType: 'json',
       complete: function() {
         starlink.removeClass('fa-spin');
-        // TODO: Show error
       },
       success: function(data) {
+        // FIXME: Move user-facing text somewhere i18n capable:
         if (data.is_starred === true) {
-          starlink.removeClass('fa-star-o').addClass('fa-star');
+          starlink.removeClass('fa-star-o').addClass('fa-star').parent().find('.pstar-caption').html("Favourited");
         } else {
-          starlink.removeClass('fa-star').addClass('fa-star-o');
+          starlink.removeClass('fa-star').addClass('fa-star-o').parent().find('.pstar-caption').html("Favourite this");
         }
       }
     });

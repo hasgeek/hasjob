@@ -2,8 +2,9 @@
 {%- if not request.is_xhr -%}
   {% extends "layout.html" %}
   {% block titletags -%}
-    <title>{%if title %}{{ title }} &mdash; {% endif %}{% if g.board %}{{ g.board.title }}{% else %}{{ config['SITE_TITLE'] }}{% endif %}</title>
-    <meta name="DC.title" content="{%if title %}{{ title }} &mdash; {% endif %}{{ config['SITE_TITLE'] }}"/>
+    <title>{% block title %}{% if title %}{{ title }} &mdash; {% endif %}{% if g.board %}{{ g.board.title }}{% else %}{{ config['SITE_TITLE'] }}{% endif %}{% endblock %}</title>
+    <meta name="DC.title" content="{{ self.title() }}" />
+    <meta property="og:title" content="{{ self.title() }}" />
   {%- endblock %}
 
   {% block pageheaders %}
@@ -78,28 +79,28 @@
     {%- endif -%}
 {%- endif -%}
     {%- if grouped %}
-      {%- for grouping, group in grouped.items() -%}{%- with pinned, post=group[0] -%}
+      {%- for grouping, group in grouped.items() -%}{%- with pinned, post, is_bgroup=group[0] -%}
         {%- if group|length == 1 -%}
           <li class="col-xs-12 col-md-3 col-sm-4">
-            {{ stickie(post, post.url_for(), pinned, show_viewcounts=is_siteadmin or guser and guser.flags.is_employer_month, show_pay=is_siteadmin, starred=guser and post.id in gstarred_ids) }}
+            {{ stickie(post, post.url_for(b=is_bgroup), pinned, show_viewcounts=is_siteadmin or guser and guser.flags.is_employer_month, show_pay=is_siteadmin, starred=guser and post.id in gstarred_ids, is_bgroup=is_bgroup) }}
           </li>
         {%- else -%}
           <li class="grouped col-xs-12 col-md-3 col-sm-4">
             {%- if grouping[0] in ['sd', 'nd'] -%}
-              {{ stickie(post, url_for('browse_by_domain', domain=grouping[1]), pinned, dataurl=post.url_for(), show_viewcounts=is_siteadmin or guser and guser.flags.is_employer_month, show_pay=is_siteadmin, starred=guser and post.id in gstarred_ids) }}
+              {{ stickie(post, url_for('browse_by_domain', domain=grouping[1]), pinned, dataurl=post.url_for(b=is_bgroup), show_viewcounts=is_siteadmin or guser and guser.flags.is_employer_month, show_pay=is_siteadmin, starred=guser and post.id in gstarred_ids, is_bgroup=is_bgroup) }}
             {%- elif grouping[0] in ['se', 'ne'] -%}
-              {{ stickie(post, url_for('browse_by_email', md5sum=grouping[1]), pinned, dataurl=post.url_for(), show_viewcounts=is_siteadmin or guser and guser.flags.is_employer_month, show_pay=is_siteadmin, starred=guser and post.id in gstarred_ids) }}
+              {{ stickie(post, url_for('browse_by_email', md5sum=grouping[1]), pinned, dataurl=post.url_for(b=is_bgroup), show_viewcounts=is_siteadmin or guser and guser.flags.is_employer_month, show_pay=is_siteadmin, starred=guser and post.id in gstarred_ids, is_bgroup=is_bgroup) }}
             {%- endif -%}
-            {%- for pinned, post in group[1:] -%}
-              {{ stickie(post, none, false, groupedunder=true, dataurl=post.url_for(), show_viewcounts=is_siteadmin or guser and guser.flags.is_employer_month, show_pay=is_siteadmin, starred=guser and post.id in gstarred_ids) }}
+            {%- for pinned, post, is_bgroup in group[1:] -%}
+              {{ stickie(post, none, false, groupedunder=true, dataurl=post.url_for(b=is_bgroup), show_viewcounts=is_siteadmin or guser and guser.flags.is_employer_month, show_pay=is_siteadmin, starred=guser and post.id in gstarred_ids, is_bgroup=is_bgroup) }}
             {%- endfor -%}
           </li>
         {%- endif %}
       {%- endwith -%}{%- endfor -%}
     {%- else %}
-      {%- for pinned, post in pinsandposts -%}
+      {%- for pinned, post, is_bgroup in pinsandposts -%}
         <li class="col-xs-12 col-md-3 col-sm-4">
-          {{ stickie(post, post.url_for(), pinned, show_viewcounts=is_siteadmin or guser and guser.flags.is_employer_month, show_pay=is_siteadmin, starred=guser and post.id in gstarred_ids) }}
+          {{ stickie(post, post.url_for(b=is_bgroup), pinned, show_viewcounts=is_siteadmin or guser and guser.flags.is_employer_month, show_pay=is_siteadmin, starred=guser and post.id in gstarred_ids, is_bgroup=is_bgroup) }}
         </li>
       {%- else -%}
         <li class="col-xs-12 col-md-3 col-sm-4">
@@ -128,7 +129,7 @@
 {%- macro loadmore_script() -%}
   <script type="text/javascript">
     $(function() {
-      $(".pstar").off().click(star_click);
+      $(".pstar").off().click(window.Hasjob.JobPost.handleStarClick);
       $("#loadmore").attr('method', 'POST').ajaxForm({
         beforeSubmit: function(formdata, form, options) {
           form.find('button[type="submit"]').prop('disabled', true).addClass('submit-disabled').html('Loading more… <span class="loading">&nbsp;</span>');

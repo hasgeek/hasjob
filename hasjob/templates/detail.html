@@ -1,7 +1,7 @@
 {% extends "sheet.html" %}
 {%- from "baseframe/forms.html" import ajaxform %}
 {%- from "macros.html" import jobheader, stickie %}
-{% block title %}{{ post.headline }}{% endblock %}
+{% block title %}{{ headline }}{% endblock %}
 {% block description %}{{ post.company_name }}, {{ post.location }}, {{ post.type.title }}, {{ post.category.title }}{% endblock %}
 {% block canonical_url %}
   {%- if g.board and g.board.not_root %}
@@ -16,6 +16,8 @@
   {%- if post.company_logo %}
     <link rel="image_src" href="{{ post.url_for('logo', _external=true) }}" />
     <meta property="og:image" content="{{ post.url_for('logo', _external=true) }}" />
+  {%- else %}
+    {{ super() }}
   {%- endif %}
 {%- endblock %}
 {% block pageheaders %}
@@ -73,7 +75,7 @@
 
   <div class="sheet">
     <div class="section first">
-      {{ jobheader(post, kiosk=g.kiosk, user=g.user) }}
+      {{ jobheader(post, kiosk=g.kiosk, user=g.user, headline=headline) }}
     </div>
     <div class="section">
       <div class="row">
@@ -87,19 +89,19 @@
         <div class="col-md-3">{% if not g.kiosk %}
           <div class="list-group">
             {%- if g.user %}
-              <a class="list-group-item pstar-list-group-item">
-                <i class="fa fa-star{% if post not in g.user.starred_jobs %}-o{% endif %} pstar sidebar-pstar"
+              <a class="list-group-item sidebar-pstar" href="#">
+                <i class="fa fa-star{% if post not in g.user.starred_jobs %}-o{% endif %} pstar"
                    data-id="{{ post.hashid }}"></i>
-                &nbsp;&nbsp; Favourite this
+                &nbsp;&nbsp; <span class="pstar-caption">{% if post not in g.user.starred_jobs %}Favourite this{% else %}Favourited{% endif %}</span>
               </a>
             {%- endif %}
-            <a class="list-group-item" href="mailto:?subject=Job%3A%20{{ post.headline|urlquoteplus }}&amp;body={{ post.url_for(utm_campaign='share', utm_medium='email', _external=true)|urlquoteplus }}">
+            <a class="list-group-item" href="mailto:?subject=Job%3A%20{{ headline|urlquoteplus }}&amp;body={{ post.url_for(utm_campaign='share', utm_medium='email', _external=true)|urlquoteplus }}">
               <i class="fa fa-fw fa-envelope"></i>&nbsp;&nbsp; Email this
             </a>
-            <a class="list-group-item visible-xs-block visible-sm-block" href="whatsapp://send?text={{ post.headline|urlquoteplus }}+{{ post.url_for(utm_campaign='share', utm_medium='whatsapp', _external=true)|urlquoteplus }}">
+            <a class="list-group-item visible-xs-block visible-sm-block" href="whatsapp://send?text={{ headline|urlquoteplus }}+{{ post.url_for(utm_campaign='share', utm_medium='whatsapp', _external=true)|urlquoteplus }}">
               <i class="fa fa-fw fa-whatsapp"></i>&nbsp;&nbsp; Share on WhatsApp
             </a>
-            <a class="list-group-item share-popup" data-width="550" data-height="250" target="_blank" href="https://twitter.com/share?url={{ post.url_for(utm_campaign='share', utm_medium='twitter', _external=true)|urlquoteplus }}&amp;counturl={{ post.url_for(_external=true)|urlquoteplus }}&amp;via=hasjob&amp;related=hasjob:HasGeek%20Job%20Board&amp;text=Job%3A%20{{ post.headline|urlquoteplus }}">
+            <a class="list-group-item share-popup" data-width="550" data-height="250" target="_blank" href="https://twitter.com/share?url={{ post.url_for(utm_campaign='share', utm_medium='twitter', _external=true)|urlquoteplus }}&amp;counturl={{ post.url_for(_external=true)|urlquoteplus }}&amp;via=hasjob&amp;related=hasjob:HasGeek%20Job%20Board&amp;text=Job%3A%20{{ headline|urlquoteplus }}">
               <span class="badge" id="tweet-count"></span><i class="fa fa-fw fa-twitter"></i>&nbsp;&nbsp; Tweet this
             </a>
             <a class="list-group-item share-popup" data-width="520" data-height="230" target="_blank" href="http://www.facebook.com/sharer.php?s=100&p[url]={{ post.url_for(utm_campaign='share', utm_medium='facebook', _external=true)|urlquoteplus }}">
@@ -200,6 +202,9 @@
                   {%- endif -%}
                 </a>
               {%- endif %}{% endwith -%}
+              {%- if post.headlineb %}{% with ab_views=post.ab_views %}
+                <span class="list-group-item" title="Headline A/B test"><i class="fa fa-fw fa-hand-o-up"></i>&nbsp;&nbsp; {{ ab_views.NA }} NA &middot; {{ ab_views.A }} A &middot; {{ ab_views.B }} B</span>
+              {%- endwith %}{% endif %}
             {%- endif %}
             {%- if is_siteadmin or post.admin_is(g.user) or (g.user and g.user.flags.is_employer_month) %}
               <div class="list-group-item no-border">
@@ -347,10 +352,11 @@
     });
   });
   $(function() {
-    $('.pstar-list-group-item').click(function(){
+    $('.sidebar-pstar').click(function(e) {
       $('.pstar').click();
+      e.preventDefault();
+      return false;
     });
-
     $('#post-location').tooltip();
     $(".popup-box").hide();
     $(".popup-box:target").show();

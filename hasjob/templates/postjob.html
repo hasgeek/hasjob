@@ -28,6 +28,7 @@
       <div class="section">
         <h2>First, tell us about the position</h2>
         {{ renderfield(form.job_headline, widget_css_class="field-title", autofocus=true) }}
+        {{ renderfield(form.job_headlineb, css_class=form.job_headlineb.data and " " or "jshidden", widget_css_class="field-title") }}
         {{ renderfield(form.job_type) }}
         {{ renderfield(form.job_category) }}
         {{ renderfield(form.job_location) }}
@@ -117,6 +118,12 @@
   <script type="text/javascript">
     $(function() {
       $('textarea').autosize();
+      $('#abtest').on('click', function(e) {
+        $('#field-job_headlineb').hide().removeClass('jshidden').slideDown();
+        $("#job_headlineb").focus();
+        e.preventDefault();
+        return false;
+      });
       if (! $("#job_perks").is(":checked")) {
         $("#field-job_perks_description").hide();
       };
