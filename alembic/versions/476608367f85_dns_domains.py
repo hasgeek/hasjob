@@ -15,15 +15,6 @@ import sqlalchemy as sa
 from baseframe.staticdata import webmail_domains
 
 
-jobpost = sa.sql.table('jobpost',
-    sa.sql.column('email_domain', sa.Unicode),
-    sa.sql.column('domain_id', sa.Integer))
-
-domain = sa.sql.table('domain',
-    sa.sql.column('id', sa.Integer),
-    sa.sql.column('name', sa.Unicode))
-
-
 def upgrade():
     op.create_table('domain',
         sa.Column('id', sa.Integer(), nullable=False),
