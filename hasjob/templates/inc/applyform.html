@@ -1,5 +1,5 @@
 {% from "baseframe/forms.html" import renderfield, rendersubmit, ajaxform %}
-<form id="applyform" method="POST" class="form-horizontal" action="{{ url_for('applyjob', hashid=post.hashid) }}">
+<form id="applyform" method="POST" class="form-horizontal" action="{{ post.url_for('apply') }}">
   <input type="hidden" name="_charset_"/>
   <input type="hidden" name="form.id" value="applyform"/>
   {{ applyform.hidden_tag() }}
@@ -17,12 +17,13 @@
   {{ renderfield(applyform.apply_email) }}
   {{ renderfield(applyform.apply_phone) }}
   {{ renderfield(applyform.apply_message, style="wide", widget_css_class="tinymce") }}
+  {{ renderfield(applyform.apply_optin, style="wide") }}
   {{ rendersubmit([(None, "Apply", 'btn-primary')], style='wide') }}
   <p>
     <strong>Note:</strong> Be selective about the jobs you apply for and mindful of the employer’s time.
     If too many employers report you for wasting their time with an irrelevent application, you will be barred
-    from applying to more jobs. Employers can see how many other jobs you are applying to simultaneously, but not
-    which jobs you are applying to.
+    from applying to more jobs. Employers can see how many other jobs you are applying to simultaneously
+    and your status with them, but not which jobs you are applying to.
   </p>
 </form>
 {%- if request.is_xhr %}

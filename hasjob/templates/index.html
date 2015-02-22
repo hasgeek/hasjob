@@ -1,23 +1,26 @@
 {%- from "macros.html" import stickie %}
-{% extends "layout.html" %}
-{% block titletags -%}
-  <title>{%if title %}{{ title }} &mdash; {% endif %}{% if g.board %}{{ g.board.title }}{% else %}{{ config['SITE_TITLE'] }}{% endif %}</title>
-  <meta name="DC.title" content="{%if title %}{{ title }} &mdash; {% endif %}{{ config['SITE_TITLE'] }}"/>
-{%- endblock %}
+{%- if not request.is_xhr -%}
+  {% extends "layout.html" %}
+  {% block titletags -%}
+    <title>{% block title %}{% if title %}{{ title }} &mdash; {% endif %}{% if g.board %}{{ g.board.title }}{% else %}{{ config['SITE_TITLE'] }}{% endif %}{% endblock %}</title>
+    <meta name="DC.title" content="{{ self.title() }}" />
+    <meta property="og:title" content="{{ self.title() }}" />
+  {%- endblock %}
 
-{% block pageheaders %}
-{%- if jobtype %}<link rel="alternate" type="application/atom+xml"  title="{{ jobtype.title }} – {{ config['SITE_TITLE']|e }}" href="{{ url_for('feed_by_type', name=jobtype.name) }}" />{% endif -%}
-{%- if jobcategory %}<link rel="alternate" type="application/atom+xml"  title="{{ jobcategory.title }} – {{ config['SITE_TITLE']|e }}" href="{{ url_for('feed_by_category', name=jobcategory.name) }}" />{% endif -%}
-{%- if md5sum %}<link rel="alternate" type="application/atom+xml" title="Jobs at {{ employer_name }} – {{ config['SITE_TITLE'] }}" href="{{ url_for('feed_by_email', md5sum=md5sum) }}" />{% endif -%}
-{%- if domain %}<link rel="alternate" type="application/atom+xml" title="Jobs at {{ employer_name }} – {{ config['SITE_TITLE'] }}" href="{{ url_for('feed_by_domain', domain=domain) }}" />{% endif -%}
-{%- if location %}<link rel="alternate" type="application/atom+xml" title="Jobs in {{ location['short_title'] }} – {{ config['SITE_TITLE'] }}" href="{{ url_for('feed_by_location', location=location['name']) }}" />{% endif -%}
-{% endblock %}
-
-{% block content %}
-  {%- if g.board %}
+  {% block pageheaders %}
+  {%- if jobtype %}<link rel="alternate" type="application/atom+xml"  title="{{ jobtype.title }} – {{ config['SITE_TITLE']|e }}" href="{{ url_for('feed_by_type', name=jobtype.name) }}" />{% endif -%}
+  {%- if jobcategory %}<link rel="alternate" type="application/atom+xml"  title="{{ jobcategory.title }} – {{ config['SITE_TITLE']|e }}" href="{{ url_for('feed_by_category', name=jobcategory.name) }}" />{% endif -%}
+  {%- if md5sum %}<link rel="alternate" type="application/atom+xml" title="Jobs at {{ employer_name }} – {{ config['SITE_TITLE'] }}" href="{{ url_for('feed_by_email', md5sum=md5sum) }}" />{% endif -%}
+  {%- if domain %}<link rel="alternate" type="application/atom+xml" title="Jobs at {{ employer_name }} – {{ config['SITE_TITLE'] }}" href="{{ url_for('feed_by_domain', domain=domain) }}" />{% endif -%}
+  {%- if location %}<link rel="alternate" type="application/atom+xml" title="Jobs in {{ location['short_title'] }} – {{ config['SITE_TITLE'] }}" href="{{ url_for('feed_by_location', location=location['name']) }}" />{% endif -%}
+  {% endblock %}
+{% endif %}
+{% block content %}{% with gkiosk=g.kiosk, gboard=g.board, guser=g.user, gstarred_ids=g.starred_ids %}
+{%- if not request.is_xhr -%}
+  {%- if gboard and gboard.not_root %}
     <div class="flash info">
-      {{ g.board.description|safe }}
-      {%- if g.kiosk and g.peopleflow_url %}
+      {{ gboard.description|safe }}
+      {%- if gkiosk and g.peopleflow_url %}
         <p>If you find a job worth applying for here, tap your badge on the reader attached to this kiosk and we’ll send an email connecting you with the employer.</p>
       {%- endif %}
     </div>
@@ -50,48 +53,54 @@
           You are viewing jobs in {{ location['short_title'] }}. View all jobs?<!-- Id: {{ location['geonameid'] }} -->
         </a>
       </li>
+    {%- elif tag -%}
+      <li class="col-xs-12 col-md-3 col-sm-4">
+        <a href="{{ url_for('index') }}" class="stickie special">
+          You are viewing jobs tagged “{{ tag.title }}”. View all jobs?
+        </a>
+      </li>
     {%- else -%}
-      {%- if (not g.kiosk) and ((g.board and 'new-job' in g.board.permissions(g.user)) or (not g.board)) -%}
+      {%- if (not gkiosk) and ((gboard and 'new-job' in gboard.permissions(guser)) or (not gboard)) -%}
         <li class="col-xs-12 col-md-3 col-sm-4">
           <form id="newpost" action="{{ url_for('newjob')|usessl }}" method="POST" class="stickie special">
             <input type="hidden" name="_charset_"/>
             <input type="hidden" name="form.id" value="newheadline"/>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             <label class="annotation top-left" for="newpost_headline">Post a job</label>
-            <textarea id="newpost_headline" name="job_headline" class="expand form-control">
-              {%- if g.board and g.board.newjob_headline -%}
-                {{ g.board.newjob_headline }}
-              {%- else -%}
-                Pragmatic programmer wanted at outstanding organisation
-              {%- endif -%}
-            </textarea>
+            {%- if gboard and gboard.newjob_headline -%}
+              <textarea id="newpost_headline" name="job_headline" class="form-control" placeholder="{{ gboard.newjob_headline }}"></textarea>
+            {%- else -%}
+              <textarea id="newpost_headline" name="job_headline" class="form-control" placeholder="Pragmatic programmer wanted at outstanding organisation"></textarea>
+            {%- endif -%}
             <div id="newpost_details" class="jshidden"><input type="submit" class="btn btn-default btn-sm" value="Add details…"/></div>
           </form>
         </li>
       {%- endif -%}
     {%- endif -%}
+{%- endif -%}
     {%- if grouped %}
-      {%- for grouping, group in grouped.items() -%}{%- with pinned, post=group[0] -%}
+      {%- for grouping, group in grouped.items() -%}{%- with pinned, post, is_bgroup=group[0] -%}
         {%- if group|length == 1 -%}
           <li class="col-xs-12 col-md-3 col-sm-4">
-            {{ stickie(post, url_for('jobdetail', hashid=post.hashid), pinned, is_siteadmin=is_siteadmin) }}
+            {{ stickie(post, post.url_for(b=is_bgroup), pinned, show_viewcounts=is_siteadmin or guser and guser.flags.is_employer_month, show_pay=is_siteadmin, starred=guser and post.id in gstarred_ids, is_bgroup=is_bgroup) }}
           </li>
         {%- else -%}
           <li class="grouped col-xs-12 col-md-3 col-sm-4">
             {%- if grouping[0] in ['sd', 'nd'] -%}
-              {{ stickie(post, url_for('browse_by_domain', domain=grouping[1]), pinned, dataurl=url_for('jobdetail', hashid=post.hashid), is_siteadmin=is_siteadmin) }}
+              {{ stickie(post, url_for('browse_by_domain', domain=grouping[1]), pinned, dataurl=post.url_for(b=is_bgroup), show_viewcounts=is_siteadmin or guser and guser.flags.is_employer_month, show_pay=is_siteadmin, starred=guser and post.id in gstarred_ids, is_bgroup=is_bgroup) }}
             {%- elif grouping[0] in ['se', 'ne'] -%}
-              {{ stickie(post, url_for('browse_by_email', md5sum=grouping[1]), pinned, dataurl=url_for('jobdetail', hashid=post.hashid), is_siteadmin=is_siteadmin) }}
+              {{ stickie(post, url_for('browse_by_email', md5sum=grouping[1]), pinned, dataurl=post.url_for(b=is_bgroup), show_viewcounts=is_siteadmin or guser and guser.flags.is_employer_month, show_pay=is_siteadmin, starred=guser and post.id in gstarred_ids, is_bgroup=is_bgroup) }}
             {%- endif -%}
-            {%- for pinned, post in group[1:] -%}
-              {{ stickie(post, none, false, groupedunder=true, dataurl=url_for('jobdetail', hashid=post.hashid), is_siteadmin=is_siteadmin) }}
+            {%- for pinned, post, is_bgroup in group[1:] -%}
+              {{ stickie(post, none, false, groupedunder=true, dataurl=post.url_for(b=is_bgroup), show_viewcounts=is_siteadmin or guser and guser.flags.is_employer_month, show_pay=is_siteadmin, starred=guser and post.id in gstarred_ids, is_bgroup=is_bgroup) }}
             {%- endfor -%}
           </li>
         {%- endif %}
       {%- endwith -%}{%- endfor -%}
     {%- else %}
-      {%- for pinned, post in pinsandposts -%}
+      {%- for pinned, post, is_bgroup in pinsandposts -%}
         <li class="col-xs-12 col-md-3 col-sm-4">
-          {{ stickie(post, url_for('jobdetail', hashid=post.hashid), pinned, is_siteadmin=is_siteadmin) }}
+          {{ stickie(post, post.url_for(b=is_bgroup), pinned, show_viewcounts=is_siteadmin or guser and guser.flags.is_employer_month, show_pay=is_siteadmin, starred=guser and post.id in gstarred_ids, is_bgroup=is_bgroup) }}
         </li>
       {%- else -%}
         <li class="col-xs-12 col-md-3 col-sm-4">
@@ -99,6 +108,12 @@
         </li>
       {%- endfor %}
     {%- endif -%}
+    {%- if loadmore -%}
+      <form id="loadmore" method="GET" data-appear-top-offset="600">
+        <button class="btn btn-default btn-lg" type="submit" name="startdate" value="{{ loadmore.isoformat() }}Z">Load more…</button>
+      </form>
+    {%- endif -%}
+{%- if not request.is_xhr -%}
   </ul>
   {%- if not showall -%}
     <div class="flash info">
@@ -108,10 +123,39 @@
       </p>
     </div>
   {%- endif -%}
-{% endblock %}
-{% block footerscripts %}
+{%- endif -%}
+{%- endwith %}{%- endblock -%}
+
+{%- macro loadmore_script() -%}
+  <script type="text/javascript">
+    $(function() {
+      $(".pstar").off().click(star_click);
+      $("#loadmore").attr('method', 'POST').ajaxForm({
+        beforeSubmit: function(formdata, form, options) {
+          form.find('button[type="submit"]').prop('disabled', true).addClass('submit-disabled').html('Loading more… <span class="loading">&nbsp;</span>');
+          return true;
+        },
+        success: function(responseText, statusText, xhr, form) {
+          target = $("#loadmore").replaceWith(responseText.trim());
+        },
+        error: function(context, xhr, status, errMsg) {
+          var form = $("#loadmore");
+          form.find('button[type="submit"]').prop('disabled', false).removeClass('submit-disabled').html('Load more…');
+          form.find('.loading').addClass('hidden');
+          form.append('<div class="alert alert-danger fade in"><a href="#" class="close" data-dismiss="alert">&times;</a> Could not load more posts. Please try again</div>');
+        }
+      });
+      $("#loadmore").appear().on('appear', function(event, element) {
+        element.find('button[type="submit"]').trigger('click');
+      });
+    });
+  </script>
+{%- endmacro -%}
+{%- block footerscripts -%}
+{%- if not request.is_xhr -%}
 <script type="text/javascript">
   $(function() {
+    $('textarea').autosize();
     $("#newpost_details").hide().removeClass('jshidden');
     $("#newpost_headline").focus(function() {
       $("#newpost_details").slideDown();
@@ -125,4 +169,8 @@
     });
   });
 </script>
+{%- endif -%}
+{%- if loadmore -%}
+  {{ loadmore_script() }}
+{%- endif -%}
 {% endblock %}

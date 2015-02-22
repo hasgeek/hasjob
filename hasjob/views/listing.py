@@ -8,25 +8,17 @@ from html2text import html2text
 from premailer import transform as email_transform
 
 from sqlalchemy.exc import IntegrityError
-from flask import (
-    abort,
-    flash,
-    g,
-    redirect,
-    render_template,
-    request,
-    url_for,
-    session,
-    Markup,
-    )
+from sqlalchemy.orm.exc import StaleDataError
+from flask import abort, flash, g, redirect, render_template, request, url_for, session, Markup, jsonify
 from flask.ext.mail import Message
-from baseframe import cache
-from coaster.utils import get_email_domain, md5sum, base_domain_matches
+from baseframe import cache, csrf
+from coaster.utils import getbool, get_email_domain, md5sum, base_domain_matches
 from coaster.views import load_model
 from hasjob import app, forms, mail, lastuser
 from hasjob.models import (
     agelimit,
     db,
+    Domain,
     JobCategory,
     JobType,
     JobPost,
@@ -36,39 +28,52 @@ from hasjob.models import (
     PAY_TYPE,
     ReportCode,
     UserJobView,
+    AnonJobView,
     JobApplication,
+    Campaign, CAMPAIGN_POSITION,
     unique_hash,
     viewstats_by_id_qhour,
     viewstats_by_id_hour,
     viewstats_by_id_day,
     )
 from hasjob.twitter import tweet
-from hasjob.tagging import tag_locations, add_to_boards
+from hasjob.tagging import tag_locations, add_to_boards, tag_jobpost
 from hasjob.uploads import uploaded_logos
 from hasjob.utils import get_word_bag, redactemail, random_long_key
 from hasjob.views import ALLOWED_TAGS
 from hasjob.nlp import identify_language
+from hasjob.views.helper import gif1x1, cache_viewcounts, session_jobpost_ab, bgroup
 
 
-@app.route('/view/<hashid>', methods=('GET', 'POST'), subdomain='<subdomain>')
-@app.route('/view/<hashid>', methods=('GET', 'POST'))
-def jobdetail(hashid):
+@app.route('/<domain>/<hashid>', methods=('GET', 'POST'), subdomain='<subdomain>')
+@app.route('/<domain>/<hashid>', methods=('GET', 'POST'))
+@app.route('/view/<hashid>', defaults={'domain': None}, methods=('GET', 'POST'), subdomain='<subdomain>')
+@app.route('/view/<hashid>', defaults={'domain': None}, methods=('GET', 'POST'))
+def jobdetail(domain, hashid):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
 
-    if g.board and post.link_to_board(g.board) is None:
+    # If we're on a board (that's now 'www') and this post isn't on this board,
+    # redirect to (a) the first board it is on, or (b) on the root domain (which may
+    # be the 'www' board, which is why we don't bother to redirect if we're currently
+    # in the 'www' board)
+    if g.board and g.board.not_root and post.link_to_board(g.board) is None:
         blink = post.postboards.first()
         if blink:
-            return redirect(url_for('jobdetail', hashid=post.hashid, subdomain=blink.board.name, _external=True))
+            return redirect(post.url_for(subdomain=blink.board.name, _external=True))
         else:
-            return redirect(url_for('jobdetail', hashid=post.hashid, subdomain=None, _external=True))
+            return redirect(post.url_for(subdomain=None, _external=True))
+
+    # If this post is past pending state and the domain doesn't match, redirect there
+    if post.status not in POSTSTATUS.UNPUBLISHED and post.email_domain != domain:
+        return redirect(post.url_for(), code=301)
 
     if post.status in [POSTSTATUS.DRAFT, POSTSTATUS.PENDING]:
-        if not ((g.user and post.admin_is(g.user)) or post.edit_key in session.get('userkeys', [])):
+        if not ((g.user and post.admin_is(g.user))):
             abort(403)
     if post.status in POSTSTATUS.GONE:
         abort(410)
     if g.user:
-        jobview = UserJobView.query.get((post.id, g.user.id))
+        jobview = UserJobView.get(post, g.user)
         if jobview is None:
             jobview = UserJobView(user=g.user, jobpost=post)
             post.uncache_viewcounts('viewed')
@@ -80,15 +85,26 @@ def jobdetail(hashid):
                 db.session.commit()
             except IntegrityError:
                 db.session.rollback()
-                pass  # User opened two tabs at once? We don't really know
             post.viewcounts  # Re-populate cache
     else:
         jobview = None
+
+    if g.anon_user:
+        anonview = AnonJobView.get(post, g.anon_user)
+        if not anonview:
+            anonview = AnonJobView(jobpost=post, anon_user=g.anon_user)
+            db.session.add(anonview)
+            try:
+                db.session.commit()
+            except IntegrityError:
+                db.session.rollback()
 
     if g.user:
         report = JobPostReport.query.filter_by(post=post, user=g.user).first()
     else:
         report = None
+
+    g.jobpost_viewed = (post, getbool(request.args.get('b')))
 
     reportform = forms.ReportForm(obj=report)
     reportform.report_code.choices = [(ob.id, ob.title) for ob in ReportCode.query.filter_by(public=True).order_by('seq')]
@@ -137,22 +153,82 @@ def jobdetail(hashid):
     else:
         domain_mismatch = False
 
-    return render_template('detail.html', post=post, reportform=reportform, rejectform=rejectform,
+    if not g.kiosk:
+        if g.preview_campaign:
+            header_campaign = g.preview_campaign
+        else:
+            header_campaign = Campaign.for_context(CAMPAIGN_POSITION.HEADER, board=g.board, user=g.user,
+                geonameids=g.user_geonameids + post.geonameids)
+    else:
+        header_campaign = None
+
+    if g.user and not g.kiosk:
+        g.starred_ids = set(g.user.starred_job_ids(agelimit))
+    else:
+        g.starred_ids = set()
+
+    jobpost_ab = session_jobpost_ab()
+    related_posts = post.related_posts()
+    cache_viewcounts(related_posts)
+    is_bgroup = getbool(request.args.get('b'))
+    headline = post.headlineb if is_bgroup and post.headlineb else post.headline
+    g.impressions = {rp.id: (False, rp.id, bgroup(jobpost_ab, rp)) for rp in related_posts}
+
+    return render_template('detail.html', post=post, headline=headline, reportform=reportform, rejectform=rejectform,
         pinnedform=pinnedform, applyform=applyform, job_application=job_application,
         jobview=jobview, report=report, moderateform=moderateform,
-        domain_mismatch=domain_mismatch,
+        domain_mismatch=domain_mismatch, header_campaign=header_campaign,
+        related_posts=related_posts, is_bgroup=is_bgroup,
         is_siteadmin=lastuser.has_permission('siteadmin')
         )
 
 
-@app.route('/reveal/<hashid>', subdomain='<subdomain>')
-@app.route('/reveal/<hashid>')
+@app.route('/<domain>/<hashid>/star', defaults={'domain': None}, methods=['POST'], subdomain='<subdomain>')
+@app.route('/<domain>/<hashid>/star', defaults={'domain': None}, methods=['POST'])
+@app.route('/star/<hashid>', defaults={'domain': None}, methods=['POST'], subdomain='<subdomain>')
+@app.route('/star/<hashid>', defaults={'domain': None}, methods=['POST'])
 @lastuser.requires_login
-def revealjob(hashid):
+def starjob(domain, hashid):
+    """
+    Star/unstar a job
+    """
+    is_starred = None
+    post = JobPost.query.filter_by(hashid=hashid).first_or_404()
+    # Handle IntegrityError/StaleDataError caused by users double clicking
+    passed = False
+    while not passed:
+        if post in g.user.starred_jobs:
+            g.user.starred_jobs.remove(post)
+            is_starred = False
+        else:
+            g.user.starred_jobs.append(post)
+            is_starred = True
+        try:
+            db.session.commit()
+            passed = True
+        except (IntegrityError, StaleDataError):
+            pass
+
+    response = jsonify(is_starred=is_starred)
+    if is_starred:
+        response.status_code = 201
+    return response
+
+
+@app.route('/<domain>/<hashid>/reveal', subdomain='<subdomain>')
+@app.route('/<domain>/<hashid>/reveal')
+@app.route('/reveal/<hashid>', defaults={'domain': None}, subdomain='<subdomain>')
+@app.route('/reveal/<hashid>', defaults={'domain': None})
+@lastuser.requires_login
+def revealjob(domain, hashid):
     """
     This view is a GET request and that is intentional.
     """
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
+    # If the domain doesn't match, redirect to correct URL
+    if post.email_domain != domain:
+        return redirect(post.url_for('reveal'), code=301)
+
     if post.status in [POSTSTATUS.REJECTED, POSTSTATUS.WITHDRAWN, POSTSTATUS.SPAM]:
         abort(410)
     jobview = UserJobView.query.get((post.id, g.user.id))
@@ -180,16 +256,22 @@ def revealjob(hashid):
     if request.is_xhr:
         return redactemail(post.how_to_apply)
     else:
-        return redirect(url_for('jobdetail', hashid=post.hashid), 303)
+        return redirect(post.url_for(), 303)
 
 
-@app.route('/apply/<hashid>', methods=['POST'], subdomain='<subdomain>')
-@app.route('/apply/<hashid>', methods=['POST'])
-def applyjob(hashid):
+@app.route('/<domain>/<hashid>/apply', methods=['POST'], subdomain='<subdomain>')
+@app.route('/<domain>/<hashid>/apply', methods=['POST'])
+@app.route('/apply/<hashid>', defaults={'domain': None}, methods=['POST'], subdomain='<subdomain>')
+@app.route('/apply/<hashid>', defaults={'domain': None}, methods=['POST'])
+def applyjob(domain, hashid):
     """
     Apply to a job (including in kiosk mode)
     """
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
+    # If the domain doesn't match, redirect to correct URL
+    if post.email_domain != domain:
+        return redirect(post.url_for('apply'), code=301)
+
     if g.user:
         job_application = JobApplication.query.filter_by(user=g.user, jobpost=post).first()
     else:
@@ -200,7 +282,7 @@ def applyjob(hashid):
             return u'<p><strong>{}</strong></p>'.format(flashmsg)
         else:
             flash(flashmsg, 'interactive')
-            return redirect(url_for('jobdetail', hashid=post.hashid), 303)
+            return redirect(post.url_for(), 303)
     else:
         if g.kiosk:
             applyform = forms.KioskApplicationForm()
@@ -224,6 +306,7 @@ def applyjob(hashid):
                         email=applyform.apply_email.data,
                         phone=applyform.apply_phone.data,
                         message=applyform.apply_message.data,
+                        optin=applyform.apply_optin.data,
                         words=applyform.words)
                 db.session.add(job_application)
                 db.session.commit()
@@ -231,9 +314,7 @@ def applyjob(hashid):
                 email_html = email_transform(
                     render_template('apply_email.html',
                         post=post, job_application=job_application,
-                        archive_url=url_for('view_application',
-                            hashid=post.hashid, application=job_application.hashid,
-                            _external=True)),
+                        archive_url=job_application.url_for(_external=True)),
                     base_url=request.url_root)
                 email_text = html2text(email_html)
                 flashmsg = "Your application has been sent to the employer"
@@ -241,7 +322,9 @@ def applyjob(hashid):
                 msg = Message(subject=u"Job application: {fullname}".format(fullname=job_application.fullname),
                     recipients=[post.email])
                 if not job_application.user:
-                    # Also BCC the candidate
+                    # Also BCC the candidate (for kiosk mode)
+                    # FIXME: This should be a separate copy of the email as the tracking gif is now shared
+                    # between both employer and candidate
                     msg.bcc = [job_application.email]
                 msg.body = email_text
                 msg.html = email_html
@@ -251,27 +334,67 @@ def applyjob(hashid):
                 return u'<p><strong>{}</strong></p>'.format(flashmsg)
             else:
                 flash(flashmsg, 'interactive')
-                return redirect(url_for('jobdetail', hashid=post.hashid), 303)
+                return redirect(post.url_for(), 303)
 
         if request.is_xhr:
             return render_template('inc/applyform.html', post=post, applyform=applyform)
         else:
-            return redirect(url_for('jobdetail', hashid=post.hashid), 303)
+            return redirect(post.url_for(), 303)
 
 
-@app.route('/manage/<hashid>', methods=('GET', 'POST'), defaults={'key': None}, subdomain='<subdomain>')
-@app.route('/manage/<hashid>', methods=('GET', 'POST'), defaults={'key': None})
-@load_model(JobPost, {'hashid': 'hashid'}, 'post', permission=('manage', 'siteadmin'), addlperms=lastuser.permissions)
-def managejob(post):
+@app.route('/<domain>/<hashid>/manage', methods=('GET', 'POST'), defaults={'key': None}, subdomain='<subdomain>')
+@app.route('/<domain>/<hashid>/manage', methods=('GET', 'POST'), defaults={'key': None})
+@app.route('/manage/<hashid>', methods=('GET', 'POST'), defaults={'key': None, 'domain': None}, subdomain='<subdomain>')
+@app.route('/manage/<hashid>', methods=('GET', 'POST'), defaults={'key': None, 'domain': None})
+@load_model(JobPost, {'hashid': 'hashid'}, 'post', permission=('manage', 'siteadmin'), addlperms=lastuser.permissions,
+    kwargs=True)
+def managejob(post, kwargs):
+    # If the domain doesn't match, redirect to correct URL
+    if post.email_domain != kwargs.get('domain'):
+        return redirect(post.url_for('manage'), code=301)
+
     if post.applications:
-        return redirect(url_for('view_application', hashid=post.hashid, application=post.applications[0].hashid))
+        return redirect(post.applications[0].url_for(), code=303)
     else:
-        return redirect(url_for('jobdetail', hashid=post.hashid))
+        return redirect(post.url_for())
 
 
-@app.route('/view/<hashid>/<application>', subdomain='<subdomain>')
-@app.route('/view/<hashid>/<application>')
-def view_application(hashid, application):
+@app.route('/<domain>/<hashid>/appl/<application>/track.gif', subdomain='<subdomain>')
+@app.route('/<domain>/<hashid>/appl/<application>/track.gif')
+@app.route('/view/<hashid>/<application>/track.gif', defaults={'domain': None}, subdomain='<subdomain>')
+@app.route('/view/<hashid>/<application>/track.gif', defaults={'domain': None})
+def view_application_email_gif(domain, hashid, application):
+    post = JobPost.query.filter_by(hashid=hashid).one_or_none()
+    if post:
+        # FIXME: Can't use one_or_none() until we ensure jobpost_id+user_id is unique
+        job_application = JobApplication.query.filter_by(hashid=application, jobpost=post).first()
+    else:
+        job_application = None
+
+    if job_application is not None:
+        if job_application.response == EMPLOYER_RESPONSE.NEW:
+            job_application.response = EMPLOYER_RESPONSE.PENDING
+            db.session.commit()
+        return gif1x1, 200, {
+            'Content-Type': 'image/gif',
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+            }
+    else:
+        return gif1x1, 404, {
+            'Content-Type': 'image/gif',
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+            }
+
+
+@app.route('/<domain>/<hashid>/appl/<application>', subdomain='<subdomain>')
+@app.route('/<domain>/<hashid>/appl/<application>')
+@app.route('/view/<hashid>/<application>', defaults={'domain': None}, subdomain='<subdomain>')
+@app.route('/view/<hashid>/<application>', defaults={'domain': None})
+def view_application(domain, hashid, application):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
     # Transition code until we force all employers to login before posting
     if post.user and not (post.admin_is(g.user) or lastuser.has_permission('siteadmin')):
@@ -280,6 +403,11 @@ def view_application(hashid, application):
         else:
             abort(403)
     job_application = JobApplication.query.filter_by(hashid=application, jobpost=post).first_or_404()
+
+    # If this domain doesn't match, redirect to correct URL
+    if post.email_domain != domain:
+        return redirect(job_application.url_for(), code=301)
+
     if job_application.response == EMPLOYER_RESPONSE.NEW:
         # If the application is pending, mark it as opened.
         # However, don't do this if the user is a siteadmin, unless they also own the post.
@@ -290,13 +418,25 @@ def view_application(hashid, application):
 
     statuses = set([app.status for app in post.applications])
 
+    if not g.kiosk:
+        if g.preview_campaign:
+            header_campaign = g.preview_campaign
+        else:
+            header_campaign = Campaign.for_context(CAMPAIGN_POSITION.HEADER, board=g.board, user=g.user,
+                geonameids=g.user_geonameids + post.geonameids)
+    else:
+        header_campaign = None
+
     return render_template('application.html', post=post, job_application=job_application,
+        header_campaign=header_campaign,
         response_form=response_form, statuses=statuses, is_siteadmin=lastuser.has_permission('siteadmin'))
 
 
-@app.route('/apply/<hashid>/<application>', methods=['POST'], subdomain='<subdomain>')
-@app.route('/apply/<hashid>/<application>', methods=['POST'])
-def process_application(hashid, application):
+@app.route('/<domain>/<hashid>/appl/<application>/process', methods=['POST'], subdomain='<subdomain>')
+@app.route('/<domain>/<hashid>/appl/<application>/process', methods=['POST'])
+@app.route('/apply/<hashid>/<application>', defaults={'domain': None}, methods=['POST'], subdomain='<subdomain>')
+@app.route('/apply/<hashid>/<application>', defaults={'domain': None}, methods=['POST'])
+def process_application(domain, hashid, application):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
     if post.user and not post.admin_is(g.user):
         if not g.user:
@@ -318,13 +458,13 @@ def process_application(hashid, application):
                 else:
                     job_application.response = EMPLOYER_RESPONSE.REJECTED
                 job_application.response_message = response_form.response_message.data
+                job_application.replied_by = g.user
+                job_application.replied_at = datetime.utcnow()
 
                 email_html = email_transform(
                     render_template('respond_email.html',
                         post=post, job_application=job_application,
-                        archive_url=url_for('view_application',
-                            hashid=post.hashid, application=job_application.hashid,
-                            _external=True)),
+                        archive_url=job_application.url_for(_external=True)),
                     base_url=request.url_root)
                 email_text = html2text(email_html)
 
@@ -334,21 +474,20 @@ def process_application(hashid, application):
                     site=app.config['SITE_TITLE'])
 
                 if job_application.is_replied():
-                    msg = Message(subject=u"Regarding your job application for {headline}".format(headline=post.headline),
+                    msg = Message(subject=u"Job response: {headline}".format(headline=post.headline),
                         sender=(sender_formatted, app.config['MAIL_SENDER']),
                         reply_to=(sender_name, post.email),
                         recipients=[job_application.email],
                         bcc=[post.email])
                     flashmsg = "We sent your message to the candidate and copied you. Their email and phone number are below"
                 else:
-                    msg = Message(subject=u"Regarding your job application for {headline}".format(headline=post.headline),
+                    msg = Message(subject=u"Job declined: {headline}".format(headline=post.headline),
                         sender=(sender_formatted, app.config['MAIL_SENDER']),
                         bcc=[job_application.email, post.email])
                     flashmsg = "We sent your message to the candidate and copied you"
                 msg.body = email_text
                 msg.html = email_html
                 mail.send(msg)
-                job_application.replied_by = g.user
                 db.session.commit()
         elif request.form.get('action') == 'ignore' and job_application.can_ignore():
             job_application.response = EMPLOYER_RESPONSE.IGNORED
@@ -366,13 +505,15 @@ def process_application(hashid, application):
         else:
             flash(flashmsg, 'interactive')
 
-    return redirect(url_for('view_application', hashid=post.hashid, application=job_application.hashid), 303)
+    return redirect(job_application.url_for(), 303)
 
 
-@app.route('/pinned/<hashid>', methods=['POST'], subdomain='<subdomain>')
-@app.route('/pinned/<hashid>', methods=['POST'])
+@app.route('/<domain>/<hashid>/pin', methods=['POST'], subdomain='<subdomain>')
+@app.route('/<domain>/<hashid>/pin', methods=['POST'])
+@app.route('/pinned/<hashid>', defaults={'domain': None}, methods=['POST'], subdomain='<subdomain>')
+@app.route('/pinned/<hashid>', defaults={'domain': None}, methods=['POST'])
 @lastuser.requires_permission('siteadmin')
-def pinnedjob(hashid):
+def pinnedjob(domain, hashid):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
     if g.board:
         obj = post.link_to_board(g.board)
@@ -394,17 +535,18 @@ def pinnedjob(hashid):
         return Markup('<p>' + msg + '</p>')
     else:
         flash(msg)
-        return redirect(url_for('jobdetail', hashid=post.hashid), 303)
+        return redirect(post.url_for(), 303)
 
 
-@app.route('/reject/<hashid>', methods=('GET', 'POST'), subdomain='<subdomain>')
-@app.route('/reject/<hashid>', methods=('GET', 'POST'))
+@app.route('/<domain>/<hashid>/reject', methods=('GET', 'POST'), subdomain='<subdomain>')
+@app.route('/<domain>/<hashid>/reject', methods=('GET', 'POST'))
+@app.route('/reject/<hashid>', defaults={'domain': None}, methods=('GET', 'POST'), subdomain='<subdomain>')
+@app.route('/reject/<hashid>', defaults={'domain': None}, methods=('GET', 'POST'))
 @lastuser.requires_permission('siteadmin')
-def rejectjob(hashid):
+def rejectjob(domain, hashid):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
-    if post.status in [POSTSTATUS.DRAFT, POSTSTATUS.PENDING]:
-        if post.edit_key not in session.get('userkeys', []):
-            abort(403)
+    if post.status in [POSTSTATUS.DRAFT, POSTSTATUS.PENDING] and not post.admin_is(g.user):
+        abort(403)
     if post.status in [POSTSTATUS.REJECTED, POSTSTATUS.WITHDRAWN, POSTSTATUS.SPAM]:
         abort(410)
     rejectform = forms.RejectForm()
@@ -418,7 +560,15 @@ def rejectjob(hashid):
             flashmsg = "This job post has been marked as spam."
             post.status = POSTSTATUS.SPAM
         else:
-            flashmsg = "This job post has been rejected."
+            if request.form.get('submit') == 'ban':
+                flashmsg = "This job post has been rejected and the user and domain banned."
+                post.domain.is_banned = True
+                post.domain.banned_by = g.user
+                post.domain.banned_reason = rejectform.reason.data
+                if post.user:
+                    post.user.blocked = True
+            else:
+                flashmsg = "This job post has been rejected."
             post.status = POSTSTATUS.REJECTED
             msg = Message(subject="About your job post on Hasjob",
                 recipients=[post.email])
@@ -432,17 +582,18 @@ def rejectjob(hashid):
             flash(flashmsg, "interactive")
     elif request.method == 'POST' and request.is_xhr:
         return render_template('inc/rejectform.html', post=post, rejectform=rejectform)
-    return redirect(url_for('jobdetail', hashid=post.hashid))
+    return redirect(post.url_for(), code=303)
 
 
-@app.route('/moderate/<hashid>', methods=('GET', 'POST'), subdomain='<subdomain>')
-@app.route('/moderate/<hashid>', methods=('GET', 'POST'))
+@app.route('/<domain>/<hashid>/moderate', methods=('GET', 'POST'), subdomain='<subdomain>')
+@app.route('/<domain>/<hashid>/moderate', methods=('GET', 'POST'))
+@app.route('/moderate/<hashid>', defaults={'domain': None}, methods=('GET', 'POST'), subdomain='<subdomain>')
+@app.route('/moderate/<hashid>', defaults={'domain': None}, methods=('GET', 'POST'))
 @lastuser.requires_permission('siteadmin')
-def moderatejob(hashid):
+def moderatejob(domain, hashid):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
     if post.status in [POSTSTATUS.DRAFT, POSTSTATUS.PENDING]:
-        if post.edit_key not in session.get('userkeys', []):
-            abort(403)
+        abort(403)
     if post.status in [POSTSTATUS.REJECTED, POSTSTATUS.WITHDRAWN, POSTSTATUS.SPAM]:
         abort(410)
     moderateform = forms.ModerateForm()
@@ -463,22 +614,26 @@ def moderatejob(hashid):
             return "<p>%s</p>" % flashmsg
     elif request.method == 'POST' and request.is_xhr:
         return render_template('inc/moderateform.html', post=post, moderateform=moderateform)
-    return redirect(url_for('jobdetail', hashid=post.hashid))
+    return redirect(post.url_for(), code=303)
 
 
-@app.route('/confirm/<hashid>', methods=('GET', 'POST'), subdomain='<subdomain>')
-@app.route('/confirm/<hashid>', methods=('GET', 'POST'))
-def confirm(hashid):
+@csrf.exempt
+@app.route('/<domain>/<hashid>/confirm', methods=('GET', 'POST'), subdomain='<subdomain>')
+@app.route('/<domain>/<hashid>/confirm', methods=('GET', 'POST'))
+@app.route('/confirm/<hashid>', defaults={'domain': None}, methods=('GET', 'POST'), subdomain='<subdomain>')
+@app.route('/confirm/<hashid>', defaults={'domain': None}, methods=('GET', 'POST'))
+def confirm(domain, hashid):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
     form = forms.ConfirmForm()
-    if post.status in [POSTSTATUS.REJECTED, POSTSTATUS.SPAM]:
+    if post.status in POSTSTATUS.GONE:
         abort(410)
-    elif post.status in [POSTSTATUS.DRAFT, POSTSTATUS.PENDING]:
-        if not (post.edit_key in session.get('userkeys', []) or post.admin_is(g.user)):
+    elif post.status in POSTSTATUS.UNPUBLISHED and not post.admin_is(g.user):
             abort(403)
-    else:
+    elif post.status not in POSTSTATUS.UNPUBLISHED:
         # Any other status: no confirmation required (via this handler)
-        return redirect(url_for('jobdetail', hashid=post.hashid), code=302)
+        return redirect(post.url_for(), code=302)
+
+    # We get here if it's (a) POSTSTATUS.UNPUBLISHED and (b) the user is confirmed authorised
     if 'form.id' in request.form and form.validate_on_submit():
         # User has accepted terms of service. Now send email and/or wait for payment
         # Also (re-)set the verify key, just in case they changed their email
@@ -493,18 +648,15 @@ def confirm(hashid):
         post.status = POSTSTATUS.PENDING
         db.session.commit()
 
-        try:
-            session.get('userkeys', []).remove(post.edit_key)
-            session.modified = True  # Since it won't detect changes to lists
-        except ValueError:
-            pass
         return render_template('mailsent.html', post=post)
     return render_template('confirm.html', post=post, form=form)
 
 
-@app.route('/confirm/<hashid>/<key>', subdomain='<subdomain>')
-@app.route('/confirm/<hashid>/<key>')
-def confirm_email(hashid, key):
+@app.route('/<domain>/<hashid>/confirm/<key>', subdomain='<subdomain>')
+@app.route('/<domain>/<hashid>/confirm/<key>')
+@app.route('/confirm/<hashid>/<key>', defaults={'domain': None}, subdomain='<subdomain>')
+@app.route('/confirm/<hashid>/<key>', defaults={'domain': None})
+def confirm_email(domain, hashid, key):
     # If post is in pending state and email key is correct, convert to published
     # and update post.datetime to utcnow() so it'll show on top of the stack
     # This function expects key to be email_verify_key, not edit_key like the others
@@ -513,11 +665,11 @@ def confirm_email(hashid, key):
         abort(410)
     elif post.status in POSTSTATUS.LISTED:
         flash("This job post has already been confirmed and published", "interactive")
-        return redirect(url_for('jobdetail', hashid=post.hashid), code=302)
+        return redirect(post.url_for(), code=302)
     elif post.status == POSTSTATUS.DRAFT:
         # This should not happen. The user doesn't have this URL until they
         # pass the confirm form
-        return redirect(url_for('confirm', hashid=post.hashid), code=302)
+        return redirect(post.url_for('confirm'), code=302)
     elif post.status == POSTSTATUS.PENDING:
         if key != post.email_verify_key:
             abort(403)
@@ -537,18 +689,28 @@ def confirm_email(hashid, key):
             post.datetime = datetime.utcnow()
             db.session.commit()
             if app.config['TWITTER_ENABLED']:
-                tweet.delay(post.headline, url_for('jobdetail', hashid=post.hashid,
-                    _external=True), post.location, dict(post.parsed_location or {}))
+                if post.headlineb:
+                    tweet.delay(post.headline, post.url_for(b=0, _external=True),
+                        post.location, dict(post.parsed_location or {}))
+                    tweet.delay(post.headlineb, post.url_for(b=1, _external=True),
+                        post.location, dict(post.parsed_location or {}))
+                else:
+                    tweet.delay(post.headline, post.url_for(_external=True),
+                        post.location, dict(post.parsed_location or {}))
             add_to_boards.delay(post.id)
-            flash("Congratulations! Your job post has been published", "interactive")
-    return redirect(url_for('jobdetail', hashid=post.hashid), code=302)
+            flash("Congratulations! Your job post has been published. As a bonus for being an employer on Hasjob, "
+                "you can now see how your post is performing relative to others. Look in the sidebar of any post.",
+                "interactive")
+    return redirect(post.url_for(), code=302)
 
 
-@app.route('/withdraw/<hashid>', methods=('GET', 'POST'), defaults={'key': None}, subdomain='<subdomain>')
-@app.route('/withdraw/<hashid>/<key>', methods=('GET', 'POST'), subdomain='<subdomain>')
-@app.route('/withdraw/<hashid>', methods=('GET', 'POST'), defaults={'key': None})
-@app.route('/withdraw/<hashid>/<key>', methods=('GET', 'POST'))
-def withdraw(hashid, key):
+@app.route('/<domain>/<hashid>/withdraw', methods=('GET', 'POST'), defaults={'key': None}, subdomain='<subdomain>')
+@app.route('/<domain>/<hashid>/withdraw', methods=('GET', 'POST'), defaults={'key': None})
+@app.route('/withdraw/<hashid>', methods=('GET', 'POST'), defaults={'key': None, 'domain': None}, subdomain='<subdomain>')
+@app.route('/withdraw/<hashid>/<key>', defaults={'domain': None}, methods=('GET', 'POST'), subdomain='<subdomain>')
+@app.route('/withdraw/<hashid>', methods=('GET', 'POST'), defaults={'key': None, 'domain': None})
+@app.route('/withdraw/<hashid>/<key>', defaults={'domain': None}, methods=('GET', 'POST'))
+def withdraw(domain, hashid, key):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
     form = forms.WithdrawForm()
     if not ((key is None and g.user is not None and post.admin_is(g.user)) or (key == post.edit_key)):
@@ -568,39 +730,47 @@ def withdraw(hashid, key):
     return render_template("withdraw.html", post=post, form=form)
 
 
-@app.route('/edit/<hashid>', methods=('GET', 'POST'), defaults={'key': None}, subdomain='<subdomain>')
-@app.route('/edit/<hashid>/<key>', methods=('GET', 'POST'), subdomain='<subdomain>')
-@app.route('/edit/<hashid>', methods=('GET', 'POST'), defaults={'key': None})
-@app.route('/edit/<hashid>/<key>', methods=('GET', 'POST'))
-def editjob(hashid, key, form=None, post=None, validated=False):
+@app.route('/<domain>/<hashid>/edit', methods=('GET', 'POST'), defaults={'key': None}, subdomain='<subdomain>')
+@app.route('/<domain>/<hashid>/edit', methods=('GET', 'POST'), defaults={'key': None})
+@app.route('/edit/<hashid>', methods=('GET', 'POST'), defaults={'key': None, 'domain': None}, subdomain='<subdomain>')
+@app.route('/edit/<hashid>/<key>', defaults={'domain': None}, methods=('GET', 'POST'), subdomain='<subdomain>')
+@app.route('/edit/<hashid>', methods=('GET', 'POST'), defaults={'key': None, 'domain': None})
+@app.route('/edit/<hashid>/<key>', defaults={'domain': None}, methods=('GET', 'POST'))
+def editjob(hashid, key, domain=None, form=None, validated=False, newpost=None):
     if form is None:
         form = forms.ListingForm(request.form)
         form.job_type.choices = JobType.choices(g.board)
         form.job_category.choices = JobCategory.choices(g.board)
         if g.board and not g.board.require_pay:
             form.job_pay_type.choices = [(-1, u'Confidential')] + PAY_TYPE.items()
-    if post is None:
+
+    post = None
+    no_email = False
+
+    if not newpost:
         post = JobPost.query.filter_by(hashid=hashid).first_or_404()
-    if not ((key is None and g.user is not None and post.admin_is(g.user)) or (key == post.edit_key)):
-        abort(403)
+        if not ((key is None and g.user is not None and post.admin_is(g.user)) or (key == post.edit_key)):
+            abort(403)
 
-    # Don't allow editing jobs that aren't on this board as that may be a loophole when
-    # the board allows no pay.
-    with db.session.no_autoflush:
-        if g.board and post.link_to_board(g.board) is None and request.method == 'GET':
-            blink = post.postboards.first()
-            if blink:
-                return redirect(url_for('editjob', hashid=post.hashid, subdomain=blink.board.name, _external=True))
-            else:
-                return redirect(url_for('editjob', hashid=post.hashid, subdomain=None, _external=True))
+        # Once this post is published, require editing at /domain/<hashid>/edit
+        if not key and post.status not in POSTSTATUS.UNPUBLISHED and post.email_domain != domain:
+            return redirect(post.url_for('edit'), code=301)
 
-    # Don't allow email address to be changed once it's confirmed
-    if post.status in POSTSTATUS.POSTPENDING:
-        no_email = True
-    else:
-        no_email = False
+        # Don't allow editing jobs that aren't on this board as that may be a loophole when
+        # the board allows no pay (except in the 'www' root board, where editing is always allowed)
+        with db.session.no_autoflush:
+            if g.board and g.board.not_root and post.link_to_board(g.board) is None and request.method == 'GET':
+                blink = post.postboards.first()
+                if blink:
+                    return redirect(post.url_for('edit', subdomain=blink.board.name, _external=True))
+                else:
+                    return redirect(post.url_for('edit', subdomain=None, _external=True))
 
-    if request.method == 'POST' and post.status in POSTSTATUS.POSTPENDING:
+        # Don't allow email address to be changed once it's confirmed
+        if post.status in POSTSTATUS.POSTPENDING:
+            no_email = True
+
+    if request.method == 'POST' and post and post.status in POSTSTATUS.POSTPENDING:
         # del form.poster_name  # Deprecated 2013-11-20
         form.poster_email.data = post.email
     if request.method == 'POST' and (validated or form.validate()):
@@ -618,7 +788,7 @@ def editjob(hashid, key, form=None, post=None, validated=False):
                     JobPost.status.in_(POSTSTATUS.POSTPENDING)),
                 JobPost.status == POSTSTATUS.SPAM)).filter(
                     JobPost.datetime > datetime.utcnow() - agelimit).all():
-                if oldpost.id != post.id:
+                if not post or (oldpost.id != post.id):
                     if oldpost.words:
                         s = SequenceMatcher(None, form_words, oldpost.words)
                         if s.ratio() > 0.6:
@@ -629,7 +799,16 @@ def editjob(hashid, key, form=None, post=None, validated=False):
             flash("This post is very similar to an earlier post. You may not repost the same job "
                 "in less than %d days." % agelimit.days, category='interactive')
         else:
+            if newpost:
+                post = JobPost(**newpost)
+                db.session.add(post)
+                if g.board:
+                    post.add_to(g.board)
+                    if g.board.not_root:
+                        post.add_to('www')
+
             post.headline = form.job_headline.data
+            post.headlineb = form.job_headlineb.data
             post.type_id = form.job_type.data
             post.category_id = form.job_category.data
             post.location = form.job_location.data
@@ -668,6 +847,10 @@ def editjob(hashid, key, form=None, post=None, validated=False):
                 post.email = form.poster_email.data
                 post.email_domain = form_email_domain
                 post.md5sum = md5sum(post.email)
+                with db.session.no_autoflush:
+                    # This is dependent on the domain's DNS validity already being confirmed
+                    # by the form's email validator
+                    post.domain = Domain.get(post.email_domain, create=True)
             # To protect from gaming, don't allow words to be removed in edited posts once the post
             # has been confirmed. Just add the new words.
             if post.status in POSTSTATUS.POSTPENDING:
@@ -676,7 +859,7 @@ def editjob(hashid, key, form=None, post=None, validated=False):
                 prev_words = u''
             post.words = get_word_bag(u' '.join((prev_words, form_description, form_perks, form_how_to_apply)))
 
-            post.language = identify_language(post)
+            post.language, post.language_confidence = identify_language(post)
 
             if post.status == POSTSTATUS.MODERATED:
                 post.status = POSTSTATUS.CONFIRMED
@@ -691,18 +874,18 @@ def editjob(hashid, key, form=None, post=None, validated=False):
                     post.company_logo = None
 
             db.session.commit()
-            tag_locations.delay(post.id)
+            tag_jobpost.delay(post.id)    # Keywords
+            tag_locations.delay(post.id)  # Locations
             post.uncache_viewcounts('pay_label')
-            userkeys = session.get('userkeys', [])
-            userkeys.append(post.edit_key)
-            session['userkeys'] = userkeys
+            session.pop('userkeys', None)  # Remove legacy userkeys dict
             session.permanent = True
-            return redirect(url_for('jobdetail', hashid=post.hashid), code=303)
+            return redirect(post.url_for(), code=303)
     elif request.method == 'POST':
         flash("Please review the indicated issues", category='interactive')
     elif request.method == 'GET':
         # Populate form from model
         form.job_headline.data = post.headline
+        form.job_headlineb.data = post.headlineb
         form.job_type.data = post.type_id
         form.job_category.data = post.category_id
         form.job_location.data = post.location
@@ -768,14 +951,13 @@ def newjob():
     if request.method == 'POST' and request.form.get('form.id') != 'newheadline' and form.validate():
         # POST request from new job page, with successful validation
         # Move it to the editjob page for handling here forward
-        post = JobPost(hashid=unique_hash(JobPost),
-                       ipaddr=request.environ['REMOTE_ADDR'],
-                       useragent=request.user_agent.string,
-                       user=g.user)
-        db.session.add(post)
-        if g.board:
-            post.add_to(g.board)
-        return editjob(post.hashid, post.edit_key, form, post, validated=True)
+        newpost = {
+            'hashid': unique_hash(JobPost),
+            'ipaddr': request.environ['REMOTE_ADDR'],
+            'useragent': request.user_agent.string,
+            'user': g.user
+            }
+        return editjob(hashid=None, key=None, form=form, validated=True, newpost=newpost)
     elif request.method == 'POST' and request.form.get('form.id') != 'newheadline':
         # POST request from new job page, with errors
         flash("Please review the indicated issues", category='interactive')

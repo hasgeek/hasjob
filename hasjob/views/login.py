@@ -1,17 +1,20 @@
 # -*- coding: utf-8 -*-
 
+from sqlalchemy.exc import IntegrityError
 from flask import g, Response, redirect, flash
+from flask.ext.lastuser import signal_user_session_refreshed
 from coaster.views import get_next_url
+from baseframe import csrf
 
 from .. import app, lastuser
 from ..signals import signal_login, signal_logout
-from ..models import db
+from ..models import db, Organization, UserActiveAt
 
 
 @app.route('/login')
 @lastuser.login_handler
 def login():
-    return {'scope': 'id email phone organizations'}
+    return {'scope': 'id email/* phone/* organizations/* teams/* notice/*'}
 
 
 @app.route('/logout')
@@ -25,16 +28,17 @@ def logout():
 @app.route('/login/redirect')
 @lastuser.auth_handler
 def lastuserauth():
-    # Board.update_from_user(g.user, db.session, make_user_profiles=False, make_org_profiles=False)
+    Organization.update_from_user(g.user, db.session, make_user_profiles=False, make_org_profiles=False)
     signal_login.send(app, user=g.user)
     db.session.commit()
     return redirect(get_next_url())
 
 
+@csrf.exempt
 @app.route('/login/notify', methods=['POST'])
 @lastuser.notification_handler
 def lastusernotify(user):
-    # Board.update_from_user(user, db.session, make_user_profiles=False, make_org_profiles=False)
+    Organization.update_from_user(user, db.session, make_user_profiles=False, make_org_profiles=False)
     db.session.commit()
 
 
@@ -47,3 +51,12 @@ def lastuser_error(error, error_description=None, error_uri=None):
                     u"Description: %s\n"
                     u"URI: %s" % (error, error_description, error_uri),
                     mimetype="text/plain")
+
+
+@signal_user_session_refreshed.connect
+def track_user(user):
+    db.session.add(UserActiveAt(user=user, board=g.board))
+    try:
+        db.session.commit()
+    except IntegrityError:  # Small but not impossible chance we got two parallel signals
+        db.session.rollback()

@@ -1,4 +1,8 @@
-from hasjob.models import db, BaseNameMixin
+# -*- coding: utf-8 -*-
+
+from . import db, BaseNameMixin
+
+__all__ = ['JobType']
 
 
 class JobType(BaseNameMixin, db.Model):

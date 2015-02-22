@@ -1,5 +1,6 @@
 {% extends "baseframe.html" -%}
 {% from "baseframe/components.html" import responsive_networkbar with context %}
+{% from "macros.html" import campaign_header, campaign_script %}
 
 {% block doctypehtml -%}
 <!DOCTYPE html>
@@ -15,12 +16,24 @@
   <meta property="og:title" content="{{ self.title()|e }}" />
 {%- endblock %}
 
+{%- block description %}{% if g.board and g.board.description %}{{ g.board.description|firstline }}{% else %}Hasjob is India’s best job board for tech startups{% endif %}{% endblock %}
+
+{% block image_src -%}
+  <link rel="image_src" href="{{ url_for('static', filename='img/logo-star.png', _external=true) }}" />
+  <meta property="og:image" content="{{ url_for('static', filename='img/logo-star.png', _external=true) }}" />
+{%- endblock %}
+
 {%- block layoutheaders %}
-  <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Walter+Turncoat|McLaren|Source+Sans+Pro:400,600">
+  <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Walter+Turncoat|McLaren" />
+  <link rel="stylesheet" type="text/css" href="//code.cdn.mozilla.net/fonts/fira.css">
   <!-- Feed and search -->
-  <link rel="alternate" type="application/atom+xml" title="All jobs – {% if g.board -%} {{ g.board.title }} {%- else -%} {{ config['SITE_TITLE']|e }} {%- endif %}" href="{{ url_for('feed') }}" />
+  <link rel="alternate" type="application/atom+xml" title="All jobs – {% if g.board -%} {{ g.board.title }} {%- else -%} {{ config['SITE_TITLE'] }} {%- endif %}" href="{{ url_for('feed') }}" />
   <link rel="search" type="application/opensearchdescription+xml" href="{{ url_for('static', filename='opensearch.xml') }}" title="Hasjob Search" />
   {% block pageheaders %}{% endblock %}
+  {%- block twittercards %}
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:site" content="@hasjob" />
+  {%- endblock %}
 {%- endblock %}
 
 {% block headerbox -%}
@@ -28,8 +41,8 @@
   {% block networkbar -%}
     {% if not g.kiosk %}
       {% with links = [] %}
-        {%- if g.user and (is_siteadmin or g.user | user_has_drafts) %}
-          {% set links = links + [{'title': "Drafts", 'url': "/drafts"}] %}
+        {%- if g.user and g.user.flags.has_jobpost_unconfirmed_month %}
+          {% set links = links + [{'title': "Drafts", 'url': url_for('browse_drafts')}] %}
         {%- endif %}
         {{ responsive_networkbar(siteid=config['SITE_ID'], login=true, links=links) }}
       {% endwith %}
@@ -71,6 +84,7 @@
 {% endblock %}
 
 {% block basecontent -%}
+  {%- if header_campaign %}{{ campaign_header(g, header_campaign) }}{% endif %}
   {% block content %}{% endblock %}
 {%- endblock %}
 
@@ -78,7 +92,7 @@
 <p>
   {%- if g.kiosk %}
     Hasjob is a service of HasGeek. You are in kiosk mode with a limited view of posts.
-  {%- elif g.board %}
+  {%- elif g.board and g.board.not_root %}
     Powered by <a href="https://hasjob.co/">Hasjob</a>, a service of <a href="https://hasgeek.com/">HasGeek</a>.
     Subscribe to <a href="{{ url_for('feed') }}">the feed</a> or follow
     <a href="https://twitter.com/hasjob">@hasjob on Twitter</a>
@@ -91,5 +105,13 @@
     to find out when new jobs are posted. Hosted by
     <a href="http://e2enetworks.com/">E2E Networks</a>.
   {%- endif %}
+  {%- if not g.user and not g.anon_user %}
+    <img src="{{ url_for('sniffle') }}" width="1" height="1" alt=""/>
+  {%- endif %}
 </p>
+{% endblock %}
+
+{% block layoutscripts %}
+  {%- if header_campaign %}{{ campaign_script() }}{% endif %}
+  {% block footerscripts %}{% endblock %}
 {% endblock %}

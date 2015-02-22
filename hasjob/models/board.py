@@ -6,7 +6,6 @@ from flask import url_for
 from sqlalchemy.orm import defer
 from sqlalchemy.ext.associationproxy import association_proxy
 from coaster.sqlalchemy import make_timestamp_columns
-from baseframe import cache
 from . import db, TimestampMixin, BaseNameMixin
 from .user import User
 from .jobpost import JobPost
@@ -89,7 +88,7 @@ class Board(BaseNameMixin, db.Model):
     """
     __tablename__ = 'board'
     #: Reserved board names
-    reserved_names = ['www', 'static', 'beta']
+    reserved_names = ['static', 'beta']
     #: Caption
     caption = db.Column(db.Unicode(250), nullable=True)
     #: Lastuser organization userid that owns this
@@ -114,14 +113,22 @@ class Board(BaseNameMixin, db.Model):
     categories = db.relationship(JobCategory, secondary=board_jobcategory_table, order_by=JobCategory.seq)
 
     #: Automatic tagging domains
-    domains = db.relationship(BoardDomain, backref='board', cascade='all, delete-orphan')
+    domains = db.relationship(BoardDomain, backref='board', cascade='all, delete-orphan', order_by=BoardDomain.domain)
     tag_domains = association_proxy('domains', 'domain', creator=lambda d: BoardDomain(domain=d))
     #: Automatic tagging locations
     locations = db.relationship(BoardLocation, backref='board', cascade='all, delete-orphan')
-    tag_locations = association_proxy('locations', 'geonameid', creator=lambda l: BoardLocation(geonameid=l))
+    geonameids = association_proxy('locations', 'geonameid', creator=lambda l: BoardLocation(geonameid=l))
 
     def __repr__(self):
         return '<Board %s "%s">' % (self.name, self.title)
+
+    @property
+    def is_root(self):
+        return self.name == u'www'
+
+    @property
+    def not_root(self):
+        return self.name != u'www'
 
     @property
     def options(self):
@@ -180,6 +187,10 @@ class Board(BaseNameMixin, db.Model):
         elif action == 'delete':
             return url_for('board_delete', board=self.name, _external=_external)
 
+    @classmethod
+    def get(cls, name):
+        return cls.query.filter_by(name=name).one_or_none()
+
 
 def _user_boards(self):
     return Board.query.filter(
@@ -187,20 +198,6 @@ def _user_boards(self):
         defer(Board.description)).all()
 
 User.boards = _user_boards
-
-
-def _user_has_boards(self):
-    # Cached version of User.boards()
-    key = 'user/board/count/' + str(self.id)
-    count = cache.get(key)
-    if not count:
-        count = Board.query.filter(
-            Board.userid.in_(self.user_organizations_owned_ids())).options(
-            defer(Board.description)).count()
-        cache.set(key, count, timeout=300)
-    return bool(count)
-
-User.has_boards = property(_user_has_boards)
 
 
 class BoardJobPost(TimestampMixin, db.Model):
@@ -228,6 +225,11 @@ JobPost.link_to_board = _jobpost_link_to_board
 
 def _jobpost_add_to(self, board):
     with db.session.no_autoflush:
+        if isinstance(board, basestring):
+            board = Board.get(board)
+        if not board:
+            return
+
         link = self.link_to_board(board)
         if not link:
             link = BoardJobPost(jobpost=self, board=board)

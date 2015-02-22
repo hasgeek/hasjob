@@ -3,17 +3,24 @@
 from collections import defaultdict
 from datetime import datetime, timedelta
 from werkzeug import cached_property
-from flask import url_for, g
+from flask import url_for, g, escape, Markup
 from sqlalchemy.orm import defer
-from coaster.sqlalchemy import make_timestamp_columns, JsonDict
+from sqlalchemy.ext.associationproxy import association_proxy
+from coaster.sqlalchemy import make_timestamp_columns, Query, JsonDict
 from baseframe import cache
+from baseframe.staticdata import webmail_domains
 import tldextract
 from .. import redis_store
-from . import newlimit, agelimit, db, POSTSTATUS, EMPLOYER_RESPONSE, PAY_TYPE, BaseMixin, TimestampMixin, webmail_domains
+from . import newlimit, agelimit, db, POSTSTATUS, EMPLOYER_RESPONSE, PAY_TYPE, BaseMixin, TimestampMixin
 from .jobtype import JobType
 from .jobcategory import JobCategory
-from .user import User
+from .user import User, AnonUser, EventSession
+from .org import Organization
+from .domain import Domain
 from ..utils import random_long_key, random_hash_key
+
+__all__ = ['JobPost', 'JobLocation', 'UserJobView', 'AnonJobView', 'JobImpression', 'JobApplication',
+    'JobViewSession', 'unique_hash', 'viewstats_by_id_qhour', 'viewstats_by_id_hour', 'viewstats_by_id_day']
 
 
 number_format = lambda number, suffix: str(int(number)) + suffix if int(number) == number else str(round(number, 2)) + suffix
@@ -36,13 +43,32 @@ def number_abbreviate(number, indian=False):
             return number_format(number / 100000000.0, 'b')
 
 
+starred_job_table = db.Table('starred_job', db.Model.metadata,
+    db.Column('user_id', None, db.ForeignKey('user.id'), primary_key=True),
+    db.Column('jobpost_id', None, db.ForeignKey('jobpost.id'), primary_key=True),
+    db.Column('created_at', db.DateTime, default=datetime.utcnow, nullable=False),
+    )
+
+
+def starred_job_ids(user, agelimit):
+    return [r[0] for r in db.session.query(starred_job_table.c.jobpost_id).filter(
+        starred_job_table.c.user_id == user.id,
+        starred_job_table.c.created_at > datetime.utcnow() - agelimit)]
+
+
+User.starred_job_ids = starred_job_ids
+
+
 class JobPost(BaseMixin, db.Model):
     __tablename__ = 'jobpost'
     idref = 'post'
 
     # Metadata
-    user_id = db.Column(None, db.ForeignKey('user.id'), nullable=True)
-    user = db.relationship(User, primaryjoin=user_id == User.id, backref='jobposts')
+    user_id = db.Column(None, db.ForeignKey('user.id'), nullable=True, index=True)
+    user = db.relationship(User, primaryjoin=user_id == User.id, backref=db.backref('jobposts', lazy='dynamic'))
+    org_id = db.Column(None, db.ForeignKey('organization.id', ondelete='SET NULL'), nullable=True, index=True)
+    org = db.relationship(Organization, backref=db.backref('jobposts', lazy='dynamic'))
+
     hashid = db.Column(db.String(5), nullable=False, unique=True)
     datetime = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)  # Published
     closed_datetime = db.Column(db.DateTime, nullable=True)  # If withdrawn or rejected
@@ -52,6 +78,7 @@ class JobPost(BaseMixin, db.Model):
 
     # Job description
     headline = db.Column(db.Unicode(100), nullable=False)
+    headlineb = db.Column(db.Unicode(100), nullable=True)
     type_id = db.Column(None, db.ForeignKey('jobtype.id'), nullable=False)
     type = db.relation(JobType, primaryjoin=type_id == JobType.id)
     category_id = db.Column(None, db.ForeignKey('jobcategory.id'), nullable=False)
@@ -78,9 +105,11 @@ class JobPost(BaseMixin, db.Model):
     company_name = db.Column(db.Unicode(80), nullable=False)
     company_logo = db.Column(db.Unicode(255), nullable=True)
     company_url = db.Column(db.Unicode(255), nullable=False, default=u'')
-    fullname = db.Column(db.Unicode(80), nullable=True)
+    fullname = db.Column(db.Unicode(80), nullable=True)  # Deprecated field, used before user_id was introduced
     email = db.Column(db.Unicode(80), nullable=False)
     email_domain = db.Column(db.Unicode(80), nullable=False, index=True)
+    domain_id = db.Column(None, db.ForeignKey('domain.id'), nullable=False)
+    domain = db.relationship(Domain, backref=db.backref('jobposts', lazy='dynamic'))
     md5sum = db.Column(db.String(32), nullable=False, index=True)
 
     # Payment, audit and workflow fields
@@ -95,15 +124,21 @@ class JobPost(BaseMixin, db.Model):
     email_verified = db.Column(db.Boolean, nullable=False, default=False)
     payment_value = db.Column(db.Integer, nullable=False, default=0)
     payment_received = db.Column(db.Boolean, nullable=False, default=False)
-    reviewer_id = db.Column(None, db.ForeignKey('user.id'), nullable=True)
+    reviewer_id = db.Column(None, db.ForeignKey('user.id'), nullable=True, index=True)
     reviewer = db.relationship(User, primaryjoin=reviewer_id == User.id, backref="reviewed_posts")
     review_datetime = db.Column(db.DateTime, nullable=True)
     review_comments = db.Column(db.Unicode(250), nullable=True)
 
     # Metadata for classification
     language = db.Column(db.CHAR(2), nullable=True)
+    language_confidence = db.Column(db.Float, nullable=True)
 
-    admins = db.relationship(User, secondary=lambda: jobpost_admin_table)
+    admins = db.relationship(User, secondary=lambda: jobpost_admin_table,
+        backref=db.backref('admin_of', lazy='dynamic'))
+    starred_by = db.relationship(User, lazy='dynamic', secondary=starred_job_table,
+        backref=db.backref('starred_jobs', lazy='dynamic'))
+    #: Quick lookup locations this post is referring to
+    geonameids = association_proxy('locations', 'geonameid', creator=lambda l: JobLocation(geonameid=l))
 
     _defercols = [
         defer('user_id'),
@@ -132,13 +167,14 @@ class JobPost(BaseMixin, db.Model):
         defer('review_datetime'),
         defer('review_comments'),
         defer('language'),
+        defer('language_confidence'),
 
-        defer('pay_type'),
-        defer('pay_currency'),
-        defer('pay_cash_min'),
-        defer('pay_cash_max'),
-        defer('pay_equity_min'),
-        defer('pay_equity_max'),
+        # defer('pay_type'),
+        # defer('pay_currency'),
+        # defer('pay_cash_min'),
+        # defer('pay_cash_max'),
+        # defer('pay_equity_min'),
+        # defer('pay_equity_max'),
         ]
 
     @classmethod
@@ -167,6 +203,9 @@ class JobPost(BaseMixin, db.Model):
         return (self.status in POSTSTATUS.LISTED) and (
             self.datetime > now - agelimit)
 
+    def is_public(self):
+        return self.status in POSTSTATUS.LISTED
+
     def is_flagged(self):
         return self.status == POSTSTATUS.FLAGGED
 
@@ -185,18 +224,51 @@ class JobPost(BaseMixin, db.Model):
     def pay_type_label(self):
         return PAY_TYPE.get(self.pay_type)
 
-    def url_for(self, action='view', _external=False):
+    def url_for(self, action='view', _external=False, **kwargs):
+        if self.status in POSTSTATUS.UNPUBLISHED and action in ('view', 'edit'):
+            domain = None
+        else:
+            domain = self.email_domain
+
+        # A/B test flag for permalinks
+        if 'b' in kwargs:
+            if kwargs['b'] is not None:
+                kwargs['b'] = unicode(int(kwargs['b']))
+            else:
+                kwargs.pop('b')
+
         if action == 'view':
-            return url_for('jobdetail', hashid=self.hashid, _external=_external)
+            return url_for('jobdetail', hashid=self.hashid, domain=domain, _external=_external, **kwargs)
+        elif action == 'reveal':
+            return url_for('revealjob', hashid=self.hashid, domain=domain, _external=_external, **kwargs)
+        elif action == 'apply':
+            return url_for('applyjob', hashid=self.hashid, domain=domain, _external=_external, **kwargs)
         elif action == 'edit':
-            return url_for('editjob', hashid=self.hashid, _external=_external)
+            return url_for('editjob', hashid=self.hashid, domain=domain, _external=_external, **kwargs)
+        elif action == 'withdraw':
+            return url_for('withdraw', hashid=self.hashid, domain=domain, _external=_external, **kwargs)
+        elif action == 'moderate':
+            return url_for('moderatejob', hashid=self.hashid, domain=domain, _external=_external, **kwargs)
+        elif action == 'pin':
+            return url_for('pinnedjob', hashid=self.hashid, domain=domain, _external=_external, **kwargs)
+        elif action == 'reject':
+            return url_for('rejectjob', hashid=self.hashid, domain=domain, _external=_external, **kwargs)
         elif action == 'confirm':
-            return url_for('confirm', hashid=self.hashid, _external=_external)
+            return url_for('confirm', hashid=self.hashid, _external=_external, **kwargs)
+        elif action == 'logo':
+            return url_for('logoimage', hashid=self.hashid, domain=domain, _external=_external, **kwargs)
+        elif action == 'confirm-link':
+            return url_for('confirm_email', hashid=self.hashid, domain=domain,
+                key=self.email_verify_key, _external=True, **kwargs)
+        elif action == 'star':
+            return url_for('starjob', hashid=self.hashid, domain=domain, _external=_external, **kwargs)
+        elif action == 'manage':
+            return url_for('managejob', hashid=self.hashid, domain=domain, _external=_external, **kwargs)
         elif action == 'browse':
             if self.email_domain in webmail_domains:
-                return url_for('browse_by_email', md5sum=self.md5sum, _external=_external)
+                return url_for('browse_by_email', md5sum=self.md5sum, _external=_external, **kwargs)
             else:
-                return url_for('browse_by_domain', domain=self.email_domain, _external=_external)
+                return url_for('browse_by_domain', domain=self.email_domain, _external=_external, **kwargs)
 
     def permissions(self, user, inherited=None):
         perms = super(JobPost, self).permissions(user, inherited)
@@ -301,9 +373,17 @@ class JobPost(BaseMixin, db.Model):
                 'idref': u'%s/%s' % (self.idref, self.id),
                 }
 
+    def tag_content(self):
+        return Markup('\n').join((
+            Markup('<div>') + Markup(escape(self.headline)) + Markup('</div>'),
+            Markup('<div>') + Markup(self.description) + Markup('</div>'),
+            Markup('<div>') + Markup(self.perks) + Markup('</div>')
+            ))
+
     @property
     def viewcounts_key(self):
-        return 'hasjob/viewcounts/%s' % self.hashid
+        # Also see views.helper.save_impressions for a copy of this key
+        return 'hasjob/viewcounts/%d' % self.id
 
     @cached_property  # For multiple accesses in a single request
     def viewcounts(self):
@@ -311,6 +391,15 @@ class JobPost(BaseMixin, db.Model):
         values = g.viewcounts.get(cache_key) if g else None
         if values is None:
             values = redis_store.hgetall(cache_key)
+        if 'impressions' not in values:
+            # Also see views.helper.save_impressions for a copy of this query
+            values['impressions'] = db.session.query(db.func.count(db.func.distinct(EventSession.user_id))).filter(
+                EventSession.user_id != None).join(JobImpression).filter(  # NOQA
+                JobImpression.jobpost == self).first()[0]
+            redis_store.hset(cache_key, 'impressions', values['impressions'])
+            redis_store.expire(cache_key, 86400)
+        else:
+            values['impressions'] = int(values['impressions'])
         if 'viewed' not in values:
             values['viewed'] = UserJobView.query.filter_by(jobpost=self).count()
             redis_store.hset(cache_key, 'viewed', values['viewed'])
@@ -344,6 +433,33 @@ class JobPost(BaseMixin, db.Model):
             redis_store.delete(cache_key)
         else:
             redis_store.hdel(cache_key, key)
+
+    @cached_property
+    def ab_views(self):
+        na_count = JobViewSession.query.filter_by(jobpost=self, bgroup=None).count()
+        counts = db.session.query(
+            JobViewSession.bgroup.label('bgroup'), db.func.count(JobViewSession.bgroup).label('count')).filter(
+            JobViewSession.jobpost == self, JobViewSession.bgroup != None).group_by(JobViewSession.bgroup)  # NOQA
+        results = {'NA': na_count, 'A': 0, 'B': 0}
+        for row in counts:
+            if row.bgroup is False:
+                results['A'] = row.count
+            elif row.bgroup is True:
+                results['B'] = row.count
+        return results
+
+    @property
+    def sort_score(self):
+        """
+        Sort with a gravity of 1.8 using the HackerNews algorithm
+        """
+        viewcounts = self.viewcounts
+        opened = int(viewcounts['opened'])
+        applied = int(viewcounts['applied'])
+        age = datetime.utcnow() - self.datetime
+        hours = age.days * 24 + age.seconds / 3600
+
+        return ((applied * 3) + (opened - applied)) / pow((hours + 2), 1.8)
 
     @cached_property  # For multiple accesses in a single request
     def viewstats(self):
@@ -479,10 +595,70 @@ class UserJobView(TimestampMixin, db.Model):
     jobpost_id = db.Column(None, db.ForeignKey('jobpost.id'), primary_key=True)
     jobpost = db.relationship(JobPost)
     #: User who saw this post
-    user_id = db.Column(None, db.ForeignKey('user.id'), primary_key=True)
+    user_id = db.Column(None, db.ForeignKey('user.id'), primary_key=True, index=True)
     user = db.relationship(User)
     #: Has the user viewed apply instructions?
     applied = db.Column(db.Boolean, default=False, nullable=False)
+
+    @classmethod
+    def get(cls, jobpost, user):
+        return cls.query.get((jobpost.id, user.id))
+
+
+class AnonJobView(db.Model):
+    __tablename__ = 'anon_job_view'
+    query_class = Query
+
+    #: Job post that was seen
+    jobpost_id = db.Column(None, db.ForeignKey('jobpost.id'), primary_key=True)
+    jobpost = db.relationship(JobPost)
+    #: User who saw this post
+    anon_user_id = db.Column(None, db.ForeignKey('anon_user.id'), primary_key=True, index=True)
+    anon_user = db.relationship(AnonUser)
+    #: Timestamp
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
+
+    @classmethod
+    def get(cls, jobpost, anon_user):
+        return cls.query.get((jobpost.id, anon_user.id))
+
+
+class JobImpression(TimestampMixin, db.Model):
+    __tablename__ = 'job_impression'
+    #: Job post that was impressed
+    jobpost_id = db.Column(None, db.ForeignKey('jobpost.id'), primary_key=True)
+    jobpost = db.relationship(JobPost)
+    #: Event session in which it was impressed
+    event_session_id = db.Column(None, db.ForeignKey('event_session.id'), primary_key=True, index=True)
+    event_session = db.relationship(EventSession)
+    #: Whether it was pinned at any time in this session
+    pinned = db.Column(db.Boolean, nullable=False, default=False)
+    #: Was this rendering in the B group of an A/B test? (null = no test conducted)
+    bgroup = db.Column(db.Boolean, nullable=True)
+
+    @classmethod
+    def get(cls, jobpost, event_session):
+        # See views.helper.save_impressions, which doesn't use this method and depends on
+        # (jobpost_id, event_session_id) primary key order.
+        return cls.query.get((jobpost.id, event_session.id))
+
+
+class JobViewSession(TimestampMixin, db.Model):
+    __tablename__ = 'job_view_session'
+    #: Event session in which jobpost was viewed
+    #: This takes precedence as we'll be loading all instances
+    #: matching the current session in each index request
+    event_session_id = db.Column(None, db.ForeignKey('event_session.id'), primary_key=True)
+    event_session = db.relationship(EventSession)
+    #: Job post that was viewed
+    jobpost_id = db.Column(None, db.ForeignKey('jobpost.id'), primary_key=True, index=True)
+    jobpost = db.relationship(JobPost)
+    #: Was this view in the B group of an A/B test? (null = no test conducted)
+    bgroup = db.Column(db.Boolean, nullable=True)
+
+    @classmethod
+    def get(cls, event_session, jobpost):
+        return cls.query.get((event_session.id, jobpost.id))
 
 
 class JobApplication(BaseMixin, db.Model):
@@ -490,30 +666,34 @@ class JobApplication(BaseMixin, db.Model):
     #: Hash id (to hide database ids)
     hashid = db.Column(db.String(40), nullable=False, unique=True)
     #: User who applied for this post
-    user_id = db.Column(None, db.ForeignKey('user.id'), nullable=True)  # TODO: add unique=True
+    user_id = db.Column(None, db.ForeignKey('user.id'), nullable=True, index=True)  # TODO: add unique=True
     user = db.relationship(User, foreign_keys=user_id)
     #: Full name of the user (as it was at the time of the application)
     fullname = db.Column(db.Unicode(250), nullable=False)
     #: Job post they applied to
     jobpost_id = db.Column(None, db.ForeignKey('jobpost.id'), nullable=False, index=True)
-    # jobpost relationship is below
+    # jobpost relationship is below, outside the class definition
     #: User's email address
     email = db.Column(db.Unicode(80), nullable=False)
     #: User's phone number
     phone = db.Column(db.Unicode(80), nullable=False)
     #: User's message
     message = db.Column(db.UnicodeText, nullable=False)
+    #: User opted-in to experimental features
+    optin = db.Column(db.Boolean, default=False, nullable=False)
     #: Employer's response code
     response = db.Column(db.Integer, nullable=False, default=EMPLOYER_RESPONSE.NEW)
     #: Employer's response message
     response_message = db.Column(db.UnicodeText, nullable=True)
     #: Bag of words, for spam analysis
     words = db.Column(db.UnicodeText, nullable=True)
-    #: Admin who replied for this post
-    replied_by_id = db.Column(None, db.ForeignKey('user.id'), nullable=True)
+    #: Jobpost admin who replied to this candidate
+    replied_by_id = db.Column(None, db.ForeignKey('user.id'), nullable=True, index=True)
     replied_by = db.relationship(User, foreign_keys=replied_by_id)
+    #: When they replied
+    replied_at = db.Column(db.DateTime, nullable=True)
 
-    # candidate_feedback = db.Column(db.Integer, nullable=True)
+    candidate_feedback = db.Column(db.SmallInteger, nullable=True)
 
     def __init__(self, **kwargs):
         super(JobApplication, self).__init__(**kwargs)
@@ -559,7 +739,7 @@ class JobApplication(BaseMixin, db.Model):
             EMPLOYER_RESPONSE.IGNORED, EMPLOYER_RESPONSE.REJECTED)
 
     def application_count(self):
-        """Number of jobs candidate has applied two around this one"""
+        """Number of jobs candidate has applied to around this one"""
         if not self.user:
             # Kiosk submission, no data available
             return {
@@ -586,6 +766,18 @@ class JobApplication(BaseMixin, db.Model):
             'rejected': counts[EMPLOYER_RESPONSE.REJECTED],
             }
 
+    def url_for(self, action='view', _external=False, **kwargs):
+        domain = self.jobpost.email_domain
+        if action == 'view':
+            return url_for('view_application', hashid=self.jobpost.hashid, domain=domain, application=self.hashid,
+                _external=_external, **kwargs)
+        elif action == 'process':
+            return url_for('process_application', hashid=self.jobpost.hashid, domain=domain, application=self.hashid,
+                _external=_external, **kwargs)
+        elif action == 'track-open':
+            return url_for('view_application_email_gif', hashid=self.jobpost.hashid, domain=domain, application=self.hashid,
+                _external=_external, **kwargs)
+
 
 JobApplication.jobpost = db.relationship(JobPost,
     backref=db.backref('applications', order_by=(
@@ -608,7 +800,7 @@ def unique_hash(model=JobPost):
     with db.session.no_autoflush:
         while 1:
             hashid = random_hash_key()
-            if not model.query.filter_by(hashid=hashid).notempty():
+            if not hashid.isdigit() and model.query.filter_by(hashid=hashid).isempty():
                 break
     return hashid
 
@@ -620,6 +812,6 @@ def unique_long_hash(model=JobApplication):
     with db.session.no_autoflush:
         while 1:
             hashid = random_long_key()
-            if not model.query.filter_by(hashid=hashid).notempty():
+            if not hashid.isdigit() and model.query.filter_by(hashid=hashid).isempty():
                 break
     return hashid

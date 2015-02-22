@@ -21,13 +21,14 @@
         </p>
       {%- endif %}
     </div>
-    <form id="newjob" class="form-horizontal" enctype="multipart/form-data" method="POST">
+    <form data-parsley-validate id="newjob" class="form-horizontal" enctype="multipart/form-data" method="POST">
       <input type="hidden" name="_charset_"/>
       <input type="hidden" name="form.id" value="newjob"/>
       {{ form.hidden_tag() }}
       <div class="section">
         <h2>First, tell us about the position</h2>
         {{ renderfield(form.job_headline, widget_css_class="field-title", autofocus=true) }}
+        {{ renderfield(form.job_headlineb, css_class=form.job_headlineb.data and " " or "jshidden", widget_css_class="field-title") }}
         {{ renderfield(form.job_type) }}
         {{ renderfield(form.job_category) }}
         {{ renderfield(form.job_location) }}
@@ -55,8 +56,8 @@
             <div class="col-xs-6 col-sm-8 sliderholder"><div id="cashslider"></div></div>
             <div class="col-xs-3 col-sm-2">{{ form.job_pay_cash_max(class="form-control input-xs-small") }}</div>
           </div>
-          {% for error in form.job_pay_cash_min.errors %}<div class="help-error">{{ error }}</div>{% endfor %}
-          {% for error in form.job_pay_cash_max.errors %}<div class="help-error">{{ error }}</div>{% endfor %}
+          {% for error in form.job_pay_cash_min.errors %}<div><p class="help-error">{{ error }}</p></div>{% endfor %}
+          {% for error in form.job_pay_cash_max.errors %}<div><p class="help-error">{{ error }}</p></div>{% endfor %}
         </div>
         
         {{ renderfield(form.job_pay_equity, style="wide") }}
@@ -66,14 +67,14 @@
             <div class="col-xs-6 col-sm-8 sliderholder"><div id="equityslider"></div></div>
             <div class="col-xs-3 col-sm-2">{{ form.job_pay_equity_max(class="form-control") }}</div>
           </div>
-          {% for error in form.job_pay_equity_min.errors %}<div class="help-error">{{ error }}</div>{% endfor %}
-          {% for error in form.job_pay_equity_max.errors %}<div class="help-error">{{ error }}</div>{% endfor %}
+          {% for error in form.job_pay_equity_min.errors %}<div><p class="help-error">{{ error }}</p></div>{% endfor %}
+          {% for error in form.job_pay_equity_max.errors %}<div><p class="help-error">{{ error }}</p></div>{% endfor %}
         </div>
         <p class="help-block">
           Pay data is <em>not</em> revealed to candidates. This data is for an upcoming feature to
           promote this job to relevant candidates
         </p>
-        {{ renderfield(form.job_how_to_apply, widget_css_class="expand50-200", style="wide") }}
+        {{ renderfield(form.job_how_to_apply, style="wide") }}
       </div>
       <div class="section">
         <h2>Next, tell us about your organization</h2>
@@ -104,6 +105,7 @@
         <p>
           <strong>Warning:</strong> Many recruiters will ignore your preference and contact you anyway.
           Do not reveal your phone number in the post. If you receive an email, please report it
+          to <a href="mailto:{{ config['SUPPORT_EMAIL'] }}">{{ config['SUPPORT_EMAIL'] }}</a>
           and we will block their account
         </p>
         {{ rendersubmit([(None, "Review your post…", 'btn-primary')], style="wide", csrf_error=form.csrf_token.errors) }}
@@ -115,6 +117,13 @@
   {% assets "js_tinymce" %}<script src="{{ ASSET_URL }}" type="text/javascript"></script>{% endassets %}
   <script type="text/javascript">
     $(function() {
+      $('textarea').autosize();
+      $('#abtest').on('click', function(e) {
+        $('#field-job_headlineb').hide().removeClass('jshidden').slideDown();
+        $("#job_headlineb").focus();
+        e.preventDefault();
+        return false;
+      });
       if (! $("#job_perks").is(":checked")) {
         $("#field-job_perks_description").hide();
       };
@@ -147,24 +156,15 @@
           '90%': [2000000, 100000],
           'max': [10000000, 1000000],
         },
-        serialization: {
-          lower: [
-            new $.noUiSlider.Link({
-              target: $("#job_pay_cash_min")
-            })
-          ],
-          upper: [
-            new $.noUiSlider.Link({
-              target: $("#job_pay_cash_max")
-            })
-          ],
-          format: {
-            decimals: 0,
-            thousand: ',',
-            prefix: '¤'
-          }
-        }
+        format: wNumb({
+          decimals: 0,
+          thousand: ',',
+          prefix: '¤'
+        })
       });
+      cashslider.Link('lower').to($('#job_pay_cash_min'));
+      cashslider.Link('upper').to($('#job_pay_cash_max'));
+
       var equityslider = $("#equityslider").noUiSlider({
         start: [{{ (form.job_pay_equity_min.data or 0)|tojson }}, {{ (form.job_pay_equity_max.data or 100)|tojson }}],
         step: 0.1,
@@ -174,23 +174,13 @@
           'min': 0,
           'max': 100
         },
-        serialization: {
-          lower: [
-            new $.noUiSlider.Link({
-              target: $("#job_pay_equity_min")
-            })
-          ],
-          upper: [
-            new $.noUiSlider.Link({
-              target: $("#job_pay_equity_max")
-            })
-          ],
-          format: {
-            decimals: 1,
-            postfix: '%'
-          }
-        }
+        format: wNumb({
+          decimals: 1,
+          postfix: '%'
+        })
       });
+      $('#equityslider').Link('lower').to($('#job_pay_equity_min'));
+      $('#equityslider').Link('upper').to($('#job_pay_equity_max'));
       $("#job_pay_cash_min").keydown(function(e) {
         // Convert the string to a number.
         var value = Number(cashslider.val()[0].slice(1).replace(',', ''));
@@ -259,18 +249,19 @@
         };
       });
 
-      var indian_encoder = function(value) {
+      var indian_rupee_encoder = function(value) {
         value=value.toString();
+        value = value.replace(/[^0-9.]/g, '');  // Remove non-digits, assume . for decimals
         var afterPoint = '';
-        if(value.indexOf('.') > 0)
-           afterPoint = value.substring(value.indexOf('.'), value.length);
+        if (value.indexOf('.') > 0)
+          afterPoint = value.substring(value.indexOf('.'), value.length);
         value = Math.floor(value);
-        value=value.toString();
+        value = value.toString();
         var lastThree = value.substring(value.length - 3);
         var otherNumbers = value.substring(0, value.length - 3);
         if (otherNumbers != '')
             lastThree = ',' + lastThree;
-        var res = otherNumbers.replace(/\B(?=(\d{2})+(?!\d))/g, ",") + lastThree + afterPoint;
+        var res = '₹' + otherNumbers.replace(/\B(?=(\d{2})+(?!\d))/g, ",") + lastThree + afterPoint;
         return res;
       }
 
@@ -278,11 +269,13 @@
         var start = cashslider.val()[0].slice(1).replace(',', ''),
           end = cashslider.val()[1].slice(1).replace(',', ''),
           prefix = '¤',
-          thousand = ',';
+          thousand = ',',
+          encoder = null;
         switch(currency.val()) {
           case 'INR':
             prefix = '₹';
             // thousand = '';
+            encoder = indian_rupee_encoder;
             break;
           case 'USD':
           case 'SGD':
@@ -295,33 +288,28 @@
             prefix = '£';
             break;
         };
-        cashslider.noUiSlider({
-          start: [start, end],
-          serialization: {
-            lower: [
-              new $.noUiSlider.Link({
-                // TODO: Figure out encoder+decoder at http://refreshless.com/nouislider/number-formatting
-                target: $("#job_pay_cash_min")
-                // target: function(val) {
-                //   $("#job_pay_cash_min").val(val.lastIndexOf('₹', 0) === 0 ? '₹' + indian_encoder(val.substr(1)) : val);
-                // }
-              })
-            ],
-            upper: [
-              new $.noUiSlider.Link({
-                target: $("#job_pay_cash_max")
-                // target: function(val) {
-                //   $("#job_pay_cash_max").val(val.lastIndexOf('₹', 0) === 0 ? '₹' + indian_encoder(val.substr(1)) : val);
-                // }
-              })
-            ],
-            format: {
+        if (encoder === null) {
+          cashslider.noUiSlider({
+            start: [start, end],
+            format: wNumb({
               decimals: 0,
               thousand: thousand,
-              prefix: prefix
-            }
-          }
-        }, true);
+              prefix: prefix,
+            })
+          }, true);
+        } else {
+          cashslider.noUiSlider({
+            start: [start, end],
+            format: wNumb({
+              decimals: 0,
+              thousand: thousand,
+              prefix: prefix,
+              edit: encoder
+            })
+          }, true);
+        };
+        cashslider.Link('lower').to($('#job_pay_cash_min'));
+        cashslider.Link('upper').to($('#job_pay_cash_max'));
       };
       currency_options($("input[type=radio][name=job_pay_currency]:checked"));
       $("input[type=radio][name=job_pay_currency]").on('change', function() {
@@ -399,4 +387,5 @@
       {{ widgetscripts(form, script=false) }}
     });
   </script>
+  <script src="{{ 'parsley.js'|ext_asset_url }}" type="text/javascript"></script>
 {% endblock %}

@@ -6,6 +6,14 @@
   border-top: 1px solid $color-sheet-border
   border-bottom: 1px solid $color-sheet-border
 
+  h2
+    margin: 0
+
+  .close
+    position: absolute
+    top: 2px
+    right: 5px
+
 .flash.info
   padding-left: 15px
   padding-right: 15px
@@ -36,8 +44,22 @@
   border: 10px solid transparent
   border-top-color: $color-sheet
 
+h1
+  color: $color-title-has
+  font-size: 30px
+  margin-bottom: 0
+
 h1 small, h2 small, h3 small
-  font-weight: 600
+  font-weight: bold
+
+.img-container
+  text-align: center
+
+  img
+    max-width: 100%
+
+.label
+  padding: 0 0.6em
 
 // --- Sheet ------------------------------------------------------------------
 
@@ -53,6 +75,53 @@ h1 small, h2 small, h3 small
   word-wrap: break-word
   border-bottom: 1px solid $color-sheet-border
   +box-shadow(0 2px 10px $color-shadow)
+  text-rendering: optimizeLegibility
+
+  .nav-tabs-top
+    background: #ebe7e4 image-url('paper.jpg')
+    border-bottom: 0
+    +box-shadow(0 0 10px rgba(0,0,0,0.1) inset)
+
+    & > li
+      margin-bottom: 0
+      float: left
+      margin-left: 0
+      margin-right: 0
+
+      & > a
+        color: inherit
+        font-variant: small-caps
+        text-transform: lowercase
+        border: none
+        border-radius: 0
+
+  .nav-tabs-top>li.active>a
+    +box-shadow(0 10px 10px -10px rgba(0,0,0,0.1) inset)
+    border: none
+
+  .nav-tabs-top>li:first-child.active>a
+    +box-shadow(0 10px 10px -10px rgba(0,0,0,0.1) inset, 10px 0 10px -10px rgba(0,0,0,0.1) inset)
+
+  .nav-tabs-top>li>a:hover
+    +box-shadow(0 10px 10px -10px rgba(0,0,0,0.1) inset, 0 -10px 10px -10px rgba(0,0,0,0.1) inset)
+
+  .nav-tabs-top>li.active>a:hover, .nav-tabs-top>li.active>a:focus
+    +box-shadow(0 10px 10px -10px rgba(0,0,0,0.1) inset)
+    border: none
+
+  .nav-tabs-top>li:first-child.active>a:hover, .nav-tabs-top>li:first-child.active>a:focus
+    +box-shadow(0 10px 10px -10px rgba(0,0,0,0.1) inset, 10px 0 10px -10px rgba(0,0,0,0.1) inset)
+
+
+  .table
+    th:first-child, td:first-child
+      padding-left: 0
+
+    th:last-child, td:last-child
+      padding-right: 0
+
+    // & > thead > tr > th
+    //   border-bottom-width: 1px
 
   .list-group
     margin: 0 -15px
@@ -96,6 +165,9 @@ h1 small, h2 small, h3 small
   margin-bottom: 0
   &.first
     border-top: none
+  &.unmarked
+    border-top: none
+    padding-top: 0
 
   h1:first-child, h2:first-child, h3:first-child
     margin-top: 0
@@ -147,6 +219,13 @@ h1 small, h2 small, h3 small
     border: 1px solid $color-sheet-border
     +border-radius(4px)
     +box-shadow(0 2px 10px $color-shadow, 0 0 10px rgba(0, 0, 0, 0.1) inset)
+
+    .nav-tabs
+      +border-top-left-radius(4px)
+      +border-top-right-radius(4px)
+
+      & > li > a
+        +border-radius(4px 4px 0 0)
 
   .section
     padding: 12px 30px 0

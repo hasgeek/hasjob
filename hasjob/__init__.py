@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import os.path
+import geoip2.database
 from flask import Flask
 from flask.ext.assets import Bundle
 from flask.ext.rq import RQ
@@ -35,13 +37,22 @@ from .models import db
 # Configure the app
 def init_for(env):
     coaster.app.init_app(app, env)
+
+    app.geoip = None
+    if 'GEOIP_PATH' in app.config:
+        geoip_database_path = os.path.join(app.config['GEOIP_PATH'], 'GeoLite2-City.mmdb')
+        if not os.path.exists(geoip_database_path):
+            app.logger.warn("GeoIP database missing at " + geoip_database_path)
+        app.geoip = geoip2.database.Reader(geoip_database_path)
+
     RQ(app)
 
     baseframe.init_app(app, requires=['hasjob'],
         ext_requires=['baseframe-bs3',
-            ('jquery.textarea-expander', 'jquery.cookie', 'jquery.sparkline', 'jquery.nouislider'),
-            ('firasans', 'baseframe-firasans'),
-            'fontawesome>=4.0.0'])
+            ('jquery.autosize', 'jquery.sparkline', 'jquery.liblink', 'jquery.wnumb', 'jquery.nouislider', 'jquery.appear'),
+            'baseframe-firasans',
+            'fontawesome>=4.3.0'],
+        enable_csrf=True)
     # TinyMCE has to be loaded by itself, unminified, or it won't be able to find its assets
     app.assets.register('js_tinymce', assets.require('!jquery.js', 'tinymce.js>=4.0.0', 'jquery.tinymce.js>=4.0.0'))
     app.assets.register('css_editor', Bundle('css/editor.css',
@@ -54,4 +65,4 @@ def init_for(env):
     mail.init_app(app)
     redis_store.init_app(app)
     lastuser.init_app(app)
-    lastuser.init_usermanager(UserManager(db, models.User))
+    lastuser.init_usermanager(UserManager(db, models.User, models.Team))

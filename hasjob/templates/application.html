@@ -26,7 +26,7 @@
         </p>
         {{ job_application.message|safe }}
         <hr>
-        <form id="response_form" method="POST" action="{{ url_for('process_application', hashid=post.hashid, application=job_application.hashid) }}">
+        <form id="response_form" method="POST" action="{{ job_application.url_for('process') }}">
           <input type="hidden" name="_charset_"/>
           <input type="hidden" name="form.id" value="process_application_form"/>
           {{ response_form.hidden_tag() }}
@@ -63,13 +63,16 @@
               <strong>Email:</strong> {{ job_application.email }}<br>
               <strong>Phone:</strong> {{ job_application.phone }}
               {%- if job_application.replied_by -%}<br>
-                <strong>Correspondent:</strong> {{ job_application.replied_by.fullname }}
+                <strong>Correspondent:</strong> {{ job_application.replied_by.pickername }}
               {%- endif %}
             </p>
             {%- if job_application.response_message %}
               {{ job_application.response_message|safe }}
             {%- endif %}
           {%- elif job_application.is_rejected() %}
+              {%- if job_application.replied_by -%}
+                <p><strong>Correspondent:</strong> {{ job_application.replied_by.pickername }}</p>
+              {%- endif %}
             {%- if job_application.response_message %}
               {{ job_application.response_message|safe }}
             {%- endif %}
@@ -78,14 +81,14 @@
         <div id="appl-response" class="hidden">
           <p>
             <strong>From:</strong> {{ g.user.fullname if post.admin_is(g.user) else post.fullname or post.company_name }} (via {{ config['SITE_TITLE'] }}) &lt;{{ config['MAIL_SENDER'] }}&gt;<br>
-            <span id="appl-yesreply" class="hidden"><strong>Reply-To:</strong> {{ g.user.fullname if post.admin_is(g.user) else post.fullname or post.company_name }} &lt;{{ post.email }}&gt;<br></span>
+            <span class="appl-msg-reply hidden"><strong>Reply-To:</strong> {{ g.user.fullname if post.admin_is(g.user) else post.fullname or post.company_name }} &lt;{{ post.email }}&gt;<br></span>
             <strong>To:</strong> {{ job_application.fullname }}<br>
-            <strong>Subject:</strong> Regarding your job application for {{ post.headline }}
+            <strong>Subject:</strong> <span class="appl-msg-reply hidden">Job response:</span><span class="appl-msg-reject hidden">Job declined:</span> {{ post.headline }}
           </p>
-          <p id="appl-responded" class="hidden">
+          <p class="appl-msg-reply hidden">
             <em>{{ g.user.fullname if post.admin_is(g.user) else post.fullname or post.company_name }} has responded to your application for {{ post.headline }}:</em>
           </p>
-          <p id="appl-rejected" class="hidden">
+          <p class="appl-msg-reject hidden">
             <em>{{ g.user.fullname if post.admin_is(g.user) else post.fullname or post.company_name }} has declined your application for {{ post.headline }}:</em>
           </p>
           {% include "inc/replyform.html" %}
@@ -94,7 +97,7 @@
       <div class="col-md-3">
         <div class="list-group">
           {%- for appl in post.applications %}
-            <a class="list-group-item status_{{ appl.status|lower }}" href="{{ url_for('view_application', hashid=post.hashid, application=appl.hashid) }}">
+            <a class="list-group-item status_{{ appl.status|lower }}" href="{{ appl.url_for() }}">
               {%- if appl == job_application -%}
                 <strong>{{ appl.fullname }}</strong>
               {%- else -%}
@@ -118,10 +121,8 @@
       $("#appl-response").hide().removeClass('hidden');
 
       $("#appl-reply").click(function(e) {
-        // $("#appl-instructions").hide();
-        $("#appl-yesreply").removeClass('hidden');
-        $("#appl-responded").removeClass('hidden');
-        $("#appl-rejected").addClass('hidden');
+        $(".appl-msg-reply").removeClass('hidden');
+        $(".appl-msg-reject").addClass('hidden');
         $("#appl-response").slideDown({
           complete: function() {
             // This doesn't work. We don't know why.
@@ -136,10 +137,8 @@
       });
 
       $("#appl-reject").click(function(e) {
-        // $("#appl-instructions").hide();
-        $("#appl-yesreply").addClass('hidden');
-        $("#appl-responded").addClass('hidden');
-        $("#appl-rejected").removeClass('hidden');
+        $(".appl-msg-reply").addClass('hidden');
+        $(".appl-msg-reject").removeClass('hidden');
         $("#appl-response").slideDown({
           complete: function() {
             // This doesn't work. We don't know why.
@@ -155,7 +154,6 @@
 
       $("#appl-cancel").click(function(e) {
         $("#appl-response").slideUp();
-        // $("#appl-instructions").fadeIn();
         $("#response_form").find('button').prop('disabled', false);
         $("#appl-options").slideDown();
         $("#appl-send").val('');

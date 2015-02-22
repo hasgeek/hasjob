@@ -21,6 +21,10 @@ UPLOADED_LOGOS_DEST = '/tmp/uploads'
 SEARCH_INDEX_PATH = '/tmp/search'
 #: Hascore server
 HASCORE_SERVER = 'https://api.hasgeek.com/'
+#: GeoIP database folder
+#: On Ubuntu: /usr/share/GeoIP
+#: On Homebrew: /usr/local/var/GeoIP
+GEOIP_PATH = '/usr/share/GeoIP'
 #: Mail settings
 #: MAIL_FAIL_SILENTLY : default True
 #: MAIL_SERVER : default 'localhost'
@@ -82,6 +86,7 @@ INVALID_URLS = [
         re.compile(r'freelancer\.com'),
         re.compile(r'hirist\.com/j/'),
         re.compile(r'iimjobs\.com/j/'),
+        re.compile(r'.*\.workable.com/jobs'),
         ], u"Candidates must apply via Hasjob")
 ]
 #: LastUser server

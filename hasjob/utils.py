@@ -1,7 +1,5 @@
 import re
 from random import randint
-from uuid import uuid4
-from base64 import b64encode
 from coaster import simplify_text
 
 
@@ -53,11 +51,8 @@ def random_hash_key():
     return ('0000' + base36encode(randint(0, 60466175)))[-5:]  # 60466175 is 'zzzzz'
 
 
-def newid():
-    """
-    Return a new random id that is exactly 22 characters long.
-    """
-    return b64encode(uuid4().bytes, altchars=',-').replace('=', '')
+def randbool():
+    return bool(randint(0, 1))
 
 
 EMAIL_RE = re.compile(r'\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,63}\b', re.I)
@@ -101,14 +96,14 @@ def scrubemail(data, rot13=False, css_junk=None):
             link = link.decode('rot13')
         if css_junk and len(email) > 3:
             third = int(len(email) / 3)
-            parts = (email[:third], email[third:third*2], email[third*2:])
+            parts = (email[:third], email[third:third * 2], email[third * 2:])
             if isinstance(css_junk, (tuple, list)):
                 css_dirty, css_clean = css_junk
                 email = '<span class="%s">%s</span><span class="%s">no</span>'\
                     '<span class="%s">%s</span><span class="%s">spam</span>'\
                     '<span class="%s">%s</span>' % (
-                    css_clean, parts[0], css_dirty, css_clean, parts[1],
-                    css_dirty, css_clean, parts[2])
+                        css_clean, parts[0], css_dirty, css_clean, parts[1],
+                        css_dirty, css_clean, parts[2])
             else:
                 email = '%s<span class="%s">no</span>%s<span class="%s">spam</span>%s' % (
                     parts[0], css_junk, parts[1], css_junk, parts[2])

@@ -1,4 +1,4 @@
-{%- macro stickie(post, url, pinned, groupedunder=false, dataurl=none, is_siteadmin=false) %}
+{%- macro stickie(post, url, pinned, groupedunder=false, dataurl=none, show_viewcounts=false, show_pay=false, starred=none, is_bgroup=none) %}
   {%- if groupedunder %}
     <div class="stickie {%- if post.is_announcement() %} announcement{% endif %} grouped under" {%- if dataurl %} data-href="{{ dataurl }}"{% endif %}>
   {%- else %}
@@ -7,12 +7,10 @@
     {%- if pinned %}<span class="pinned">Pinned!</span>{% endif %}
     <span class="annotation top-left">{{ post.location }}</span>
     <span class="annotation top-right">{{ post.datetime|shortdate }}</span>
-    <span class="headline">{{ post.headline }}</span>
-    {% if is_siteadmin %}<span class="count">{{ post.viewcounts['viewed'] }}&middot;{{ post.viewcounts['opened'] }}&middot;{{ post.viewcounts['applied'] }} &middot; {{ post.viewcounts['pay_label'] }}</span>{% endif %}
+    <span class="headline">{% if is_bgroup %}{{ post.headlineb }}{% else %}{{ post.headline }}{% endif %}</span>
+    {% if show_viewcounts or show_pay %}<span class="count">{% if show_viewcounts %}<span title="Listed › Viewed › Opened form › Applied">{{ post.viewcounts['impressions'] }} › {{ post.viewcounts['viewed'] }} › {{ post.viewcounts['opened'] }} › {{ post.viewcounts['applied'] }}</span>{% endif %}{% if show_viewcounts and show_pay %} &middot; {% endif %}{% if show_pay %}{{ post.viewcounts['pay_label'] }}{% endif %}</span>{% endif %}
     <span class="annotation bottom-right">{{ post.company_name }}</span>
-    {%- if post.is_new() -%}
-      <span class="new annotation bottom-left">New!</span>
-    {%- endif %}
+    <span class="annotation bottom-left">{% if starred is not none %}<i class="fa fa-star{% if not starred %}-o{% endif %} pstar" data-id="{{ post.hashid }}"></i>{% endif %} {%- if post.is_new() %} <span class="new">New!</span>{%- endif %}</span>
   {%- if groupedunder %}
     </div>
   {%- else %}
@@ -36,15 +34,15 @@
   {%- endif -%}
 {%- endmacro %}
 
-{%- macro jobheader(post, kiosk=false, return=false) %}
+{%- macro jobheader(post, kiosk=false, return=false, user=none, headline=none) %}
   {%- if post.company_logo %}
     <div class="row">
-      <div class="col-xs-12 col-sm-3 col-sm-push-9 post-company-logo">
-        <img alt="Logo" src="{{ url_for('logoimage', hashid=post.hashid) }}"/>
+      <div class="img-container col-xs-12 col-sm-3 col-sm-push-9 post-company-logo">
+        <img alt="Logo" src="{{ post.url_for('logo') }}"/>
       </div>
       <div class="col-xs-12 col-sm-9 col-sm-pull-3">
   {%- endif %}
-    <h1>{{ post.headline }}</h1>
+    <h1>{{ headline or post.headline }}</h1>
     <p class="post-date">Posted <time datetime="{{ post.datetime.isoformat() }}Z">{{ post.datetime|longdate }}</time>
       {%- if post.user %} by {{ post.user.pickername }}{% endif %}</p>
     <p>
@@ -62,9 +60,122 @@
         &middot; <a href="{{ url_for('browse_by_type', name=post.type.name) }}">{{ post.type.title }}</a>
         &middot; <a href="{{ url_for('browse_by_category', name=post.category.name) }}">{{ post.category.title }}</a>
       {%- endif %}
+      {%- if user %}
+        <i class="fa fa-star{% if post not in user.starred_jobs %}-o{% endif %} pstar" data-id="{{ post.hashid }}"></i>
+      {%- endif %}
     </p>
   {%- if post.company_logo %}
       </div>
     </div>
   {%- endif %}
 {%- endmacro %}
+
+{% macro campaign_action_form(campaign, user, message='', redirect=none, dismiss=false) %}
+  {%- with ua=campaign.useractions(user) %}
+    <div id="header-campaign-actions">
+      <form id="header-campaign-form" action="{{ url_for('campaign_action', campaign=campaign.name) }}" method="POST">
+        {{ campaign.form().hidden_tag() }}
+        <p class="button-bar">
+          {%- for action in campaign.actions %}{% if action.public %}
+            {%- if action.type == 'L' %}
+              <a href="{{ url_for('campaign_action_redirect', campaign=campaign.name, action=action.name) }}" target="_blank" class="btn btn-sm btn-{{ action.category }}">{% if action.icon %}<i class="fa fa-{{ action.icon }}"></i> {% endif %}{{ action.title }}{% if action.name in ua %} <i class="fa fa-check"></i>{% endif %}</a>
+            {%- else %}
+              <button name="action" value="{{ action.name }}" type="submit" class="btn btn-sm btn-{{ action.category }}">{% if action.icon %}<i class="fa fa-{{ action.icon }}"></i> {% endif %}{{ action.title }}{% if action.name in ua %} <i class="fa fa-check"></i>{% endif %}</button>
+            {%- endif %}
+          {%- endif %}{%- endfor %}
+          {% if user %}<button type="submit" name="dismiss" value="dismiss" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>{% endif %}
+          <span class="loading hidden">&nbsp;</span>
+        </p>
+      </form>
+      {{ message }}
+      {%- if redirect %}
+        <p>Redirecting… <span class="loading">&nbsp;</span></p>
+        <script type="text/javascript">
+          location.href={{ redirect|tojson }};
+        </script>
+      {%- elif dismiss %}
+        {#- FIXME: Find a way to refer to context instead of hardcoding #}
+        <script type="text/javascript">
+          $("#header-campaign-actions").closest('.campaign-box').slideUp();
+        </script>
+      {%- endif %}
+    </div>
+  {%- endwith %}
+{% endmacro %}
+
+{% macro campaign_header(g, campaign) %}
+  {#- In campaign.banner_location, 0 = top, 1 = right, 2 = bottom, 3 = left. In here, add +1 to avoid matching 0 == false #}
+  {% with view=campaign.view_for(g.user), i=campaign.banner_image and (campaign.banner_location + 1) %}
+    {% if not view or (campaign == g.preview_campaign) or (view and not view.dismissed) %}
+      <div class="row campaign-box">
+        <div class="col-md-10 col-md-offset-1 col-xs-12 col-sm-12">
+          <div class="flash">
+            {% if i in [2, 4] %}
+              <div class="row">
+                <div class="img-container col-xs-12 col-sm-3 col-md-2 {%- if i == 2 %} col-sm-push-9 col-md-push-10 {%- endif %}">
+                  <img src="{{ campaign.banner_image }}">
+                </div>
+                <div class="col-xs-12 col-sm-9 col-md-10 {%- if i == 2 %} col-sm-pull-3 col-md-pull-2 {%- endif %}">
+            {%- elif i == 1 %}
+              <div><img src="{{ campaign.banner_image }}"/></div>
+            {%- endif %}
+            {% if campaign.subject %}<h2>{{ campaign.subject_for(g.user) }}</h2>{% endif %}
+            {% if campaign.blurb %}{{ campaign.blurb_for(g.user) }}{% endif %}
+            {% if campaign.description %}<p class="read-more no-jshidden"><a title="Read more…" href="#"><i class="fa fa-ellipsis-h"></i></a>
+            <div class="jshidden read-more-text">{{ campaign.description_for(g.user) }}</div>
+            {%- endif %}
+            {%- if i == 3 %}
+              <div><img src="{{ campaign.banner_image }}"/></div>
+            {%- endif %}
+            {%- if i in [2, 4] %}
+                </div>
+              </div>
+            {%- endif %}
+            {{ campaign_action_form(campaign, g.user) }}
+          </div>
+        </div>
+      </div>
+    {%- do g.campaign_views.append(campaign) %}
+    {%- endif %}
+  {%- endwith %}
+{% endmacro %}
+
+{% macro campaign_header_postscript() %}
+  <script type="text/javascript">
+    $("#header-campaign-form").ajaxForm({
+      target: '#header-campaign-actions',
+      replaceTarget: true,
+      beforeSubmit: function(formdata, form, options) {
+        form.find('input[type="submit"]').prop('disabled', true).addClass('submit-disabled');
+        form.find('button[type="submit"]').prop('disabled', true).addClass('submit-disabled');
+        form.find('.loading').removeClass('hidden');
+        return true;
+      },
+      success: function(response, status, xhr, form) {
+        form.find('input[type="submit"]').prop('disabled', false).removeClass('submit-disabled');
+        form.find('button[type="submit"]').prop('disabled', false).removeClass('submit-disabled');
+        form.find('.loading').addClass('hidden');
+      },
+      error: function(context, xhr, status, errMsg) {
+        var form = $("#header-campaign-form");
+        form.find('input[type="submit"]').prop('disabled', false).removeClass('submit-disabled');
+        form.find('button[type="submit"]').prop('disabled', false).removeClass('submit-disabled');
+        form.find('.loading').addClass('hidden');
+        form.append('<div class="alert alert-danger fade in"><a href="#" class="close" data-dismiss="alert">&times;</a> An error occured when submitting the form</div>');
+      } // No comma or semicolon here
+    });
+  </script>
+{% endmacro %}
+
+{% macro campaign_script() %}
+  <script type="text/javascript">
+    $(function() {
+      $('.read-more a').click(function(e) {
+        $(this).parent().slideUp().parent().find('.read-more-text').hide().removeClass('jshidden').slideDown();
+        e.preventDefault();
+        return false;
+      });
+    });
+  </script>
+  {{ campaign_header_postscript() }}
+{% endmacro %}

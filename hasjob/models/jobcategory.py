@@ -1,4 +1,8 @@
+# -*- coding: utf-8 -*-
+
 from hasjob.models import BaseNameMixin, db
+
+__all__ = ['JobCategory']
 
 
 class JobCategory(BaseNameMixin, db.Model):

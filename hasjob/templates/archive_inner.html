@@ -9,7 +9,7 @@
   </thead>
   <tbody>
     {% for post in posts %}
-    {%- set link = url_for('jobdetail', hashid=post.hashid) %}
+    {%- set link = post.url_for() %}
     <tr class="link">
       <td class="nowrap"><a href="{{ link }}">{{ post.datetime|longdate }}</a></td>
       <td><a href="{{ link }}">{{ post.headline }}</a></td>

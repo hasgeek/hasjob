@@ -1,0 +1,137 @@
+{% extends "sheet.html" %}
+{% block title %}{{ campaign.title }}{% endblock %}
+
+{% block pageheaders %}
+  <link href="//cdnjs.cloudflare.com/ajax/libs/c3/0.4.9/c3.min.css" rel="stylesheet"/>
+{% endblock %}
+
+{% block content %}
+  <div class="sheet">
+    <div class="section first">
+      <div class="row">
+        <div class="img-container col-xs-12 col-sm-3 col-sm-push-9 post-company-logo">
+          {% if campaign.banner_image %}<img alt="Logo" src="{{ campaign.banner_image }}"/>{% endif %}
+        </div>
+        <div class="col-xs-12 col-sm-9 col-sm-pull-3">
+          <h3><a href="{{ url_for('campaign_list') }}">Campaigns</a> <i class="fa fa-angle-right"></i></h3>
+          <h1>{{ self.title() }}</h1>
+          <p class="post-date">
+            {%- if campaign.is_live %}<strong>Live</strong>{% elif campaign.public %}Offline{% else %}Disabled{% endif %} —
+            <time datetime="{{ campaign.start_at.isoformat() }}Z">{{ campaign.start_at|longdate }}</time> –
+            <time datetime="{{ campaign.end_at.isoformat() }}Z">{{ campaign.end_at|longdate }}</time>
+          </p>
+        </div>
+      </div>      
+    </div>
+    <div class="section">
+      <div class="row">
+        <div class="col-md-9">
+          <h2>{{ campaign.subject }}</h2>
+          {{ campaign.blurb|safe }}
+          {{ campaign.description|safe }}
+
+          <p class="button-bar">
+            {%- for action in campaign.actions %}
+              <a href="{{ url_for('campaign_action_edit', campaign=campaign.name, action=action.name) }}" class="btn btn-sm btn-{{ action.category }}">{% if action.icon %}<i class="fa fa-{{ action.icon }}"></i> {% endif %}{{ action.title }} <span class="badge">{{ action.useractions.count() }}</span> {%- if not action.public %} <i class="fa fa-eye-slash"></i>{% endif %}</a>
+            {%- endfor %}
+            <a title="New action" href="{{ url_for('campaign_action_new', campaign=campaign.name) }}" class="btn btn-sm btn-default"><i class="fa fa-plus"></i></a>
+          </p>
+        </div>
+        <div class="col-md-3">
+          <div class="list-group">
+            <a class="list-group-item" href="{{ url_for('index', preview=campaign.name) }}">
+              <i class="fa fa-fw fa-eye"></i>&nbsp;&nbsp; Preview this
+            </a>
+            <a class="list-group-item" href="{{ url_for('campaign_edit', campaign=campaign.name) }}">
+              <i class="fa fa-fw fa-pencil"></i>&nbsp;&nbsp; Edit this
+            </a>
+            <a class="list-group-item" href="{{ url_for('campaign_delete', campaign=campaign.name) }}">
+              <i class="fa fa-fw fa-trash-o"></i>&nbsp;&nbsp; Delete this
+            </a>
+            {% with reach=campaign.estimated_reach() %}{% if reach != none %}<span class="list-group-item"><i class="fa fa-fw fa-bullhorn"></i>&nbsp;&nbsp; Target size: {{ reach }} {{ ngettext("user", "users", reach) }}</span>{% endif %}{% endwith %}
+            <span class="list-group-item"><i class="fa fa-fw fa-info-circle"></i>&nbsp;&nbsp; Views: {{ campaign.views.count() }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="section">
+      <div id="chart"></div>
+    </div>
+    <div class="section" role="tabpanel">
+      <ul class="nav nav-pills">
+        {%- for action in campaign.actions %}{% if action.type in ('Y', 'N', 'M', 'F') %}
+          <li role="presentation" {%- if loop.first %} class="active" {%- endif %}><a href="#users-{{ action.name }}" aria-controls="users-{{ action.name }}" role="tab" data-toggle="pill">{{ action.title }}</a></li>
+        {% endif %}{%- endfor %}
+      </ul>
+      <div class="tab-content">
+        {%- for action in campaign.actions %}{% if action.type in ('Y', 'N', 'M', 'F') %}
+          <div role="tabpanel" class="tab-pane fade {%- if loop.first %} in active {%- endif %}" id="users-{{ action.name }}">
+            <table class="table table-responsive">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>User</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <th>When</th>
+                </tr>
+              </thead>
+              <tbody>
+                {%- for ua in action.useractions %}
+                  <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ ua.user.pickername }}</td>
+                    <td>{{ ua.user.email or '' }}</td>
+                    <td>{{ ua.user.phone or '' }}</td>
+                    <td>{{ ua.created_at|age }}
+                  </tr>
+                {%- endfor %}
+              </tbody>
+            </table>
+          </div>
+        {%- endif %}{%- endfor %}
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block footerscripts %}
+  <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/d3/3.5.3/d3.min.js"></script>
+  <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/c3/0.4.9/c3.min.js"></script>
+
+  <script type="text/javascript">
+    c3.generate({
+      bindto: '#chart',
+      data: {
+        url: {{ url_for('campaign_view_counts', campaign=campaign.name)|tojson }},
+        x: '_hour',
+        xFormat: '%Y-%m-%dT%H:%M:%S',
+        type: 'spline',
+        types: {
+          '_views': 'area-spline'
+        },
+        names: {
+          {%- for action in campaign.actions %}
+          {{ action.name|tojson }}: {{ action.title|tojson }},
+          {%- endfor %}
+          '_combined': 'Combined',
+          '_views': 'Views',
+          '_site': 'Overall site'
+        }
+      },
+      axis: {
+        x: {
+          type: 'timeseries',
+          localtime: true,
+          tick: {
+            format: '%m-%d %H:%M'
+          }
+        }
+      },
+      zoom: {
+        enabled: true,
+        rescale: false
+      }
+    });
+  </script>
+{% endblock %}

@@ -1,17 +1,25 @@
 {% extends "sheet.html" %}
-{% from "baseframe/forms.html" import ajaxform %}
-{% from "macros.html" import jobheader %}
-{% block title %}{{ post.headline }}{% endblock %}
+{%- from "baseframe/forms.html" import ajaxform %}
+{%- from "macros.html" import jobheader, stickie %}
+{% block title %}{{ headline }}{% endblock %}
 {% block description %}{{ post.company_name }}, {{ post.location }}, {{ post.type.title }}, {{ post.category.title }}{% endblock %}
 {% block canonical_url %}
-  {%- if g.board %}
-    <link rel="canonical" href="{{ url_for('jobdetail', hashid=post.hashid, subdomain=none) }}" />
-    <meta property="og:url" content="{{ url_for('jobdetail', hashid=post.hashid, subdomain=none) }}" />
+  {%- if g.board and g.board.not_root %}
+    <link rel="canonical" href="{{ post.url_for(subdomain=none) }}" />
+    <meta property="og:url" content="{{ post.url_for(subdomain=none) }}" />
   {%- else %}
     <link rel="canonical" href="{{ request.base_url }}" />
     <meta property="og:url" content="{{ request.base_url }}" />
   {%- endif %}
 {% endblock %}
+{%- block image_src %}
+  {%- if post.company_logo %}
+    <link rel="image_src" href="{{ post.url_for('logo', _external=true) }}" />
+    <meta property="og:image" content="{{ post.url_for('logo', _external=true) }}" />
+  {%- else %}
+    {{ super() }}
+  {%- endif %}
+{%- endblock %}
 {% block pageheaders %}
   {%- if post.is_old() %}
     <meta name="robots" content="nofollow" />
@@ -24,9 +32,9 @@
     <p>
       This is a preview. It is only visible to you. You may edit again or confirm this post.
     </p>
-    <form action="{{ url_for('confirm', hashid=post.hashid)|usessl }}" method="POST" class="form-group">
+    <form action="{{ post.url_for('confirm')|usessl }}" method="POST" class="form-group button-bar">
       <input type="submit" class="btn btn-primary btn-sm" value="This looks good, confirm it"/>
-      <a href="{{ url_for('editjob', hashid=post.hashid)|usessl }}" class="btn btn-info btn-sm">Edit again</a>
+      <a href="{{ post.url_for('edit')|usessl }}" class="btn btn-info btn-sm">Edit again</a>
     </form>
   </div>
   {% elif post.is_flagged() %}
@@ -67,7 +75,7 @@
 
   <div class="sheet">
     <div class="section first">
-      {{ jobheader(post, kiosk=g.kiosk) }}
+      {{ jobheader(post, kiosk=g.kiosk, user=g.user, headline=headline) }}
     </div>
     <div class="section">
       <div class="row">
@@ -80,11 +88,17 @@
         </div>
         <div class="col-md-3">{% if not g.kiosk %}
           <div class="list-group">
-            <a class="list-group-item" href="mailto:?subject=Job%3A%20{{ post.headline|urlquote }}&amp;body={{ request.url|urlquote }}">
+            <a class="list-group-item" href="mailto:?subject=Job%3A%20{{ headline|urlquoteplus }}&amp;body={{ post.url_for(utm_campaign='share', utm_medium='email', _external=true)|urlquoteplus }}">
               <i class="fa fa-fw fa-envelope"></i>&nbsp;&nbsp; Email this
             </a>
-            <a class="list-group-item" target="_blank" href="https://twitter.com/share?url={{ request.url|urlquote }}&amp;counturl={{ request.url|urlquote }}&amp;via=hasjob&amp;related=hasjob:HasGeek%20Job%20Board&amp;text=Job%3A%20{{ post.headline|urlquote }}">
+            <a class="list-group-item visible-xs-block visible-sm-block" href="whatsapp://send?text={{ headline|urlquoteplus }}+{{ post.url_for(utm_campaign='share', utm_medium='whatsapp', _external=true)|urlquoteplus }}">
+              <i class="fa fa-fw fa-whatsapp"></i>&nbsp;&nbsp; Share on WhatsApp
+            </a>
+            <a class="list-group-item share-popup" data-width="550" data-height="250" target="_blank" href="https://twitter.com/share?url={{ post.url_for(utm_campaign='share', utm_medium='twitter', _external=true)|urlquoteplus }}&amp;counturl={{ post.url_for(_external=true)|urlquoteplus }}&amp;via=hasjob&amp;related=hasjob:HasGeek%20Job%20Board&amp;text=Job%3A%20{{ headline|urlquoteplus }}">
               <span class="badge" id="tweet-count"></span><i class="fa fa-fw fa-twitter"></i>&nbsp;&nbsp; Tweet this
+            </a>
+            <a class="list-group-item share-popup" data-width="520" data-height="230" target="_blank" href="http://www.facebook.com/sharer.php?s=100&p[url]={{ post.url_for(utm_campaign='share', utm_medium='facebook', _external=true)|urlquoteplus }}">
+              <i class="fa fa-fw fa-facebook"></i>&nbsp;&nbsp; Share on Facebook
             </a>
             {%- if not g.kiosk and not post.is_announcement() %}
               <div class="list-group-item">
@@ -109,12 +123,14 @@
               </div>
             {%- endif %}
             {%- if post.admin_is(g.user) %}
-              <a class="list-group-item" href="{{ url_for('editjob', hashid=post.hashid) }}">
+              <a class="list-group-item" href="{{ post.url_for('edit') }}">
                 <i class="fa fa-fw fa-pencil"></i>&nbsp;&nbsp; Edit this
               </a>
-              <a class="list-group-item" href="{{ url_for('withdraw', hashid=post.hashid) }}">
-                <i class="fa fa-fw fa-trash-o"></i>&nbsp;&nbsp; Withdraw this
-              </a>
+              {%- if post.is_public() %}
+                <a class="list-group-item" href="{{ post.url_for('withdraw') }}">
+                  <i class="fa fa-fw fa-trash-o"></i>&nbsp;&nbsp; Withdraw this
+                </a>
+              {%- endif %}
             {%- endif %}
             {%- if is_siteadmin %}
               <div class="list-group-item">
@@ -149,7 +165,7 @@
                 </div>
               </div>
             {%- endif %}
-            {%- if g.user and g.user.has_boards %}
+            {%- if g.user and g.user.flags.has_boards %}
               <div class="list-group-item">
                 <a class="popup" href="#add-to-board">
                   <i class="fa fa-fw fa-plus"></i>&nbsp;&nbsp; Add to board
@@ -172,15 +188,20 @@
                 </span>
               {%- endif %}
               {%- with appl=post.viewcounts['applied'], newappl=post.new_applications %}{% if appl %}
-                <a class="list-group-item" href="{{ url_for('managejob', hashid=post.hashid) }}">
-                  <i class="fa fa-fw fa-file-text-o"></i>&nbsp;&nbsp;View candidates
+                <a class="list-group-item" href="{{ post.url_for('manage') }}">
+                  <i class="fa fa-fw fa-file-text-o"></i>&nbsp;&nbsp; View candidates
                   {%- if newappl %} <span class="badge badge-new">{{ newappl }}/{{ appl }}</span>
                   {%- else %} <span class="badge">{{ appl }}</span>
                   {%- endif -%}
                 </a>
               {%- endif %}{% endwith -%}
+              {%- if post.headlineb %}{% with ab_views=post.ab_views %}
+                <span class="list-group-item" title="Headline A/B test"><i class="fa fa-fw fa-hand-o-up"></i>&nbsp;&nbsp; {{ ab_views.NA }} NA &middot; {{ ab_views.A }} A &middot; {{ ab_views.B }} B</span>
+              {%- endwith %}{% endif %}
+            {%- endif %}
+            {%- if is_siteadmin or post.admin_is(g.user) or (g.user and g.user.flags.is_employer_month) %}
               <div class="list-group-item no-border">
-                <i class="fa fa-fw fa-bar-chart-o"></i>&nbsp;&nbsp; <span title="Viewed">{{ post.viewcounts['viewed'] }}</span> &middot; <span title="Opened form">{{ post.viewcounts['opened'] }}</span> &middot; <span title="Applied">{{ post.viewcounts['applied'] }}</span> &middot;
+                <i class="fa fa-fw fa-bar-chart-o"></i>&nbsp;&nbsp; <span title="Viewed › Opened form › Applied">{{ post.viewcounts['viewed'] }} › {{ post.viewcounts['opened'] }} › {{ post.viewcounts['applied'] }}</span> &middot;
                 {%- with unittype = post.viewstats[0] %}
                   {%- if unittype == 'q' %} Per 15m:
                   {%- elif unittype == 'h' %} Per hour:
@@ -201,14 +222,14 @@
     {% if not post.is_announcement() %}
       <div class="section" id="apply-info">
         {%- if g.kiosk %}
-          <img align="right" src="//chart.googleapis.com/chart?chs=150x150&cht=qr&chl={{ url_for('jobdetail', hashid=post.hashid, subdomain=None, _external=True) }}&choe=UTF-8"/>
+          <img align="right" src="//chart.googleapis.com/chart?chs=150x150&cht=qr&chl={{ post.url_for(subdomain=none, _external=true) }}&choe=UTF-8"/>
         {%- endif %}
         <h2>Apply for this position
           {%- if not post.pays_cash %}
             {%- if post.pays_equity %}
-              <small>Equity only</small>
+              <small>No pay, equity only</small>
             {%- else %}
-              <small>No pay</small>
+              <small>No pay, no equity</small>
             {%- endif -%}
           {%- endif -%}
         </h2>
@@ -220,7 +241,7 @@
               Open this link on your phone or computer:<br/>
             {% endif %}
             {%- with len = post.hashid|length %}
-              <big>{{ url_for('jobdetail', hashid=post.hashid, _external=True)[:-len] }}<strong>{{ post.hashid }}</strong></big>
+              <big>{{ post.url_for(subdomain=none, _external=true)[:-len] }}<strong>{{ post.hashid }}</strong></big>
             {%- endwith %}
           </p>
         {%- else %}
@@ -231,10 +252,10 @@
               {% if jobview.applied %}{# User has already hit the reveal button #}
                 {{ post.how_to_apply|hideemail }}
               {%- else %}
-                <a class="btn btn-primary" id="reveal-button" href="{{ url_for('revealjob', hashid=post.hashid) }}">Show instructions</a>
+                <a class="btn btn-primary" id="reveal-button" href="{{ post.url_for('reveal') }}">Show instructions</a>
               {%- endif %}
             {%- else %}
-              <a class="btn btn-primary" href="{{ url_for('revealjob', hashid=post.hashid) }}">Login with Twitter or Google</a>
+              <a class="btn btn-primary" href="{{ post.url_for('reveal') }}">Login with Twitter or Google</a>
               to see instructions on how to apply.
               Your identity will not be revealed to the employer.
             {%- endif %}
@@ -277,7 +298,27 @@
         </p>
       </div>
     {%- endif %}
+    {%- if is_siteadmin %}
+      <div class="section unmarked" id="tagcloud">
+        <p>
+        {%- for taglink in post.taglinks %}{% with label=taglink.status_label %}
+          <a href="/tag/{{ taglink.tag.name }}" class="label label-info tag-{{ label.name }}">{{ taglink.tag.title }}</a>
+        {% endwith %}{%- endfor %}
+        </p>
+      </div>
+    {%- endif %}
   </div>
+{% endblock %}
+{% block postcontent %}
+  {%- if related_posts %}
+  <ul id="stickie-area" class="row">
+    {%- for post in related_posts -%}
+      <li class="col-xs-12 col-md-3 col-sm-4">
+        {{ stickie(post, post.url_for(), false, show_viewcounts=is_siteadmin or g.user and g.user.flags.is_employer_month, show_pay=is_siteadmin, starred=g.user and post.id in g.starred_ids) }}
+      </li>
+    {%- endfor -%}
+  </ul>
+  {%- endif %}
 {% endblock %}
 {% block footerscripts %}
 <script type="text/javascript">
@@ -286,24 +327,20 @@
       $('.jobdescription a').contents().unwrap();
     {%- endif %}
     jQuery.getJSON(
-      '//cdn.api.twitter.com/1/urls/count.json?url={{ request.url|urlquote }}&callback=?',
+      '//cdn.api.twitter.com/1/urls/count.json?url={{ post.url_for(_external=true)|urlquoteplus }}&callback=?',
       function (data) {
-        if (data.count>0) {
+        if (data.count > 0) {
           $("#tweet-count").html(data.count);
         }
       }
     );
-    $("#sidebar-tweet").click(function() {
-      var d=550,a=450;
-      var c=screen.height;
-      var b=screen.width;
-      var h=Math.round((b/2)-(d/2));
-      var g=0;
-      if (c>a) {
-        g=Math.round((c/2)-(a/2))
-      }
-      window.open($(this).attr("href"), "twitter_tweet",
-        "left="+h+",top="+g+",width="+d+",height="+a+",personalbar=0,toolbar=0,scrollbars=1,resizable=1");
+    $('.share-popup').click(function(e) {
+      var winWidth = $(this).data('width') || 550, winHeight = $(this).data('height') || 250;
+      var left = Math.round((screen.width / 2) - (winWidth / 2));
+      var top = (screen.height > winHeight) ? Math.round((screen.height / 2) - (winHeight / 2)) : 0;
+      window.open($(this).attr('href'), 'share',
+        'left=' + left + ',top=' + top + ',width=' + winWidth + ',height=' + winHeight + ',personalbar=0,toolbar=0,scrollbars=1,resizable=1');
+      e.preventDefault();
       return false;
     });
   });
@@ -356,7 +393,7 @@
     {% include "inc/tinymce.js" %}
   </script>
 {% endif %}
-{%- if is_siteadmin or post.admin_is(g.user) %}{% with stats = post.viewstats[1], max = stats.max|tojson %}
+{%- if is_siteadmin or post.admin_is(g.user) or (g.user and g.user.flags.is_employer_month) %}{% with stats = post.viewstats[1], max = stats.max|tojson %}
   <script type="text/javascript">
     $(function() {
       $("#statsline").removeClass('hidden').sparkline(

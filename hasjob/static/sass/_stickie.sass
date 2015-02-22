@@ -7,7 +7,7 @@
   & > li
     margin-bottom: 20px
     float: none
-    display: inline-block
+    display: block
     vertical-align: top
 
 .stickie
@@ -28,23 +28,6 @@
     text-decoration: none
     color: inherit
     border-bottom: 0
-
-  &:before, &:after
-    content: ""
-    position: absolute
-    z-index: -2
-    bottom: 15px
-    left: 10px
-    width: 50%
-    height: 20%
-    max-width: 300px
-    +box-shadow(0 15px 10px $color-shadow)
-    +rotate(-3deg)
-
-  &:after
-    right: 10px
-    left: auto
-    +rotate(3deg)
 
   label
     font-weight: normal
@@ -78,7 +61,7 @@
   .bottom-right
     right: 0.5em
     bottom: 0.25em
-    width: 80%
+    width: 75%
     text-align: right
 
   .bottom-left
@@ -128,7 +111,7 @@
 
   // Extra stickies, beyond those specified below.
   // Keep in same position
-  li:hover > &
+  .no-touch li:hover > &
     top: 0px
     left: 15px
     right: 15px
@@ -138,35 +121,35 @@
     +transition-timing-function(ease-out)
 
   // Top left
-  li:hover > &:nth-of-type(1)
+  .no-touch li:hover > &:nth-of-type(1)
     top: -15px
     left: 0px
     right: 30px
     bottom: 15px
 
   // Bottom right
-  li:hover > &:nth-of-type(2)
+  .no-touch li:hover > &:nth-of-type(2)
     top: 15px
     left: 30px
     right: 0px
     bottom: -15px
 
   // Top right
-  li:hover > &:nth-of-type(3)
+  .no-touch li:hover > &:nth-of-type(3)
     top: -10px
     left: 20px
     right: 5px
     bottom: 10px
 
   // Bottom left
-  li:hover > &:nth-of-type(4)
+  .no-touch li:hover > &:nth-of-type(4)
     top: 10px
     left: 5px
     right: 25px
     bottom: -10px
 
   // Top
-  li:hover > &:nth-of-type(5)
+  .no-touch li:hover > &:nth-of-type(5)
     top: -25px
     left: 15px
     right: 15px
@@ -186,6 +169,23 @@
 .stickie.announcement
   background-color: $color-stickie-announcement
 
+.pstar
+  color: $color-title-has
+  cursor: pointer
+  +transition(opacity 0.2s ease-in-out)
+
+.stickie .pstar.fa-star-o
+  opacity: 0.1
+
+.stickie:hover .pstar.fa-star-o
+  opacity: 0.3
+
+.stickie .pstar.fa-star-o:hover
+  opacity: 1.0
+
+.stickie .pstar.fa-spin
+  opacity: 1.0
+
 #newpost
   font-family: inherit
 
@@ -198,12 +198,39 @@
   min-height: 0
   padding: 0
   +box-shadow(none)
-  +transition-property(background-color, box-shadow)
-  +transition-duration(0.5s)
+  +transition(border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, height 0.2s ease-in-out)
   &:hover, &:focus
     border-color: #66afe9
     outline: 0
     +box-shadow(0 0 8px rgba(102,175,233,0.6))
+    +transition(border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, height 0.2s ease-in-out)
+
+#newpost_headline::-webkit-input-placeholder
+  color: $color-stickie-main-text
+  opacity: 1.0
+  +transition(opacity 0.2s ease-in-out)
+
+#newpost_headline:focus::-webkit-input-placeholder
+  opacity: 0.4
+  +transition(opacity 0.2s ease-in-out)
+
+#newpost_headline::-moz-placeholder
+  color: $color-stickie-main-text
+  opacity: 1.0
+  +transition(opacity 0.2s ease-in-out)
+
+#newpost_headline:focus::-moz-placeholder
+  opacity: 0.4
+  +transition(opacity 0.2s ease-in-out)
+
+#newpost_headline:-ms-input-placeholder
+  color: $color-stickie-main-text
+  opacity: 1.0
+  +transition(opacity 0.2s ease-in-out)
+
+#newpost_headline:focus:-ms-input-placeholder
+  opacity: 0.4
+  +transition(opacity 0.2s ease-in-out)
 
 #newpost_details
   // position: relative
@@ -212,6 +239,30 @@
   margin-bottom: -12px
   text-align: right
 
+#loadmore
+  margin-bottom: $body-line-height
+  text-align: center
+
 @media screen and (min-width: 768px)
   #stickie-area > li
+    display: inline-block
     margin-bottom: 30px
+
+  // Shadows only on larger screens (make mobile rendering lighter)
+  .stickie
+    &:before, &:after
+      content: ""
+      position: absolute
+      z-index: -2
+      bottom: 15px
+      left: 10px
+      width: 50%
+      height: 20%
+      max-width: 300px
+      +box-shadow(0 15px 10px $color-shadow)
+      +rotate(-3deg)
+
+    &:after
+      right: 10px
+      left: auto
+      +rotate(3deg)

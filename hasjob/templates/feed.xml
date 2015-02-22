@@ -1,25 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom" xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/">
   <title>{{ title|e }} – {{ config['SITE_TITLE']|e }}</title>
-  <link href="{{ url_for('index', _external=True) }}"/>
+  <link href="{{ url_for('index', _external=true) }}"/>
   <link rel="self" href="{{ request.base_url }}"/>
-  <link rel="search" type="application/opensearchdescription+xml" href="{{ url_for('static', filename='opensearch.xml', _external=True) }}" title="Hasjob Search" />
+  <link rel="search" type="application/opensearchdescription+xml" href="{{ url_for('static', filename='opensearch.xml', _external=true) }}" title="Hasjob Search" />
   <updated>{{ updated }}</updated>
-  <id>{{ url_for('index', _external=True) }}</id>
-  <icon>{{ url_for('static', filename='img/logo.png', _external=True) }}</icon>
+  <id>{{ url_for('index', _external=true) }}</id>
+  <icon>{{ url_for('static', filename='img/logo.png', _external=true) }}</icon>
   <author><name>{{ config['SITE_TITLE']|e }}</name></author>
 
   {% for post in posts -%}
   <entry>
     <title type="text">{{ post.headline|e }}</title>
-    <id>{{ url_for('jobdetail', hashid=post.hashid, _external=True) }}</id>
-    <link href="{{ url_for('jobdetail', hashid=post.hashid, _external=True) }}"/>
+    <id>{{ post.url_for(_external=true) }}</id>
+    <link href="{{ post.url_for(_external=true) }}"/>
     <updated>{{ post.datetime.isoformat() }}Z</updated>
     <published>{{ post.datetime.isoformat() }}Z</published>
     <location>{{ post.location }}</location>
     <content type="html">
       &lt;p&gt;
-        {%- if post.company_logo %}&lt;img alt="Logo" src="{{ url_for('logoimage', hashid=post.hashid, _external=True) }}"&gt;&lt;br/&gt;{% endif %}
+        {%- if post.company_logo %}&lt;img alt="Logo" src="{{ post.url_for('logo', _external=true) }}"&gt;&lt;br/&gt;{% endif %}
         {%- if post.company_url %}
           &lt;strong&gt;&lt;a href="{{ post.company_url|e }}"&gt;{{ post.company_name|e|forceescape }}&lt;/a&gt;&lt;/strong&gt;&lt;br/&gt;
         {%- else %}

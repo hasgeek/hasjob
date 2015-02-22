@@ -1,58 +1,17 @@
 # -*- coding: utf-8 -*-
+# flake8: noqa
 
 from datetime import timedelta
 from flask.ext.sqlalchemy import SQLAlchemy
 from coaster import LabeledEnum
-from coaster.sqlalchemy import BaseMixin, BaseNameMixin, TimestampMixin
+from coaster.sqlalchemy import (BaseMixin, BaseNameMixin, TimestampMixin, BaseScopedIdMixin,
+    BaseScopedNameMixin, CoordinatesMixin, make_timestamp_columns)
 from .. import app
 
 
 db = SQLAlchemy(app)
 agelimit = timedelta(days=30)
 newlimit = timedelta(days=1)
-
-webmail_domains = set([
-    'aol.com',
-    'anonymous.to',
-    'comcast.net',
-    'dispostable.com',
-    'everymail.net',
-    'everyone.net',
-    'facebook.com',
-    'fastmail.fm',
-    'flashmail.com',
-    'gmail.com',
-    'gmx.com',
-    'googlemail.com',
-    'guerillamail.com',
-    'hotmail.com',
-    'hotmail.fr',
-    'hotmail.it',
-    'hushmail.com',
-    'inbox.com',
-    'live.com',
-    'lycos.com',
-    'mail.com',
-    'mail.ru',
-    'mailinator.com',
-    'me.com',
-    'msn.com',
-    'onebox.com',
-    'outlook.com',
-    'pobox.com',
-    'qmail.com',
-    'rediffmail.com',
-    'runbox.com',
-    'seznam.cz',
-    'spamgourmet.com',
-    'trashmail.net',
-    'yahoo.com',
-    'yahoo.co.in',
-    'yandex.ru',
-    'ymail.com',
-    'yopmail.com',
-    'zoho.com',
-    ])
 
 
 class POSTSTATUS:
@@ -101,6 +60,11 @@ from .user import *
 from .jobcategory import *
 from .jobpostreport import *
 from .jobtype import *
+from .tag import *
 from .reportcode import *
+from .domain import *
+from .org import *
 from .jobpost import *
 from .board import *
+from .flags import *
+from .campaign import *

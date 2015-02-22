@@ -28,14 +28,14 @@ def remove_subdomain_parameter(endpoint, values):
 def add_subdomain_parameter(endpoint, values):
     if app.url_map.is_endpoint_expecting(endpoint, 'subdomain'):
         if 'subdomain' not in values:
-            values['subdomain'] = g.board.name if g.board else None
+            values['subdomain'] = g.board.name if g.board and g.board.not_root else None
 
 
 @app.route('/board', methods=['GET', 'POST'])
 @lastuser.requires_login
 def board_new():
     form = BoardForm()
-    if not 'siteadmin' in lastuser.permissions():
+    if 'siteadmin' not in lastuser.permissions():
         # Allow only siteadmins to set this field
         del form.options.form.require_pay
     form.userid.choices = g.user.owner_choices()
@@ -68,7 +68,7 @@ def board_edit_subdomain():
 @load_model(Board, {'name': 'board'}, 'board', permission=('edit', 'siteadmin'), addlperms=lastuser.permissions)
 def board_edit(board):
     form = BoardForm(obj=board)
-    if not 'siteadmin' in lastuser.permissions():
+    if 'siteadmin' not in lastuser.permissions():
         # Allow only siteadmins to set this field
         del form.options.form.require_pay
     form.userid.choices = g.user.owner_choices()
@@ -113,4 +113,4 @@ def board_add(board, jobpost):
     board.add(jobpost)
     db.session.commit()
     flash(u"You’ve added this job to %s" % board.title, 'interactive')
-    return redirect(url_for('jobdetail', hashid=jobpost.hashid, subdomain=board.name))
+    return redirect(jobpost.url_for(subdomain=board.name))

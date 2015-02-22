@@ -1,10 +1,15 @@
+# -*- coding: utf-8 -*-
+
 from datetime import datetime
-from hasjob.models import db
-from hasjob.models.user import User
-from hasjob.models.jobpost import JobPost
-from hasjob.models.reportcode import ReportCode
+from . import db
+from .user import User
+from .jobpost import JobPost
+from .reportcode import ReportCode
+
+__all__ = ['JobPostReport']
 
 
+# No BaseMixin here because this is a legacy class (datetime serves the purpose of created_at and updated_at)
 class JobPostReport(db.Model):
     __tablename__ = 'jobpostreport'
 

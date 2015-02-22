@@ -1,0 +1,3 @@
+{% from "macros.html" import campaign_action_form, campaign_header_postscript -%}
+{{ campaign_action_form(campaign, g.user, message, redirect, dismiss) }}
+{{ campaign_header_postscript() }}

@@ -1,32 +1,18 @@
-{% extends "inc/email_layout.html" %}
-
-{% block title %}Job Application: {{ job_application.fullname }}{% endblock %}
-
-{% block preview -%}
-  {{ job_application.fullname }} has applied for &ldquo;{{ post.headline }}&rdquo;
-{%- endblock %}
-
-{% block archive -%}
-  Email not displaying correctly?<br /><a href="{{ archive_url }}" target="_blank">View it in your browser</a>.
-{%- endblock %}
-
-{% block content -%}
-  <p>
-    <strong>{{ job_application.fullname }}</strong> has applied for <a href="{{ url_for('jobdetail', hashid=post.hashid, _external=True) }}" target="_blank">{{ post.headline }}</a>:
-  </p>
-  <blockquote>
-    {{ job_application.message|safe }}
-  </blockquote>
-  <p>
-    <strong>Note:</strong> The message above is exactly as the candidate submitted it. We do not accept attachments or reformat documents.
-  </p>
-  <p class="button-bar">
-    <a class="btn" href="{{ archive_url }}" target="_blank">Respond&nbsp;to&nbsp;candidate</a>
-    or
-    <a class="btn" href="{{ archive_url }}" target="_blank">report&nbsp;this</a>
-  </p>
-{%- endblock %}
-
-{% block footer -%}
-  <a href="{{ url_for('editjob', _external=True, hashid=post.hashid, key=post.edit_key) }}">Edit job post</a>&nbsp;&nbsp;&nbsp;<a href="{{ url_for('withdraw', _external=True, hashid=post.hashid, key=post.edit_key) }}">Withdraw job post</a>&nbsp;
-{%- endblock %}
+{% extends "inc/email_layout_lite.html" %}
+{% block content %}
+<p>
+  <em><strong>{{ job_application.fullname }}</strong> has applied for <a href="{{ post.url_for(_external=true) }}" target="_blank">{{ post.headline }}</a>:</em>
+</p>
+<hr>
+{{ job_application.message|safe }}
+<hr>
+<p>
+  <a class="btn" href="{{ archive_url }}" target="_blank">Respond&nbsp;to&nbsp;candidate</a>
+  or
+  <a class="btn" href="{{ archive_url }}" target="_blank">Report&nbsp;this</a>
+</p>
+<p>
+  <strong>Note:</strong> The message above is exactly as the candidate submitted it. We do not accept attachments or reformat documents.
+  <img src="{{ job_application.url_for('track-open', _external=true) }}" alt="" width="1" height="1">
+</p>
+{% endblock %}
