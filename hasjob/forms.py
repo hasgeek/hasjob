@@ -17,7 +17,7 @@ from coaster.utils import getbool, get_email_domain
 from flask.ext.lastuser import LastuserResourceException
 
 from .models import (User, JobType, JobCategory, JobApplication, Board, EMPLOYER_RESPONSE, PAY_TYPE,
-    CAMPAIGN_POSITION, CAMPAIGN_ACTION, BANNER_LOCATION, Campaign)
+    CAMPAIGN_POSITION, CAMPAIGN_ACTION, BANNER_LOCATION, Campaign, Domain)
 from .uploads import process_image, UploadNotAllowed
 
 from . import app, lastuser
@@ -283,7 +283,12 @@ class ListingForm(forms.Form):
                 self.job_pay_type.errors.append(u"“%s” cannot pay nothing" % self.job_type_ob.title)
                 success = False
 
-            if (not self.job_type_ob.webmail_allowed) and get_email_domain(self.poster_email.data) in webmail_domains:
+            domain_name = get_email_domain(self.poster_email.data)
+            domain = Domain.get(domain_name)
+            if domain and domain.is_banned:
+                self.poster_email.errors.append(u"%s is banned from posting jobs on Hasjob" % domain_name)
+                success = False
+            elif (not self.job_type_ob.webmail_allowed) and domain_name in webmail_domains:
                 self.poster_email.errors.append(
                     u"Public webmail accounts like Gmail are not accepted. Please use your corporate email address")
                 success = False

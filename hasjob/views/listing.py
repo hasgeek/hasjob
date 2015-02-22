@@ -18,6 +18,7 @@ from hasjob import app, forms, mail, lastuser
 from hasjob.models import (
     agelimit,
     db,
+    Domain,
     JobCategory,
     JobType,
     JobPost,
@@ -559,7 +560,15 @@ def rejectjob(domain, hashid):
             flashmsg = "This job post has been marked as spam."
             post.status = POSTSTATUS.SPAM
         else:
-            flashmsg = "This job post has been rejected."
+            if request.form.get('submit') == 'ban':
+                flashmsg = "This job post has been rejected and the user and domain banned."
+                post.domain.is_banned = True
+                post.domain.banned_by = g.user
+                post.domain.banned_reason = rejectform.reason.data
+                if post.user:
+                    post.user.blocked = True
+            else:
+                flashmsg = "This job post has been rejected."
             post.status = POSTSTATUS.REJECTED
             msg = Message(subject="About your job post on Hasjob",
                 recipients=[post.email])
@@ -838,6 +847,10 @@ def editjob(hashid, key, domain=None, form=None, validated=False, newpost=None):
                 post.email = form.poster_email.data
                 post.email_domain = form_email_domain
                 post.md5sum = md5sum(post.email)
+                with db.session.no_autoflush:
+                    # This is dependent on the domain's DNS validity already being confirmed
+                    # by the form's email validator
+                    post.domain = Domain.get(post.email_domain, create=True)
             # To protect from gaming, don't allow words to be removed in edited posts once the post
             # has been confirmed. Just add the new words.
             if post.status in POSTSTATUS.POSTPENDING:

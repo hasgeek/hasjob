@@ -62,6 +62,7 @@ from .jobpostreport import *
 from .jobtype import *
 from .tag import *
 from .reportcode import *
+from .domain import *
 from .org import *
 from .jobpost import *
 from .board import *

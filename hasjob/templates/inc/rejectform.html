@@ -6,6 +6,7 @@
   {{ renderfield(rejectform.reason, style="wide", nolabel=true) }}
   <button type="submit" name="submit" class="btn btn-primary btn-sm" value="reject">Reject</button>
   <button type="submit" name="submit" class="btn btn-danger btn-sm" value="spam">Spam</button>
+  <button type="submit" name="submit" class="btn btn-danger btn-sm" value="ban">Ban</button>
 </form>
 {%- if request.is_xhr %}
   {{ ajaxform("rejectform", request) }}

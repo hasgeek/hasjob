@@ -16,6 +16,7 @@ from .jobtype import JobType
 from .jobcategory import JobCategory
 from .user import User, AnonUser, EventSession
 from .org import Organization
+from .domain import Domain
 from ..utils import random_long_key, random_hash_key
 
 __all__ = ['JobPost', 'JobLocation', 'UserJobView', 'AnonJobView', 'JobImpression', 'JobApplication',
@@ -107,6 +108,8 @@ class JobPost(BaseMixin, db.Model):
     fullname = db.Column(db.Unicode(80), nullable=True)  # Deprecated field, used before user_id was introduced
     email = db.Column(db.Unicode(80), nullable=False)
     email_domain = db.Column(db.Unicode(80), nullable=False, index=True)
+    domain_id = db.Column(None, db.ForeignKey('domain.id'), nullable=False)
+    domain = db.relationship(Domain, backref=db.backref('jobposts', lazy='dynamic'))
     md5sum = db.Column(db.String(32), nullable=False, index=True)
 
     # Payment, audit and workflow fields
