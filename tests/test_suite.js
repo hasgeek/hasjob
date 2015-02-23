@@ -1,9 +1,9 @@
 
 var system = require('system'); 
 
-var host = system.env.test_host; //presumably 127.0.0.1
-var test_username = system.env.test_username; // Dummy user's username that's create on startup
-var test_password = system.env.test_password; // Dummy user's password that's create on startup
+var host = system.env.TEST_HOST || "127.0.0.1"; //presumably 127.0.0.1
+var test_username = system.env.TEST_USERNAME; // Dummy user's username that's create on startup
+var test_password = system.env.TEST_PASSWORD; // Dummy user's password that's create on startup
 
 
 // Baseframe resources not needed for now

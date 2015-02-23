@@ -3,9 +3,13 @@ python:
   - 2.7
 before_script:
   - npm install casperjs
+  - psql -c 'create database hasjob;' -U postgres
   - python manage.py db create
   - python runserver.py
 script: casperjs test tests/test-suite.js
+addons:
+  postgresql: "9.3"
+
 notifications:
   email: false
   irc: "irc.freenode.net#hasgeek-dev"
