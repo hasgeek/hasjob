@@ -62,14 +62,14 @@ def on_models_committed(sender, changes):
 
 @job("hasjob-search")
 def delete_from_index(oblist):
-    es.bulk((es.delete_op(id=mapping['idref'], doc_type=type_from_idref(mapping['idref'])) for mapping in oblist), index=ES_INDEX)
+    es.bulk([es.delete_op(id=mapping['idref'], doc_type=type_from_idref(mapping['idref'])) for mapping in oblist], index=ES_INDEX)
 
 
 def configure_once():
     for model in INDEXABLE:
         try:
             records = map(lambda record: record.search_mapping(), model.query.all())
-            es.bulk((es.index_op(record, id=record['idref']) for record in records),
+            es.bulk([es.index_op(record, id=record['idref']) for record in records],
                     index=ES_INDEX,
                     doc_type=model.idref)
         except ProgrammingError:
