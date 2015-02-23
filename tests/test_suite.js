@@ -1,6 +1,9 @@
-var host = ""; //presumably 127.0.0.1
-var test_username = ""; // Dummy user's username that's create on startup
-var test_password = ""; // Dummy user's password that's create on startup
+
+var system = require('system'); 
+
+var host = system.env.test_host; //presumably 127.0.0.1
+var test_username = system.env.test_username; // Dummy user's username that's create on startup
+var test_password = system.env.test_password; // Dummy user's password that's create on startup
 
 
 // Baseframe resources not needed for now
@@ -17,7 +20,7 @@ casper.on('resource.requested', function(requestData, request) {
 //   this.echo("remote console.log: " + message);
 // });
 
-casper.test.begin('Hasjob Login Flow', 13, function suite(test) {
+casper.test.begin('Hasjob Post A Job Flow', 13, function suite(test) {
 
     casper.start(host, function() {
         test.assertHttpStatus(200);
