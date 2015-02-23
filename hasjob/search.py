@@ -2,7 +2,6 @@
 
 from flask.ext.sqlalchemy import models_committed
 from flask.ext.rq import job
-from sqlalchemy.exc import ProgrammingError
 from hasjob import models, app
 
 from pyelasticsearch import ElasticSearch
@@ -24,16 +23,12 @@ def do_search(query, expand=False):
     """
     Returns search results
     """
-    hits = []
-
     if query:
         hits = es.search(query, index=ES_INDEX)
         ids = map(lambda hit: id_from_idref(hit[u'_id']), hits['hits']['hits'])
-        results = models.JobPost.get_by_ids(ids)
-        # TODO Sort by score
-        # check category & type and if present prepend this list with jobs with that category/type
-        # and do a uniq
-        return results
+        job_post_ids = map(lambda post: post.id, models.JobPost.get_by_ids(ids))
+        # Handles the event of the index returning an id that isn't present in the DB
+        return [models.JobPost.query.get(id) for id in filter(lambda id: id in job_post_ids, ids)]
 
 
 @job("hasjob-search")
@@ -67,13 +62,10 @@ def delete_from_index(oblist):
 
 def configure_once():
     for model in INDEXABLE:
-        try:
-            records = map(lambda record: record.search_mapping(), model.query.all())
-            es.bulk([es.index_op(record, id=record['idref']) for record in records],
-                    index=ES_INDEX,
-                    doc_type=model.idref)
-        except ProgrammingError:
-            pass
+        records = map(lambda record: record.search_mapping(), model.query.all())
+        es.bulk([es.index_op(record, id=record['idref']) for record in records],
+                index=ES_INDEX,
+                doc_type=model.idref)
 
 
 def configure():
