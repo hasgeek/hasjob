@@ -92,8 +92,8 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
         else:
             pinsandposts = [(post.pinned, post, bgroup(jobpost_ab, post)) for post in posts]
 
-    # Pick a header campaign
-    if not g.kiosk:
+    # Pick a header campaign (only if not kiosk or an XHR reload)
+    if not g.kiosk and not request.is_xhr:
         if g.preview_campaign:
             header_campaign = g.preview_campaign
         else:
