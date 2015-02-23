@@ -71,7 +71,7 @@ def delete_from_index(oblist):
 def configure_once():
     for model in INDEXABLE:
         try:
-            records = map(lambda x: x.search_mapping(), model.query.all())
+            records = map(lambda record: record.search_mapping(), model.query.all())
             es.bulk((es.index_op(record, id=record['idref']) for record in records),
                     index=ES_INDEX,
                     doc_type=model.idref)
