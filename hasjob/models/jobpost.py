@@ -181,6 +181,10 @@ class JobPost(BaseMixin, db.Model):
     def get(cls, hashid):
         return cls.query.filter_by(hashid=hashid).one_or_none()
 
+    @classmethod
+    def get_by_ids(cls, ids):
+        return cls.query.filter(cls.id.in_(ids)).all()
+
     def __repr__(self):
         return u'<JobPost {hashid} "{headline}">'.format(hashid=self.hashid, headline=self.headline)
 
