@@ -316,7 +316,14 @@ def getposts(basequery=None, pinned=False, showall=False, statuses=None):
 
     query = basequery.filter(JobPost.status.in_(statuses)).options(*JobPost._defercols)
 
+    now = datetime.utcnow()
+
     if g.board:
+        # Load into cache
+        g.board_jobs = {r.jobpost_id: r for r in
+            BoardJobPost.query.join(BoardJobPost.jobpost).filter(
+                BoardJobPost.board == g.board, JobPost.datetime > now - agelimit).options(
+                db.load_only('jobpost_id', 'pinned')).all()}
         query = query.join(JobPost.postboards).filter(BoardJobPost.board == g.board)
 
     if showall:
@@ -326,13 +333,13 @@ def getposts(basequery=None, pinned=False, showall=False, statuses=None):
             if g.board:
                 query = query.filter(
                     db.or_(
-                        db.and_(BoardJobPost.pinned == True, JobPost.datetime > datetime.utcnow() - agelimit),
-                        db.and_(BoardJobPost.pinned == False, JobPost.datetime > datetime.utcnow() - newlimit)))  # NOQA
+                        db.and_(BoardJobPost.pinned == True, JobPost.datetime > now - agelimit),
+                        db.and_(BoardJobPost.pinned == False, JobPost.datetime > now - newlimit)))  # NOQA
             else:
                 query = query.filter(
                     db.or_(
-                        db.and_(JobPost.pinned == True, JobPost.datetime > datetime.utcnow() - agelimit),
-                        db.and_(JobPost.pinned == False, JobPost.datetime > datetime.utcnow() - newlimit)))  # NOQA
+                        db.and_(JobPost.pinned == True, JobPost.datetime > now - agelimit),
+                        db.and_(JobPost.pinned == False, JobPost.datetime > now - newlimit)))  # NOQA
         else:
             query = query.filter(JobPost.datetime > datetime.utcnow() - newlimit)
 

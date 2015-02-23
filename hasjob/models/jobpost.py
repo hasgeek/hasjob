@@ -109,7 +109,7 @@ class JobPost(BaseMixin, db.Model):
     email = db.Column(db.Unicode(80), nullable=False)
     email_domain = db.Column(db.Unicode(80), nullable=False, index=True)
     domain_id = db.Column(None, db.ForeignKey('domain.id'), nullable=False)
-    domain = db.relationship(Domain, backref=db.backref('jobposts', lazy='dynamic'))
+    domain = db.relationship(Domain, lazy='joined', backref=db.backref('jobposts', lazy='dynamic'))
     md5sum = db.Column(db.String(32), nullable=False, index=True)
 
     # Payment, audit and workflow fields
