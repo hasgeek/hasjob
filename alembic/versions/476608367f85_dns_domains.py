@@ -33,7 +33,7 @@ def upgrade():
     op.create_foreign_key('jobpost_domain_id_fkey', 'jobpost', 'domain', ['domain_id'], ['id'])
     op.execute(sa.text(
         '''INSERT INTO domain (created_at, updated_at, name, is_webmail, is_banned)
-            SELECT now() AT TIME ZONE 'UTC', now() AT TIME ZONE 'UTC', LOWER(email_domain), false, false
+            SELECT MIN(created_at), now() AT TIME ZONE 'UTC', LOWER(email_domain), false, false
             FROM jobpost GROUP BY LOWER(email_domain)'''))
     # This is a risky cast from a Python set to a SQL list. Only guaranteed to work with Python 2.x
     op.execute(sa.text('''UPDATE domain SET is_webmail=true WHERE name IN %r''' %
