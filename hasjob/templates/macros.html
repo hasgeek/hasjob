@@ -22,7 +22,7 @@
   {%- if post.parsed_location %}
     {%- for token in post.parsed_location.get('tokens', []) -%}
       {%- if token['geoname'] -%}
-        <a href="{{ url_for('browse_by_location', location=token['geoname'].get('name') or token['geoname'].get('geonameid')) }}">{{ token['token'] }}</a>
+        <a itemscope itemtype="http://schema.org/Place" href="{{ url_for('browse_by_location', location=token['geoname'].get('name') or token['geoname'].get('geonameid')) }}"><span itemprop="name">{{ token['token'] }}</span></a>
       {%- elif token['remote'] -%}
         <a href="{{ url_for('browse_by_anywhere') }}">{{ token['token'] }}</a>
       {%- else -%}
@@ -47,11 +47,11 @@
       {%- if post.user %} by <span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">{{ post.user.pickername }}</span></span>{% endif %}</p>
     <p>
       {% if return %}<a href="{{ post.url_for() }}"><i class="fa fa-angle-left"></i> Post</a> &middot; {% endif -%}
-      <a href="{{ post.url_for('browse') }}"><strong>{{ post.company_name }}</strong></a>,
+      <span itemprop="sourceOrganization" itemscope itemtype="http://schema.org/Organization"><a itemprop="url" href="{{ post.url_for('browse') }}"><strong itemprop="name">{{ post.company_name }}</strong></a></span>,
       {% if post.relocation_assist -%}
         <span id="post-location" data-toggle="tooltip" data-placement="bottom" title="Relocation assistance available">{{ joblocation(post) }} <i class="fa fa-truck fa-flip-horizontal"></i></span>
       {%- else -%}
-        {{ joblocation(post) }}
+        <span id="post-location">{{ joblocation(post) }}</span>
       {%- endif %}
       {%- if post.company_url %}
         &middot; {% if kiosk %}{{ post.company_url|cleanurl }}{% else %}<a href="{{ post.company_url }}" target="_blank" rel="nofollow">{{ post.company_url|cleanurl }}</a>{% endif %}
