@@ -5,7 +5,7 @@ before_script:
   - npm install casperjs
   - psql -c 'create database hasjob;' -U postgres
   - python manage.py db create
-  - python runserver.py
+  - python runtestserver.py
 script: casperjs test tests/test-suite.js
 addons:
   postgresql: "9.3"
