@@ -8,7 +8,7 @@ from pyelasticsearch import ElasticSearch
 es = ElasticSearch('http://localhost:9200/')
 
 INDEXABLE = (models.JobPost,)
-ES_INDEX = 'hasjob_dev'
+ES_INDEX = 'hasjob'
 
 
 def type_from_idref(idref):
