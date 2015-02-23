@@ -62,10 +62,7 @@ def on_models_committed(sender, changes):
 
 @job("hasjob-search")
 def delete_from_index(oblist):
-    for mapping in oblist:
-        es.bulk([es.delete_op(id=mapping['idref'], index=ES_INDEX, doc_type=type_from_idref(mapping['idref']))],
-                index=ES_INDEX,
-                doc_type=type_from_idref(mapping['idref']))
+    es.bulk((es.delete_op(id=mapping['idref'], doc_type=type_from_idref(mapping['idref'])) for mapping in oblist), index=ES_INDEX)
 
 
 def configure_once():
