@@ -51,7 +51,6 @@ def on_models_committed(sender, changes):
     data = []
     for model, change in changes:
         if isinstance(model, INDEXABLE):
-            # data.append([change, model.search_mapping()])
             data.append([change, model.search_mapping()])
     if data:
         try:
