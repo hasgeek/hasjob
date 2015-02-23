@@ -67,7 +67,7 @@
   {%- endif %}
 {%- endmacro %}
 
-{% macro campaign_action_form(campaign, user, message='', redirect=none, dismiss=false) %}
+{% macro campaign_action_form(campaign, user, anon_user, message='', redirect=none, dismiss=false) %}
   {%- with ua=campaign.useractions(user) %}
     <div id="header-campaign-actions">
       <form id="header-campaign-form" action="{{ url_for('campaign_action', campaign=campaign.name) }}" method="POST">
@@ -80,7 +80,7 @@
               <button name="action" value="{{ action.name }}" type="submit" class="btn btn-sm btn-{{ action.category }}">{% if action.icon %}<i class="fa fa-{{ action.icon }}"></i> {% endif %}{{ action.title }}{% if action.name in ua %} <i class="fa fa-check"></i>{% endif %}</button>
             {%- endif %}
           {%- endif %}{%- endfor %}
-          {% if user %}<button type="submit" name="dismiss" value="dismiss" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>{% endif %}
+          {% if user or anon_user %}<button type="submit" name="dismiss" value="dismiss" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>{% endif %}
           <span class="loading hidden">&nbsp;</span>
         </p>
       </form>
@@ -128,7 +128,7 @@
                 </div>
               </div>
             {%- endif %}
-            {{ campaign_action_form(campaign, g.user) }}
+            {{ campaign_action_form(campaign, g.user, g.anon_user) }}
           </div>
         </div>
       </div>

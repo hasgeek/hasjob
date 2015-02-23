@@ -19,6 +19,10 @@ def remove_subdomain_parameter(endpoint, values):
         g.board = None
         return  # Don't bother processing for static domain
 
+    if request.endpoint in ('static', 'baseframe.static'):
+        g.board = None
+        return  # Don't bother processing for static endpoints either (only applies in dev)
+
     g.board = Board.query.filter_by(name=subdomain or u'www').first()
     if subdomain and g.board is None:
         abort(404)

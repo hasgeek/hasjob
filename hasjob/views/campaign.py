@@ -10,7 +10,7 @@ from coaster.utils import buid
 from coaster.views import load_model, load_models
 from baseframe.forms import render_form, render_delete_sqla, render_redirect
 from .. import app, lastuser
-from ..models import db, Campaign, CampaignAction, CampaignUserAction, CAMPAIGN_ACTION
+from ..models import db, Campaign, CampaignAction, CampaignUserAction, CampaignAnonUserAction, CAMPAIGN_ACTION
 from ..forms import CampaignForm, CampaignActionForm
 
 
@@ -202,6 +202,12 @@ def campaign_action_redirect(campaign, action):
             cua = CampaignUserAction(action=action, user=g.user)
             db.session.add(cua)
             db.session.commit()
+    elif g.anon_user:
+        cua = CampaignAnonUserAction.get(action, g.anon_user)
+        if not cua:
+            cua = CampaignAnonUserAction(action=action, anon_user=g.anon_user)
+            db.session.add(cua)
+            db.session.commit()
     return redirect(action.link, code=302)
 
 
@@ -240,10 +246,7 @@ def campaign_action(campaign):
         if not cua:
             cua = CampaignUserAction(action=action, user=g.user)
             db.session.add(cua)
-    if action.type == CAMPAIGN_ACTION.LINK:
-        db.session.commit()
-        return render_template('campaign_action_response.html', campaign=campaign, redirect=action.link)
-    elif not g.user:  # All of the other types require a user
+    else:  # All of the other types require a user (not an anon user; will change when forms are introduced)
         return render_template('campaign_action_response.html', campaign=campaign,
             redirect=url_for('login', next=request.referrer, message=u"Please login so we can save your preferences"))
 
@@ -256,7 +259,7 @@ def campaign_action(campaign):
         return render_template('campaign_action_response.html', campaign=campaign,
             message=Markup(action.message))
     elif action.type == CAMPAIGN_ACTION.DISMISS:
-        view = campaign.view_for(g.user)
+        view = campaign.view_for(g.user, g.anon_user)
         if view:
             view.dismissed = True
             db.session.commit()
