@@ -518,6 +518,7 @@ class BoardTaggingForm(forms.Form):
         domains = set()
         for item in relist:
             if item:
+                # FIXME: This will break domains where the subdomain handles email
                 r = tldextract.extract(item.lower())
                 d = u'.'.join([r.domain, r.suffix])
                 if d not in webmail_domains:
@@ -601,7 +602,8 @@ class CampaignForm(forms.Form):
         description=__(u"Select the boards this campaign is active on"))
     geonameids = forms.GeonameSelectMultiField("Locations",
         description=__("This campaign will be targetted at jobs with matching locations (to be implemented)"))
-
+    user_required = forms.RadioField(__("User is required"), coerce=getbool,
+        choices=[(None, __("N/A")), (True, __("Yes")), (False, __("No"))])
     flags = forms.RadioMatrixField("Flags", coerce=getbool, fields=Campaign.flag_choices,
         description=__("All selected flags must match the logged in user for the campaign to be shown"),
         choices=[('None', __("N/A")), ('True', __("True")), ('False', __("False"))])

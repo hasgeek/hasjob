@@ -77,6 +77,8 @@ class Campaign(BaseNameMixin, db.Model):
     geonameids = association_proxy('locations', 'geonameid', creator=lambda l: CampaignLocation(geonameid=l))
     #: Is this campaign location-based?
     geotargeted = db.Column(db.Boolean, nullable=False, default=False)
+    #: Is a user required? None = don't care, True = user required, False = no user
+    user_required = db.Column(db.Boolean, nullable=True, default=None)
     #: Priority, lower = less priority
     priority = db.Column(db.Integer, nullable=False, default=0)
 
@@ -201,7 +203,7 @@ class Campaign(BaseNameMixin, db.Model):
         return Form()
 
     @classmethod
-    def for_context(cls, position, board=None, user=None, geonameids=None):
+    def for_context(cls, position, board=None, user=None, anon_user=None, geonameids=None):
         """
         Return a campaign suitable for this board, user and locations (as geonameids).
         """
@@ -212,6 +214,15 @@ class Campaign(BaseNameMixin, db.Model):
         if board:
             basequery = basequery.filter(cls.boards.any(id=board.id))
 
+        if user:
+            # Look for campaigns that don't target by user or require a user
+            basequery = basequery.filter(db.or_(
+                cls.user_required == None, cls.user_required == True))  # NOQA
+        else:
+            # Look for campaigns that don't target by user or require no user
+            basequery = basequery.filter(db.or_(
+                cls.user_required == None, cls.user_required == False))  # NOQA
+
         if geonameids:
             basequery = basequery.filter(db.or_(
                 cls.geotargeted == False,
@@ -221,8 +232,9 @@ class Campaign(BaseNameMixin, db.Model):
                         CampaignLocation.geonameid.in_(geonameids)))
                 )))  # NOQA
 
-            # In the following version, a low priority geotargeted campaign returns above a high priority
-            # non-geotargeted campaign, which isn't the intended behaviour.
+            # In the following simpler version, a low priority geotargeted campaign returns above a high priority
+            # non-geotargeted campaign, which isn't the intended behaviour. We've therefore commented it out and
+            # left it here for reference.
 
             # basequery = basequery.join(CampaignLocation).filter(db.or_(
             #     cls.geotargeted == False,

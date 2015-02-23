@@ -102,7 +102,7 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
             else:
                 geonameids = g.user_geonameids
             header_campaign = Campaign.for_context(CAMPAIGN_POSITION.HEADER, board=g.board, user=g.user,
-                geonameids=geonameids)
+                anon_user=g.anon_user, geonameids=geonameids)
     else:
         header_campaign = None
 

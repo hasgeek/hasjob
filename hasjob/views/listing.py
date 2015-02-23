@@ -158,7 +158,7 @@ def jobdetail(domain, hashid):
             header_campaign = g.preview_campaign
         else:
             header_campaign = Campaign.for_context(CAMPAIGN_POSITION.HEADER, board=g.board, user=g.user,
-                geonameids=g.user_geonameids + post.geonameids)
+                anon_user=g.anon_user, geonameids=g.user_geonameids + post.geonameids)
     else:
         header_campaign = None
 
@@ -423,7 +423,7 @@ def view_application(domain, hashid, application):
             header_campaign = g.preview_campaign
         else:
             header_campaign = Campaign.for_context(CAMPAIGN_POSITION.HEADER, board=g.board, user=g.user,
-                geonameids=g.user_geonameids + post.geonameids)
+                anon_user=g.anon_user, geonameids=g.user_geonameids + post.geonameids)
     else:
         header_campaign = None
 
