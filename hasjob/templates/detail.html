@@ -73,13 +73,13 @@
   </div>
   {% endif %}
 
-  <div class="sheet">
+  <div itemscope itemtype="http://schema.org/Article" class="sheet">
     <div class="section first">
       {{ jobheader(post, kiosk=g.kiosk, user=g.user, headline=headline) }}
     </div>
     <div class="section">
       <div class="row">
-        <div class="col-md-9 jobdescription">
+        <div itemprop="articleBody" class="col-md-9 jobdescription">
           {{ post.description|safe }}
           {% if post.perks %}
             <h2>Job Perks</h2>

@@ -38,13 +38,13 @@
   {%- if post.company_logo %}
     <div class="row">
       <div class="img-container col-xs-12 col-sm-3 col-sm-push-9 post-company-logo">
-        <img alt="Logo" src="{{ post.url_for('logo') }}"/>
+        <img itemprop="image" alt="Logo" src="{{ post.url_for('logo') }}"/>
       </div>
       <div class="col-xs-12 col-sm-9 col-sm-pull-3">
   {%- endif %}
-    <h1>{{ headline or post.headline }}</h1>
-    <p class="post-date">Posted <time datetime="{{ post.datetime.isoformat() }}Z">{{ post.datetime|longdate }}</time>
-      {%- if post.user %} by {{ post.user.pickername }}{% endif %}</p>
+    <h1 itemprop="name">{{ headline or post.headline }}</h1>
+    <p class="post-date">Posted <time itemprop="datePublished" content="{{ post.datetime.isoformat() }}Z" datetime="{{ post.datetime.isoformat() }}Z">{{ post.datetime|longdate }}</time>
+      {%- if post.user %} by <span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">{{ post.user.pickername }}</span></span>{% endif %}</p>
     <p>
       {% if return %}<a href="{{ post.url_for() }}"><i class="fa fa-angle-left"></i> Post</a> &middot; {% endif -%}
       <a href="{{ post.url_for('browse') }}"><strong>{{ post.company_name }}</strong></a>,
