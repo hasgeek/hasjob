@@ -62,12 +62,15 @@ def delete_from_index(oblist):
      doc_type=type_from_idref(mapping['idref'])) for mapping in oblist], index=app.config.get('ES_INDEX'))
 
 
-def configure_once():
+def configure_once(limit=1000, offset=0):
     for model in INDEXABLE:
-        records = map(lambda record: record.search_mapping(), model.query.all())
-        app.elastic_search.bulk([app.elastic_search.index_op(record, id=record['idref']) for record in records],
-                index=app.config.get('ES_INDEX'),
-                doc_type=model.idref)
+        current_offset = offset
+        while current_offset < model.query.count():
+            records = [record.search_mapping() for record in model.query.order_by("created_at asc").limit(limit).offset(current_offset).all()]
+            app.elastic_search.bulk([app.elastic_search.index_op(record, id=record['idref']) for record in records],
+                    index=app.config.get('ES_INDEX'),
+                    doc_type=model.idref)
+            current_offset += len(records)
 
 
 def configure():
