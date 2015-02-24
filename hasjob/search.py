@@ -4,11 +4,7 @@ from flask.ext.sqlalchemy import models_committed
 from flask.ext.rq import job
 from hasjob import models, app
 
-from pyelasticsearch import ElasticSearch
-es = ElasticSearch('http://localhost:9200/')
-
 INDEXABLE = (models.JobPost,)
-ES_INDEX = 'hasjob'
 
 
 def type_from_idref(idref):
@@ -24,7 +20,7 @@ def do_search(query, expand=False):
     Returns search results
     """
     if query:
-        hits = es.search(query, index=ES_INDEX)
+        hits = app.elastic_search.search(query, index=app.config.get('ES_INDEX'))
         ids = map(lambda hit: id_from_idref(hit[u'_id']), hits['hits']['hits'])
         job_post_ids = map(lambda post: post.id, models.JobPost.get_by_ids(ids))
         # Handles the event of the index returning an id that isn't present in the DB
@@ -37,9 +33,7 @@ def update_index(data):
         if not mapping['public'] or change == 'update' or change == 'delete':
             delete_from_index([mapping])
         if change == 'insert' or change == 'update':
-            es.bulk([es.update_op(doc=mapping, id=mapping['idref'], upsert=mapping, doc_as_upsert=True)],
-                    index=ES_INDEX,
-                    doc_type=type_from_idref(mapping['idref']))
+            app.elastic_search.bulk([app.elastic_search.update_op(doc=mapping, id=mapping['idref'], upsert=mapping, doc_as_upsert=True)], index=app.config.get('ES_INDEX'), doc_type=type_from_idref(mapping['idref']))
 
 
 def on_models_committed(sender, changes):
@@ -57,14 +51,15 @@ def on_models_committed(sender, changes):
 
 @job("hasjob-search")
 def delete_from_index(oblist):
-    es.bulk([es.delete_op(id=mapping['idref'], doc_type=type_from_idref(mapping['idref'])) for mapping in oblist], index=ES_INDEX)
+    app.elastic_search.bulk([app.elastic_search.delete_op(id=mapping['idref'],
+     doc_type=type_from_idref(mapping['idref'])) for mapping in oblist], index=app.config.get('ES_INDEX'))
 
 
 def configure_once():
     for model in INDEXABLE:
         records = map(lambda record: record.search_mapping(), model.query.all())
-        es.bulk([es.index_op(record, id=record['idref']) for record in records],
-                index=ES_INDEX,
+        app.elastic_search.bulk([app.elastic_search.index_op(record, id=record['idref']) for record in records],
+                index=app.config.get('ES_INDEX'),
                 doc_type=model.idref)
 
 
