@@ -601,7 +601,7 @@ class CampaignForm(forms.Form):
         validators=[forms.validators.Optional()],
         description=__(u"Select the boards this campaign is active on"))
     geonameids = forms.GeonameSelectMultiField("Locations",
-        description=__("This campaign will be targetted at jobs with matching locations (to be implemented)"))
+        description=__("This campaign will be targetted at users and jobs with matching locations"))
     user_required = forms.RadioField(__("User is required"), coerce=getbool,
         choices=[(None, __("N/A")), (True, __("Yes")), (False, __("No"))])
     flags = forms.RadioMatrixField("Flags", coerce=getbool, fields=Campaign.flag_choices,
