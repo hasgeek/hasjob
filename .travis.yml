@@ -4,7 +4,6 @@ python:
 before_install:
   - sudo apt-get install pandoc
   - npm install casperjs
-  - wget -O - http://geolite.maxmind.com/download/geoip/database/GeoLite2-City.mmdb.gz | sudo gunzip -c > /usr/share/GeoIP/GeoLite2-City.mmdb
 cache:
 - pip
 - apt
