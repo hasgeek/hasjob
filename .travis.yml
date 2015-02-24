@@ -14,7 +14,7 @@ before_script:
   - python manage.py db create -e testing
   - nohup python runtestserver.py &
   - sleep 10
-script: casperjs test tests/test-suite.js
+script: casperjs test tests/test_suite.js
 addons:
   postgresql: "9.3"
 services:
