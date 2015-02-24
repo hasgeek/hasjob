@@ -4,7 +4,7 @@ from flask.ext.sqlalchemy import models_committed
 from flask.ext.rq import job
 from hasjob import models, app
 
-INDEXABLE = (models.JobPost,)
+INDEXABLE = (models.JobType, models.JobCategory, models.JobPost)
 
 
 def type_from_idref(idref):
@@ -15,16 +15,23 @@ def id_from_idref(idref):
     return int(idref.split('/')[1])
 
 
+def fetch_record(idref):
+    for model in INDEXABLE:
+        if type_from_idref(idref) == model.idref:
+            return model.query.get(id_from_idref(idref))
+
+
 def do_search(query, expand=False):
     """
     Returns search results
     """
     if query:
         hits = app.elastic_search.search(query, index=app.config.get('ES_INDEX'))
-        ids = map(lambda hit: id_from_idref(hit[u'_id']), hits['hits']['hits'])
-        job_post_ids = map(lambda post: post.id, models.JobPost.get_by_ids(ids))
-        # Handles the event of the index returning an id that isn't present in the DB
-        return [models.JobPost.query.get(id) for id in filter(lambda id: id in job_post_ids, ids)]
+        if expand:
+            results = [fetch_record(hit[u'_id']) for hit in hits['hits']['hits']]
+            return [result for result in results if result is not None]
+        else:
+            return hits
 
 
 @job("hasjob-search")
