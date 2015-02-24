@@ -28,11 +28,10 @@ def do_search(query, expand=False):
     if not query:
         return []
     hits = app.elastic_search.search(query, index=app.config.get('ES_INDEX'))['hits']['hits']
-    if expand:
-        results = [fetch_record(hit[u'_id']) for hit in hits]
-        return [result for result in results if result is not None]
-    else:
+    if not hits or not expand:
         return hits
+    results = [fetch_record(hit[u'_id']) for hit in hits]
+    return [result for result in results if result is not None]
 
 
 @job("hasjob-search")
