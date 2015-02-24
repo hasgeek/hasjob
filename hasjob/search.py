@@ -25,13 +25,14 @@ def do_search(query, expand=False):
     """
     Returns search results
     """
-    if query:
-        hits = app.elastic_search.search(query, index=app.config.get('ES_INDEX'))
-        if expand:
-            results = [fetch_record(hit[u'_id']) for hit in hits['hits']['hits']]
-            return [result for result in results if result is not None]
-        else:
-            return hits
+    if not query:
+        return []
+    hits = app.elastic_search.search(query, index=app.config.get('ES_INDEX'))['hits']['hits']
+    if expand:
+        results = [fetch_record(hit[u'_id']) for hit in hits]
+        return [result for result in results if result is not None]
+    else:
+        return hits
 
 
 @job("hasjob-search")
