@@ -1,13 +1,21 @@
 language: python
 python:
   - 2.7
-before_script:
+before_install:
   - sudo apt-get pandoc
   - npm install casperjs
+
+install: 
+  - pip install -r requirements.txt 
+
+before_script:
+
   - psql -c 'create database hasjob;' -U postgres
   - python manage.py db create
   - python runtestserver.py
+
 script: casperjs test tests/test-suite.js
+
 addons:
   postgresql: "9.3"
 
