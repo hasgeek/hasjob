@@ -1,7 +1,7 @@
 
 var system = require('system'); 
 
-var host = system.env.TEST_HOST || "127.0.0.1"; //presumably 127.0.0.1
+var host = system.env.TEST_HOST || "127.0.0.1:5000"; //presumably 127.0.0.1
 var test_username = system.env.TEST_USERNAME; // Dummy user's username that's create on startup
 var test_password = system.env.TEST_PASSWORD; // Dummy user's password that's create on startup
 
@@ -27,7 +27,7 @@ casper.test.begin('Hasjob Post A Job Flow', 13, function suite(test) {
 
     });
 
-    casper.thenOpen(host+'new', function() {
+    casper.thenOpen(host+'/new', function() {
 
         test.assertHttpStatus(200);
         test.assertUrlMatch(/login/, 'Redirected to lastuser login');
@@ -40,7 +40,7 @@ casper.test.begin('Hasjob Post A Job Flow', 13, function suite(test) {
 
     });
 
-    casper.thenOpen(host+'new', function() {
+    casper.thenOpen(host+'/new', function() {
 
         test.assertHttpStatus(200);
         test.assertUrlMatch(/new/, 'Logged in successfully');
