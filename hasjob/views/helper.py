@@ -218,6 +218,10 @@ def record_views_and_events(response):
             for campaign in g.campaign_views:
                 if g.esession not in campaign.session_views:
                     campaign.session_views.append(g.esession)
+            try:
+                db.session.commit()
+            except IntegrityError:  # Race condition from parallel requests
+                db.session.rollback()
 
     if g.user_geonameids:
         g.event_data['user_geonameids'] = g.user_geonameids
