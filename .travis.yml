@@ -4,12 +4,12 @@ python:
 before_install:
   - sudo apt-get install pandoc
   - npm install casperjs
-
-install: 
-  - pip install -r requirements.txt 
+  - wget -O - http://geolite.maxmind.com/download/geoip/database/GeoLite2-City.mmdb.gz | sudo gunzip -c > /usr/share/GeoIP/GeoLite2-City.mmdb
+cache:
+- pip
+- apt
 
 before_script:
-
   - psql -c 'create database hasjob;' -U postgres
   - python manage.py db create
   - python runtestserver.py
