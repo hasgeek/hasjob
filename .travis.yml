@@ -18,6 +18,9 @@ script: casperjs test tests/test-suite.js
 addons:
   postgresql: "9.3"
 
+services:
+  - redis-server
+
 notifications:
   email: false
   irc: "irc.freenode.net#hasgeek-dev"
