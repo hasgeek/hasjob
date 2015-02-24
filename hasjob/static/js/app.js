@@ -17,9 +17,9 @@ window.Hasjob.JobPost = {
       success: function(data) {
         // FIXME: Move user-facing text somewhere i18n capable:
         if (data.is_starred === true) {
-          starlink.removeClass('fa-star-o').addClass('fa-star').parent().find('.pstar-caption').html("Favourited");
+          starlink.removeClass('fa-star-o').addClass('fa-star').parent().find('.pstar-caption').html("Bookmarked");
         } else {
-          starlink.removeClass('fa-star').addClass('fa-star-o').parent().find('.pstar-caption').html("Favourite this");
+          starlink.removeClass('fa-star').addClass('fa-star-o').parent().find('.pstar-caption').html("Bookmark this");
         }
       }
     });

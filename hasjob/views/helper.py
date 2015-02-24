@@ -19,8 +19,8 @@ from baseframe.signals import form_validation_error, form_validation_success
 
 from .. import app, redis_store
 from ..models import (agelimit, newlimit, db, JobCategory, JobPost, JobType, POSTSTATUS, BoardJobPost, Tag, JobPostTag,
-    Campaign, CampaignView, EventSessionBase, EventSession, UserEventBase, UserEvent, JobImpression,
-    JobViewSession, AnonUser)
+    Campaign, CampaignView, CampaignAnonView, EventSessionBase, EventSession, UserEventBase, UserEvent, JobImpression,
+    JobViewSession, AnonUser, campaign_event_session_table)
 from ..utils import scrubemail, redactemail, randbool
 
 
@@ -180,6 +180,8 @@ def record_views_and_events(response):
     if not hasattr(g, 'esession'):
         g.esession = None
         missing_in_context.append('esession')
+    if not hasattr(g, 'response_code'):
+        g.response_code = None
     if not hasattr(g, 'campaign_views'):
         g.campaign_views = []
         missing_in_context.append('campaign_views')
@@ -205,13 +207,17 @@ def record_views_and_events(response):
     if missing_in_context:
         g.event_data['missing_in_context'] = missing_in_context
 
-    # Now process the response
-
+    # Now log whatever needs to be logged
     if response.status_code in (301, 302, 303, 307, 308):
         g.event_data['location'] = response.headers.get('Location')
 
+    # TODO: Consider moving this to a background job
     if g.campaign_views:
         g.event_data['campaign_views'] = [c.id for c in g.campaign_views]
+        if g.esession:
+            for campaign in g.campaign_views:
+                if g.esession not in campaign.session_views:
+                    campaign.session_views.append(g.esession)
 
     if g.user_geonameids:
         g.event_data['user_geonameids'] = g.user_geonameids
@@ -227,6 +233,16 @@ def record_views_and_events(response):
                     db.session.commit()
                 except IntegrityError:  # Race condition from parallel requests
                     db.session.rollback()
+            campaign_view_count_update.delay(campaign_id=campaign.id, user_id=g.user.id)
+    elif g.anon_user:
+        for campaign in g.campaign_views:
+            if not CampaignAnonView.exists(campaign, g.anon_user):
+                try:
+                    db.session.add(CampaignAnonView(campaign=campaign, anon_user=g.anon_user))
+                    db.session.commit()
+                except IntegrityError:  # Race condition from parallel requests
+                    db.session.rollback()
+            campaign_view_count_update.delay(campaign_id=campaign.id, anon_user_id=g.anon_user.id)
 
     if g.esession:  # Will be None for anon static requests
         if g.user or g.anon_user:
@@ -300,7 +316,14 @@ def getposts(basequery=None, pinned=False, showall=False, statuses=None):
 
     query = basequery.filter(JobPost.status.in_(statuses)).options(*JobPost._defercols)
 
+    now = datetime.utcnow()
+
     if g.board:
+        # Load into cache
+        g.board_jobs = {r.jobpost_id: r for r in
+            BoardJobPost.query.join(BoardJobPost.jobpost).filter(
+                BoardJobPost.board == g.board, JobPost.datetime > now - agelimit).options(
+                db.load_only('jobpost_id', 'pinned')).all()}
         query = query.join(JobPost.postboards).filter(BoardJobPost.board == g.board)
 
     if showall:
@@ -310,13 +333,13 @@ def getposts(basequery=None, pinned=False, showall=False, statuses=None):
             if g.board:
                 query = query.filter(
                     db.or_(
-                        db.and_(BoardJobPost.pinned == True, JobPost.datetime > datetime.utcnow() - agelimit),
-                        db.and_(BoardJobPost.pinned == False, JobPost.datetime > datetime.utcnow() - newlimit)))  # NOQA
+                        db.and_(BoardJobPost.pinned == True, JobPost.datetime > now - agelimit),
+                        db.and_(BoardJobPost.pinned == False, JobPost.datetime > now - newlimit)))  # NOQA
             else:
                 query = query.filter(
                     db.or_(
-                        db.and_(JobPost.pinned == True, JobPost.datetime > datetime.utcnow() - agelimit),
-                        db.and_(JobPost.pinned == False, JobPost.datetime > datetime.utcnow() - newlimit)))  # NOQA
+                        db.and_(JobPost.pinned == True, JobPost.datetime > now - agelimit),
+                        db.and_(JobPost.pinned == False, JobPost.datetime > now - newlimit)))  # NOQA
         else:
             query = query.filter(JobPost.datetime > datetime.utcnow() - newlimit)
 
@@ -393,6 +416,33 @@ def save_impressions(sessionid, impressions):
                             JobImpression.jobpost_id == postid).first()[0])  # NOQA
             except IntegrityError:  # Parallel request, skip this and move on
                 db.session.rollback()
+
+
+@job('hasjob')
+def campaign_view_count_update(campaign_id, user_id=None, anon_user_id=None):
+    if not user_id and not anon_user_id:
+        return
+    if user_id:
+        cv = CampaignView.get_by_ids(campaign_id=campaign_id, user_id=user_id)
+    elif anon_user_id:
+        cv = CampaignAnonView.get_by_ids(campaign_id=campaign_id, anon_user_id=anon_user_id)
+    query = db.session.query(db.func.count(campaign_event_session_table.c.event_session_id)).filter(
+        campaign_event_session_table.c.campaign_id == campaign_id).join(EventSession)
+
+    # FIXME: Run this in a cron job and de-link from post-request processing
+    # query = query.filter(
+    #    db.or_(
+    #        # Is this event session closed? Criteria: it's been half an hour or the session's explicitly closed
+    #        EventSession.ended_at != None,
+    #        EventSession.active_at < datetime.utcnow() - timedelta(minutes=30)))  # NOQA
+
+    if user_id:
+        query = query.filter(EventSession.user_id == user_id)
+    else:
+        query = query.filter(EventSession.anon_user_id == anon_user_id)
+
+    cv.session_count = query.first()[0]
+    db.session.commit()
 
 
 @cache.memoize(timeout=86400)

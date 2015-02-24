@@ -11,12 +11,13 @@ from coaster.sqlalchemy import JsonDict
 from baseframe import __
 from baseframe.forms import Form
 from . import db, TimestampMixin, BaseNameMixin, BaseScopedNameMixin, make_timestamp_columns
-from .user import User
+from .user import User, AnonUser, EventSession
 from .board import Board
 from .flags import UserFlags, UserFlag
 
 __all__ = ['CAMPAIGN_POSITION', 'CAMPAIGN_ACTION', 'BANNER_LOCATION',
-    'Campaign', 'CampaignLocation', 'CampaignAction', 'CampaignView', 'CampaignUserAction']
+    'Campaign', 'CampaignLocation', 'CampaignAction', 'CampaignView', 'CampaignAnonView',
+    'CampaignUserAction', 'CampaignAnonUserAction', 'campaign_event_session_table']
 
 _marker = object()
 
@@ -26,6 +27,13 @@ board_campaign_table = db.Table('campaign_board', db.Model.metadata,
         db.Column('board_id', None, db.ForeignKey('board.id'), primary_key=True),
         db.Column('campaign_id', None, db.ForeignKey('campaign.id'), primary_key=True, index=True),
     )))
+
+
+campaign_event_session_table = db.Table('campaign_event_session', db.Model.metadata,
+    db.Column('campaign_id', None, db.ForeignKey('campaign.id'), primary_key=True),
+    db.Column('event_session_id', None, db.ForeignKey('event_session.id'), primary_key=True, index=True),
+    db.Column('created_at', db.DateTime, default=datetime.utcnow)
+    )
 
 
 class CAMPAIGN_POSITION(LabeledEnum):
@@ -131,6 +139,10 @@ class Campaign(BaseNameMixin, db.Model):
     flag_is_inactive_since_day = db.Column(db.Boolean, nullable=True)
     flag_is_inactive_since_month = db.Column(db.Boolean, nullable=True)
 
+    # Sessions this campaign has been viewed in
+    session_views = db.relationship(EventSession, secondary=campaign_event_session_table, backref='campaign_views',
+        order_by=campaign_event_session_table.c.created_at, lazy='dynamic')
+
     __table_args__ = (db.CheckConstraint('end_at > start_at', name='campaign_start_at_end_at'),)
 
     @property
@@ -159,9 +171,11 @@ class Campaign(BaseNameMixin, db.Model):
         else:
             return {}
 
-    def view_for(self, user):
+    def view_for(self, user=None, anon_user=None):
         if user:
             return CampaignView.get(campaign=self, user=user)
+        elif anon_user:
+            return CampaignAnonView.get(campaign=self, anon_user=anon_user)
 
     def subject_for(self, user):
         return self.subject.format(user=user)
@@ -245,10 +259,12 @@ class Campaign(BaseNameMixin, db.Model):
         else:
             basequery = basequery.filter(cls.geotargeted == False)  # NOQA
 
+        # Don't show campaigns that (a) the user has dismissed or (b) the user has encountered on >2 event sessions
         if user is not None:
             # XXX: The more campaigns we run, the more longer this list gets
             basequery = basequery.filter(~cls.id.in_(db.session.query(CampaignView.campaign_id).filter(
-                CampaignView.user == user, CampaignView.dismissed == True)))  # NOQA
+                CampaignView.user == user,
+                db.or_(CampaignView.dismissed == True, CampaignView.session_count > 2))))  # NOQA
 
             # Filter by user flags
             for flag, value in user.flags.items():
@@ -257,6 +273,10 @@ class Campaign(BaseNameMixin, db.Model):
                     basequery = basequery.filter(db.or_(col == None, col == value))  # NOQA
 
         else:
+            if anon_user:
+                basequery = basequery.filter(~cls.id.in_(db.session.query(CampaignAnonView.campaign_id).filter(
+                    CampaignAnonView.anon_user == anon_user,
+                    db.or_(CampaignAnonView.dismissed == True, CampaignAnonView.session_count > 2))))  # NOQA
             # Don't show user-targeted campaigns if there's no user
             basequery = basequery.filter_by(**{'flag_' + flag: None for flag in cls.supported_flags})
 
@@ -361,14 +381,52 @@ class CampaignView(TimestampMixin, db.Model):
     user = db.relationship(User, backref=db.backref('campaign_views', lazy='dynamic'))
     #: User dismissed this campaign. Don't show it
     dismissed = db.Column(db.Boolean, nullable=False, default=False)
+    #: Number of sessions in which the user was shown this (null = unknown)
+    #: Updated via a background job
+    session_count = db.Column(db.Integer, nullable=False, default=0)
 
     @classmethod
     def get(cls, campaign, user):
         return cls.query.get((campaign.id, user.id))
 
     @classmethod
+    def get_by_ids(cls, campaign_id, user_id):
+        return cls.query.get((campaign_id, user_id))
+
+    @classmethod
     def exists(cls, campaign, user):
         return cls.query.filter_by(campaign=campaign, user=user).notempty()
+
+
+class CampaignAnonView(TimestampMixin, db.Model):
+    """
+    Track anon users who've viewed a campaign
+    """
+    __tablename__ = 'campaign_anon_view'
+    #: Campaign
+    campaign_id = db.Column(None, db.ForeignKey('campaign.id'), nullable=False, primary_key=True)
+    campaign = db.relationship(Campaign, backref=db.backref('anonviews', lazy='dynamic',
+        order_by='CampaignAnonView.created_at.desc()'))
+    #: Anon user who saw this campaign
+    anon_user_id = db.Column(None, db.ForeignKey('anon_user.id'), nullable=False, primary_key=True, index=True)
+    anon_user = db.relationship(AnonUser, backref=db.backref('campaign_views', lazy='dynamic'))
+    #: Anon user dismissed this campaign. Don't show it again
+    dismissed = db.Column(db.Boolean, nullable=False, default=False)
+    #: Number of sessions in which the anon user was shown this (null = unknown)
+    #: Updated via a background job
+    session_count = db.Column(db.Integer, nullable=False, default=0)
+
+    @classmethod
+    def get(cls, campaign, anon_user):
+        return cls.query.get((campaign.id, anon_user.id))
+
+    @classmethod
+    def get_by_ids(cls, campaign_id, anon_user_id):
+        return cls.query.get((campaign_id, anon_user_id))
+
+    @classmethod
+    def exists(cls, campaign, anon_user):
+        return cls.query.filter_by(campaign=campaign, anon_user=anon_user).notempty()
 
 
 class UserActionFormData(object):
@@ -401,13 +459,42 @@ class CampaignUserAction(TimestampMixin, db.Model):
     action = db.relationship(CampaignAction,
         backref=db.backref('useractions', cascade='all, delete-orphan', lazy='dynamic',
             order_by='CampaignUserAction.created_at.desc()'))
-    #: User who performed an action, null if anonymous
+    #: User who performed an action
     user_id = db.Column(None, db.ForeignKey('user.id'), nullable=False, primary_key=True, index=True)
     user = db.relationship(User, backref=db.backref('campaign_useractions', lazy='dynamic'))
     #: User's IP address
-    ipaddr = db.Column(db.String(45), nullable=True, default=lambda: request and request.environ['REMOTE_ADDR'])
+    ipaddr = db.Column(db.String(45), nullable=True, default=lambda: request and request.environ['REMOTE_ADDR'][:45])
     #: User's browser
-    useragent = db.Column(db.Unicode(250), nullable=True, default=lambda: request and request.user_agent.string)
+    useragent = db.Column(db.Unicode(250), nullable=True, default=lambda: request and request.user_agent.string[:250])
+    #: Data the user submitted
+    data = deferred(db.Column(JsonDict, nullable=False, server_default='{}'))
+
+    @property
+    def formdata(self):
+        return UserActionFormData(self.data)
+
+    @classmethod
+    def get(cls, action, user):
+        return cls.query.get((action.id, user.id))
+
+
+class CampaignAnonUserAction(TimestampMixin, db.Model):
+    """
+    Track the actions users undertook (could be more than one)
+    """
+    __tablename__ = 'campaign_anon_user_action'
+    #: Action the user selected
+    action_id = db.Column(None, db.ForeignKey('campaign_action.id'), primary_key=True)
+    action = db.relationship(CampaignAction,
+        backref=db.backref('anonuseractions', cascade='all, delete-orphan', lazy='dynamic',
+            order_by='CampaignUserAction.created_at.desc()'))
+    #: User who performed an action
+    anon_user_id = db.Column(None, db.ForeignKey('anon_user.id'), nullable=False, primary_key=True, index=True)
+    anon_user = db.relationship(AnonUser, backref=db.backref('campaign_useractions', lazy='dynamic'))
+    #: User's IP address
+    ipaddr = db.Column(db.String(45), nullable=True, default=lambda: request and request.environ['REMOTE_ADDR'][:45])
+    #: User's browser
+    useragent = db.Column(db.Unicode(250), nullable=True, default=lambda: request and request.user_agent.string[:250])
     #: Data the user submitted
     data = deferred(db.Column(JsonDict, nullable=False, server_default='{}'))
 

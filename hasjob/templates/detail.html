@@ -73,13 +73,13 @@
   </div>
   {% endif %}
 
-  <div class="sheet">
+  <div itemscope itemtype="http://schema.org/Article" class="sheet">
     <div class="section first">
       {{ jobheader(post, kiosk=g.kiosk, user=g.user, headline=headline) }}
     </div>
     <div class="section">
       <div class="row">
-        <div class="col-md-9 jobdescription">
+        <div itemprop="articleBody" class="col-md-9 jobdescription">
           {{ post.description|safe }}
           {% if post.perks %}
             <h2>Job Perks</h2>
@@ -92,7 +92,7 @@
               <a class="list-group-item sidebar-pstar" href="#">
                 <i class="fa fa-star{% if post not in g.user.starred_jobs %}-o{% endif %} pstar"
                    data-id="{{ post.hashid }}"></i>
-                &nbsp;&nbsp; <span class="pstar-caption">{% if post not in g.user.starred_jobs %}Favourite this{% else %}Favourited{% endif %}</span>
+                &nbsp;&nbsp; <span class="pstar-caption">{% if post not in g.user.starred_jobs %}Bookmark this{% else %}Bookmarked{% endif %}</span>
               </a>
             {%- endif %}
             <a class="list-group-item" href="mailto:?subject=Job%3A%20{{ headline|urlquoteplus }}&amp;body={{ post.url_for(utm_campaign='share', utm_medium='email', _external=true)|urlquoteplus }}">

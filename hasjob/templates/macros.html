@@ -22,7 +22,7 @@
   {%- if post.parsed_location %}
     {%- for token in post.parsed_location.get('tokens', []) -%}
       {%- if token['geoname'] -%}
-        <a href="{{ url_for('browse_by_location', location=token['geoname'].get('name') or token['geoname'].get('geonameid')) }}">{{ token['token'] }}</a>
+        <a itemscope itemtype="http://schema.org/Place" href="{{ url_for('browse_by_location', location=token['geoname'].get('name') or token['geoname'].get('geonameid')) }}"><span itemprop="name">{{ token['token'] }}</span></a>
       {%- elif token['remote'] -%}
         <a href="{{ url_for('browse_by_anywhere') }}">{{ token['token'] }}</a>
       {%- else -%}
@@ -38,20 +38,20 @@
   {%- if post.company_logo %}
     <div class="row">
       <div class="img-container col-xs-12 col-sm-3 col-sm-push-9 post-company-logo">
-        <img alt="Logo" src="{{ post.url_for('logo') }}"/>
+        <img itemprop="image" alt="Logo" src="{{ post.url_for('logo') }}"/>
       </div>
       <div class="col-xs-12 col-sm-9 col-sm-pull-3">
   {%- endif %}
-    <h1>{{ headline or post.headline }}</h1>
-    <p class="post-date">Posted <time datetime="{{ post.datetime.isoformat() }}Z">{{ post.datetime|longdate }}</time>
-      {%- if post.user %} by {{ post.user.pickername }}{% endif %}</p>
+    <h1 itemprop="name">{{ headline or post.headline }}</h1>
+    <p class="post-date">Posted <time itemprop="datePublished" content="{{ post.datetime.isoformat() }}Z" datetime="{{ post.datetime.isoformat() }}Z">{{ post.datetime|longdate }}</time>
+      {%- if post.user %} by <span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">{{ post.user.pickername }}</span></span>{% endif %}</p>
     <p>
       {% if return %}<a href="{{ post.url_for() }}"><i class="fa fa-angle-left"></i> Post</a> &middot; {% endif -%}
-      <a href="{{ post.url_for('browse') }}"><strong>{{ post.company_name }}</strong></a>,
+      <span itemprop="sourceOrganization" itemscope itemtype="http://schema.org/Organization"><a itemprop="url" href="{{ post.url_for('browse') }}"><strong itemprop="name">{{ post.company_name }}</strong></a></span>,
       {% if post.relocation_assist -%}
         <span id="post-location" data-toggle="tooltip" data-placement="bottom" title="Relocation assistance available">{{ joblocation(post) }} <i class="fa fa-truck fa-flip-horizontal"></i></span>
       {%- else -%}
-        {{ joblocation(post) }}
+        <span id="post-location">{{ joblocation(post) }}</span>
       {%- endif %}
       {%- if post.company_url %}
         &middot; {% if kiosk %}{{ post.company_url|cleanurl }}{% else %}<a href="{{ post.company_url }}" target="_blank" rel="nofollow">{{ post.company_url|cleanurl }}</a>{% endif %}
@@ -67,7 +67,7 @@
   {%- endif %}
 {%- endmacro %}
 
-{% macro campaign_action_form(campaign, user, message='', redirect=none, dismiss=false) %}
+{% macro campaign_action_form(campaign, user, anon_user, message='', redirect=none, dismiss=false) %}
   {%- with ua=campaign.useractions(user) %}
     <div id="header-campaign-actions">
       <form id="header-campaign-form" action="{{ url_for('campaign_action', campaign=campaign.name) }}" method="POST">
@@ -80,7 +80,7 @@
               <button name="action" value="{{ action.name }}" type="submit" class="btn btn-sm btn-{{ action.category }}">{% if action.icon %}<i class="fa fa-{{ action.icon }}"></i> {% endif %}{{ action.title }}{% if action.name in ua %} <i class="fa fa-check"></i>{% endif %}</button>
             {%- endif %}
           {%- endif %}{%- endfor %}
-          {% if user %}<button type="submit" name="dismiss" value="dismiss" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>{% endif %}
+          {% if user or anon_user %}<button type="submit" name="dismiss" value="dismiss" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>{% endif %}
           <span class="loading hidden">&nbsp;</span>
         </p>
       </form>
@@ -128,7 +128,7 @@
                 </div>
               </div>
             {%- endif %}
-            {{ campaign_action_form(campaign, g.user) }}
+            {{ campaign_action_form(campaign, g.user, g.anon_user) }}
           </div>
         </div>
       </div>

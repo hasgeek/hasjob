@@ -13,7 +13,6 @@ from flask import (
     )
 from coaster.utils import getbool, parse_isoformat
 from baseframe import csrf
-from baseframe.staticdata import webmail_domains
 
 from .. import app, lastuser
 from ..models import (db, JobCategory, JobPost, JobType, POSTSTATUS, newlimit, agelimit, JobLocation,
@@ -34,7 +33,9 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
     if basequery is None and not (g.user or g.kiosk or (g.board and not g.board.require_login)):
         showall = False
         batched = False
-    posts = list(getposts(basequery, pinned=True, showall=showall, statuses=statuses))
+
+    # getposts sets g.board_jobs, used below
+    posts = getposts(basequery, pinned=True, showall=showall, statuses=statuses).all()
 
     # Cache viewcounts (admin view or not)
     cache_viewcounts(posts)
@@ -53,6 +54,10 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
 
     # Make lookup slightly faster in the loop below since 'g' is a proxy
     board = g.board
+    if board:
+        board_jobs = g.board_jobs
+    else:
+        board_jobs = {}
 
     if basequery is None and posts and not g.kiosk:
         # Group posts by email_domain on index page only, when not in kiosk mode
@@ -60,7 +65,7 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
         for post in posts:
             pinned = post.pinned
             if board is not None:
-                blink = post.link_to_board(board)
+                blink = board_jobs[post.id]
                 if blink is not None:
                     pinned = blink.pinned
             if pinned:
@@ -71,7 +76,7 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
                 # Make announcements also appear in a group of one
                 grouped.setdefault(('a', post.hashid), []).append(
                     (pinned, post, bgroup(jobpost_ab, post)))
-            elif post.email_domain in webmail_domains:
+            elif post.domain.is_webmail:
                 grouped.setdefault(('ne', post.md5sum), []).append(
                     (pinned, post, bgroup(jobpost_ab, post)))
             else:
@@ -85,15 +90,15 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
             for post in posts:
                 pinned = post.pinned
                 if board is not None:
-                    blink = post.link_to_board(board)
+                    blink = board_jobs[post.id]
                     if blink is not None:
                         pinned = blink.pinned
                 pinsandposts.append((pinned, post, bgroup(jobpost_ab, post)))
         else:
             pinsandposts = [(post.pinned, post, bgroup(jobpost_ab, post)) for post in posts]
 
-    # Pick a header campaign
-    if not g.kiosk:
+    # Pick a header campaign (only if not kiosk or an XHR reload)
+    if not g.kiosk and not request.is_xhr:
         if g.preview_campaign:
             header_campaign = g.preview_campaign
         else:
