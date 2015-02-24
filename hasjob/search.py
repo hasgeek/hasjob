@@ -1,83 +1,46 @@
 # -*- coding: utf-8 -*-
 
-import os.path
 from flask.ext.sqlalchemy import models_committed
 from flask.ext.rq import job
-import time
-from sqlalchemy.exc import ProgrammingError
-from whoosh import fields, index
-from whoosh.index import LockError
-from whoosh.qparser import QueryParser
-from whoosh.analysis import StemmingAnalyzer
-
 from hasjob import models, app
 
-
 INDEXABLE = (models.JobType, models.JobCategory, models.JobPost)
-search_schema = fields.Schema(title=fields.TEXT(stored=True),
-                              content=fields.TEXT(analyzer=StemmingAnalyzer()),
-                              idref=fields.ID(stored=True, unique=True))
 
 
-# For search results
-def ob_from_idref(idref):
-    ref, objid = idref.split('/')
-    if ref == 'post':
-        return models.JobPost.query.get(int(objid))
-    elif ref == 'type':
-        return models.JobType.query.get(int(objid))
-    elif ref == 'category':
-        return models.JobCategory.query.get(int(objid))
+def type_from_idref(idref):
+    return idref.split('/')[0]
+
+
+def id_from_idref(idref):
+    return int(idref.split('/')[1])
+
+
+def fetch_record(idref):
+    for model in INDEXABLE:
+        if type_from_idref(idref) == model.idref:
+            return model.query.get(id_from_idref(idref))
 
 
 def do_search(query, expand=False):
     """
     Returns search results
     """
-    ix = index.open_dir(app.config['SEARCH_INDEX_PATH'])
-    hits = []
-
-    if query:
-        parser = QueryParser("content", schema=ix.schema)
-        try:
-            qry = parser.parse(query)
-        except:
-            # query couldn't be parsed
-            qry = None
-        if qry is not None:
-            searcher = ix.searcher()
-            hits = searcher.search(qry, limit=1000)
-
-    if expand:
-        return (ob_from_idref(hit['idref']) for hit in hits)
-    else:
+    if not query:
+        return []
+    hits = app.elastic_search.search(query, index=app.config.get('ES_INDEX'))['hits']['hits']
+    if not hits or not expand:
         return hits
+    results = [fetch_record(hit[u'_id']) for hit in hits]
+    return [result for result in results if result is not None]
 
 
 @job("hasjob-search")
 def update_index(data):
-    ix = index.open_dir(app.config['SEARCH_INDEX_PATH'])
-    try:
-        writer = ix.writer()
-    except LockError:
-        time.sleep(1)
-        try:
-            writer = ix.writer()
-        except LockError:
-            time.sleep(5)
-            writer = ix.writer()
     for change, mapping in data:
-        public = mapping.pop('public')
-        if public:
-            if change == 'insert':
-                writer.add_document(**mapping)
-            elif change == 'update':
-                writer.update_document(**mapping)
-            elif change == 'delete':
-                writer.delete_by_term('idref', mapping['idref'])
-        else:
-            writer.delete_by_term('idref', mapping['idref'])
-    writer.commit()
+        if not mapping['public'] or change == 'update' or change == 'delete':
+            delete_from_index([mapping])
+        if change == 'insert' or change == 'update':
+            app.elastic_search.bulk([app.elastic_search.update_op(doc=mapping, id=mapping['idref'], upsert=mapping, doc_as_upsert=True)], index=app.config.get('ES_INDEX'), doc_type=type_from_idref(mapping['idref']))
 
 
 def on_models_committed(sender, changes):
@@ -95,31 +58,20 @@ def on_models_committed(sender, changes):
 
 @job("hasjob-search")
 def delete_from_index(oblist):
-    ix = index.open_dir(app.config['SEARCH_INDEX_PATH'])
-    writer = ix.writer()
-    for item in oblist:
-        mapping = item.search_mapping()
-        writer.delete_by_term('idref', mapping['idref'])
-    writer.commit()
+    app.elastic_search.bulk([app.elastic_search.delete_op(id=mapping['idref'],
+     doc_type=type_from_idref(mapping['idref'])) for mapping in oblist], index=app.config.get('ES_INDEX'))
 
 
-def configure_once():
-    index_path = app.config['SEARCH_INDEX_PATH']
-    if not os.path.exists(index_path):
-        os.mkdir(index_path)
-        ix = index.create_in(index_path, search_schema)
-        writer = ix.writer()
-        # Index everything since this is the first time
-        for model in [models.JobType, models.JobCategory, models.JobPost]:
-            try:
-                for ob in model.query.all():
-                    mapping = ob.search_mapping()
-                    public = mapping.pop('public')
-                    if public:
-                        writer.add_document(**mapping)
-            except ProgrammingError:
-                pass  # The table doesn't exist yet. This is really a new installation.
-        writer.commit()
+def configure_once(limit=1000, offset=0):
+    for model in INDEXABLE:
+        current_offset = offset
+        while current_offset < model.query.count():
+            records = [record.search_mapping() for record in model.query.order_by("created_at asc").limit(limit).offset(current_offset).all()]
+            app.elastic_search.bulk([app.elastic_search.index_op(record, id=record['idref']) for record in records],
+                    index=app.config.get('ES_INDEX'),
+                    doc_type=model.idref)
+            current_offset += len(records)
+
 
 def configure():
     models_committed.connect(on_models_committed, sender=app)

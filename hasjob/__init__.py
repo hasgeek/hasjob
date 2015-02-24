@@ -32,6 +32,7 @@ assets['hasjob.css'][version] = 'css/app.css'
 
 from . import models, views  # NOQA
 from .models import db
+from pyelasticsearch import ElasticSearch
 
 
 # Configure the app
@@ -46,6 +47,7 @@ def init_for(env):
         else:
             app.geoip = geoip2.database.Reader(geoip_database_path)
 
+    app.elastic_search = ElasticSearch(app.config['ES_SERVER'])
     RQ(app)
 
     baseframe.init_app(app, requires=['hasjob'],

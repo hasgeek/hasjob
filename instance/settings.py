@@ -17,10 +17,13 @@ TIMEZONE = 'Asia/Kolkata'
 STATIC_SUBDOMAIN = 'static'
 #: Upload path
 UPLOADED_LOGOS_DEST = '/tmp/uploads'
-#: Search index path
-SEARCH_INDEX_PATH = '/tmp/search'
 #: Hascore server
 HASCORE_SERVER = 'https://api.hasgeek.com/'
+
+# Elastic Search Server & Index
+ES_SERVER = 'http://localhost:9200/'
+ES_INDEX = 'hasjob_dev'
+
 #: GeoIP database folder
 #: On Ubuntu: /usr/share/GeoIP
 #: On Homebrew: /usr/local/var/GeoIP
