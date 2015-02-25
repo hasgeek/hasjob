@@ -2,21 +2,13 @@
 
 from datetime import datetime
 from collections import OrderedDict
-from flask import (
-    abort,
-    redirect,
-    render_template,
-    request,
-    Response,
-    url_for,
-    g
-    )
+from flask import abort, redirect, render_template, request, Response, url_for, g, Markup
 from coaster.utils import getbool, parse_isoformat
 from baseframe import csrf
 
 from .. import app, lastuser
 from ..models import (db, JobCategory, JobPost, JobType, POSTSTATUS, newlimit, agelimit, JobLocation,
-    Tag, JobPostTag, Campaign, CAMPAIGN_POSITION)
+    Location, Tag, JobPostTag, Campaign, CAMPAIGN_POSITION)
 from ..search import do_search
 from ..views.helper import (getposts, getallposts, gettags, location_geodata, cache_viewcounts, session_jobpost_ab,
     bgroup)
@@ -239,7 +231,11 @@ def browse_by_email(md5sum):
 @app.route('/in/<location>', methods=['GET', 'POST'], subdomain='<subdomain>')
 @app.route('/in/<location>', methods=['GET', 'POST'])
 def browse_by_location(location):
-    geodata = location_geodata(location)
+    loc = Location.get(location)
+    if loc:
+        geodata = {'geonameid': loc.id, 'name': loc.name, 'short_title': loc.title, 'description': Markup(loc.description)}
+    else:
+        geodata = location_geodata(location)
     if not geodata:
         abort(404)
     basequery = JobPost.query.filter(db.and_(
@@ -423,15 +419,12 @@ def archive():
 def sitemap():
     sitemapxml = '<?xml version="1.0" encoding="UTF-8"?>\n'\
                  '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
-    # Add job type pages to sitemap
-    for item in JobType.query.filter_by(public=True).all():
+    # Add locations to sitemap
+    for item in Location.query.all():
         sitemapxml += '  <url>\n'\
-                      '    <loc>%s</loc>\n' % url_for('browse_by_type', name=item.name, _external=True) + \
-                      '  </url>\n'
-    # Add job category pages to sitemap
-    for item in JobCategory.query.filter_by(public=True).all():
-        sitemapxml += '  <url>\n'\
-                      '    <loc>%s</loc>\n' % url_for('browse_by_category', name=item.name, _external=True) + \
+                      '    <loc>%s</loc>\n' % item.url_for(_external=True) + \
+                      '    <lastmod>%s</lastmod>\n' % (item.updated_at.isoformat() + 'Z') + \
+                      '    <changefreq>monthly</changefreq>\n'\
                       '  </url>\n'
     # Add live posts to sitemap
     for post in getposts(showall=True):

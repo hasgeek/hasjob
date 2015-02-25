@@ -60,6 +60,7 @@ from .user import *
 from .jobcategory import *
 from .jobpostreport import *
 from .jobtype import *
+from .location import *
 from .tag import *
 from .reportcode import *
 from .domain import *

@@ -214,7 +214,7 @@ def record_views_and_events(response):
     # TODO: Consider moving this to a background job
     if g.campaign_views:
         g.event_data['campaign_views'] = [c.id for c in g.campaign_views]
-        if g.esession:
+        if g.esession and g.esession.persistent:
             for campaign in g.campaign_views:
                 if g.esession not in campaign.session_views:
                     campaign.session_views.append(g.esession)
@@ -452,7 +452,10 @@ def campaign_view_count_update(campaign_id, user_id=None, anon_user_id=None):
 @cache.memoize(timeout=86400)
 def location_geodata(location):
     if 'HASCORE_SERVER' in app.config:
-        url = urljoin(app.config['HASCORE_SERVER'], '/1/geo/get_by_name')
+        if isinstance(location, (list, tuple)):
+            url = urljoin(app.config['HASCORE_SERVER'], '/1/geo/get_by_names')
+        else:
+            url = urljoin(app.config['HASCORE_SERVER'], '/1/geo/get_by_name')
         response = requests.get(url, params={'name': location}).json()
         if response.get('status') == 'ok':
             return response.get('result', {})

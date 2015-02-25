@@ -14,6 +14,7 @@
   {%- if domain %}<link rel="alternate" type="application/atom+xml" title="Jobs at {{ employer_name }} – {{ config['SITE_TITLE'] }}" href="{{ url_for('feed_by_domain', domain=domain) }}" />{% endif -%}
   {%- if location %}<link rel="alternate" type="application/atom+xml" title="Jobs in {{ location['short_title'] }} – {{ config['SITE_TITLE'] }}" href="{{ url_for('feed_by_location', location=location['name']) }}" />{% endif -%}
   {% endblock %}
+  {% block description %}{% if location and location.description %}{{ location.description|firstline }}{% else %}{{ super() }}{% endif %}{% endblock %}
 {% endif %}
 {% block content %}{% with gkiosk=g.kiosk, gboard=g.board, guser=g.user, gstarred_ids=g.starred_ids %}
 {%- if not request.is_xhr -%}
@@ -23,6 +24,12 @@
       {%- if gkiosk and g.peopleflow_url %}
         <p>If you find a job worth applying for here, tap your badge on the reader attached to this kiosk and we’ll send an email connecting you with the employer.</p>
       {%- endif %}
+    </div>
+  {%- endif %}
+  {%- if location and location.short_title and location.description %}
+    <div class="flash info">
+      <h2>{{ location.short_title }}</h2>
+      {{ location.description }}
     </div>
   {%- endif %}
   <ul id="stickie-area" class="row">
