@@ -8,6 +8,7 @@ from flask.ext.assets import Bundle
 from flask.ext.rq import RQ
 from flask.ext.mail import Mail
 from flask.ext.redis import Redis
+from flask.ext.pyelasticsearch import ElasticSearch
 from flask.ext.lastuser import Lastuser
 from flask.ext.lastuser.sqlalchemy import UserManager
 from baseframe import baseframe, assets, Version
@@ -22,6 +23,7 @@ app.static_folder = 'static'
 mail = Mail()
 lastuser = Lastuser()
 redis_store = Redis()
+es = ElasticSearch()
 
 # Second, setup assets
 version = Version(__version__)
@@ -32,12 +34,12 @@ assets['hasjob.css'][version] = 'css/app.css'
 
 from . import models, views  # NOQA
 from .models import db
-from pyelasticsearch import ElasticSearch
 
 
 # Configure the app
 def init_for(env):
     coaster.app.init_app(app, env)
+    es.init_app(app)
 
     app.geoip = None
     if 'GEOIP_PATH' in app.config:
@@ -47,7 +49,6 @@ def init_for(env):
         else:
             app.geoip = geoip2.database.Reader(geoip_database_path)
 
-    app.elastic_search = ElasticSearch(app.config['ES_SERVER'])
     RQ(app)
 
     baseframe.init_app(app, requires=['hasjob'],

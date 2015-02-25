@@ -19,11 +19,10 @@ STATIC_SUBDOMAIN = 'static'
 UPLOADED_LOGOS_DEST = '/tmp/uploads'
 #: Hascore server
 HASCORE_SERVER = 'https://api.hasgeek.com/'
-
-# Elastic Search Server & Index
-ES_SERVER = 'http://localhost:9200/'
-ES_INDEX = 'hasjob_dev'
-
+#: Elasticsearch server
+ELASTICSEARCH_URL = 'http://localhost:9200/'
+#: Elasticsearch index
+ELASTICSEARCH_INDEX = 'hasjob'
 #: GeoIP database folder
 #: On Ubuntu: /usr/share/GeoIP
 #: On Homebrew: /usr/local/var/GeoIP

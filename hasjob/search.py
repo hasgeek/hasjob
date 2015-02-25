@@ -2,7 +2,7 @@
 
 from flask.ext.sqlalchemy import models_committed
 from flask.ext.rq import job
-from hasjob import models, app
+from hasjob import models, app, es
 
 INDEXABLE = (models.JobType, models.JobCategory, models.JobPost)
 
@@ -27,7 +27,7 @@ def do_search(query, expand=False):
     """
     if not query:
         return []
-    hits = app.elastic_search.search(query, index=app.config.get('ES_INDEX'))['hits']['hits']
+    hits = es.search(query, index=app.config.get('ELASTICSEARCH_INDEX'))['hits']['hits']
     if not hits or not expand:
         return hits
     results = [fetch_record(hit[u'_id']) for hit in hits]
@@ -40,7 +40,7 @@ def update_index(data):
         if not mapping['public'] or change == 'update' or change == 'delete':
             delete_from_index([mapping])
         if change == 'insert' or change == 'update':
-            app.elastic_search.bulk([app.elastic_search.update_op(doc=mapping, id=mapping['idref'], upsert=mapping, doc_as_upsert=True)], index=app.config.get('ES_INDEX'), doc_type=type_from_idref(mapping['idref']))
+            es.bulk([es.update_op(doc=mapping, id=mapping['idref'], upsert=mapping, doc_as_upsert=True)], index=app.config.get('ELASTICSEARCH_INDEX'), doc_type=type_from_idref(mapping['idref']))
 
 
 def on_models_committed(sender, changes):
@@ -58,8 +58,8 @@ def on_models_committed(sender, changes):
 
 @job("hasjob-search")
 def delete_from_index(oblist):
-    app.elastic_search.bulk([app.elastic_search.delete_op(id=mapping['idref'],
-     doc_type=type_from_idref(mapping['idref'])) for mapping in oblist], index=app.config.get('ES_INDEX'))
+    es.bulk([es.delete_op(id=mapping['idref'],
+     doc_type=type_from_idref(mapping['idref'])) for mapping in oblist], index=app.config.get('ELASTICSEARCH_INDEX'))
 
 
 def configure_once(limit=1000, offset=0):
@@ -67,8 +67,8 @@ def configure_once(limit=1000, offset=0):
         current_offset = offset
         while current_offset < model.query.count():
             records = [record.search_mapping() for record in model.query.order_by("created_at asc").limit(limit).offset(current_offset).all()]
-            app.elastic_search.bulk([app.elastic_search.index_op(record, id=record['idref']) for record in records],
-                    index=app.config.get('ES_INDEX'),
+            es.bulk([es.index_op(record, id=record['idref']) for record in records],
+                    index=app.config.get('ELASTICSEARCH_INDEX'),
                     doc_type=model.idref)
             current_offset += len(records)
 
