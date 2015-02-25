@@ -16,7 +16,7 @@ SECRET_KEY = 'make this something random'
 TIMEZONE = 'Asia/Kolkata'
 #: Static resource subdomain (defaults to 'static')
 STATIC_SUBDOMAIN = 'static'
-SERVER_NAME = '127.0.0.1:5000'
+SERVER_NAME = 'hasjob.travis.local:5000'
 #: Upload path
 UPLOADED_LOGOS_DEST = '/tmp/uploads'
 #: Search index path

@@ -36,4 +36,4 @@ if __name__ == '__main__':
             db.session.add(models.ReportCode(seq=30, name=u'anon', title=u'Organization is not clearly identified'))
             db.session.add(models.ReportCode(seq=40, name=u'unclear', title=u'Job position is not properly described'))
             db.session.commit()
-    app.run('127.0.0.1', debug=True)
+    app.run('0.0.0.0', debug=True)

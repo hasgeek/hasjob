@@ -10,9 +10,10 @@ cache:
 - apt
 before_script:
   - sudo /etc/init.d/postfix reload
+  - sudo -- sh -c "echo '127.0.0.1  hasjob.travis.local static.hasjob.travis.local' >> /etc/hosts"
   - psql -c 'create database hasjob;' -U postgres
   - python manage.py db create -e testing
-  - python runtestserver.py
+  - nohup python runtestserver.py &
   - sleep 10
 script: casperjs test tests/test_suite.js
 addons:
