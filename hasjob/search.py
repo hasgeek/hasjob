@@ -66,7 +66,7 @@ def configure_once(limit=1000, offset=0):
     for model in INDEXABLE:
         current_offset = offset
         while current_offset < model.query.count():
-            records = [record.search_mapping() for record in model.query.order_by("created_at asc").limit(limit).offset(current_offset).all()]
+            records = [record.search_mapping() for record in model.query.order_by(model.id).limit(limit).offset(current_offset).all()]
             es.bulk([es.index_op(record, id=record['idref']) for record in records],
                     index=app.config.get('ELASTICSEARCH_INDEX'),
                     doc_type=model.idref)
