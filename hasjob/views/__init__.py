@@ -10,6 +10,10 @@ from hasjob import app
 @app.route('/edit/')
 @app.route('/confirm/')
 @app.route('/withdraw/')
+@app.route('/in/')
+@app.route('/at/')
+@app.route('/by/')
+@app.route('/index.php')
 def root_paths():
     return redirect(url_for('index'), code=302)
 
@@ -25,4 +29,4 @@ ALLOWED_TAGS = [
     'a',
 ]
 
-from . import index, error_handling, helper, listing, admin, static, login, board, kiosk, campaign, admindash
+from . import index, error_handling, helper, listing, location, admin, static, login, board, kiosk, campaign, admindash  # NOQA

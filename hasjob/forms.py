@@ -453,6 +453,14 @@ class PinnedForm(forms.Form):
     pinned = forms.BooleanField("Pin this")
 
 
+class NewLocationForm(forms.Form):
+    geoname = forms.RadioField("Top locations")
+
+
+class EditLocationForm(forms.Form):
+    description = forms.TinyMce4Field("Description", content_css=content_css)
+
+
 def jobtype_label(jobtype):
     annotations = []
     if jobtype.nopay_allowed:

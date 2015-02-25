@@ -25,6 +25,12 @@
       {%- endif %}
     </div>
   {%- endif %}
+  {%- if location and location.short_title and location.description %}
+    <div class="flash info">
+      <h2>{{ location.short_title }}</h2>
+      {{ location.description }}
+    </div>
+  {%- endif %}
   <ul id="stickie-area" class="row">
     {%- if jobtype or jobcategory -%}
       <li class="col-xs-12 col-md-3 col-sm-4">
