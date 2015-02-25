@@ -12,7 +12,7 @@ before_script:
   - sudo /etc/init.d/postfix reload
   - psql -c 'create database hasjob;' -U postgres
   - python manage.py db create -e testing
-  - nohup python runtestserver.py &
+  - python runtestserver.py
   - sleep 10
 script: casperjs test tests/test_suite.js
 addons:
