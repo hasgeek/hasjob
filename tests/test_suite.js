@@ -1,7 +1,10 @@
-
 var system = require('system'); 
+var casper = require('casper').create({
+    verbose: true,
+    logLevel: "debug"
+});
 
-var host = system.env.TEST_HOST || "hasjob.travis.local:5000"; //presumably 127.0.0.1
+var host = "hasjob.travis.local:5000"; //presumably 127.0.0.1
 var test_username = system.env.TEST_USERNAME; // Dummy user's username that's create on startup
 var test_password = system.env.TEST_PASSWORD; // Dummy user's password that's create on startup
 
