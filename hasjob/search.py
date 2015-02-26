@@ -27,7 +27,7 @@ def do_search(query, expand=False):
     """
     if not query:
         return []
-    hits = es.search(query, index=app.config.get('ELASTICSEARCH_INDEX'))['hits']['hits']
+    hits = es.search(query, index=app.config.get('ELASTICSEARCH_INDEX'), size=200)['hits']['hits']
     if not hits or not expand:
         return hits
     results = [fetch_record(hit[u'_id']) for hit in hits]
