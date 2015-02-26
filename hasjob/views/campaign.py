@@ -10,7 +10,8 @@ from coaster.utils import buid
 from coaster.views import load_model, load_models
 from baseframe.forms import render_form, render_delete_sqla, render_redirect
 from .. import app, lastuser
-from ..models import db, Campaign, CampaignAction, CampaignUserAction, CampaignAnonUserAction, CAMPAIGN_ACTION
+from ..models import (db, Campaign, CampaignView, CampaignAction, CampaignUserAction, CampaignAnonUserAction,
+    CAMPAIGN_ACTION)
 from ..forms import CampaignForm, CampaignActionForm
 
 
@@ -127,19 +128,26 @@ def campaign_action_delete(campaign, action):
 @load_model(Campaign, {'name': 'campaign'}, 'campaign')
 def campaign_view_counts(campaign):
     timezone = g.user.timezone if g.user else 'UTC'
-
+    interval = 'hour'
     viewdict = defaultdict(dict)
+    started_at = db.session.query(db.func.min(CampaignView.created_at)).filter(CampaignView.campaign == campaign).first()
+    if started_at:
+        started_at = started_at[0]
+        ended_at = db.session.query(db.func.max(CampaignView.created_at)).filter(CampaignView.campaign == campaign).first()[0]
+        if ended_at - started_at > timedelta(days=7):
+            # It's been a week. Show data per day
+            interval = 'day'
 
     hourly_views = db.session.query('hour', 'count').from_statement(db.text(
-        '''SELECT date_trunc('hour', campaign_view.created_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS hour, COUNT(*) AS count FROM campaign_view WHERE campaign_id=:campaign_id GROUP BY hour ORDER BY hour;'''
-    )).params(timezone=timezone, campaign_id=campaign.id)
+        '''SELECT date_trunc(:interval, campaign_view.created_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS hour, COUNT(*) AS count FROM campaign_view WHERE campaign_id=:campaign_id GROUP BY hour ORDER BY hour;'''
+    )).params(interval=interval, timezone=timezone, campaign_id=campaign.id)
 
     for hour, count in hourly_views:
         viewdict[hour]['_views'] = count
 
     hourly_views = db.session.query('hour', 'count').from_statement(db.text(
-        '''SELECT date_trunc('hour', campaign_user_action.created_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS hour, COUNT(DISTINCT(user_id)) AS count FROM campaign_user_action WHERE action_id IN (SELECT id FROM campaign_action WHERE campaign_id = :campaign_id) GROUP BY hour ORDER BY hour;'''
-        )).params(timezone=timezone, campaign_id=campaign.id)
+        '''SELECT date_trunc(:interval, campaign_user_action.created_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS hour, COUNT(DISTINCT(user_id)) AS count FROM campaign_user_action WHERE action_id IN (SELECT id FROM campaign_action WHERE campaign_id = :campaign_id) GROUP BY hour ORDER BY hour;'''
+        )).params(interval=interval, timezone=timezone, campaign_id=campaign.id)
 
     for hour, count in hourly_views:
         viewdict[hour]['_combined'] = count
@@ -149,8 +157,8 @@ def campaign_view_counts(campaign):
     for action in campaign.actions:
         action_names.append(action.name)
         hourly_views = db.session.query('hour', 'count').from_statement(db.text(
-            '''SELECT date_trunc('hour', campaign_user_action.created_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS hour, COUNT(*) AS count FROM campaign_user_action WHERE action_id=:action_id GROUP BY hour ORDER BY hour;'''
-        )).params(timezone=timezone, action_id=action.id)
+            '''SELECT date_trunc(:interval, campaign_user_action.created_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS hour, COUNT(*) AS count FROM campaign_user_action WHERE action_id=:action_id GROUP BY hour ORDER BY hour;'''
+        )).params(interval=interval, timezone=timezone, action_id=action.id)
         for hour, count in hourly_views:
             viewdict[hour][action.name] = count
 
@@ -160,8 +168,8 @@ def campaign_view_counts(campaign):
         maxhour = g.user.tz.localize(max(viewdict.keys()) + timedelta(seconds=3599)).astimezone(UTC).replace(tzinfo=None)
 
         hourly_views = db.session.query('hour', 'count').from_statement(db.text(
-            '''SELECT date_trunc('hour', user_active_at.active_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS hour, COUNT(DISTINCT(user_active_at.user_id)) AS count FROM user_active_at WHERE user_active_at.active_at >= :min AND user_active_at.active_at <= :max GROUP BY hour ORDER BY hour;'''
-            )).params(timezone=timezone, min=minhour, max=maxhour)
+            '''SELECT date_trunc(:interval, user_active_at.active_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS hour, COUNT(DISTINCT(user_active_at.user_id)) AS count FROM user_active_at WHERE user_active_at.active_at >= :min AND user_active_at.active_at <= :max GROUP BY hour ORDER BY hour;'''
+            )).params(interval=interval, timezone=timezone, min=minhour, max=maxhour)
 
         for hour, count in hourly_views:
             viewdict[hour]['_site'] = count
