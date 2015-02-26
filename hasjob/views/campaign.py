@@ -15,6 +15,20 @@ from ..models import (db, Campaign, CampaignView, CampaignAction, CampaignUserAc
 from ..forms import CampaignForm, CampaignActionForm
 
 
+def chart_interval_for(campaign, default='hour'):
+    interval = default
+    started_at = db.session.query(db.func.min(CampaignView.created_at)).filter(CampaignView.campaign == campaign).first()[0]
+    if started_at:
+        ended_at = db.session.query(db.func.max(CampaignView.created_at)).filter(CampaignView.campaign == campaign).first()[0]
+        if ended_at - started_at > timedelta(days=7):
+            # It's been a week. Show data per day
+            interval = 'day'
+        else:
+            # Under a week? Per hour
+            interval = 'hour'
+    return interval
+
+
 @app.route('/admin/campaign', methods=['GET'])
 @lastuser.requires_permission('siteadmin')
 def campaign_list():
@@ -43,7 +57,7 @@ def campaign_new():
 @lastuser.requires_permission('siteadmin')
 @load_model(Campaign, {'name': 'campaign'}, 'campaign')
 def campaign_view(campaign):
-    return render_template('campaign_info.html', campaign=campaign)
+    return render_template('campaign_info.html', campaign=campaign, interval=chart_interval_for(campaign, default=None))
 
 
 @app.route('/admin/campaign/<campaign>/edit', methods=['GET', 'POST'])
@@ -128,15 +142,9 @@ def campaign_action_delete(campaign, action):
 @load_model(Campaign, {'name': 'campaign'}, 'campaign')
 def campaign_view_counts(campaign):
     timezone = g.user.timezone if g.user else 'UTC'
-    interval = 'hour'
     viewdict = defaultdict(dict)
-    started_at = db.session.query(db.func.min(CampaignView.created_at)).filter(CampaignView.campaign == campaign).first()
-    if started_at:
-        started_at = started_at[0]
-        ended_at = db.session.query(db.func.max(CampaignView.created_at)).filter(CampaignView.campaign == campaign).first()[0]
-        if ended_at - started_at > timedelta(days=7):
-            # It's been a week. Show data per day
-            interval = 'day'
+
+    interval = chart_interval_for(campaign)
 
     hourly_views = db.session.query('hour', 'count').from_statement(db.text(
         '''SELECT date_trunc(:interval, campaign_view.created_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS hour, COUNT(*) AS count FROM campaign_view WHERE campaign_id=:campaign_id GROUP BY hour ORDER BY hour;'''
