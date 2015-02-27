@@ -25,6 +25,8 @@ def fetch_record(idref):
 def do_search(query, expand=False):
     """
     Returns search results
+    TODO:
+    Handle elastic search exception; search against postgres directly in the event
     """
     if not query:
         return []
