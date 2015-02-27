@@ -6,6 +6,7 @@ from hasjob import models, app, es
 from hasjob.models import db
 
 INDEXABLE = (models.JobType, models.JobCategory, models.JobPost)
+shards_size = 1
 
 
 def type_from_idref(idref):
@@ -42,7 +43,7 @@ def do_search(query, expand=False):
         },
         "size":  0
     }
-    es_scroll_id = es.search(index=app.config.get('ELASTICSEARCH_INDEX'), body=es_query, search_type="scan", scroll="1m", size=1000)['_scroll_id']
+    es_scroll_id = es.search(index=app.config.get('ELASTICSEARCH_INDEX'), body=es_query, search_type="scan", scroll="1m", size=shards_size)['_scroll_id']
     hits = es.scroll(scroll_id=es_scroll_id, scroll="1m")['hits']['hits']
     if not hits or not expand:
         return hits

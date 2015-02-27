@@ -374,6 +374,7 @@ class JobPost(BaseMixin, db.Model):
         return {'title': self.headline,
                 'content': content,
                 'public': self.is_listed(),
+                'datetime': self.datetime,
                 'idref': u'%s/%s' % (self.idref, self.id),
                 }
 
