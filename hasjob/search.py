@@ -2,7 +2,7 @@
 
 from flask.ext.sqlalchemy import models_committed
 from flask.ext.rq import job
-from hasjob import models, app, es
+from hasjob import models, app, es, py_es
 
 INDEXABLE = (models.JobType, models.JobCategory, models.JobPost)
 
@@ -27,7 +27,9 @@ def do_search(query, expand=False):
     """
     if not query:
         return []
-    hits = es.search(query, index=app.config.get('ELASTICSEARCH_INDEX'), size=200)['hits']['hits']
+    es_query = {"query": {"match": {"content": query}}}
+    es_scroll_id = es.search(index=app.config.get('ELASTICSEARCH_INDEX'), body=es_query, search_type="scan", scroll="1m", size=1000)['_scroll_id']
+    hits = es.scroll(scroll_id=es_scroll_id, scroll="1m")['hits']['hits']
     if not hits or not expand:
         return hits
     results = [fetch_record(hit[u'_id']) for hit in hits]
@@ -40,7 +42,7 @@ def update_index(data):
         if not mapping['public'] or change == 'update' or change == 'delete':
             delete_from_index([mapping])
         if change == 'insert' or change == 'update':
-            es.bulk([es.update_op(doc=mapping, id=mapping['idref'], upsert=mapping, doc_as_upsert=True)], index=app.config.get('ELASTICSEARCH_INDEX'), doc_type=type_from_idref(mapping['idref']))
+            py_es.bulk([py_es.update_op(doc=mapping, id=mapping['idref'], upsert=mapping, doc_as_upsert=True)], index=app.config.get('ELASTICSEARCH_INDEX'), doc_type=type_from_idref(mapping['idref']))
 
 
 def on_models_committed(sender, changes):
@@ -58,7 +60,7 @@ def on_models_committed(sender, changes):
 
 @job("hasjob-search")
 def delete_from_index(oblist):
-    es.bulk([es.delete_op(id=mapping['idref'],
+    py_es.bulk([py_es.delete_op(id=mapping['idref'],
      doc_type=type_from_idref(mapping['idref'])) for mapping in oblist], index=app.config.get('ELASTICSEARCH_INDEX'))
 
 
@@ -67,7 +69,7 @@ def configure_once(limit=1000, offset=0):
         current_offset = offset
         while current_offset < model.query.count():
             records = [record.search_mapping() for record in model.query.order_by(model.id).limit(limit).offset(current_offset).all()]
-            es.bulk([es.index_op(record, id=record['idref']) for record in records],
+            py_es.bulk([py_es.index_op(record, id=record['idref']) for record in records],
                     index=app.config.get('ELASTICSEARCH_INDEX'),
                     doc_type=model.idref)
             current_offset += len(records)
