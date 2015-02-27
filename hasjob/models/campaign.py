@@ -5,7 +5,7 @@ from sqlalchemy import event
 from sqlalchemy.orm import deferred
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.orderinglist import ordering_list
-from flask import request, Markup
+from flask import request, Markup, url_for
 from coaster.utils import LabeledEnum
 from coaster.sqlalchemy import JsonDict
 from baseframe import __
@@ -365,6 +365,17 @@ class CampaignAction(BaseScopedNameMixin, db.Model):
     @classmethod
     def get(cls, campaign, name):
         return cls.query.filter_by(campaign=campaign, name=name).one_or_none()
+
+    def url_for(self, action='view', _external=False, **kwargs):
+        if action == 'edit':
+            return url_for('campaign_action_edit', campaign=self.campaign.name, action=self.name,
+                _external=_external, **kwargs)
+        elif action == 'delete':
+            return url_for('campaign_action_delete', campaign=self.campaign.name, action=self.name,
+                _external=_external, **kwargs)
+        elif action == 'csv':
+            return url_for('campaign_action_csv', campaign=self.campaign.name, action=self.name,
+                _external=_external, **kwargs)
 
 
 class CampaignView(TimestampMixin, db.Model):

@@ -59,14 +59,17 @@
       <div id="chart"></div>
     </div>
     <div class="section" role="tabpanel">
-      <ul class="nav nav-pills">
-        {%- for action in campaign.actions %}{% if action.type in ('Y', 'N', 'M', 'F') %}
-          <li role="presentation" {%- if loop.first %} class="active" {%- endif %}><a href="#users-{{ action.name }}" aria-controls="users-{{ action.name }}" role="tab" data-toggle="pill">{{ action.title }}</a></li>
-        {% endif %}{%- endfor %}
+      <ul class="nav nav-tabs">
+        {%- for action in campaign.actions if action.type in ('Y', 'N', 'M', 'F') %}
+          <li role="presentation" {%- if loop.first %} class="active" {%- endif %}><a href="#users-{{ action.name }}" aria-controls="users-{{ action.name }}" role="tab" data-toggle="tab">{{ action.title }}</a></li>
+        {%- endfor %}
       </ul>
       <div class="tab-content">
-        {%- for action in campaign.actions %}{% if action.type in ('Y', 'N', 'M', 'F') %}
+        {%- for action in campaign.actions if action.type in ('Y', 'N', 'M', 'F') %}
           <div role="tabpanel" class="tab-pane fade {%- if loop.first %} in active {%- endif %}" id="users-{{ action.name }}">
+            <p class="tab-download">
+              <a href="{{ action.url_for('csv') }}"><i class="fa fa-download"></i> Download CSV</a>
+            </p>
             <table class="table table-responsive">
               <thead>
                 <tr>
@@ -90,7 +93,7 @@
               </tbody>
             </table>
           </div>
-        {%- endif %}{%- endfor %}
+        {%- endfor %}
       </div>
     </div>
     {%- endif %}
@@ -129,10 +132,6 @@
             format: {% if interval == 'hour' %}'%m-%d %H:%M'{% else %}'%a %m-%d'{% endif %}
           }
         }
-      },
-      zoom: {
-        enabled: true,
-        rescale: false
       }
     });
   </script>

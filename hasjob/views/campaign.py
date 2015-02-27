@@ -6,7 +6,7 @@ from cStringIO import StringIO
 from pytz import UTC
 import unicodecsv
 from flask import g, request, flash, url_for, redirect, render_template, Markup, abort
-from coaster.utils import buid
+from coaster.utils import buid, make_name
 from coaster.views import load_model, load_models
 from baseframe.forms import render_form, render_delete_sqla, render_redirect
 from .. import app, lastuser
@@ -133,6 +133,24 @@ def campaign_action_delete(campaign, action):
         message=u"Delete campaign action '%s'?" % campaign.title,
         success=u"You have deleted campaign action '%s'." % campaign.title,
         next=url_for('campaign_view', campaign=campaign.name))
+
+
+@app.route('/admin/campaign/<campaign>/<action>/csv', methods=['GET', 'POST'])
+@lastuser.requires_permission('siteadmin')
+@load_models(
+    (Campaign, {'name': 'campaign'}, 'campaign'),
+    (CampaignAction, {'name': 'action', 'campaign': 'campaign'}, 'action'))
+def campaign_action_csv(campaign, action):
+    if action.type not in ('Y', 'N', 'M', 'F'):
+        abort(403)
+    outfile = StringIO()
+    out = unicodecsv.writer(outfile, 'excel')
+    out.writerow(['fullname', 'username', 'email', 'phone'])
+    for ua in action.useractions:
+        out.writerow([ua.user.fullname, ua.user.username, ua.user.email, ua.user.phone])
+    return outfile.getvalue(), 200, {'Content-Type': 'text/csv',
+        'Content-Disposition': 'attachment; filename="%s-%s.csv"' % (
+            make_name(campaign.title), make_name(action.title))}
 
 
 # --- Campaign charts ---------------------------------------------------------
