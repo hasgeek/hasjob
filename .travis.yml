@@ -1,8 +1,25 @@
 language: python
 python:
-  - 2.6
   - 2.7
-script: nosetests
+before_install:
+  - sudo apt-get install postfix
+  - sudo apt-get install pandoc
+  - npm install casperjs
+cache:
+  - pip
+  - apt
+before_script:
+  - sudo /etc/init.d/postfix reload
+  - sudo -- sh -c "echo '127.0.0.1  hasjob.travis.local static.hasjob.travis.local' >> /etc/hosts"
+  - psql -c 'create database hasjob;' -U postgres
+  - python manage.py db create -e testing
+  - nohup python runtestserver.py &
+  - sleep 20
+script: casperjs test --log-level=debug tests/test_suite.js
+addons:
+  postgresql: "9.3"
+services:
+  - redis-server
 notifications:
   email: false
   irc: "irc.freenode.net#hasgeek-dev"

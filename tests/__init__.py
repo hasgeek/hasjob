@@ -1,4 +1,5 @@
 import unittest
+import mechanize
 from flask.ext.testing import TestCase, Twill
 from hasjob import app, init_for
 from hasjob.models import db
@@ -10,6 +11,7 @@ class TestBase(TestCase):
         app.config['TESTING'] = True
         db.create_all()
         init_for('testing')
+        self.br = mechanize.Browser()
         return app
 
     def tearDown(self):

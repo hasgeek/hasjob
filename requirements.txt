@@ -26,6 +26,7 @@ tldextract
 unicodecsv
 geoip2
 Flask-Script==0.5.3
+psycopg2
 https://github.com/hasgeek/coaster/zipball/master
 https://github.com/hasgeek/flask-lastuser/zipball/master
 https://github.com/hasgeek/baseframe/zipball/master
