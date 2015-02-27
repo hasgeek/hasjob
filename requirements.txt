@@ -18,6 +18,7 @@ coverage
 bleach
 ordereddict
 jsmin
+psycopg2
 dnspython
 html2text
 premailer
