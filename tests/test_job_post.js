@@ -57,8 +57,8 @@ casper.test.begin('Hasjob Post A Job Flow', 13, function suite(test) {
             document.querySelector('#job_pay_cash_max').value = "500000";
             document.querySelector('#job_how_to_apply').value = "What is the answer to Life, the Universe and Everything?";
             document.querySelector('#company_name').value = "Acme Corp";
-            document.querySelector('#company_url').value = "http://hasgeek.com/";
-            document.querySelector('#poster_email').value = "karthik@hasgeek.com";
+            document.querySelector('#company_url').value = "http://mailinator.com/";
+            document.querySelector('#poster_email').value = "travishasjob@mailinator.com";
             document.querySelector('#newjob').submit();
         });
     });
