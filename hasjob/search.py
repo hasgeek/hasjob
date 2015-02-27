@@ -3,6 +3,7 @@
 from flask.ext.sqlalchemy import models_committed
 from flask.ext.rq import job
 from hasjob import models, app, es
+from hasjob.models import db
 
 INDEXABLE = (models.JobType, models.JobCategory, models.JobPost)
 
@@ -27,13 +28,29 @@ def do_search(query, expand=False):
     """
     if not query:
         return []
-    es_query = {"query": {"match": {"content": query}}}
+
+    es_query = {"query": {
+        "bool": {
+            "must": [
+                {"match": {"content": query}},
+                {"match": {"public": True}}
+            ]
+        }
+    }}
     es_scroll_id = es.search(index=app.config.get('ELASTICSEARCH_INDEX'), body=es_query, search_type="scan", scroll="1m", size=1000)['_scroll_id']
     hits = es.scroll(scroll_id=es_scroll_id, scroll="1m")['hits']['hits']
     if not hits or not expand:
         return hits
-    results = [fetch_record(hit[u'_id']) for hit in hits]
-    return [result for result in results if result is not None]
+
+    job_post_ids = []
+    job_filters = []
+    for hit in hits:
+        if type_from_idref(hit[u'_id']) == models.JobPost.idref:
+            job_post_ids.append(id_from_idref(hit[u'_id']))
+        else:
+            job_filters.append(fetch_record(hit[u'_id']))
+    job_posts = models.JobPost.query.filter(models.JobPost.id.in_(job_post_ids)).all()
+    return {'job_posts': job_posts, 'job_filters': job_filters}
 
 
 @job("hasjob-search")

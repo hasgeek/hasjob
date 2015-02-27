@@ -456,7 +456,5 @@ def logoimage(domain, hashid):
 @app.route('/search')
 def search():
     now = datetime.utcnow()
-    results = sorted(do_search(request.args.get('q', u''), expand=True),
-        key=lambda r: getattr(r, 'datetime', now))
-    results.reverse()
-    return render_template('search.html', results=results, now=now, newlimit=newlimit)
+    results = do_search(request.args.get('q', u''), expand=True)
+    return render_template('search.html', now=now, results=results, newlimit=newlimit)
