@@ -2,7 +2,7 @@
 
 from flask.ext.sqlalchemy import models_committed
 from flask.ext.rq import job
-from hasjob import models, app, es, py_es
+from hasjob import models, app, es
 
 INDEXABLE = (models.JobType, models.JobCategory, models.JobPost)
 
@@ -42,7 +42,7 @@ def update_index(data):
         if not mapping['public'] or change == 'update' or change == 'delete':
             delete_from_index([mapping])
         if change == 'insert' or change == 'update':
-            py_es.bulk([py_es.update_op(doc=mapping, id=mapping['idref'], upsert=mapping, doc_as_upsert=True)], index=app.config.get('ELASTICSEARCH_INDEX'), doc_type=type_from_idref(mapping['idref']))
+            app.py_es.bulk([app.py_es.update_op(doc=mapping, id=mapping['idref'], upsert=mapping, doc_as_upsert=True)], index=app.config.get('ELASTICSEARCH_INDEX'), doc_type=type_from_idref(mapping['idref']))
 
 
 def on_models_committed(sender, changes):
@@ -60,7 +60,7 @@ def on_models_committed(sender, changes):
 
 @job("hasjob-search")
 def delete_from_index(oblist):
-    py_es.bulk([py_es.delete_op(id=mapping['idref'],
+    app.py_es.bulk([app.py_es.delete_op(id=mapping['idref'],
      doc_type=type_from_idref(mapping['idref'])) for mapping in oblist], index=app.config.get('ELASTICSEARCH_INDEX'))
 
 
@@ -69,7 +69,7 @@ def configure_once(limit=1000, offset=0):
         current_offset = offset
         while current_offset < model.query.count():
             records = [record.search_mapping() for record in model.query.order_by(model.id).limit(limit).offset(current_offset).all()]
-            py_es.bulk([py_es.index_op(record, id=record['idref']) for record in records],
+            app.py_es.bulk([app.py_es.index_op(record, id=record['idref']) for record in records],
                     index=app.config.get('ELASTICSEARCH_INDEX'),
                     doc_type=model.idref)
             current_offset += len(records)
