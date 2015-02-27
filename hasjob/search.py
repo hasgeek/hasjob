@@ -31,14 +31,17 @@ def do_search(query, expand=False):
     if not query:
         return []
 
-    es_query = {"query": {
-        "bool": {
-            "must": [
-                {"match": {"content": query}},
-                {"match": {"public": True}}
-            ]
-        }
-    }}
+    es_query = {
+        "query": {
+            "bool": {
+                "must": [
+                    {"match": {"content": query}},
+                    {"match": {"public": True}}
+                ]
+            }
+        },
+        "size":  0
+    }
     es_scroll_id = es.search(index=app.config.get('ELASTICSEARCH_INDEX'), body=es_query, search_type="scan", scroll="1m", size=1000)['_scroll_id']
     hits = es.scroll(scroll_id=es_scroll_id, scroll="1m")['hits']['hits']
     if not hits or not expand:
