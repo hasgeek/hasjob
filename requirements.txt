@@ -32,5 +32,4 @@ https://github.com/hasgeek/flask-lastuser/zipball/master
 https://github.com/hasgeek/baseframe/zipball/master
 https://github.com/jace/flask-alembic/zipball/master
 pyelasticsearch
-https://github.com/jace/flask-pyelasticsearch/archive/master.zip#egg=Flask-PyElasticSearch-dev
 elasticsearch
