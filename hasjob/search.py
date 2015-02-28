@@ -55,7 +55,7 @@ def do_search(query, expand=False):
             job_post_ids.append(id_from_idref(hit[u'_id']))
         else:
             job_filters.append(fetch_record(hit[u'_id']))
-    job_posts = models.JobPost.query.filter(models.JobPost.id.in_(job_post_ids)).all()
+    job_posts = models.JobPost.get_by_ids(job_post_ids)
     return {'job_posts': job_posts, 'job_filters': job_filters}
 
 
