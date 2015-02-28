@@ -21,7 +21,7 @@
       {% endif %}
     </a>
   </li>
-  {% endfor %}
+  {%- endfor -%}
   {%- for result in results['job_posts'] -%}
   <li class="col-xs-12 col-md-3 col-sm-4">
     <a href="{{ result|urlfor }}" class="stickie {%- if result.idref in ['type', 'category'] %} special{% endif %}">
@@ -40,6 +40,6 @@
       No jobs found.
     </span>
   </li>
-  {% endfor %}
+  {%- endfor -%}
 </ul>
 {% endblock %}
