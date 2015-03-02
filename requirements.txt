@@ -27,7 +27,7 @@ tldextract
 unicodecsv
 geoip2
 Flask-Script==0.5.3
-https://github.com/hasgeek/coaster/zipball/master
-https://github.com/hasgeek/flask-lastuser/zipball/master
-https://github.com/hasgeek/baseframe/zipball/master
-https://github.com/jace/flask-alembic/zipball/master
+git+https://github.com/hasgeek/coaster
+git+https://github.com/hasgeek/flask-lastuser
+git+https://github.com/hasgeek/baseframe
+git+https://github.com/jace/flask-alembic
