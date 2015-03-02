@@ -14,7 +14,7 @@ before_script:
   - psql -c 'create database hasjob;' -U postgres
   - python manage.py db create -e testing
   - nohup python runtestserver.py &
-  - sleep 20
+  - sleep 30
 script: casperjs test --log-level=debug tests/test_job_post.js
 addons:
   postgresql: "9.3"
