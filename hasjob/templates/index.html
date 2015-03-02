@@ -15,6 +15,23 @@
   {%- if location %}<link rel="alternate" type="application/atom+xml" title="Jobs in {{ location['short_title'] }} – {{ config['SITE_TITLE'] }}" href="{{ url_for('feed_by_location', location=location['name']) }}" />{% endif -%}
   {% endblock %}
   {% block description %}{% if location and location.description %}{{ location.description|firstline }}{% else %}{{ super() }}{% endif %}{% endblock %}
+  {% block headertoo %}
+    <div class="header-section">
+      <div class="container">
+        <div class="row">
+          <div class="col-xs-12 col-sm-3">
+            Location
+          </div>
+          <div class="col-xs-12 col-sm-3 col-md-4">
+            Type/Category
+          </div>
+          <div class="col-xs-12 col-sm-6 col-md-5">
+            Pay
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endblock %}
 {% endif %}
 {% block content %}{% with gkiosk=g.kiosk, gboard=g.board, guser=g.user, gstarred_ids=g.starred_ids %}
 {%- if not request.is_xhr -%}
