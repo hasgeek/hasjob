@@ -32,6 +32,13 @@ class POSTSTATUS:
     POSTPENDING = (CONFIRMED, REVIEWED, REJECTED, WITHDRAWN, FLAGGED, SPAM, MODERATED, ANNOUNCEMENT)
 
 
+class CURRENCY(LabeledEnum):
+    INR = ('INR', 'INR')
+    USD = ('USD', 'USD')
+    EUR = ('EUR', 'EUR')
+    __order__ = (INR, USD, EUR)
+
+
 class EMPLOYER_RESPONSE(LabeledEnum):
     NEW = (0, u"New")            # New application
     PENDING = (1, u"Pending")    # Employer viewed on website

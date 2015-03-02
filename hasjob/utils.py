@@ -2,6 +2,17 @@ import re
 from random import randint
 from coaster import simplify_text
 
+NO_NUM_RE = re.compile('[^0-9]+', re.UNICODE)
+
+
+def string_to_number(value):
+    """
+    Convert a string containing a formatted number into an integer.
+    """
+    value = NO_NUM_RE.sub('', value)
+    if value:
+        return int(value)
+
 
 #: This code adapted from http://en.wikipedia.org/wiki/Base_36#Python%5FConversion%5FCode
 def base36encode(number, alphabet='0123456789abcdefghijklmnopqrstuvwxyz'):

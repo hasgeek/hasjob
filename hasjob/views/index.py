@@ -8,11 +8,12 @@ from baseframe import csrf
 
 from .. import app, lastuser
 from ..models import (db, JobCategory, JobPost, JobType, POSTSTATUS, newlimit, agelimit, JobLocation,
-    Location, Tag, JobPostTag, Campaign, CAMPAIGN_POSITION)
+    Location, Tag, JobPostTag, Campaign, CAMPAIGN_POSITION, CURRENCY)
 from ..search import do_search
 from ..views.helper import (getposts, getallposts, gettags, location_geodata, cache_viewcounts, session_jobpost_ab,
     bgroup)
 from ..uploads import uploaded_logos
+from ..utils import string_to_number
 
 
 @csrf.exempt
@@ -25,6 +26,42 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
     if basequery is None and not (g.user or g.kiosk or (g.board and not g.board.require_login)):
         showall = False
         batched = False
+
+    if basequery is None:
+        basequery = JobPost.query
+
+    # Apply request.args filters
+    f_types = request.args.getlist('t')
+    while '' in f_types:
+        f_types.remove('')
+    if f_types:
+        basequery = basequery.join(JobType).filter(JobType.name.in_(f_types))
+    f_categories = request.args.getlist('c')
+    while '' in f_categories:
+        f_categories.remove('')
+    if f_categories:
+        basequery = basequery.join(JobCategory).filter(JobCategory.name.in_(f_categories))
+    r_locations = request.args.getlist('l')
+    f_locations = []
+    for rl in r_locations:
+        if rl.isdigit():
+            f_locations.append(int(rl))
+        elif rl:
+            ld = location_geodata(rl)
+            if ld:
+                f_locations.append(ld['geonameid'])
+    if f_locations:
+        basequery = basequery.join(JobLocation).filter(JobLocation.geonameid.in_(f_locations))
+    if 'currency' in request.args and request.args['currency'] in CURRENCY.keys():
+        basequery.filter(JobPost.pay_currency == request.args['currency'])
+    if getbool(request.args.get('equity')):
+        # Only works as a positive filter: you can't search for jobs that DON'T pay in equity
+        basequery = basequery.filter(JobPost.pay_equity_min != None)  # NOQA
+    if 'pmin' in request.args and 'pmax' in request.args:
+        f_min = string_to_number(request.args['pmin'])
+        f_max = string_to_number(request.args['pmax'])
+        if f_min is not None and f_max is not None:
+            basequery = basequery.filter(JobPost.pay_cash_min < f_max, JobPost.pay_cash_max >= f_min)
 
     # getposts sets g.board_jobs, used below
     posts = getposts(basequery, pinned=True, showall=showall, statuses=statuses).all()
