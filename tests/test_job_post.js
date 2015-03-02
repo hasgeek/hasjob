@@ -5,6 +5,9 @@ var test_username = system.env.TEST_USERNAME; // Dummy user's username that's cr
 var test_password = system.env.TEST_PASSWORD; // Dummy user's password that's create on startup
 
 
+casper.options.waitTimeout = 30000;
+casper.options.stepTimeout = 30000;
+
 // Baseframe resources not needed for now
 casper.on('resource.requested', function(requestData, request) {
   if ((requestData.url.indexOf('_baseframe') > -1)) {
