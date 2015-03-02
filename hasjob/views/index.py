@@ -22,6 +22,11 @@ from ..utils import string_to_number
 def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
         location=None, title=None, showall=True, statuses=None, tag=None, batched=True):
 
+    if basequery is None:
+        is_index = True
+    else:
+        is_index = False
+
     now = datetime.utcnow()
     if basequery is None and not (g.user or g.kiosk or (g.board and not g.board.require_login)):
         showall = False
@@ -88,7 +93,7 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
     else:
         board_jobs = {}
 
-    if basequery is None and posts and not g.kiosk:
+    if is_index and posts and not g.kiosk:
         # Group posts by email_domain on index page only, when not in kiosk mode
         grouped = OrderedDict()
         for post in posts:
@@ -197,7 +202,7 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
             for group in grouped.itervalues()
             for pinflag, post, is_bgroup in group}
     elif pinsandposts:
-        g.impressions = {post.id: (pinflag, post.id, is_bgroup) for pinflag, post, is_bgroup in batch}
+        g.impressions = {post.id: (pinflag, post.id, is_bgroup) for pinflag, post, is_bgroup in pinsandposts}
 
     return render_template('index.html', pinsandposts=pinsandposts, grouped=grouped, now=now,
                            newlimit=newlimit, jobtype=type, jobcategory=category, title=title,
