@@ -11,6 +11,11 @@ from ..signals import signal_login, signal_logout
 from ..models import db, Organization, UserActiveAt
 
 
+@app.route('/500')
+def error500():
+    raise Exception("Something b0rked")
+
+
 @app.route('/login')
 @lastuser.login_handler
 def login():
