@@ -57,6 +57,9 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
                 f_locations.append(ld['geonameid'])
     if f_locations:
         basequery = basequery.join(JobLocation).filter(JobLocation.geonameid.in_(f_locations))
+    if getbool(request.args.get('anywhere')):
+        # Only works as a positive filter: you can't search for jobs that are NOT anywhere
+        basequery = basequery.filter(JobPost.remote_location == True)  # NOQA
     if 'currency' in request.args and request.args['currency'] in CURRENCY.keys():
         basequery.filter(JobPost.pay_currency == request.args['currency'])
     if getbool(request.args.get('equity')):
