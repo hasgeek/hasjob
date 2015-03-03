@@ -23,7 +23,7 @@ def fetch_record(idref):
             return model.query.get(id_from_idref(idref))
 
 
-def do_search(query, expand=False):
+def do_search(query, only_ids=False, expand=False):
     """
     Returns search results
     TODO:
@@ -55,8 +55,11 @@ def do_search(query, expand=False):
             job_post_ids.append(id_from_idref(hit[u'_id']))
         else:
             job_filters.append(fetch_record(hit[u'_id']))
-    job_posts = models.JobPost.get_by_ids(job_post_ids)
-    return {'job_posts': job_posts, 'job_filters': job_filters}
+    if only_ids:
+        return job_post_ids
+    else:
+        job_posts = models.JobPost.get_by_ids(job_post_ids)
+        return {'job_posts': job_posts, 'job_filters': job_filters}
 
 
 @job("hasjob-search")
