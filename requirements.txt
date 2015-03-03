@@ -31,3 +31,5 @@ git+https://github.com/hasgeek/coaster
 git+https://github.com/hasgeek/flask-lastuser
 git+https://github.com/hasgeek/baseframe
 git+https://github.com/jace/flask-alembic
+pyelasticsearch
+elasticsearch

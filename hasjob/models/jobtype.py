@@ -30,5 +30,6 @@ class JobType(BaseNameMixin, db.Model):
         return {'title': self.title,
                 'content': self.title,
                 'public': self.public,
+                'datetime': self.updated_at,
                 'idref': u'%s/%s' % (self.idref, self.id),
                 }
