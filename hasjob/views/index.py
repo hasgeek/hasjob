@@ -70,6 +70,9 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
         f_max = string_to_number(request.args['pmax'])
         if f_min is not None and f_max is not None:
             basequery = basequery.filter(JobPost.pay_cash_min < f_max, JobPost.pay_cash_max >= f_min)
+    if request.args.get('q'):
+        basequery = basequery.filter(JobPost.search_vector.op('@@')(
+            db.func.plainto_tsquery(request.args['q'], postgresql_regconfig='english')))
 
     # getposts sets g.board_jobs, used below
     posts = getposts(basequery, pinned=True, showall=showall, statuses=statuses).all()

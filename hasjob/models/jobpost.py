@@ -4,8 +4,10 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 from werkzeug import cached_property
 from flask import url_for, g, escape, Markup
+from sqlalchemy import event, DDL
 from sqlalchemy.orm import defer
 from sqlalchemy.ext.associationproxy import association_proxy
+from sqlalchemy.dialects.postgresql import TSVECTOR
 from coaster.sqlalchemy import make_timestamp_columns, Query, JsonDict
 from baseframe import cache
 from baseframe.staticdata import webmail_domains
@@ -128,6 +130,8 @@ class JobPost(BaseMixin, db.Model):
     reviewer = db.relationship(User, primaryjoin=reviewer_id == User.id, backref="reviewed_posts")
     review_datetime = db.Column(db.DateTime, nullable=True)
     review_comments = db.Column(db.Unicode(250), nullable=True)
+
+    search_vector = db.Column(TSVECTOR, nullable=True)
 
     # Metadata for classification
     language = db.Column(db.CHAR(2), nullable=True)
@@ -815,3 +819,29 @@ def unique_long_hash(model=JobApplication):
             if not hashid.isdigit() and model.query.filter_by(hashid=hashid).isempty():
                 break
     return hashid
+
+
+create_jobpost_search_trigger = DDL(
+    '''
+    CREATE FUNCTION jobpost_search_vector_update() RETURNS TRIGGER AS $$
+    BEGIN
+        IF TG_OP = 'INSERT' THEN
+            NEW.search_vector = to_tsvector('english', COALESCE(NEW.company_name, '') || ' ' || COALESCE(NEW.headline, '') || ' ' || COALESCE(NEW.headlineb, '') || ' ' || COALESCE(NEW.description, '') || ' ' || COALESCE(NEW.perks, ''));
+        END IF;
+        IF TG_OP = 'UPDATE' THEN
+            IF NEW.headline <> OLD.headline OR COALESCE(NEW.headlineb, '') <> COALESCE(OLD.headlineb, '') OR NEW.description <> OLD.description OR NEW.perks <> OLD.perks THEN
+                NEW.search_vector = to_tsvector('english', COALESCE(NEW.company_name, '') || ' ' || COALESCE(NEW.headline, '') || ' ' || COALESCE(NEW.headlineb, '') || ' ' || COALESCE(NEW.description, '') || ' ' || COALESCE(NEW.perks, ''));
+            END IF;
+        END IF;
+        RETURN NEW;
+    END
+    $$ LANGUAGE 'plpgsql';
+
+    CREATE TRIGGER jobpost_search_vector_trigger BEFORE INSERT OR UPDATE ON jobpost
+    FOR EACH ROW EXECUTE PROCEDURE jobpost_search_vector_update();
+
+    CREATE INDEX ix_jobpost_search_vector ON jobpost USING gin(search_vector);
+    ''')
+
+event.listen(JobPost.__table__, 'after_create',
+    create_jobpost_search_trigger.execute_if(dialect='postgresql'))
