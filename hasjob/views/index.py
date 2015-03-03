@@ -67,6 +67,10 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
         f_max = string_to_number(request.args['pmax'])
         if f_min is not None and f_max is not None:
             basequery = basequery.filter(JobPost.pay_cash_min < f_max, JobPost.pay_cash_max >= f_min)
+    if 'q' in request.args:
+        ids_by_keyword = do_search(request.args['q'], only_ids=True, expand=True)
+        if ids_by_keyword:
+            basequery = basequery.filter(JobPost.id.in_(ids_by_keyword))
 
     # getposts sets g.board_jobs, used below
     posts = getposts(basequery, pinned=True, showall=showall, statuses=statuses).all()
@@ -498,7 +502,5 @@ def logoimage(domain, hashid):
 @app.route('/search')
 def search():
     now = datetime.utcnow()
-    results = sorted(do_search(request.args.get('q', u''), expand=True),
-        key=lambda r: getattr(r, 'datetime', now))
-    results.reverse()
-    return render_template('search.html', results=results, now=now, newlimit=newlimit)
+    results = do_search(request.args.get('q', u''), expand=True)
+    return render_template('search.html', now=now, results=results, newlimit=newlimit)

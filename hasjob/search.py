@@ -1,83 +1,74 @@
 # -*- coding: utf-8 -*-
 
-import os.path
 from flask.ext.sqlalchemy import models_committed
 from flask.ext.rq import job
-import time
-from sqlalchemy.exc import ProgrammingError
-from whoosh import fields, index
-from whoosh.index import LockError
-from whoosh.qparser import QueryParser
-from whoosh.analysis import StemmingAnalyzer
-
-from hasjob import models, app
-
+from hasjob import models, app, es
+from hasjob.models import db
 
 INDEXABLE = (models.JobType, models.JobCategory, models.JobPost)
-search_schema = fields.Schema(title=fields.TEXT(stored=True),
-                              content=fields.TEXT(analyzer=StemmingAnalyzer()),
-                              idref=fields.ID(stored=True, unique=True))
+shards_size = 1
 
 
-# For search results
-def ob_from_idref(idref):
-    ref, objid = idref.split('/')
-    if ref == 'post':
-        return models.JobPost.query.get(int(objid))
-    elif ref == 'type':
-        return models.JobType.query.get(int(objid))
-    elif ref == 'category':
-        return models.JobCategory.query.get(int(objid))
+def type_from_idref(idref):
+    return idref.split('/')[0]
 
 
-def do_search(query, expand=False):
+def id_from_idref(idref):
+    return int(idref.split('/')[1])
+
+
+def fetch_record(idref):
+    for model in INDEXABLE:
+        if type_from_idref(idref) == model.idref:
+            return model.query.get(id_from_idref(idref))
+
+
+def do_search(query, only_ids=False, expand=False):
     """
     Returns search results
+    TODO:
+    Handle elastic search exception; search against postgres directly in the event
     """
-    ix = index.open_dir(app.config['SEARCH_INDEX_PATH'])
-    hits = []
+    if not query:
+        return []
 
-    if query:
-        parser = QueryParser("content", schema=ix.schema)
-        try:
-            qry = parser.parse(query)
-        except:
-            # query couldn't be parsed
-            qry = None
-        if qry is not None:
-            searcher = ix.searcher()
-            hits = searcher.search(qry, limit=1000)
-
-    if expand:
-        return (ob_from_idref(hit['idref']) for hit in hits)
-    else:
+    es_query = {
+        "query": {
+            "bool": {
+                "must": [
+                    {"match": {"content": query}},
+                    {"match": {"public": True}}
+                ]
+            }
+        },
+        "size":  0
+    }
+    es_scroll_id = es.search(index=app.config.get('ELASTICSEARCH_INDEX'), body=es_query, search_type="scan", scroll="1m", size=shards_size)['_scroll_id']
+    hits = es.scroll(scroll_id=es_scroll_id, scroll="1m")['hits']['hits']
+    if not hits or not expand:
         return hits
+
+    job_post_ids = []
+    job_filters = []
+    for hit in hits:
+        if type_from_idref(hit[u'_id']) == models.JobPost.idref:
+            job_post_ids.append(id_from_idref(hit[u'_id']))
+        else:
+            job_filters.append(fetch_record(hit[u'_id']))
+    if only_ids:
+        return job_post_ids
+    else:
+        job_posts = models.JobPost.get_by_ids(job_post_ids)
+        return {'job_posts': job_posts, 'job_filters': job_filters}
 
 
 @job("hasjob-search")
 def update_index(data):
-    ix = index.open_dir(app.config['SEARCH_INDEX_PATH'])
-    try:
-        writer = ix.writer()
-    except LockError:
-        time.sleep(1)
-        try:
-            writer = ix.writer()
-        except LockError:
-            time.sleep(5)
-            writer = ix.writer()
     for change, mapping in data:
-        public = mapping.pop('public')
-        if public:
-            if change == 'insert':
-                writer.add_document(**mapping)
-            elif change == 'update':
-                writer.update_document(**mapping)
-            elif change == 'delete':
-                writer.delete_by_term('idref', mapping['idref'])
-        else:
-            writer.delete_by_term('idref', mapping['idref'])
-    writer.commit()
+        if not mapping['public'] or change == 'update' or change == 'delete':
+            delete_from_index([mapping])
+        if change == 'insert' or change == 'update':
+            app.py_es.bulk([app.py_es.update_op(doc=mapping, id=mapping['idref'], upsert=mapping, doc_as_upsert=True)], index=app.config.get('ELASTICSEARCH_INDEX'), doc_type=type_from_idref(mapping['idref']))
 
 
 def on_models_committed(sender, changes):
@@ -95,31 +86,20 @@ def on_models_committed(sender, changes):
 
 @job("hasjob-search")
 def delete_from_index(oblist):
-    ix = index.open_dir(app.config['SEARCH_INDEX_PATH'])
-    writer = ix.writer()
-    for item in oblist:
-        mapping = item.search_mapping()
-        writer.delete_by_term('idref', mapping['idref'])
-    writer.commit()
+    app.py_es.bulk([app.py_es.delete_op(id=mapping['idref'],
+     doc_type=type_from_idref(mapping['idref'])) for mapping in oblist], index=app.config.get('ELASTICSEARCH_INDEX'))
 
 
-def configure_once():
-    index_path = app.config['SEARCH_INDEX_PATH']
-    if not os.path.exists(index_path):
-        os.mkdir(index_path)
-        ix = index.create_in(index_path, search_schema)
-        writer = ix.writer()
-        # Index everything since this is the first time
-        for model in [models.JobType, models.JobCategory, models.JobPost]:
-            try:
-                for ob in model.query.all():
-                    mapping = ob.search_mapping()
-                    public = mapping.pop('public')
-                    if public:
-                        writer.add_document(**mapping)
-            except ProgrammingError:
-                pass  # The table doesn't exist yet. This is really a new installation.
-        writer.commit()
+def configure_once(limit=1000, offset=0):
+    for model in INDEXABLE:
+        current_offset = offset
+        while current_offset < model.query.count():
+            records = [record.search_mapping() for record in model.query.order_by(model.id).limit(limit).offset(current_offset).all()]
+            app.py_es.bulk([app.py_es.index_op(record, id=record['idref']) for record in records],
+                    index=app.config.get('ELASTICSEARCH_INDEX'),
+                    doc_type=model.idref)
+            current_offset += len(records)
+
 
 def configure():
     models_committed.connect(on_models_committed, sender=app)
