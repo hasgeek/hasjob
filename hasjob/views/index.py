@@ -3,7 +3,7 @@
 from datetime import datetime
 from collections import OrderedDict
 from flask import abort, redirect, render_template, request, Response, url_for, g, Markup
-from coaster.utils import getbool, parse_isoformat
+from coaster.utils import getbool, parse_isoformat, for_tsquery
 from baseframe import csrf
 
 from .. import app, lastuser
@@ -71,8 +71,8 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
         if f_min is not None and f_max is not None:
             basequery = basequery.filter(JobPost.pay_cash_min < f_max, JobPost.pay_cash_max >= f_min)
     if request.args.get('q'):
-        basequery = basequery.filter(JobPost.search_vector.op('@@')(
-            db.func.plainto_tsquery(request.args['q'], postgresql_regconfig='english')))
+        basequery = basequery.filter(JobPost.search_vector.match(
+            for_tsquery(request.args['q']), postgresql_regconfig='english'))
 
     # getposts sets g.board_jobs, used below
     posts = getposts(basequery, pinned=True, showall=showall, statuses=statuses).all()
