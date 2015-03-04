@@ -7,7 +7,6 @@ __all__ = ['JobType']
 
 class JobType(BaseNameMixin, db.Model):
     __tablename__ = 'jobtype'
-    idref = 'type'
 
     #: Sequence number for sorting in the display list (to be deprecated by boards)
     seq = db.Column(db.Integer, nullable=False, default=0)
@@ -22,13 +21,3 @@ class JobType(BaseNameMixin, db.Model):
 
     def __repr__(self):
         return '<JobType %d %s%s>' % (self.seq, self.title, ' (private)' if self.private else '')
-
-    def search_mapping(self):
-        """
-        Returns a dictionary suitable for search indexing.
-        """
-        return {'title': self.title,
-                'content': self.title,
-                'public': self.public,
-                'idref': u'%s/%s' % (self.idref, self.id),
-                }

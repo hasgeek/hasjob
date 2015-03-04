@@ -2,17 +2,19 @@
 
 from datetime import datetime
 from collections import OrderedDict
-from flask import abort, redirect, render_template, request, Response, url_for, g, Markup
-from coaster.utils import getbool, parse_isoformat
-from baseframe import csrf
+
+from sqlalchemy.exc import ProgrammingError
+from flask import abort, redirect, render_template, request, Response, url_for, g, flash, Markup
+from coaster.utils import getbool, parse_isoformat, for_tsquery
+from baseframe import csrf, _
 
 from .. import app, lastuser
 from ..models import (db, JobCategory, JobPost, JobType, POSTSTATUS, newlimit, agelimit, JobLocation,
-    Location, Tag, JobPostTag, Campaign, CAMPAIGN_POSITION)
-from ..search import do_search
+    Location, Tag, JobPostTag, Campaign, CAMPAIGN_POSITION, CURRENCY)
 from ..views.helper import (getposts, getallposts, gettags, location_geodata, cache_viewcounts, session_jobpost_ab,
     bgroup)
 from ..uploads import uploaded_logos
+from ..utils import string_to_number
 
 
 @csrf.exempt
@@ -21,10 +23,66 @@ from ..uploads import uploaded_logos
 def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
         location=None, title=None, showall=True, statuses=None, tag=None, batched=True):
 
+    if basequery is None:
+        is_index = True
+    else:
+        is_index = False
+
     now = datetime.utcnow()
     if basequery is None and not (g.user or g.kiosk or (g.board and not g.board.require_login)):
         showall = False
         batched = False
+
+    if basequery is None:
+        basequery = JobPost.query
+
+    # Apply request.args filters
+    f_types = request.args.getlist('t')
+    while '' in f_types:
+        f_types.remove('')
+    if f_types:
+        basequery = basequery.join(JobType).filter(JobType.name.in_(f_types))
+    f_categories = request.args.getlist('c')
+    while '' in f_categories:
+        f_categories.remove('')
+    if f_categories:
+        basequery = basequery.join(JobCategory).filter(JobCategory.name.in_(f_categories))
+    r_locations = request.args.getlist('l')
+    f_locations = []
+    for rl in r_locations:
+        if rl.isdigit():
+            f_locations.append(int(rl))
+        elif rl:
+            ld = location_geodata(rl)
+            if ld:
+                f_locations.append(ld['geonameid'])
+    if f_locations:
+        basequery = basequery.join(JobLocation).filter(JobLocation.geonameid.in_(f_locations))
+    if getbool(request.args.get('anywhere')):
+        # Only works as a positive filter: you can't search for jobs that are NOT anywhere
+        basequery = basequery.filter(JobPost.remote_location == True)  # NOQA
+    if 'currency' in request.args and request.args['currency'] in CURRENCY.keys():
+        basequery.filter(JobPost.pay_currency == request.args['currency'])
+    if getbool(request.args.get('equity')):
+        # Only works as a positive filter: you can't search for jobs that DON'T pay in equity
+        basequery = basequery.filter(JobPost.pay_equity_min != None)  # NOQA
+    if 'pmin' in request.args and 'pmax' in request.args:
+        f_min = string_to_number(request.args['pmin'])
+        f_max = string_to_number(request.args['pmax'])
+        if f_min is not None and f_max is not None:
+            basequery = basequery.filter(JobPost.pay_cash_min < f_max, JobPost.pay_cash_max >= f_min)
+    if request.args.get('q'):
+        q = for_tsquery(request.args['q'])
+        try:
+            # TODO: Can we do syntax validation without a database roundtrip?
+            db.session.query(db.func.to_tsquery(q)).all()
+            # Query's good? Use it.
+            basequery = basequery.filter(JobPost.search_vector.match(q, postgresql_regconfig='english'))
+        except ProgrammingError:
+            db.session.rollback()
+            g.event_data['search_syntax_error'] = (request.args['q'], q)
+            if not request.is_xhr:
+                flash(_(u"Search terms ignored because this didn’t parse: {query}").format(query=q), 'danger')
 
     # getposts sets g.board_jobs, used below
     posts = getposts(basequery, pinned=True, showall=showall, statuses=statuses).all()
@@ -51,7 +109,7 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
     else:
         board_jobs = {}
 
-    if basequery is None and posts and not g.kiosk:
+    if is_index and posts and not g.kiosk:
         # Group posts by email_domain on index page only, when not in kiosk mode
         grouped = OrderedDict()
         for post in posts:
@@ -160,7 +218,7 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
             for group in grouped.itervalues()
             for pinflag, post, is_bgroup in group}
     elif pinsandposts:
-        g.impressions = {post.id: (pinflag, post.id, is_bgroup) for pinflag, post, is_bgroup in batch}
+        g.impressions = {post.id: (pinflag, post.id, is_bgroup) for pinflag, post, is_bgroup in pinsandposts}
 
     return render_template('index.html', pinsandposts=pinsandposts, grouped=grouped, now=now,
                            newlimit=newlimit, jobtype=type, jobcategory=category, title=title,
@@ -455,8 +513,4 @@ def logoimage(domain, hashid):
 @app.route('/search', subdomain='<subdomain>')
 @app.route('/search')
 def search():
-    now = datetime.utcnow()
-    results = sorted(do_search(request.args.get('q', u''), expand=True),
-        key=lambda r: getattr(r, 'datetime', now))
-    results.reverse()
-    return render_template('search.html', results=results, now=now, newlimit=newlimit)
+    return redirect(url_for('index', **request.args))

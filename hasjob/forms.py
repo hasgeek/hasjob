@@ -17,11 +17,11 @@ from coaster.utils import getbool, get_email_domain
 from flask.ext.lastuser import LastuserResourceException
 
 from .models import (User, JobType, JobCategory, JobApplication, Board, EMPLOYER_RESPONSE, PAY_TYPE,
-    CAMPAIGN_POSITION, CAMPAIGN_ACTION, BANNER_LOCATION, Campaign, Domain)
+    CAMPAIGN_POSITION, CAMPAIGN_ACTION, BANNER_LOCATION, CURRENCY, Campaign, Domain)
 from .uploads import process_image, UploadNotAllowed
 
 from . import app, lastuser
-from .utils import simplify_text, EMAIL_RE, URL_RE, PHONE_DETECT_RE, get_word_bag
+from .utils import simplify_text, EMAIL_RE, URL_RE, PHONE_DETECT_RE, get_word_bag, string_to_number
 
 QUOTES_RE = re.compile(ur'[\'"`‘’“”′″‴«»]+')
 
@@ -103,7 +103,7 @@ class ListingForm(forms.Form):
     job_pay_type = forms.RadioField("What does this job pay?", coerce=int,
         validators=[forms.validators.InputRequired("You need to specify what this job pays")],
         choices=PAY_TYPE.items())
-    job_pay_currency = ListingPayCurrencyField("Currency", choices=[("INR", "INR"), ("USD", "USD"), ("EUR", "EUR")])
+    job_pay_currency = ListingPayCurrencyField("Currency", choices=CURRENCY.items())
     job_pay_cash_min = forms.StringField("Minimum")
     job_pay_cash_max = forms.StringField("Maximum")
     job_pay_equity = forms.BooleanField("Equity compensation is available")
@@ -218,27 +218,21 @@ class ListingForm(forms.Form):
             data = field.data.strip()
             if not data:
                 raise forms.ValidationError("Please specify what this job pays")
-            if not data[0].isdigit():
-                data = data[1:]  # Remove currency symbol
-            data = data.replace(',', '').strip()  # Remove thousands separator
-            if data.isdigit():
-                field.data = int(data)
-            else:
+            data = string_to_number(data)
+            if data is None:
                 raise forms.ValidationError("Unrecognised value %s" % field.data)
+            else:
+                field.data = data
         else:
             field.data = None
 
     def validate_job_pay_cash_max(form, field):
         if form.job_pay_type.data in (PAY_TYPE.ONETIME, PAY_TYPE.RECURRING):
-            data = field.data.strip()
-            if data:
-                if not data[0].isdigit():
-                    data = data[1:]  # Remove currency symbol
-                data = data.replace(',', '').strip()  # Remove thousands separator
-            if data and data.isdigit():
-                field.data = int(data)
-            else:
+            data = string_to_number(field.data.strip())
+            if data is None:
                 raise forms.ValidationError("Unrecognised value %s" % field.data)
+            else:
+                field.data = data
         else:
             field.data = None
 
