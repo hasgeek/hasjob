@@ -63,6 +63,21 @@
       </div>
       <div class="col-xs-12 col-sm-6 col-md-4 col-lg-3">
         <form id="search" action="{{ url_for('index') }}" class="form-inline" role="form">
+          {# Remove these when filters UI is introduced #}
+          {%- if 't' in request.args %}{% for t in request.args.getlist('t') %}
+            <input type="hidden" name="t" value="{{ t }}"/>
+          {%- endfor %}{% endif %}
+          {%- if 'c' in request.args %}{% for c in request.args.getlist('c') %}
+            <input type="hidden" name="c" value="{{ c }}"/>
+          {%- endfor %}{% endif %}
+          {%- if 'l' in request.args %}{% for l in request.args.getlist('l') %}
+            <input type="hidden" name="l" value="{{ l }}"/>
+          {%- endfor %}{% endif %}
+          {%- if 'anywhere' in request.args %}<input type="hidden" name="anywhere" value="{{ request.args.anywhere }}"/>{% endif %}
+          {%- if 'equity' in request.args %}<input type="hidden" name="equity" value="{{ request.args.equity }}"/>{% endif %}
+          {%- if 'currency' in request.args %}<input type="hidden" name="currency" value="{{ request.args.currency }}"/>{% endif %}
+          {%- if 'pmin' in request.args %}<input type="hidden" name="pmin" value="{{ request.args.pmin }}"/>{% endif %}
+          {%- if 'pmax' in request.args %}<input type="hidden" name="pmax" value="{{ request.args.pmax }}"/>{% endif %}
           <label for="search-input" class="sr-only">Search</label>
           <div class="input-group input-group-sm">
             <input id="search-input" type="text" placeholder="Find a job…" name="q" value="{{ request.args.q }}" class="form-control"/>
