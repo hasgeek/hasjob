@@ -4,7 +4,7 @@ from datetime import datetime
 from collections import OrderedDict
 
 from sqlalchemy.exc import ProgrammingError
-from flask import abort, redirect, render_template, request, Response, url_for, g, flash
+from flask import abort, redirect, render_template, request, Response, url_for, g, flash, Markup
 from coaster.utils import getbool, parse_isoformat, for_tsquery
 from baseframe import csrf, _
 
