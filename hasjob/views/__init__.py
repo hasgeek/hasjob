@@ -29,4 +29,4 @@ ALLOWED_TAGS = [
     'a',
 ]
 
-from . import index, error_handling, helper, listing, location, admin, static, login, board, kiosk, campaign, admindash  # NOQA
+from . import index, error_handling, helper, listing, location, static, login, board, kiosk, campaign, admindash  # NOQA

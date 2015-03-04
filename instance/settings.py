@@ -17,8 +17,6 @@ TIMEZONE = 'Asia/Kolkata'
 STATIC_SUBDOMAIN = 'static'
 #: Upload path
 UPLOADED_LOGOS_DEST = '/tmp/uploads'
-#: Search index path
-SEARCH_INDEX_PATH = '/tmp/search'
 #: Hascore server
 HASCORE_SERVER = 'https://api.hasgeek.com/'
 #: GeoIP database folder

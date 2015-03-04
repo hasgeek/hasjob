@@ -11,7 +11,6 @@ from baseframe import csrf, _
 from .. import app, lastuser
 from ..models import (db, JobCategory, JobPost, JobType, POSTSTATUS, newlimit, agelimit, JobLocation,
     Location, Tag, JobPostTag, Campaign, CAMPAIGN_POSITION, CURRENCY)
-from ..search import do_search
 from ..views.helper import (getposts, getallposts, gettags, location_geodata, cache_viewcounts, session_jobpost_ab,
     bgroup)
 from ..uploads import uploaded_logos
@@ -514,8 +513,4 @@ def logoimage(domain, hashid):
 @app.route('/search', subdomain='<subdomain>')
 @app.route('/search')
 def search():
-    now = datetime.utcnow()
-    results = sorted(do_search(request.args.get('q', u''), expand=True),
-        key=lambda r: getattr(r, 'datetime', now))
-    results.reverse()
-    return render_template('search.html', results=results, now=now, newlimit=newlimit)
+    return redirect(url_for('index', **request.args))

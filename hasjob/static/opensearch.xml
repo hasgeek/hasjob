@@ -3,7 +3,7 @@
   <ShortName>Hasjob Search</ShortName>
   <Description>Search for jobs at Hasjob</Description>
   <Url type="text/html" method="get"
-       template="https://hasjob.co/search?q={searchTerms}"/>
+       template="https://hasjob.co/?q={searchTerms}"/>
   <Developer>HasGeek</Developer>
   <Language>en-us</Language>
   <OutputEncoding>UTF-8</OutputEncoding>
