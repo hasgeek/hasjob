@@ -36,9 +36,9 @@
       <p>In {{ location_prompts[0]['short_title'] }}? Filter this view:</p>
       <p class="button-bar">
         {%- for loc in location_prompts %}
-          <a class="btn btn-sm btn-default" data-geonameid="{{ loc['geonameid'] }}" href="{{ url_for('index', l=loc['name']) }}">{{ loc['picker_title'] }}</a>
+          <a class="btn btn-sm btn-default" data-geonameid="{{ loc['geonameid'] }}" href="{{ request.base_url + '?l=' + loc['name']|urlencode }}">{{ loc['picker_title'] }}</a>
         {%- endfor %}
-        <a class="btn btn-sm btn-default" href="{{ url_for('index', anywhere=1) }}">Anywhere</a>
+        <a class="btn btn-sm btn-default" href="{{ request.base_url }}?anywhere=1">Anywhere</a>
       </p>
     </div>
   {%- endif %}
