@@ -20,7 +20,7 @@
       <form id="new-search" action="{{ url_for('search') }}" class="form-inline" role="form">
         <div class="container">
           <div class="row">
-            <div class="col-xs-12 col-sm-3">
+            <div class="col-xs-12 col-sm-3 filters">
               <select id="location-filter" name="location" multiple="multiple" class="notselect">
                 <option value="Bangalore">Bangalore</option>
                 <option value="New Delhi">New Delhi</option>
@@ -30,7 +30,7 @@
                 <option value="Washington">Washington</option>
               </select>
             </div>
-            <div class="col-xs-12 col-sm-3">
+            <div class="col-xs-12 col-sm-3 filters">
               <select id="category-filter" name="type" multiple="multiple" class="notselect">
                 <optgroup label="Type">
                   <option value="Full-time employment">Full-time employment</option>
@@ -52,31 +52,33 @@
                 </optgroup>
               </select>
             </div>
-            <div class="col-xs-12 col-sm-3">
+            <div class="col-xs-12 col-sm-3 filters">
               <div class="btn-group pay-btn-group">
                 <button id="pay-filter-btn" class="multiselect dropdown-toggle btn btn-default"><span class="pay-filter-text"></span><b class="caret"></b></button>
                 <ul class="pay-filter-dropdown dropdown-menu">
                   <li><input type="checkbox" id="pay-salary" value="Salary"></input><label for="pay-salary">Salary</label>
                       <div class="salary-filter-dropdown">
-                        <input type="radio" id="salary-na" name="salary" value="NA" checked></input><label for="salary-na">NA</label>
+                        <input type="radio" id="salary-na" name="salary" value="NA"></input><label for="salary-na">NA</label>
                         <input type="radio" id="salary-inr" name="salary" value="INR"></input><label for="salary-inr">INR</label>
                         <input type="radio" id="salary-usd" name="salary" value="USD"></input><label for="salary-usd">USD</label>
                         <input type="radio" id="salary-eur" name="salary" value="EUR"></input><label for="salary-eur">EUR</label>
                       </div>
                       <div class="pay-filter-slider">
                         <span id="filter_pay_cash_min"></span>
+                        <input type="hidden" id="salary-p-min" name="p-min" value="">
                         <span id="filter_pay_cash_max"></span>
+                        <input type="hidden" id="salary-p-max" name="p-max" value="">
                         <div id="salary-slider"></div>
                       </div>
                   </li>
-                  <li><input type="checkbox" id="pay-equity" value="Equity"></input><label for="pay-equity">Equity</label></li>
+                  <li><input type="checkbox" name="equity" id="pay-equity" value="Equity"></input><label for="pay-equity">Equity</label></li>
                 </ul>
               </div> 
             </div><!--eof last pay-filter column-->
-            <div class="col-xs-11 col-sm-2">
-              <input id="search-input" type="text" placeholder="Find a job…" name="q" value="{{ request.args.q }}" class="form-control"/>
+            <div class="col-xs-12 col-sm-2 filters">
+              <input class="keyword-search" type="text" placeholder="Find a job…" name="q" value="{{ request.args.q }}"/>
             </div>
-            <div class="col-xs-1 col-sm-1">
+            <div class="col-xs-3 col-sm-1 filters">
                   <input type="submit" class="btn btn-default submit-btn" value="Go"/>
             </div>      
           </div><!--eof row-->
@@ -332,7 +334,7 @@
         }
     });
     var cashslider = $("#salary-slider").noUiSlider({
-        start: [ 0, 100000 ],
+        start: [ 0, 1000000 ],
         step: 1,
         connect: true,
         behaviour: "tap",
@@ -350,7 +352,9 @@
         })
       });
     cashslider.Link('lower').to($('#filter_pay_cash_min'));
+    cashslider.Link('lower').to($('#salary-p-min'));
     cashslider.Link('upper').to($('#filter_pay_cash_max'));
+    cashslider.Link('upper').to($('#salary-p-max'));
     var indian_rupee_encoder = function(value) {
       value=value.toString();
       value = value.replace(/[^0-9.]/g, '');  // Remove non-digits, assume . for decimals
@@ -411,9 +415,11 @@
         }, true);
       };
       cashslider.Link('lower').to($('#filter_pay_cash_min'));
+      cashslider.Link('lower').to($('#salary-p-min'));
       cashslider.Link('upper').to($('#filter_pay_cash_max'));
+      cashslider.Link('upper').to($('#salary-p-max'));
     };
-    //currency_options($("input[type=radio][name=salary]:checked"));
+    currency_options($("input[type=radio][name=salary]:checked"));
     $("input[type='radio'][name='salary']").on('change', function() {
       currency_options($(this));
     })      

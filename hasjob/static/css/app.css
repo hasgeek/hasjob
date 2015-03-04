@@ -157,15 +157,6 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
   margin-left: 4px;
 }
 
-@media (min-width: 768px) and (max-width: 1023px) {
-  .header-section .dropdown-toggle {
-    font-size: 12px;
-  }
-
-  .header-section .dropdown-menu {
-    font-size: 11px;
-  }
-}
 .salary-filter-dropdown {
   display: none;
   font-size: 11px;
@@ -176,6 +167,40 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
   font-size: 11px;
 }
 
+.keyword-search {
+  width: 100%;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  padding: 6px 12px;
+  line-height: normal;
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .header-section .dropdown-toggle {
+    font-size: 12px;
+  }
+
+  .header-section .dropdown-menu {
+    font-size: 11px;
+  }
+
+  .keyword-search {
+    font-size: 11px;
+    margin-top: 2px;
+    padding: 7px 12px;
+  }
+
+  .submit-btn {
+    font-size: 11px;
+    padding: 7px;
+    margin-top: 2px;
+  }
+}
+@media screen and (max-width: 767px) {
+  .header-section .filters {
+    margin-bottom: 5px;
+  }
+}
 .input-group-btn > .btn {
   border-bottom: 1px solid #ccc;
 }
