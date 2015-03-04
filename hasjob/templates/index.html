@@ -38,6 +38,7 @@
         {%- for loc in location_prompts %}
           <a class="btn btn-sm btn-default" data-geonameid="{{ loc['geonameid'] }}" href="{{ url_for('index', l=loc['name']) }}">{{ loc['picker_title'] }}</a>
         {%- endfor %}
+        <a class="btn btn-sm btn-default" href="{{ url_for('index', anywhere=1) }}">Anywhere</a>
       </p>
     </div>
   {%- endif %}
