@@ -1,3 +1,3 @@
 #!/bin/bash
 
-rqworker -c rqdev hasjob hasjob-search
+rqworker -c rqdev hasjob

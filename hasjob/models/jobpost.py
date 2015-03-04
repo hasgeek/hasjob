@@ -63,7 +63,6 @@ User.starred_job_ids = starred_job_ids
 
 class JobPost(BaseMixin, db.Model):
     __tablename__ = 'jobpost'
-    idref = 'post'
 
     # Metadata
     user_id = db.Column(None, db.ForeignKey('user.id'), nullable=True, index=True)
@@ -359,23 +358,6 @@ class JobPost(BaseMixin, db.Model):
                 return equity
             else:
                 return "No pay"
-
-    def search_mapping(self):
-        """
-        Returns a dictionary suitable for search indexing.
-        """
-        content = '\n'.join((self.headline,
-                            self.location,
-                            self.company_name,
-                            self.company_url,
-                            self.description,
-                            self.perks))
-
-        return {'title': self.headline,
-                'content': content,
-                'public': self.is_listed(),
-                'idref': u'%s/%s' % (self.idref, self.id),
-                }
 
     def tag_content(self):
         return Markup('\n').join((

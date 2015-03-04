@@ -60,9 +60,7 @@ def init_for(env):
         filters=['cssrewrite', 'cssmin'], output='css/editor.packed.css'))
 
     from hasjob.uploads import configure as uploads_configure
-    from hasjob.search import configure as search_configure
     uploads_configure()
-    search_configure()
     mail.init_app(app)
     redis_store.init_app(app)
     lastuser.init_app(app)

@@ -13,7 +13,6 @@ pytz
 markdown
 tweepy
 bitlyapi
-whoosh
 coverage
 bleach
 ordereddict
