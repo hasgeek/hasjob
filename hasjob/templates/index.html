@@ -31,6 +31,15 @@
       <h2>{{ location.short_title }}</h2>
       {{ location.description }}
     </div>
+  {%- elif location_prompts %}
+    <div class="flash info">
+      <p>You seem to be in {{ location_prompts[0]['short_title'] }}. Would you like to see jobs closer to where you are?</p>
+      <p class="button-bar">
+        {%- for loc in location_prompts %}
+          <a class="btn btn-sm btn-default" data-geonameid="{{ loc['geonameid'] }}" href="{{ url_for('index', l=loc['name']) }}">{{ loc['picker_title'] }}</a>
+        {%- endfor %}
+      </p>
+    </div>
   {%- endif %}
   <ul id="stickie-area" class="row">
     {%- if jobtype or jobcategory -%}
