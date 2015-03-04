@@ -2,9 +2,11 @@
 
 from datetime import datetime
 from collections import OrderedDict
-from flask import abort, redirect, render_template, request, Response, url_for, g, Markup
+
+from sqlalchemy.exc import ProgrammingError
+from flask import abort, redirect, render_template, request, Response, url_for, g, flash
 from coaster.utils import getbool, parse_isoformat, for_tsquery
-from baseframe import csrf
+from baseframe import csrf, _
 
 from .. import app, lastuser
 from ..models import (db, JobCategory, JobPost, JobType, POSTSTATUS, newlimit, agelimit, JobLocation,
@@ -71,8 +73,17 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
         if f_min is not None and f_max is not None:
             basequery = basequery.filter(JobPost.pay_cash_min < f_max, JobPost.pay_cash_max >= f_min)
     if request.args.get('q'):
-        basequery = basequery.filter(JobPost.search_vector.match(
-            for_tsquery(request.args['q']), postgresql_regconfig='english'))
+        q = for_tsquery(request.args['q'])
+        try:
+            # TODO: Can we do syntax validation without a database roundtrip?
+            db.session.query(db.func.to_tsquery(q)).all()
+            # Query's good? Use it.
+            basequery = basequery.filter(JobPost.search_vector.match(q, postgresql_regconfig='english'))
+        except ProgrammingError:
+            db.session.rollback()
+            g.event_data['search_syntax_error'] = (request.args['q'], q)
+            if not request.is_xhr:
+                flash(_(u"Search terms ignored because this didn’t parse: {query}").format(query=q), 'danger')
 
     # getposts sets g.board_jobs, used below
     posts = getposts(basequery, pinned=True, showall=showall, statuses=statuses).all()
