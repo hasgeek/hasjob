@@ -71,8 +71,7 @@
           {% for error in form.job_pay_equity_max.errors %}<div><p class="help-error">{{ error }}</p></div>{% endfor %}
         </div>
         <p class="help-block">
-          Pay data is <em>not</em> revealed to candidates. This data is for an upcoming feature to
-          promote this job to relevant candidates
+          Candidates can’t see what this job pays, but can search for jobs matching their expected pay scale
         </p>
         {{ renderfield(form.job_how_to_apply, style="wide") }}
       </div>
