@@ -17,20 +17,76 @@
   {% block description %}{% if location and location.description %}{{ location.description|firstline }}{% else %}{{ super() }}{% endif %}{% endblock %}
   {% block headertoo %}
     <div class="header-section">
-      <div class="container">
-        <div class="row">
-          <div class="col-xs-12 col-sm-3">
-            Location
-          </div>
-          <div class="col-xs-12 col-sm-3 col-md-4">
-            Type/Category
-          </div>
-          <div class="col-xs-12 col-sm-6 col-md-5">
-            Pay
-          </div>
-        </div>
-      </div>
-    </div>
+      <!--<form id="new-search" action="{{ url_for('search') }}" class="form-inline" role="form">-->
+        <div class="container">
+          <div class="row">
+            <div class="col-xs-12 col-sm-3">
+              <select id="location-filter" multiple="multiple" class="notselect">
+                <option value="1" selected="selected">Bangalore</option>
+                <option value="3">New Delhi</option>
+                <option value="4">Pune</option>
+                <option value="5">Chennai</option>
+                <option value="2">New York</option>
+                <option value="6">Washington</option>
+              </select>
+              <p class="search-title">Location</p>
+            </div>
+            <div class="col-xs-12 col-sm-3">
+              <select id="category-filter" multiple="multiple" class="notselect">
+                <optgroup label="Type">
+                  <option value="1" selected="selected">Full-time employment</option>
+                  <option value="2">Short-term contract</option>
+                  <option value="3">Freelance or consulting</option>
+                  <option value="4">Volunteer contributor</option>
+                  <option value="5">Partner for a venture</option>
+                </optgroup>
+                <optgroup label="Category">
+                  <option value="6">Programming</option>
+                  <option value="7">Interaction Design</option>
+                  <option value="8">Graphic Design</option>
+                  <option value="9">Testing</option>
+                  <option value="10">Systems Administration</option>
+                  <option value="11">Business/Management</option>
+                  <option value="12">Writer/Editor</option>
+                  <option value="13">Customer Support</option>
+                  <option value="14">Mobile (iPhone, Android, other)</option>
+                </optgroup>
+              </select>
+              <p class="search-title">Type/Category</p>
+            </div>
+            <div class="col-xs-12 col-sm-3">
+              <div class="btn-group pay-btn-group">
+                <button id="pay-filter-btn" class="multiselect dropdown-toggle btn btn-default"><span class="pay-filter-text"></span><b class="caret"></b></button>
+                <ul class="pay-filter-dropdown dropdown-menu">
+                  <li class="active"><input type="checkbox" id="pay-salary" value="Salary" checked></input><label for="pay-salary">Salary</label>
+                      <div class="salary-filter-dropdown">
+                        <input type="radio" id="salary-na" name="salary" value="NA"></input><label for="salary-na">NA</label>
+                        <input type="radio" id="salary-inr" name="salary" value="INR" checked></input><label for="salary-inr">INR</label>
+                        <input type="radio" id="salary-usd" name="salary" value="USD"></input><label for="salary-usd">USD</label>
+                        <input type="radio" id="salary-eur" name="salary" value="EUR"></input><label for="salary-eur">EUR</label>
+                      </div>
+                      <div class="pay-filter-slider">
+                        <span id="filter_pay_cash_min"></span>
+                        <span id="filter_pay_cash_max"></span>
+                        <div id="salary-slider"></div>
+                      </div>
+                  </li>
+                  <li><input type="checkbox" id="pay-equity" value="Equity"></input><label for="pay-equity">Equity</label></li>
+                </ul>
+              </div> 
+              <p class="search-title">Pay</p> 
+            </div><!--eof last pay-filter column-->
+            <div class="col-xs-11 col-sm-2">
+              <input id="search-input" type="text" placeholder="Find a job…" name="q" value="{{ request.args.q }}" class="form-control"/>
+              <p class="search-title">Keywords</p>
+            </div>
+            <div class="col-xs-1 col-sm-1">
+                  <input type="submit" class="btn btn-default submit-btn" value="Go"/>
+            </div>      
+          </div><!--eof row-->
+        </div><!--eof container-->
+    <!--  </form>-->
+    </div><!--eof header-section-->
   {% endblock %}
 {% endif %}
 {% block content %}{% with gkiosk=g.kiosk, gboard=g.board, guser=g.user, gstarred_ids=g.starred_ids %}
@@ -191,6 +247,178 @@
     }).blur(function() {
       $(this).val($(this).val().replace(/(\r\n|\n|\r)/gm," ").replace(/\s+/g," "));
     });
+  });
+  $(document).ready(function() {
+    $('#location-filter').multiselect({
+      enableClickableOptGroups: true,
+      buttonWidth: '100%',
+      numberDisplayed:3,
+      onDropdownShow: function(event) {
+        if($(".pay-btn-group").hasClass("open")){
+          $("#pay-filter-btn").click();
+        }
+      }
+    }); 
+    $('#category-filter').multiselect({
+      enableClickableOptGroups: true,
+      buttonWidth: '100%',
+      numberDisplayed:2,
+      onDropdownShow: function(event) {
+        if($(".pay-btn-group").hasClass("open")){
+          $("#pay-filter-btn").click();
+        }
+      }
+    });
+    $("#pay-filter-btn").click(function(){
+      var parent_div = $(this).parent("div")
+     if(parent_div.hasClass("open"))
+     {
+        parent_div.removeClass("open");
+        parent_div.children("ul").hide()
+     }
+     else{
+        parent_div.addClass("open");
+        parent_div.children("ul").show()
+     }
+    });
+    $(document).click(function(e){
+      var container = $(".pay-btn-group");
+      if (!container.is(e.target)&& container.has(e.target).length === 0 && container.hasClass("open"))
+      {
+          $("#pay-filter-btn").click();
+      }
+    });
+    var pay_filter = function() {
+      if($(".pay-filter-dropdown li>input:checked").is(":checked")){
+        var btntext = $('.pay-filter-dropdown li>input:checked').map(function() {
+          return this.value;
+        }).get();
+        $(".pay-filter-text").text(btntext);
+       }
+       else{
+        $(".pay-filter-text").text("None selected");
+       }
+    }
+    pay_filter(); //To load initial filter value
+    $(".pay-filter-dropdown li>input").on('change', function() {
+       pay_filter();
+       if($(this).parent("li").hasClass("active"))
+       {
+          $(this).parent("li").removeClass("active");
+          if($(this).val() == "Salary"){
+            $(".salary-filter-dropdown").hide();
+            $(".pay-filter-slider").hide();
+          }
+       }
+       else{
+          $(this).parent("li").addClass("active");
+          if($(this).val() == "Salary"){
+            $(".salary-filter-dropdown").show();
+            if($('input:radio[name="salary"]:checked').is(":checked")){
+              if($('input[name="salary"]:checked').val() != "NA") $(".pay-filter-slider").show();
+              else $(".pay-filter-slider").hide();
+            }
+            else{
+              $(".pay-filter-slider").hide();
+            }
+          }
+       }
+    });
+    $(".salary-filter-dropdown input").click(function(){
+        if($(this).val() == "NA"){
+           $(".pay-filter-slider").hide();
+        }
+        else{
+            $(".pay-filter-slider").show();
+        }
+    });
+    var cashslider = $("#salary-slider").noUiSlider({
+        start: [ 0, 100000 ],
+        step: 1,
+        connect: true,
+        behaviour: "tap",
+        range: {
+          'min': [0, 5000],
+          '5%':  [100000, 10000],
+          '80%': [1000000, 50000],
+          '90%': [2000000, 100000],
+          'max': [10000000, 1000000],
+        },
+        format: wNumb({
+          decimals: 0,
+          thousand: ',',
+          prefix: '₹'
+        })
+      });
+    cashslider.Link('lower').to($('#filter_pay_cash_min'));
+    cashslider.Link('upper').to($('#filter_pay_cash_max'));
+    var indian_rupee_encoder = function(value) {
+      value=value.toString();
+      value = value.replace(/[^0-9.]/g, '');  // Remove non-digits, assume . for decimals
+      var afterPoint = '';
+      if (value.indexOf('.') > 0)
+        afterPoint = value.substring(value.indexOf('.'), value.length);
+      value = Math.floor(value);
+      value = value.toString();
+      var lastThree = value.substring(value.length - 3);
+      var otherNumbers = value.substring(0, value.length - 3);
+      if (otherNumbers != '')
+          lastThree = ',' + lastThree;
+      var res = '₹' + otherNumbers.replace(/\B(?=(\d{2})+(?!\d))/g, ",") + lastThree + afterPoint;
+      return res;
+    };
+
+    var currency_options = function(currency) {
+      var start = cashslider.val()[0].slice(1).replace(',', ''),
+        end = cashslider.val()[1].slice(1).replace(',', ''),
+        prefix = '¤',
+        thousand = ',',
+        encoder = null;
+      switch(currency.val()) {
+        case 'INR':
+          prefix = '₹';
+          // thousand = '';
+          encoder = indian_rupee_encoder;
+          break;
+        case 'USD':
+        case 'SGD':
+          prefix = '$';
+          break;
+        case 'EUR':
+          prefix = '€';
+          break;
+        case 'GBP':
+          prefix = '£';
+          break;
+      };
+      if (encoder === null) {
+        cashslider.noUiSlider({
+          start: [start, end],
+          format: wNumb({
+            decimals: 0,
+            thousand: thousand,
+            prefix: prefix,
+          })
+        }, true);
+      } else {
+        cashslider.noUiSlider({
+          start: [start, end],
+          format: wNumb({
+            decimals: 0,
+            thousand: thousand,
+            prefix: prefix,
+            edit: encoder
+          })
+        }, true);
+      };
+      cashslider.Link('lower').to($('#filter_pay_cash_min'));
+      cashslider.Link('upper').to($('#filter_pay_cash_max'));
+    };
+    //currency_options($("input[type=radio][name=salary]:checked"));
+    $("input[type='radio'][name='salary']").on('change', function() {
+      currency_options($(this));
+    })      
+
   });
 </script>
 {%- endif -%}
