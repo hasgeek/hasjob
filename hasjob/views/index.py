@@ -221,8 +221,8 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
         g.impressions = {post.id: (pinflag, post.id, is_bgroup) for pinflag, post, is_bgroup in pinsandposts}
 
     # Test values for development:
-    if not g.user_geonameids:
-        g.user_geonameids = [1277333, 1277331, 1269750]
+    # if not g.user_geonameids:
+    #     g.user_geonameids = [1277333, 1277331, 1269750]
     if not location and 'l' not in request.args and g.user_geonameids and (g.user or g.anon_user):
         # No location filters? Prompt the user
         ldata = location_geodata(g.user_geonameids)
