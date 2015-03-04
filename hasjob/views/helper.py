@@ -458,7 +458,10 @@ def location_geodata(location):
             url = urljoin(app.config['HASCORE_SERVER'], '/1/geo/get_by_name')
         response = requests.get(url, params={'name': location}).json()
         if response.get('status') == 'ok':
-            return response.get('result', {})
+            result = response.get('result', {})
+            if isinstance(result, (list, tuple)):
+                result = {r['geonameid']: r for r in result}
+            return result
     return {}
 
 
