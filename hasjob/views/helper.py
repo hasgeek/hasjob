@@ -145,10 +145,10 @@ def load_user_data(user):
         ipaddr = session.get('ipaddr')
         ipts = session.get('ipts')
         now = datetime.utcnow()
-        if (not ipts
-                or ipaddr != request.environ['REMOTE_ADDR']
-                or 'geonameids' not in session
-                or (ipts < now - timedelta(days=7))):
+        if (not ipts or
+                ipaddr != request.environ['REMOTE_ADDR'] or
+                'geonameids' not in session or
+                (ipts < now - timedelta(days=7))):
             # IP has changed or timed out or wasn't saved to the user's session. Look up location
             ipaddr = request.environ['REMOTE_ADDR']
             try:
