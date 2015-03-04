@@ -17,51 +17,49 @@
   {% block description %}{% if location and location.description %}{{ location.description|firstline }}{% else %}{{ super() }}{% endif %}{% endblock %}
   {% block headertoo %}
     <div class="header-section">
-      <!--<form id="new-search" action="{{ url_for('search') }}" class="form-inline" role="form">-->
+      <form id="new-search" action="{{ url_for('search') }}" class="form-inline" role="form">
         <div class="container">
           <div class="row">
             <div class="col-xs-12 col-sm-3">
-              <select id="location-filter" multiple="multiple" class="notselect">
-                <option value="1" selected="selected">Bangalore</option>
-                <option value="3">New Delhi</option>
-                <option value="4">Pune</option>
-                <option value="5">Chennai</option>
-                <option value="2">New York</option>
-                <option value="6">Washington</option>
+              <select id="location-filter" name="location" multiple="multiple" class="notselect">
+                <option value="Bangalore">Bangalore</option>
+                <option value="New Delhi">New Delhi</option>
+                <option value="Pune">Pune</option>
+                <option value="Chennai">Chennai</option>
+                <option value="New York">New York</option>
+                <option value="Washington">Washington</option>
               </select>
-              <p class="search-title">Location</p>
             </div>
             <div class="col-xs-12 col-sm-3">
-              <select id="category-filter" multiple="multiple" class="notselect">
+              <select id="category-filter" name="type" multiple="multiple" class="notselect">
                 <optgroup label="Type">
-                  <option value="1" selected="selected">Full-time employment</option>
-                  <option value="2">Short-term contract</option>
-                  <option value="3">Freelance or consulting</option>
-                  <option value="4">Volunteer contributor</option>
-                  <option value="5">Partner for a venture</option>
+                  <option value="Full-time employment">Full-time employment</option>
+                  <option value="Short-term contract">Short-term contract</option>
+                  <option value="Freelance or consulting">Freelance or consulting</option>
+                  <option value="Volunteer contributor">Volunteer contributor</option>
+                  <option value="Partner for a venture">Partner for a venture</option>
                 </optgroup>
                 <optgroup label="Category">
-                  <option value="6">Programming</option>
-                  <option value="7">Interaction Design</option>
-                  <option value="8">Graphic Design</option>
-                  <option value="9">Testing</option>
-                  <option value="10">Systems Administration</option>
-                  <option value="11">Business/Management</option>
-                  <option value="12">Writer/Editor</option>
-                  <option value="13">Customer Support</option>
-                  <option value="14">Mobile (iPhone, Android, other)</option>
+                  <option value="Programming">Programming</option>
+                  <option value="Interaction Design">Interaction Design</option>
+                  <option value="Graphic Design">Graphic Design</option>
+                  <option value="Testing">Testing</option>
+                  <option value="Systems Administration">Systems Administration</option>
+                  <option value="Business/Management">Business/Management</option>
+                  <option value="Writer/Editor">Writer/Editor</option>
+                  <option value="Customer Support">Customer Support</option>
+                  <option value="Mobile">Mobile (iPhone, Android, other)</option>
                 </optgroup>
               </select>
-              <p class="search-title">Type/Category</p>
             </div>
             <div class="col-xs-12 col-sm-3">
               <div class="btn-group pay-btn-group">
                 <button id="pay-filter-btn" class="multiselect dropdown-toggle btn btn-default"><span class="pay-filter-text"></span><b class="caret"></b></button>
                 <ul class="pay-filter-dropdown dropdown-menu">
-                  <li class="active"><input type="checkbox" id="pay-salary" value="Salary" checked></input><label for="pay-salary">Salary</label>
+                  <li><input type="checkbox" id="pay-salary" value="Salary"></input><label for="pay-salary">Salary</label>
                       <div class="salary-filter-dropdown">
-                        <input type="radio" id="salary-na" name="salary" value="NA"></input><label for="salary-na">NA</label>
-                        <input type="radio" id="salary-inr" name="salary" value="INR" checked></input><label for="salary-inr">INR</label>
+                        <input type="radio" id="salary-na" name="salary" value="NA" checked></input><label for="salary-na">NA</label>
+                        <input type="radio" id="salary-inr" name="salary" value="INR"></input><label for="salary-inr">INR</label>
                         <input type="radio" id="salary-usd" name="salary" value="USD"></input><label for="salary-usd">USD</label>
                         <input type="radio" id="salary-eur" name="salary" value="EUR"></input><label for="salary-eur">EUR</label>
                       </div>
@@ -74,18 +72,16 @@
                   <li><input type="checkbox" id="pay-equity" value="Equity"></input><label for="pay-equity">Equity</label></li>
                 </ul>
               </div> 
-              <p class="search-title">Pay</p> 
             </div><!--eof last pay-filter column-->
             <div class="col-xs-11 col-sm-2">
               <input id="search-input" type="text" placeholder="Find a job…" name="q" value="{{ request.args.q }}" class="form-control"/>
-              <p class="search-title">Keywords</p>
             </div>
             <div class="col-xs-1 col-sm-1">
                   <input type="submit" class="btn btn-default submit-btn" value="Go"/>
             </div>      
           </div><!--eof row-->
         </div><!--eof container-->
-    <!--  </form>-->
+    </form>
     </div><!--eof header-section-->
   {% endblock %}
 {% endif %}
@@ -250,6 +246,7 @@
   });
   $(document).ready(function() {
     $('#location-filter').multiselect({
+      nonSelectedText: 'Location',
       enableClickableOptGroups: true,
       buttonWidth: '100%',
       numberDisplayed:3,
@@ -260,6 +257,7 @@
       }
     }); 
     $('#category-filter').multiselect({
+      nonSelectedText: 'Type/Category',
       enableClickableOptGroups: true,
       buttonWidth: '100%',
       numberDisplayed:2,
@@ -269,7 +267,8 @@
         }
       }
     });
-    $("#pay-filter-btn").click(function(){
+    $("#pay-filter-btn").click(function(event){
+      event.preventDefault();
       var parent_div = $(this).parent("div")
      if(parent_div.hasClass("open"))
      {
@@ -296,7 +295,7 @@
         $(".pay-filter-text").text(btntext);
        }
        else{
-        $(".pay-filter-text").text("None selected");
+        $(".pay-filter-text").text("Pay");
        }
     }
     pay_filter(); //To load initial filter value
