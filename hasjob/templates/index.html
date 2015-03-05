@@ -285,39 +285,44 @@
 
     $(".filter-select").click(function(event){
       event.preventDefault();
-      var parent_div = $(this).parent("div")
-     if(parent_div.hasClass("open"))
-     {
+      var parent_div = $(this).parent("div");
+      var other_div = $(".filter-select").not($(this)).parent("div")
+      if(other_div.hasClass("open")){
+        other_div.removeClass("open");
+        other_div.children("ul").hide();
+      }
+      if(parent_div.hasClass("open"))
+      {
         parent_div.removeClass("open");
-        parent_div.children("ul").hide()
-     }
-     else{
+        parent_div.children("ul").hide();
+      }
+      else{
         parent_div.addClass("open");
-        parent_div.children("ul").show()
-     }
+        parent_div.children("ul").show();
+      }
     });
 
     $(document).click(function(e){
-      var container = $(".category-group");
-      //console.log(e.target);
-      if (!container.is(e.target)&& container.has(e.target).length === 0 && container.hasClass("open"))
+      var container1 = $(".category-group");
+      var container2 = $(".pay-group");
+      if (!container1.is(e.target)&& container1.has(e.target).length === 0 && !container2.is(e.target)&& container2.has(e.target).length === 0)
       {
-          $(".category-group .filter-select").click();
-      }
-      else{
-        var container = $(".pay-group");
-        if (!container.is(e.target)&& container.has(e.target).length === 0 && container.hasClass("open"))
-        {
-            $(".pay-group .filter-select").click();
-        }
+        if(container1.hasClass("open")) $(".category-group .filter-select").click();
+        if(container2.hasClass("open")) $(".pay-group .filter-select").click();
       }
     });
     var filter_text = function(currentfilter) {
       if(currentfilter.find(".filter-dropdown li>input:checked").is(":checked")){
+        var counter = 0;
         var selectedval = currentfilter.find('.filter-dropdown li>input:checked').map(function() {
+          counter++;
           return this.value;
         }).get();
-        currentfilter.find(".filter-select .filter-text").text(selectedval);
+        if(counter > 2){
+          selectedval = counter + " selected";
+          currentfilter.find(".filter-select .filter-text").text(selectedval)
+        }
+        else currentfilter.find(".filter-select .filter-text").text(selectedval);
        }
        else{
         selectedval = currentfilter.find(".filter-select").attr("title")
