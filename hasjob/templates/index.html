@@ -20,47 +20,58 @@
     <div class="header-section">
       <form id="new-search" action="{{ url_for('search') }}" class="form-inline" role="form">
         <div class="container">
-          <div class="row">
-            <div class="col-xs-12 col-sm-3">
+            <div class="filters">
               <input id="location-filter" type="text" placeholder="Location" name="l" value="{{ request.args.l }}" class="form-control"/>
             </div>
-            <div class="col-xs-12 col-sm-3">
-              <select id="category-filter" name="t" multiple="multiple" class="notselect">
-                <optgroup label="Type">
+            <div class="filters">
+              <div class="filter-group category-group">
+                <button class="filter-select btn btn-default" title="Type/Category"><span class="filter-text">Type/Category</span><span class="caret"></span></button>
+                <ul class="category-filter-dropdown filter-dropdown">
+                  <li><p class="category-title">Type</p></li>
                   {%- for job_type in job_type_choices -%}
-                    <option value="{{job_type[0]}}" {% if job_type[0]|string in request.args.getlist('t') %} selected="selected" {% endif %}>{{job_type[1]}}</option>
+                  <li>
+                    <input type="checkbox" id="type-{{job_type[0]}}" value="{{job_type[1]}}" name="t"></input>
+                    <label for="type-{{job_type[0]}}">{{job_type[1]}}</label>
+                  </li>
                   {%- endfor -%}
-                </optgroup>
-              </select>
+                  <li><p class="category-title">Category</p></li>
+                  {%- for job_cat in job_category_choices -%}
+                  <li>
+                    <input type="checkbox" id="cat-{{job_cat[0]}}" value="{{job_cat[1]}}" name="c"></input>
+                    <label for="cat-{{job_cat[0]}}">{{job_cat[1]}}</label>
+                  </li>
+                  {%- endfor -%}
+                </ul>
+              </div>
             </div>
-            <div class="col-xs-12 col-sm-3">
-              <div class="btn-group pay-btn-group">
-                <button id="pay-filter-btn" class="multiselect dropdown-toggle btn btn-default"><span class="pay-filter-text"></span><b class="caret"></b></button>
-                <ul class="pay-filter-dropdown dropdown-menu">
-                  <li><input type="checkbox" id="pay-salary" value="Salary"></input><label for="pay-salary">Salary</label>
+            <div class="filters">
+              <div class="filter-group pay-group">
+                <button class="filter-select btn btn-default" title="Pay"><span class="pay-range"></span><span class="filter-text">Pay</span><span class="caret"></span></button>
+                <ul class="pay-filter-dropdown filter-dropdown">
+                  <li><input type="checkbox" id="pay-salary" value="Pay"></input><label for="pay-salary">Pay</label>
                       <div class="salary-filter-dropdown">
-                        <input type="radio" id="salary-na" name="salary" value="NA" checked></input><label for="salary-na">NA</label>
-                        <input type="radio" id="salary-inr" name="salary" value="INR"></input><label for="salary-inr">INR</label>
-                        <input type="radio" id="salary-usd" name="salary" value="USD"></input><label for="salary-usd">USD</label>
-                        <input type="radio" id="salary-eur" name="salary" value="EUR"></input><label for="salary-eur">EUR</label>
+                        <input type="radio" id="salary-inr" name="currency" value="INR"></input><label for="salary-inr">INR</label>
+                        <input type="radio" id="salary-usd" name="currency" value="USD"></input><label for="salary-usd">USD</label>
+                        <input type="radio" id="salary-eur" name="currency" value="EUR"></input><label for="salary-eur">EUR</label>
                       </div>
                       <div class="pay-filter-slider">
                         <span id="filter_pay_cash_min"></span>
+                        <input type="hidden" id="salary-p-min" value="">
                         <span id="filter_pay_cash_max"></span>
+                        <input type="hidden" id="salary-p-max" value="">
                         <div id="salary-slider"></div>
                       </div>
                   </li>
-                  <li><input type="checkbox" id="pay-equity" value="Equity"></input><label for="pay-equity">Equity</label></li>
+                  <li><input type="checkbox" name="equity" id="pay-equity" value="Equity"></input><label for="pay-equity">Equity</label></li>
                 </ul>
               </div> 
             </div><!--eof last pay-filter column-->
-            <div class="col-xs-11 col-sm-2">
-              <input id="search-input" type="text" placeholder="Keywords" name="q" value="{{ request.args.q }}" class="form-control"/>
+            <div class="filters">
+              <input class="filter-select keyword-search" type="text" placeholder="Keywords" name="q" value="{{ request.args.q }}"/>
             </div>
-            <div class="col-xs-1 col-sm-1">
+            <div class="sumbit-filters">
               <input type="submit" class="btn btn-default submit-btn" value="Go"/>
             </div>      
-          </div><!--eof row-->
         </div><!--eof container-->
     </form>
     </div><!--eof header-section-->
@@ -226,66 +237,62 @@
     });
   });
   $(document).ready(function() {
-    $('#category-filter').multiselect({
-      nonSelectedText: 'Type/Category',
-      enableClickableOptGroups: true,
-      buttonWidth: '100%',
-      numberDisplayed:2,
-      onDropdownShow: function(event) {
-        if($(".pay-btn-group").hasClass("open")){
-          $("#pay-filter-btn").click();
+    $(".filter-select").click(function(event){
+      event.preventDefault();
+      var parent_div = $(this).parent("div")
+      if(parent_div.hasClass("open")) {
+         parent_div.removeClass("open");
+         parent_div.children("ul").hide()
+      }
+      else{
+         parent_div.addClass("open");
+         parent_div.children("ul").show()
+      }
+    });
+
+    $(document).click(function(e){
+      var container = $(".category-group");
+      //console.log(e.target);
+      if (!container.is(e.target) && container.has(e.target).length === 0 && container.hasClass("open")) {
+        $(".category-group .filter-select").click();
+      } else {
+        var container = $(".pay-group");
+        if (!container.is(e.target) && container.has(e.target).length === 0 && container.hasClass("open")) {
+          $(".pay-group .filter-select").click();
         }
       }
     });
-    $("#pay-filter-btn").click(function(event){
-      event.preventDefault();
-      var parent_div = $(this).parent("div")
-     if(parent_div.hasClass("open"))
-     {
-        parent_div.removeClass("open");
-        parent_div.children("ul").hide()
-     }
-     else{
-        parent_div.addClass("open");
-        parent_div.children("ul").show()
-     }
-    });
-    $(document).click(function(e){
-      var container = $(".pay-btn-group");
-      if (!container.is(e.target)&& container.has(e.target).length === 0 && container.hasClass("open"))
-      {
-          $("#pay-filter-btn").click();
-      }
-    });
-    var pay_filter = function() {
-      if($(".pay-filter-dropdown li>input:checked").is(":checked")){
-        var btntext = $('.pay-filter-dropdown li>input:checked').map(function() {
+
+    var filter_text = function(currentfilter) {
+      if(currentfilter.find(".filter-dropdown li>input:checked").is(":checked")){
+        var selectedval = currentfilter.find('.filter-dropdown li>input:checked').map(function() {
           return this.value;
         }).get();
-        $(".pay-filter-text").text(btntext);
+        currentfilter.find(".filter-select .filter-text").text(selectedval);
        }
        else{
-        $(".pay-filter-text").text("Pay");
+        selectedval = currentfilter.find(".filter-select").attr("title")
+        currentfilter.find(".filter-select .filter-text").text(selectedval);
        }
     }
-    pay_filter(); //To load initial filter value
-    $(".pay-filter-dropdown li>input").on('change', function() {
-       pay_filter();
+    $(".filter-dropdown li>input").on('change', function() {
+       filter_text($(this).parents(".filter-group"));
        if($(this).parent("li").hasClass("active"))
        {
           $(this).parent("li").removeClass("active");
-          if($(this).val() == "Salary"){
+          if($(this).val() == "Pay"){
             $(".salary-filter-dropdown").hide();
             $(".pay-filter-slider").hide();
+            var btntext = "";
+            $(".pay-range").text(btntext);
           }
        }
        else{
           $(this).parent("li").addClass("active");
-          if($(this).val() == "Salary"){
+          if($(this).val() == "Pay"){
             $(".salary-filter-dropdown").show();
-            if($('input:radio[name="salary"]:checked').is(":checked")){
-              if($('input[name="salary"]:checked').val() != "NA") $(".pay-filter-slider").show();
-              else $(".pay-filter-slider").hide();
+            if($('input:radio[name="currency"]:checked').is(":checked")){
+              $(".pay-filter-slider").show();
             }
             else{
               $(".pay-filter-slider").hide();
@@ -293,16 +300,9 @@
           }
        }
     });
-    $(".salary-filter-dropdown input").click(function(){
-        if($(this).val() == "NA"){
-           $(".pay-filter-slider").hide();
-        }
-        else{
-            $(".pay-filter-slider").show();
-        }
-    });
+
     var cashslider = $("#salary-slider").noUiSlider({
-        start: [ 0, 100000 ],
+        start: [ 0, 1000000 ],
         step: 1,
         connect: true,
         behaviour: "tap",
@@ -316,11 +316,13 @@
         format: wNumb({
           decimals: 0,
           thousand: ',',
-          prefix: '₹'
+          prefix: '₹',
+          edit: indian_rupee_encoder
         })
       });
     cashslider.Link('lower').to($('#filter_pay_cash_min'));
     cashslider.Link('upper').to($('#filter_pay_cash_max'));
+
     var indian_rupee_encoder = function(value) {
       value=value.toString();
       value = value.replace(/[^0-9.]/g, '');  // Remove non-digits, assume . for decimals
@@ -383,10 +385,41 @@
       cashslider.Link('lower').to($('#filter_pay_cash_min'));
       cashslider.Link('upper').to($('#filter_pay_cash_max'));
     };
-    //currency_options($("input[type=radio][name=salary]:checked"));
-    $("input[type='radio'][name='salary']").on('change', function() {
-      currency_options($(this));
+    $('#salary-slider').on('set', function(){
+      var selectedvalue = $('input[name="currency"]:checked').val();
+      if(selectedvalue){
+        if($("#pay-salary").is(":checked")){
+        var salarymin = $(this).val()[0].replace(/,/g,"");
+        var salarymax = $(this).val()[1].replace(/,/g,"");
+          $('#salary-p-min').attr("name","pmin").val(salarymin.substring(1));
+          $('#salary-p-max').attr("name","pmax").val(salarymax.substring(1));
+          var btntext = $(".pay-range").html();
+          btntext = "(" + salarymin +"," + salarymax + ") ";
+          $(".pay-range").text(btntext);
+        }
+      }
     });
+    //currency_options($("input[type=radio][name=s]:checked"));
+    $("#pay-salary").on('change', function() {
+      if(!$(this).is(":checked")){
+        $('#salary-p-min').attr("name","");
+        $('#salary-p-max').attr("name","");
+        $("input[type='radio'][name='currency']:checked").prop('checked', false);
+      }
+    });
+    $("input[type='radio'][name='currency']").on('change', function() {
+      currency_options($(this));
+      if($('input:radio[name="currency"]:checked').is(":checked")){
+        $(".pay-filter-slider").show();
+      }
+      else{
+        $(".pay-filter-slider").hide();
+      }
+    });
+
+    $("#filter-toggle").click(function(event){
+      $("."+$(this).attr("data-target")).slideToggle( "slow" );
+    })      
 
     activate_geoname_autocomplete("#location-filter", "https://api.hasgeek.com/1/geo/autocomplete", "https://api.hasgeek.com/1/geo/get_by_names");
   });
