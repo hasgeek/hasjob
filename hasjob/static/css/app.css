@@ -88,64 +88,98 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
   padding: 10px 0;
 }
 
-.header-section .dropdown-menu {
+.header-section .filters {
+  float: left;
+  padding: 5px 10px 5px 0;
+  width: 24%;
+}
+
+.header-section .sumbit-filters {
+  float: left;
+  padding: 5px 0;
+  width: 4%;
+}
+
+.header-section .filter-group {
+  position: relative;
+}
+
+.header-section .filter-select {
+  display: block;
+  padding: 6px 12px;
+  font-size: 16px;
+  line-height: normal;
+  width: 100%;
+  text-align: left;
+  color: #333;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  border-bottom: 2px solid #ADADAD;
+}
+
+.header-section .filter-select .filter-text {
+  padding: 6px 12px;
+}
+
+.header-section .keyword-search {
+  color: #999;
+  background-color: #FFF;
+  border-bottom: 1px solid #ccc;
+}
+
+.header-section .filter-select .caret {
+  margin-left: 5px;
+}
+
+.pay-range {
+  font-size: 12px;
+}
+
+.header-section .filter-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1000;
+  display: none;
+  float: left;
+  min-width: 160px;
+  list-style: none;
+  font-size: 14px;
+  text-align: left;
+  background-color: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 4px;
+  -webkit-box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
+  background-clip: padding-box;
   padding: 5px 10px;
   width: 100%;
   max-height: 300px;
   overflow-y: scroll;
 }
 
-.header-section .dropdown-menu label {
+.category-title {
+  font-size: 16px;
+  font-weight: bold;
+  margin: 0 0 5px;
+  line-height: normal;
+}
+
+.filter-dropdown label {
+  margin-left: 3px;
   font-weight: normal;
-}
-
-.header-section .dropdown-menu > .active > a {
-  color: #333;
-  background-color: transparent;
-}
-
-.header-section .btn-default {
-  background-color: #fff;
-  width: 100%;
-  text-align: left;
-  color: #999;
-  border-bottom: 1px solid #ccc;
 }
 
 .header-section .submit-btn {
   text-align: center;
-}
-
-.header-section .open > .dropdown-toggle.btn-default {
-  background-color: transparent;
-}
-
-.header-section .dropdown-menu {
-  margin: 0;
-}
-
-.pay-filter-dropdown {
-  display: none;
-}
-
-.pay-btn-group {
+  line-height: normal;
+  padding: 5px;
+  display: block;
   width: 100%;
 }
 
-.pay-filter-dropdown label {
-  margin-left: 3px;
-}
-
-.salary-filter-dropdown {
-  margin-left: 5%;
-}
-
-.salary-filter-dropdown input {
-  margin-left: 5%;
-}
-
 .pay-filter-slider {
-  margin: 5px 15px 15px;
+  margin: 10px 25px;
 }
 
 #filter_pay_cash_max {
@@ -153,52 +187,102 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
   margin-right: 15px;
 }
 
-#pay-filter-btn .caret {
-  margin-left: 4px;
-}
-
 .salary-filter-dropdown {
   display: none;
   font-size: 11px;
+  margin-left: 15px;
+  line-height: normal;
+}
+
+.salary-filter-dropdown label {
+  margin-right: 10px;
 }
 
 .pay-filter-slider {
   display: none;
   font-size: 11px;
+  line-height: 2;
 }
 
-.keyword-search {
-  width: 100%;
-  border-radius: 4px;
-  border: 1px solid #ccc;
-  padding: 6px 12px;
-  line-height: normal;
+.pay-filter-slider .noUi-horizontal .noUi-handle {
+  width: 20px;
+  height: 25px;
+  left: -17px;
+  top: -4px;
+}
+
+.pay-filter-slider .noUi-horizontal .noUi-handle:after, .pay-filter-slider .noUi-horizontal .noUi-handle:before {
+  height: 10px;
+  left: 7px;
+  top: 6px;
+}
+
+.pay-filter-slider .noUi-horizontal .noUi-handle:after {
+  left: 12px;
+}
+
+#filter-toggle {
+  display: none;
 }
 
 @media (min-width: 768px) and (max-width: 1023px) {
-  .header-section .dropdown-toggle {
+  .header-section .filter-select {
     font-size: 12px;
+    padding: 10px 12px;
   }
 
-  .header-section .dropdown-menu {
+  .header-section .submit-btn {
+    font-size: 12px;
+    padding: 9px 0;
+  }
+
+  .header-section .filter-dropdown {
     font-size: 11px;
   }
 
-  .keyword-search {
-    font-size: 11px;
-    margin-top: 2px;
-    padding: 7px 12px;
-  }
-
-  .submit-btn {
-    font-size: 11px;
-    padding: 7px;
-    margin-top: 2px;
+  .category-title {
+    font-size: 13px;
   }
 }
 @media screen and (max-width: 767px) {
+  #filter-toggle {
+    display: block;
+    margin-right: 0;
+    border: 1px solid #ddd;
+    padding: 5px 10px;
+  }
+
+  .header-section {
+    display: none;
+  }
+
   .header-section .filters {
-    margin-bottom: 5px;
+    float: none;
+    padding: 5px 0;
+    width: 100%;
+  }
+
+  .header-section .sumbit-filters {
+    padding: 5px 0;
+    width: 20%;
+  }
+
+  .header-section .filter-select {
+    font-size: 12px;
+    padding: 10px 12px;
+  }
+
+  .header-section .submit-btn {
+    font-size: 12px;
+    padding: 9px 0;
+  }
+
+  .header-section .filter-dropdown {
+    font-size: 11px;
+  }
+
+  .category-title {
+    font-size: 13px;
   }
 }
 .input-group-btn > .btn {

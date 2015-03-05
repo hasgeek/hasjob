@@ -19,8 +19,7 @@
     <div class="header-section">
       <form id="new-search" action="{{ url_for('search') }}" class="form-inline" role="form">
         <div class="container">
-          <div class="row">
-            <div class="col-xs-12 col-sm-3 filters">
+            <div class="filters">
               <select id="location-filter" name="location" multiple="multiple" class="notselect">
                 <option value="Bangalore">Bangalore</option>
                 <option value="New Delhi">New Delhi</option>
@@ -30,44 +29,70 @@
                 <option value="Washington">Washington</option>
               </select>
             </div>
-            <div class="col-xs-12 col-sm-3 filters">
-              <select id="category-filter" name="type" multiple="multiple" class="notselect">
-                <optgroup label="Type">
-                  <option value="Full-time employment">Full-time employment</option>
-                  <option value="Short-term contract">Short-term contract</option>
-                  <option value="Freelance or consulting">Freelance or consulting</option>
-                  <option value="Volunteer contributor">Volunteer contributor</option>
-                  <option value="Partner for a venture">Partner for a venture</option>
-                </optgroup>
-                <optgroup label="Category">
-                  <option value="Programming">Programming</option>
-                  <option value="Interaction Design">Interaction Design</option>
-                  <option value="Graphic Design">Graphic Design</option>
-                  <option value="Testing">Testing</option>
-                  <option value="Systems Administration">Systems Administration</option>
-                  <option value="Business/Management">Business/Management</option>
-                  <option value="Writer/Editor">Writer/Editor</option>
-                  <option value="Customer Support">Customer Support</option>
-                  <option value="Mobile">Mobile (iPhone, Android, other)</option>
-                </optgroup>
-              </select>
+            <div class="filters">
+              <div class="filter-group category-group">
+                <button class="filter-select btn btn-default" title="Type/Category"><span class="filter-text">Type/Category</span><span class="caret"></span></button>
+                <ul class="category-filter-dropdown filter-dropdown">
+                  <li><p class="category-title">Type</p></li>
+                  <li>
+                    <input type="checkbox" id="type1" value="Full-time employment" name="t"></input>
+                    <label for="type1">Full-time employment</label>
+                  </li>
+                  <li>
+                    <input type="checkbox" id="type2" value="Short-term contract" name="t"></input>
+                    <label for="type2">Short-term contract</label>
+                  </li>
+                  <li>
+                    <input type="checkbox" id="type3" value="Freelance or consulting" name="t"></input>
+                    <label for="type3">Freelance or consulting</label>
+                  </li>
+                  <li>
+                    <input type="checkbox" id="type4" value="Volunteer contributor" name="t"></input>
+                    <label for="type4">Volunteer contributor</label>
+                  </li>
+                  <li>
+                    <input type="checkbox" id="type5" value="Partner for a venture" name="t"></input>
+                    <label for="type5">Partner for a venture</label>
+                  </li>
+                  <li><p class="category-title">Category</p></li>
+                  <li>
+                    <input type="checkbox" id="category1" value="Programming" name="c"></input>
+                    <label for="category1">Programming</label>
+                  </li>
+                  <li>
+                    <input type="checkbox" id="category2" value="Interaction Design" name="c"></input>
+                    <label for="category2">Interaction Design</label>
+                  </li>
+                  <li>
+                    <input type="checkbox" id="category3" value="Graphic Design" name="c"></input>
+                    <label for="category3">Graphic Design</label>
+                  </li>
+                  <li>
+                    <input type="checkbox" id="category4" value="Testing" name="c"></input>
+                    <label for="category4">Testing</label>
+                  </li>
+                  <li>
+                    <input type="checkbox" id="category5" value="Systems Administration" nam="c"></input>
+                    <label for="category5">Systems Administration</label>
+                  </li>                  
+                </ul>
+              </div>
             </div>
-            <div class="col-xs-12 col-sm-3 filters">
-              <div class="btn-group pay-btn-group">
-                <button id="pay-filter-btn" class="multiselect dropdown-toggle btn btn-default"><span class="pay-filter-text"></span><b class="caret"></b></button>
-                <ul class="pay-filter-dropdown dropdown-menu">
-                  <li><input type="checkbox" id="pay-salary" value="Salary"></input><label for="pay-salary">Salary</label>
+            <div class="filters">
+              <div class="filter-group pay-group">
+                <button class="filter-select btn btn-default" title="Pay"><span class="pay-range"></span><span class="filter-text">Pay</span><span class="caret"></span></button>
+                <ul class="pay-filter-dropdown filter-dropdown">
+                  <li><input type="checkbox" id="pay-salary" value="Pay"></input><label for="pay-salary">Pay</label>
                       <div class="salary-filter-dropdown">
-                        <input type="radio" id="salary-na" name="salary" value="NA"></input><label for="salary-na">NA</label>
-                        <input type="radio" id="salary-inr" name="salary" value="INR"></input><label for="salary-inr">INR</label>
-                        <input type="radio" id="salary-usd" name="salary" value="USD"></input><label for="salary-usd">USD</label>
-                        <input type="radio" id="salary-eur" name="salary" value="EUR"></input><label for="salary-eur">EUR</label>
+                        <input type="radio" id="salary-inr" name="s" value="INR"></input><label for="salary-inr">INR</label>
+                        <input type="radio" id="salary-usd" name="s" value="USD"></input><label for="salary-usd">USD</label>
+                        <input type="radio" id="salary-eur" name="s" value="EUR"></input><label for="salary-eur">EUR</label>
                       </div>
                       <div class="pay-filter-slider">
                         <span id="filter_pay_cash_min"></span>
-                        <input type="hidden" id="salary-p-min" name="p-min" value="">
+                        <input type="hidden" id="salary-p-min" value="">
                         <span id="filter_pay_cash_max"></span>
-                        <input type="hidden" id="salary-p-max" name="p-max" value="">
+                        <input type="hidden" id="salary-p-max" value="">
                         <div id="salary-slider"></div>
                       </div>
                   </li>
@@ -75,13 +100,12 @@
                 </ul>
               </div> 
             </div><!--eof last pay-filter column-->
-            <div class="col-xs-12 col-sm-2 filters">
-              <input class="keyword-search" type="text" placeholder="Find a job…" name="q" value="{{ request.args.q }}"/>
+            <div class="filters">
+              <input class="filter-select keyword-search" type="text" placeholder="Find a job…" name="q" value="{{ request.args.q }}"/>
             </div>
-            <div class="col-xs-3 col-sm-1 filters">
+            <div class="sumbit-filters">
                   <input type="submit" class="btn btn-default submit-btn" value="Go"/>
             </div>      
-          </div><!--eof row-->
         </div><!--eof container-->
     </form>
     </div><!--eof header-section-->
@@ -258,18 +282,8 @@
         }
       }
     }); 
-    $('#category-filter').multiselect({
-      nonSelectedText: 'Type/Category',
-      enableClickableOptGroups: true,
-      buttonWidth: '100%',
-      numberDisplayed:2,
-      onDropdownShow: function(event) {
-        if($(".pay-btn-group").hasClass("open")){
-          $("#pay-filter-btn").click();
-        }
-      }
-    });
-    $("#pay-filter-btn").click(function(event){
+
+    $(".filter-select").click(function(event){
       event.preventDefault();
       var parent_div = $(this).parent("div")
      if(parent_div.hasClass("open"))
@@ -282,42 +296,52 @@
         parent_div.children("ul").show()
      }
     });
+
     $(document).click(function(e){
-      var container = $(".pay-btn-group");
+      var container = $(".category-group");
+      //console.log(e.target);
       if (!container.is(e.target)&& container.has(e.target).length === 0 && container.hasClass("open"))
       {
-          $("#pay-filter-btn").click();
+          $(".category-group .filter-select").click();
+      }
+      else{
+        var container = $(".pay-group");
+        if (!container.is(e.target)&& container.has(e.target).length === 0 && container.hasClass("open"))
+        {
+            $(".pay-group .filter-select").click();
+        }
       }
     });
-    var pay_filter = function() {
-      if($(".pay-filter-dropdown li>input:checked").is(":checked")){
-        var btntext = $('.pay-filter-dropdown li>input:checked').map(function() {
+    var filter_text = function(currentfilter) {
+      if(currentfilter.find(".filter-dropdown li>input:checked").is(":checked")){
+        var selectedval = currentfilter.find('.filter-dropdown li>input:checked').map(function() {
           return this.value;
         }).get();
-        $(".pay-filter-text").text(btntext);
+        currentfilter.find(".filter-select .filter-text").text(selectedval);
        }
        else{
-        $(".pay-filter-text").text("Pay");
+        selectedval = currentfilter.find(".filter-select").attr("title")
+        currentfilter.find(".filter-select .filter-text").text(selectedval);
        }
     }
-    pay_filter(); //To load initial filter value
-    $(".pay-filter-dropdown li>input").on('change', function() {
-       pay_filter();
+    $(".filter-dropdown li>input").on('change', function() {
+       filter_text($(this).parents(".filter-group"));
        if($(this).parent("li").hasClass("active"))
        {
           $(this).parent("li").removeClass("active");
-          if($(this).val() == "Salary"){
+          if($(this).val() == "Pay"){
             $(".salary-filter-dropdown").hide();
             $(".pay-filter-slider").hide();
+            var btntext = "";
+            $(".pay-range").text(btntext);
           }
        }
        else{
           $(this).parent("li").addClass("active");
-          if($(this).val() == "Salary"){
+          if($(this).val() == "Pay"){
             $(".salary-filter-dropdown").show();
-            if($('input:radio[name="salary"]:checked').is(":checked")){
-              if($('input[name="salary"]:checked').val() != "NA") $(".pay-filter-slider").show();
-              else $(".pay-filter-slider").hide();
+            if($('input:radio[name="s"]:checked').is(":checked")){
+              $(".pay-filter-slider").show();
             }
             else{
               $(".pay-filter-slider").hide();
@@ -325,14 +349,7 @@
           }
        }
     });
-    $(".salary-filter-dropdown input").click(function(){
-        if($(this).val() == "NA"){
-           $(".pay-filter-slider").hide();
-        }
-        else{
-            $(".pay-filter-slider").show();
-        }
-    });
+
     var cashslider = $("#salary-slider").noUiSlider({
         start: [ 0, 1000000 ],
         step: 1,
@@ -348,13 +365,13 @@
         format: wNumb({
           decimals: 0,
           thousand: ',',
-          prefix: '₹'
+          prefix: '₹',
+          edit: indian_rupee_encoder
         })
       });
     cashslider.Link('lower').to($('#filter_pay_cash_min'));
-    cashslider.Link('lower').to($('#salary-p-min'));
     cashslider.Link('upper').to($('#filter_pay_cash_max'));
-    cashslider.Link('upper').to($('#salary-p-max'));
+
     var indian_rupee_encoder = function(value) {
       value=value.toString();
       value = value.replace(/[^0-9.]/g, '');  // Remove non-digits, assume . for decimals
@@ -415,13 +432,42 @@
         }, true);
       };
       cashslider.Link('lower').to($('#filter_pay_cash_min'));
-      cashslider.Link('lower').to($('#salary-p-min'));
       cashslider.Link('upper').to($('#filter_pay_cash_max'));
-      cashslider.Link('upper').to($('#salary-p-max'));
     };
-    currency_options($("input[type=radio][name=salary]:checked"));
-    $("input[type='radio'][name='salary']").on('change', function() {
+    $('#salary-slider').on('set', function(){
+      var selectedvalue = $('input[name="s"]:checked').val();
+      if(selectedvalue){
+        if($("#pay-salary").is(":checked")){
+        var salarymin = $(this).val()[0].replace(/,/g,"");
+        var salarymax = $(this).val()[1].replace(/,/g,"");
+          $('#salary-p-min').attr("name","smin").val(salarymin);
+          $('#salary-p-max').attr("name","smax").val(salarymax);
+          var btntext = $(".pay-range").html();
+          btntext = "(" + $('#salary-p-min').val() +"," + $('#salary-p-max').val() + ") ";
+          $(".pay-range").text(btntext);
+        }
+      }
+    });
+    //currency_options($("input[type=radio][name=s]:checked"));
+    $("#pay-salary").on('change', function() {
+      if(!$(this).is(":checked")){
+        $('#salary-p-min').attr("name","");
+        $('#salary-p-max').attr("name","");
+        $("input[type='radio'][name='s']:checked").prop('checked', false);
+      }
+    });
+    $("input[type='radio'][name='s']").on('change', function() {
       currency_options($(this));
+      if($('input:radio[name="s"]:checked').is(":checked")){
+        $(".pay-filter-slider").show();
+      }
+      else{
+        $(".pay-filter-slider").hide();
+      }
+    });
+
+    $("#filter-toggle").click(function(event){
+      $("."+$(this).attr("data-target")).slideToggle( "slow" );
     })      
 
   });
