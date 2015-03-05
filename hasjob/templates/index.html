@@ -32,7 +32,7 @@
       <h2>{{ location.use_title }}</h2>
       {{ location.description }}
     </div>
-  {%- elif location_prompts %}
+  {%- elif location_prompts and not domain %}
     <div class="flash info">
       <p>In {{ location_prompts[0]['use_title'] }}? Filter this view:</p>
       <p class="button-bar">
