@@ -84,9 +84,9 @@
                 <ul class="pay-filter-dropdown filter-dropdown">
                   <li><input type="checkbox" id="pay-salary" value="Pay"></input><label for="pay-salary">Pay</label>
                       <div class="salary-filter-dropdown">
-                        <input type="radio" id="salary-inr" name="s" value="INR"></input><label for="salary-inr">INR</label>
-                        <input type="radio" id="salary-usd" name="s" value="USD"></input><label for="salary-usd">USD</label>
-                        <input type="radio" id="salary-eur" name="s" value="EUR"></input><label for="salary-eur">EUR</label>
+                        <input type="radio" id="salary-inr" name="currency" value="INR"></input><label for="salary-inr">INR</label>
+                        <input type="radio" id="salary-usd" name="currency" value="USD"></input><label for="salary-usd">USD</label>
+                        <input type="radio" id="salary-eur" name="currency" value="EUR"></input><label for="salary-eur">EUR</label>
                       </div>
                       <div class="pay-filter-slider">
                         <span id="filter_pay_cash_min"></span>
@@ -340,7 +340,7 @@
           $(this).parent("li").addClass("active");
           if($(this).val() == "Pay"){
             $(".salary-filter-dropdown").show();
-            if($('input:radio[name="s"]:checked').is(":checked")){
+            if($('input:radio[name="currency"]:checked').is(":checked")){
               $(".pay-filter-slider").show();
             }
             else{
@@ -435,15 +435,15 @@
       cashslider.Link('upper').to($('#filter_pay_cash_max'));
     };
     $('#salary-slider').on('set', function(){
-      var selectedvalue = $('input[name="s"]:checked').val();
+      var selectedvalue = $('input[name="currency"]:checked').val();
       if(selectedvalue){
         if($("#pay-salary").is(":checked")){
         var salarymin = $(this).val()[0].replace(/,/g,"");
         var salarymax = $(this).val()[1].replace(/,/g,"");
-          $('#salary-p-min').attr("name","smin").val(salarymin);
-          $('#salary-p-max').attr("name","smax").val(salarymax);
+          $('#salary-p-min').attr("name","pmin").val(salarymin.substring(1));
+          $('#salary-p-max').attr("name","pmax").val(salarymax.substring(1));
           var btntext = $(".pay-range").html();
-          btntext = "(" + $('#salary-p-min').val() +"," + $('#salary-p-max').val() + ") ";
+          btntext = "(" + salarymin +"," + salarymax + ") ";
           $(".pay-range").text(btntext);
         }
       }
@@ -453,12 +453,12 @@
       if(!$(this).is(":checked")){
         $('#salary-p-min').attr("name","");
         $('#salary-p-max').attr("name","");
-        $("input[type='radio'][name='s']:checked").prop('checked', false);
+        $("input[type='radio'][name='currency']:checked").prop('checked', false);
       }
     });
-    $("input[type='radio'][name='s']").on('change', function() {
+    $("input[type='radio'][name='currency']").on('change', function() {
       currency_options($(this));
-      if($('input:radio[name="s"]:checked').is(":checked")){
+      if($('input:radio[name="currency"]:checked').is(":checked")){
         $(".pay-filter-slider").show();
       }
       else{

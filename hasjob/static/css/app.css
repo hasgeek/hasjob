@@ -117,7 +117,7 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
   border-bottom: 2px solid #ADADAD;
 }
 
-.header-section .filter-select .filter-text {
+.category-group .filter-text {
   padding: 6px 12px;
 }
 
