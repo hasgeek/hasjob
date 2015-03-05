@@ -1,4 +1,5 @@
 {%- from "macros.html" import stickie %}
+{% from "baseframe/forms.html" import renderfield, widgetscripts %}
 {%- if not request.is_xhr -%}
   {% extends "layout.html" %}
   {% block titletags -%}
@@ -21,34 +22,14 @@
         <div class="container">
           <div class="row">
             <div class="col-xs-12 col-sm-3">
-              <select id="location-filter" name="location" multiple="multiple" class="notselect">
-                <option value="Bangalore">Bangalore</option>
-                <option value="New Delhi">New Delhi</option>
-                <option value="Pune">Pune</option>
-                <option value="Chennai">Chennai</option>
-                <option value="New York">New York</option>
-                <option value="Washington">Washington</option>
-              </select>
+              <input id="location-filter" type="text" placeholder="Location" name="l" value="{{ request.args.l }}" class="form-control"/>
             </div>
             <div class="col-xs-12 col-sm-3">
-              <select id="category-filter" name="type" multiple="multiple" class="notselect">
+              <select id="category-filter" name="t" multiple="multiple" class="notselect">
                 <optgroup label="Type">
-                  <option value="Full-time employment">Full-time employment</option>
-                  <option value="Short-term contract">Short-term contract</option>
-                  <option value="Freelance or consulting">Freelance or consulting</option>
-                  <option value="Volunteer contributor">Volunteer contributor</option>
-                  <option value="Partner for a venture">Partner for a venture</option>
-                </optgroup>
-                <optgroup label="Category">
-                  <option value="Programming">Programming</option>
-                  <option value="Interaction Design">Interaction Design</option>
-                  <option value="Graphic Design">Graphic Design</option>
-                  <option value="Testing">Testing</option>
-                  <option value="Systems Administration">Systems Administration</option>
-                  <option value="Business/Management">Business/Management</option>
-                  <option value="Writer/Editor">Writer/Editor</option>
-                  <option value="Customer Support">Customer Support</option>
-                  <option value="Mobile">Mobile (iPhone, Android, other)</option>
+                  {%- for job_type in job_type_choices -%}
+                    <option value="{{job_type[0]}}" {% if job_type[0]|string in request.args.getlist('t') %} selected="selected" {% endif %}>{{job_type[1]}}</option>
+                  {%- endfor -%}
                 </optgroup>
               </select>
             </div>
@@ -74,10 +55,10 @@
               </div> 
             </div><!--eof last pay-filter column-->
             <div class="col-xs-11 col-sm-2">
-              <input id="search-input" type="text" placeholder="Find a job…" name="q" value="{{ request.args.q }}" class="form-control"/>
+              <input id="search-input" type="text" placeholder="Keywords" name="q" value="{{ request.args.q }}" class="form-control"/>
             </div>
             <div class="col-xs-1 col-sm-1">
-                  <input type="submit" class="btn btn-default submit-btn" value="Go"/>
+              <input type="submit" class="btn btn-default submit-btn" value="Go"/>
             </div>      
           </div><!--eof row-->
         </div><!--eof container-->
@@ -245,17 +226,6 @@
     });
   });
   $(document).ready(function() {
-    $('#location-filter').multiselect({
-      nonSelectedText: 'Location',
-      enableClickableOptGroups: true,
-      buttonWidth: '100%',
-      numberDisplayed:3,
-      onDropdownShow: function(event) {
-        if($(".pay-btn-group").hasClass("open")){
-          $("#pay-filter-btn").click();
-        }
-      }
-    }); 
     $('#category-filter').multiselect({
       nonSelectedText: 'Type/Category',
       enableClickableOptGroups: true,
@@ -416,8 +386,9 @@
     //currency_options($("input[type=radio][name=salary]:checked"));
     $("input[type='radio'][name='salary']").on('change', function() {
       currency_options($(this));
-    })      
+    });
 
+    activate_geoname_autocomplete("#location-filter", "https://api.hasgeek.com/1/geo/autocomplete", "https://api.hasgeek.com/1/geo/get_by_names");
   });
 </script>
 {%- endif -%}
