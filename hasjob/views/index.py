@@ -314,14 +314,14 @@ def browse_by_email(md5sum):
 def browse_by_location(location):
     loc = Location.get(location)
     if loc:
-        geodata = {'geonameid': loc.id, 'name': loc.name, 'short_title': loc.title, 'description': Markup(loc.description)}
+        geodata = {'geonameid': loc.id, 'name': loc.name, 'use_title': loc.title, 'description': Markup(loc.description)}
     else:
         geodata = location_geodata(location)
     if not geodata:
         abort(404)
     basequery = JobPost.query.filter(db.and_(
         JobLocation.jobpost_id == JobPost.id, JobLocation.geonameid == geodata['geonameid']))
-    return index(basequery=basequery, location=geodata, title=geodata['short_title'])
+    return index(basequery=basequery, location=geodata, title=geodata['use_title'])
 
 
 @csrf.exempt
@@ -359,7 +359,7 @@ def feed(basequery=None, type=None, category=None, md5sum=None, domain=None, loc
     elif md5sum or domain:
         title = u"Jobs at a single employer"
     elif location:
-        title = u"Jobs in {location}".format(location=location['short_title'])
+        title = u"Jobs in {location}".format(location=location['use_title'])
     elif tag:
         title = u"Jobs tagged {tag}".format(tag=title)
     posts = list(getposts(basequery, showall=False))

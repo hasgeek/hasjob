@@ -29,7 +29,7 @@ def location_new():
     if form.validate_on_submit():
         geonameid, name = form.geoname.data.split('/', 1)
         geonameid = int(geonameid)
-        title = geonames[geonameid]['short_title']
+        title = geonames[geonameid]['use_title']
         location = Location(id=geonameid, name=name, title=title)
         db.session.add(location)
         db.session.commit()

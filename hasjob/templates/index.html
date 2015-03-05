@@ -12,7 +12,7 @@
   {%- if jobcategory %}<link rel="alternate" type="application/atom+xml"  title="{{ jobcategory.title }} – {{ config['SITE_TITLE']|e }}" href="{{ url_for('feed_by_category', name=jobcategory.name) }}" />{% endif -%}
   {%- if md5sum %}<link rel="alternate" type="application/atom+xml" title="Jobs at {{ employer_name }} – {{ config['SITE_TITLE'] }}" href="{{ url_for('feed_by_email', md5sum=md5sum) }}" />{% endif -%}
   {%- if domain %}<link rel="alternate" type="application/atom+xml" title="Jobs at {{ employer_name }} – {{ config['SITE_TITLE'] }}" href="{{ url_for('feed_by_domain', domain=domain) }}" />{% endif -%}
-  {%- if location %}<link rel="alternate" type="application/atom+xml" title="Jobs in {{ location['short_title'] }} – {{ config['SITE_TITLE'] }}" href="{{ url_for('feed_by_location', location=location['name']) }}" />{% endif -%}
+  {%- if location %}<link rel="alternate" type="application/atom+xml" title="Jobs in {{ location['use_title'] }} – {{ config['SITE_TITLE'] }}" href="{{ url_for('feed_by_location', location=location['name']) }}" />{% endif -%}
   {% endblock %}
   {% block description %}{% if location and location.description %}{{ location.description|firstline }}{% else %}{{ super() }}{% endif %}{% endblock %}
 {% endif %}
@@ -26,14 +26,14 @@
       {%- endif %}
     </div>
   {%- endif %}
-  {%- if location and location.short_title and location.description %}
+  {%- if location and location.use_title and location.description %}
     <div class="flash info">
-      <h2>{{ location.short_title }}</h2>
+      <h2>{{ location.use_title }}</h2>
       {{ location.description }}
     </div>
   {%- elif location_prompts %}
     <div class="flash info">
-      <p>In {{ location_prompts[0]['short_title'] }}? Filter this view:</p>
+      <p>In {{ location_prompts[0]['use_title'] }}? Filter this view:</p>
       <p class="button-bar">
         {%- for loc in location_prompts %}
           <a class="btn btn-sm btn-default" data-geonameid="{{ loc['geonameid'] }}" href="{{ request.base_url + '?l=' + loc['name']|urlencode }}">{{ loc['picker_title'] }}</a>
@@ -67,7 +67,7 @@
     {%- elif location -%}
       <li class="col-xs-12 col-md-3 col-sm-4">
         <a href="{{ url_for('index') }}" class="stickie special">
-          You are viewing jobs in {{ location['short_title'] }}. View all jobs?<!-- Id: {{ location['geonameid'] }} -->
+          You are viewing jobs in {{ location['use_title'] }}. View all jobs?<!-- Id: {{ location['geonameid'] }} -->
         </a>
       </li>
     {%- elif tag -%}
