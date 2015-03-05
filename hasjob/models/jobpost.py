@@ -17,8 +17,6 @@ from . import newlimit, agelimit, db, POSTSTATUS, EMPLOYER_RESPONSE, PAY_TYPE, B
 from .jobtype import JobType
 from .jobcategory import JobCategory
 from .user import User, AnonUser, EventSession
-from .org import Organization
-from .domain import Domain
 from ..utils import random_long_key, random_hash_key
 
 __all__ = ['JobPost', 'JobLocation', 'UserJobView', 'AnonJobView', 'JobImpression', 'JobApplication',
@@ -68,8 +66,6 @@ class JobPost(BaseMixin, db.Model):
     # Metadata
     user_id = db.Column(None, db.ForeignKey('user.id'), nullable=True, index=True)
     user = db.relationship(User, primaryjoin=user_id == User.id, backref=db.backref('jobposts', lazy='dynamic'))
-    org_id = db.Column(None, db.ForeignKey('organization.id', ondelete='SET NULL'), nullable=True, index=True)
-    org = db.relationship(Organization, backref=db.backref('jobposts', lazy='dynamic'))
 
     hashid = db.Column(db.String(5), nullable=False, unique=True)
     datetime = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)  # Published
@@ -111,7 +107,7 @@ class JobPost(BaseMixin, db.Model):
     email = db.Column(db.Unicode(80), nullable=False)
     email_domain = db.Column(db.Unicode(80), nullable=False, index=True)
     domain_id = db.Column(None, db.ForeignKey('domain.id'), nullable=False)
-    domain = db.relationship(Domain, lazy='joined', backref=db.backref('jobposts', lazy='dynamic'))
+    domain = db.relationship('Domain', lazy='joined', backref=db.backref('jobposts', lazy='dynamic'))
     md5sum = db.Column(db.String(32), nullable=False, index=True)
 
     # Payment, audit and workflow fields

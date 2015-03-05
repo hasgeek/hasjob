@@ -649,38 +649,15 @@ class CampaignActionForm(forms.Form):
         description=__("Sequence number for displaying this action when multiple actions are available to the user"))
 
 
-# --- Organization forms ------------------------------------------------------
-#
-# To work with an organization profile, users go through the following steps:
-#
-# 1. When posting a new job at /new, iff the user is a member of an organization,
-#    they are stopped and asked to pick an organization first. One of the options
-#    is to create a new organization profile.
-#
-# 2. If they've picked "new organization", an instruction page appears asking them
-#    to confirm their work email address, then create a new organization if they
-#    don't see their organization already on the list (confirming an email address
-#    also makes them a member of existing organizations with that email domain).
-#    This means the page needs to reload at some point, most likely by user action.
-#
-# 3. If they pick an existing organization, and it doesn't have a record in Hasjob,
-#    they are taken to the organization edit page and a new organization is saved
-#    with the settings provided. Organization profiles can be edited by any Member
-#    by default. However, owners can change this to the Owners or other team.
-#    Organizations MUST have an associated domain in Hasjob even though domains
-#    are optional in Lastuser. TODO: How do we handle this?
-#
-# 4. Once an organization is picked, a variant new job form appears that (a)
-#    doesn't ask for organization details, and (b) asks for an email address within
-#    the email domain of the organization. The email's domain can't be changed at
-#    this point.
-#
-# 5. Once an organization and associated domain have been created, the domain is
-#    unavailable for anyone to post at without posting from within the organization
-#    profile (validate_email fails).
-
-
-class SelectOrgForm(forms.Form):
-    """
-    """
-    pass
+class DomainForm(forms.Form):
+    title = forms.StringField(__(u"Common name"), validators=[forms.validators.DataRequired()],
+        description=__("The name of your organization, excluding legal suffixes like Pvt Ltd"))
+    legal_title = forms.NullTextField(__("Legal name"), validators=[forms.validators.Optional()],
+        description=__(u"Optional — The full legal name of your organization"))
+    logo_url = URLField(__("Logo URL"), validators=[forms.validators.Optional()],  # TODO: Use ImgeeField
+        description=__(u"Optional — Your organization’s logo"))
+    description = forms.TinyMce4Field(__("Description"),
+        description=__("Who are you and why should someone work for you? Tell your story"),
+        content_css=content_css, validators=[
+            forms.validators.AllUrlsValid(invalid_urls=invalid_urls),
+            forms.validators.NoObfuscatedEmail(u"Do not include contact information here")])

@@ -10,7 +10,7 @@ from baseframe import csrf, _
 
 from .. import app, lastuser
 from ..models import (db, JobCategory, JobPost, JobType, POSTSTATUS, newlimit, agelimit, JobLocation,
-    Location, Tag, JobPostTag, Campaign, CAMPAIGN_POSITION, CURRENCY)
+    Domain, Location, Tag, JobPostTag, Campaign, CAMPAIGN_POSITION, CURRENCY)
 from ..views.helper import (getposts, getallposts, gettags, location_geodata, cache_viewcounts, session_jobpost_ab,
     bgroup)
 from ..uploads import uploaded_logos
@@ -80,19 +80,26 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
             data_filters['pay_min'] = f_min
             data_filters['pay_max'] = f_max
             basequery = basequery.filter(JobPost.pay_cash_min < f_max, JobPost.pay_cash_max >= f_min)
+
+    search_domains = None
     if request.args.get('q'):
         q = for_tsquery(request.args['q'])
         try:
             # TODO: Can we do syntax validation without a database roundtrip?
             db.session.query(db.func.to_tsquery(q)).all()
-            # Query's good? Use it.
-            data_filters['query'] = q
-            basequery = basequery.filter(JobPost.search_vector.match(q, postgresql_regconfig='english'))
         except ProgrammingError:
             db.session.rollback()
             g.event_data['search_syntax_error'] = (request.args['q'], q)
             if not request.is_xhr:
                 flash(_(u"Search terms ignored because this didn’t parse: {query}").format(query=q), 'danger')
+        else:
+            # Query's good? Use it.
+            data_filters['query'] = q
+            search_domains = Domain.query.filter(
+                Domain.search_vector.match(q, postgresql_regconfig='english')).options(
+                db.load_only('name', 'title', 'logo_url')).all()
+            basequery = basequery.filter(JobPost.search_vector.match(q, postgresql_regconfig='english'))
+
     if data_filters:
         g.event_data['filters'] = data_filters
 
@@ -247,7 +254,7 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
                            md5sum=md5sum, domain=domain, employer_name=employer_name,
                            location=location, showall=showall, tag=tag, is_index=is_index,
                            header_campaign=header_campaign, loadmore=loadmore,
-                           location_prompts=location_prompts,
+                           location_prompts=location_prompts, search_domains=search_domains,
                            is_siteadmin=lastuser.has_permission('siteadmin'))
 
 
@@ -277,8 +284,11 @@ def browse_by_type(name):
 def browse_by_domain(domain):
     if not domain or '.' not in domain:
         abort(404)
-    basequery = JobPost.query.filter_by(email_domain=domain)
-    return index(basequery=basequery, domain=domain, title=domain, showall=True)
+    obj = Domain.get(domain)
+    if not obj:
+        abort(404)
+    basequery = JobPost.query.join(Domain).filter(JobPost.domain == obj)
+    return index(basequery=basequery, domain=obj, title=obj.use_title, showall=True)
 
 
 @app.route('/at/<domain>', methods=['GET', 'POST'], subdomain='<subdomain>')

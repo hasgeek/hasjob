@@ -2,22 +2,18 @@
 
 from datetime import datetime, timedelta
 from flask import request
-from flask.ext.lastuser.sqlalchemy import UserBase2, TeamBase2
+from flask.ext.lastuser.sqlalchemy import UserBase2
 from coaster.sqlalchemy import JsonDict
 from baseframe import _, cache
 from . import db, BaseMixin
 
-__all__ = ['User', 'Team', 'UserActiveAt', 'AnonUser', 'EventSessionBase', 'EventSession', 'UserEventBase', 'UserEvent']
+__all__ = ['User', 'UserActiveAt', 'AnonUser', 'EventSessionBase', 'EventSession', 'UserEventBase', 'UserEvent']
 
 
 class User(UserBase2, db.Model):
     __tablename__ = 'user'
 
     blocked = db.Column(db.Boolean, nullable=False, default=False)
-
-
-class Team(TeamBase2, db.Model):
-    __tablename__ = 'team'
 
 
 class UserActiveAt(db.Model):

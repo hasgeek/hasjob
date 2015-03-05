@@ -8,7 +8,7 @@ from baseframe import csrf
 
 from .. import app, lastuser
 from ..signals import signal_login, signal_logout
-from ..models import db, Organization, UserActiveAt
+from ..models import db, UserActiveAt
 
 
 @app.route('/500')
@@ -33,7 +33,6 @@ def logout():
 @app.route('/login/redirect')
 @lastuser.auth_handler
 def lastuserauth():
-    Organization.update_from_user(g.user, db.session, make_user_profiles=False, make_org_profiles=False)
     signal_login.send(app, user=g.user)
     db.session.commit()
     return redirect(get_next_url())
@@ -43,7 +42,6 @@ def lastuserauth():
 @app.route('/login/notify', methods=['POST'])
 @lastuser.notification_handler
 def lastusernotify(user):
-    Organization.update_from_user(user, db.session, make_user_profiles=False, make_org_profiles=False)
     db.session.commit()
 
 

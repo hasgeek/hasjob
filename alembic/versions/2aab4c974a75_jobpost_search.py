@@ -45,5 +45,5 @@ def upgrade():
 def downgrade():
     op.drop_index('ix_jobpost_search_vector', 'jobpost')
     op.execute('DROP TRIGGER jobpost_search_vector_trigger ON jobpost')
-    op.execute('DROP FUNCTION jobpost_search_vector_update();')
+    op.execute('DROP FUNCTION jobpost_search_vector_update()')
     op.drop_column('jobpost', 'search_vector')

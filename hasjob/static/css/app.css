@@ -727,6 +727,18 @@ h1 small, h2 small, h3 small {
   background-color: #f6f6f6;
 }
 
+.stickie.org {
+  background-color: #fff;
+  text-align: center;
+  font-family: "Fira Sans", arial, sans-serif;
+}
+.stickie.org img {
+  max-width: 100%;
+  height: auto;
+  max-height: 100px;
+  padding-bottom: 5px;
+}
+
 .stickie.announcement {
   background-color: #ffff2c;
 }

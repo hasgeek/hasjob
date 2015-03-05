@@ -70,9 +70,8 @@ from .jobtype import *
 from .location import *
 from .tag import *
 from .reportcode import *
-from .domain import *
-from .org import *
 from .jobpost import *
+from .domain import *
 from .board import *
 from .flags import *
 from .campaign import *

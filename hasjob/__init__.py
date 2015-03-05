@@ -31,7 +31,7 @@ assets['hasjob.css'][version] = 'css/app.css'
 # Third, after config, import the models and views
 
 from . import models, views  # NOQA
-from .models import db
+from .models import db  # NOQA
 
 
 # Configure the app
@@ -64,4 +64,4 @@ def init_for(env):
     mail.init_app(app)
     redis_store.init_app(app)
     lastuser.init_app(app)
-    lastuser.init_usermanager(UserManager(db, models.User, models.Team))
+    lastuser.init_usermanager(UserManager(db, models.User))

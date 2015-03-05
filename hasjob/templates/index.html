@@ -1,4 +1,5 @@
 {%- from "macros.html" import stickie %}
+{%- from "domain.html" import org_profile with context %}
 {%- if not request.is_xhr -%}
   {% extends "layout.html" %}
   {% block titletags -%}
@@ -42,6 +43,9 @@
       </p>
     </div>
   {%- endif %}
+  {%- if domain and domain.has_profile %}
+    {{ org_profile(domain) }}
+  {%- endif %}
   <ul id="stickie-area" class="row">
     {%- if jobtype or jobcategory -%}
       <li class="col-xs-12 col-md-3 col-sm-4">
@@ -53,11 +57,13 @@
         </a>
       </li>
     {%- elif domain -%}
-      <li class="col-xs-12 col-md-3 col-sm-4">
-        <a href="{{ url_for('index') }}" class="stickie special">
-          You are viewing jobs at {{ domain }}. View all jobs?
-        </a>
-      </li>
+      {%- if not domain.has_profile %}
+        <li class="col-xs-12 col-md-3 col-sm-4">
+          <a href="{{ url_for('index') }}" class="stickie special">
+            You are viewing jobs at {{ domain.use_title }}. View all jobs?
+          </a>
+        </li>
+      {%- endif -%}
     {%- elif md5sum -%}
       <li class="col-xs-12 col-md-3 col-sm-4">
         <a href="{{ url_for('index') }}" class="stickie special">
@@ -93,6 +99,17 @@
           </form>
         </li>
       {%- endif -%}
+    {%- endif -%}
+    {%- if search_domains %}
+      {%- for domain in search_domains -%}
+        <li class="col-xs-12 col-md-3 col-sm-4">
+          <a href="{{ domain.url_for() }}" class="stickie org">
+            {%- if domain.logo_url -%}
+              <img src="{{ domain.logo_url }}" alt="Logo"/><br>
+            {%- endif -%}
+            {{ domain.use_title }}</a>
+        </li>
+      {% endfor -%}
     {%- endif -%}
 {%- endif -%}
     {%- if grouped %}
