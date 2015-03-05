@@ -96,8 +96,8 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
             # Query's good? Use it.
             data_filters['query'] = q
             search_domains = Domain.query.filter(
-                Domain.search_vector.match(q, postgresql_regconfig='english')).options(
-                db.load_only('name', 'title', 'logo_url')).all()
+                Domain.search_vector.match(q, postgresql_regconfig='english'), Domain.is_banned == False).options(
+                db.load_only('name', 'title', 'logo_url')).all()  # NOQA
             basequery = basequery.filter(JobPost.search_vector.match(q, postgresql_regconfig='english'))
 
     if data_filters:
@@ -287,6 +287,8 @@ def browse_by_domain(domain):
     obj = Domain.get(domain)
     if not obj:
         abort(404)
+    if obj.is_banned:
+        abort(410)
     basequery = JobPost.query.join(Domain).filter(JobPost.domain == obj)
     return index(basequery=basequery, domain=obj, title=obj.use_title, showall=True)
 
