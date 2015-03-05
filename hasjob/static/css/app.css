@@ -337,9 +337,17 @@ h1 small, h2 small, h3 small {
 }
 
 .post-date {
+  font-weight: normal;
   font-size: 75%;
   line-height: 24px;
   color: #666;
+}
+
+.qna dt, .qna dd {
+  margin-bottom: 12px;
+}
+.qna dt *:nth-last-child(2), .qna dd *:nth-last-child(2) {
+  margin-bottom: 0;
 }
 
 .form-horizontal .help-required {

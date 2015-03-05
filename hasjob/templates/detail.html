@@ -85,6 +85,47 @@
             <h2>Job Perks</h2>
             {{ post.perks|safe }}
           {% endif %}
+          <h2>Q&amp;A</h2>
+          <div class="qna">
+            {%- with questions = post.questions_for(g.user, all=is_siteadmin) %}{% if questions %}
+              <dl>
+                {%- for question in questions %}
+                <dt>
+                  <p>
+                    {{ question.title }}{% if not question.is_public %} <span class="label label-info">{{ question.status_label.title }}</span>{% endif %}
+                  </p>
+                  <p class="post-date">
+                    — {{ question.user.pickername }} &middot; {{ question.created_at|age }}
+                    {%- if question.user == g.user %} &middot; <a href="{{ question.url_for('delete') }}"><i class="fa fa-trash-o"></i> Delete</a>{% endif %}
+                    {%- if post.admin_is(g.user) %} &middot; <a href="{{ question.url_for('decline') }}"><i class="fa fa-thumbs-down"></i> Decline</a>{% endif %}
+                    {%- if is_siteadmin or g.board and g.board.owner_is(g.user) %} &middot; <a href="{{ question.url_for('remove') }}"><i class="fa fa-trash-o"></i> Remove</a>{% endif %}
+                  </p>
+                </dt>
+                <dd>
+                  <p>
+                    And this is a sample answer. That is correct, this is just a single line.
+                  </p>
+                  <p class="post-date">— Kiran Jonnalagadda (~jace) &middot; minutes ago &middot; <a href="{{ post.url_for('ask') }}"><i class="fa fa-trash-o"></i> Delete</a></p>
+                </dd>
+                {%- endfor %}
+              </dl>
+            {% endif %}{%- endwith %}
+          </div>
+          <p>
+            Need more details? Ask the employer a question. Their answer and your question will be visible to all
+          </p>
+          <form method="POST" action="{{ post.url_for('ask') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            <div class="input-group">
+              <input type="text" class="form-control" name="question" placeholder="Ask a question…">
+              <span class="input-group-btn">
+                <button type="submit" class="btn btn-default" type="button"><i class="fa fa-caret-right"></i></button>
+              </span>
+            </div>
+            <p class="help-block">
+              Questions and answers are public. To apply for the job, see below
+            </p>
+          </form>
         </div>
         <div class="col-md-3">{% if not g.kiosk %}
           <div class="list-group">

@@ -76,3 +76,4 @@ from .jobpost import *
 from .board import *
 from .flags import *
 from .campaign import *
+from .qna import *
