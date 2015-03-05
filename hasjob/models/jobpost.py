@@ -25,7 +25,8 @@ __all__ = ['JobPost', 'JobLocation', 'UserJobView', 'AnonJobView', 'JobImpressio
     'JobViewSession', 'unique_hash', 'viewstats_by_id_qhour', 'viewstats_by_id_hour', 'viewstats_by_id_day']
 
 
-number_format = lambda number, suffix: str(int(number)) + suffix if int(number) == number else str(round(number, 2)) + suffix
+def number_format(number, suffix):
+    return str(int(number)) + suffix if int(number) == number else str(round(number, 2)) + suffix
 
 
 def number_abbreviate(number, indian=False):
