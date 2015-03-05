@@ -1,7 +1,7 @@
 @charset "UTF-8";
 body {
   font-family: "Fira Sans", arial, sans-serif;
-  background: #e8e7e6 url('../img/canvas.jpg?1425290105');
+  background: #e8e7e6 url('../img/canvas.jpg?1416495026');
 }
 
 header {
@@ -49,7 +49,7 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
   overflow: hidden;
   text-align: left;
   text-transform: capitalize;
-  background-image: url('../img/logo-star.png?1425290105');
+  background-image: url('../img/logo-star.png?1424329162');
   background-repeat: no-repeat;
   background-position: 50% 50%;
   width: 170px;
@@ -63,7 +63,7 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
   overflow: hidden;
   text-align: left;
   text-transform: capitalize;
-  background-image: url('../img/logo-star.png?1425290105');
+  background-image: url('../img/logo-star.png?1424329162');
   background-repeat: no-repeat;
   background-position: 50% 50%;
   width: 170px;
@@ -91,13 +91,13 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
 .header-section .filters {
   float: left;
   padding: 5px 10px 5px 0;
-  width: 24%;
+  width: 23.75%;
 }
 
 .header-section .sumbit-filters {
   float: left;
   padding: 5px 0;
-  width: 4%;
+  width: 5%;
 }
 
 .header-section .filter-group {
@@ -118,7 +118,7 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
 }
 
 .category-group .filter-text {
-  padding: 6px 12px;
+  padding: 6px 0;
 }
 
 .header-section .keyword-search {
@@ -133,7 +133,6 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
 
 .pay-range {
   font-size: 12px;
-  padding-left: 6px;
 }
 
 .header-section .filter-dropdown {
@@ -156,7 +155,7 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
   padding: 5px 10px;
   width: 100%;
   max-height: 300px;
-  overflow-y: scroll;
+  overflow-y: auto;
 }
 
 .category-title {
@@ -179,10 +178,6 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
   width: 100%;
 }
 
-.pay-filter-slider {
-  margin: 10px 25px;
-}
-
 #filter_pay_cash_max {
   float: right;
   margin-right: 15px;
@@ -191,7 +186,6 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
 .salary-filter-dropdown {
   display: none;
   font-size: 11px;
-  margin-left: 15px;
   line-height: normal;
 }
 
@@ -200,6 +194,7 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
 }
 
 .pay-filter-slider {
+  margin: 10px 25px 15px 12px;
   display: none;
   font-size: 11px;
   line-height: 2;
@@ -253,10 +248,6 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
     padding: 5px 10px;
   }
 
-  .header-section {
-    display: none;
-  }
-
   .header-section .filters {
     float: none;
     padding: 5px 0;
@@ -299,7 +290,7 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
   line-height: 36px;
 }
 #search input[type="text"] {
-  background: white url('../img/search.png?1425290105') 4px center no-repeat;
+  background: white url('../img/search.png?1416495026') 4px center no-repeat;
   padding: 7px 10px 3px 20px;
 }
 #search .btn {
