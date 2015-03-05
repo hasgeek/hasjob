@@ -21,7 +21,7 @@
       <form id="new-search" action="{{ url_for('search') }}" class="form-inline" role="form">
         <div class="container">
             <div class="filters">
-              <input id="location-filter" type="text" placeholder="Location" name="l" value="{{ request.args.l }}" class="form-control"/>
+              <input id="location-filter" type="text" placeholder="Location" name="l" value="{{ request.args.l }}" class="form-control" style="width:100%"/>
             </div>
             <div class="filters">
               <div class="filter-group category-group">
@@ -49,7 +49,6 @@
                 <button class="filter-select btn btn-default" title="Pay"><span class="pay-range"></span><span class="filter-text">Pay</span><span class="caret"></span></button>
                 <ul class="pay-filter-dropdown filter-dropdown">
                   <li>
-                    <input type="checkbox" id="pay-salary" value="Pay"></input><label for="pay-salary">Pay</label>
                     <div class="salary-filter-dropdown">
                       <input type="radio" id="salary-inr" name="currency" value="INR"></input><label for="salary-inr">INR</label>
                       <input type="radio" id="salary-usd" name="currency" value="USD"></input><label for="salary-usd">USD</label>
@@ -71,7 +70,7 @@
               <input class="filter-select keyword-search" type="text" placeholder="Keywords" name="q" value="{{ request.args.q }}"/>
             </div>
             <div class="sumbit-filters">
-              <input type="submit" class="btn btn-default submit-btn" value="Go"/>
+              <input type="submit" class="btn btn-default submit-btn" value="Filter"/>
             </div>      
         </div><!--eof container-->
     </form>
@@ -267,49 +266,7 @@
       }
     });
 
-    var filter_text = function(currentfilter) {
-      if(currentfilter.find(".filter-dropdown li>input:checked").is(":checked")){
-        var counter = 0;
-        var selectedval = currentfilter.find('.filter-dropdown li>input:checked').map(function() {
-          counter++;
-          return this.value;
-        }).get();
-        if(counter > 2){
-          selectedval = counter + " selected";
-          currentfilter.find(".filter-select .filter-text").text(selectedval)
-        }
-        else currentfilter.find(".filter-select .filter-text").text(selectedval);
-       }
-       else{
-        selectedval = currentfilter.find(".filter-select").attr("title")
-        currentfilter.find(".filter-select .filter-text").text(selectedval);
-       }
-    }
-    $(".filter-dropdown li>input").on('change', function() {
-       filter_text($(this).parents(".filter-group"));
-       if($(this).parent("li").hasClass("active"))
-       {
-          $(this).parent("li").removeClass("active");
-          if($(this).val() == "Pay"){
-            $(".salary-filter-dropdown").hide();
-            $(".pay-filter-slider").hide();
-            var btntext = "";
-            $(".pay-range").text(btntext);
-          }
-       }
-       else{
-          $(this).parent("li").addClass("active");
-          if($(this).val() == "Pay"){
-            $(".salary-filter-dropdown").show();
-            if($('input:radio[name="currency"]:checked').is(":checked")){
-              $(".pay-filter-slider").show();
-            }
-            else{
-              $(".pay-filter-slider").hide();
-            }
-          }
-       }
-    });
+    $(".salary-filter-dropdown").show();
 
     var cashslider = $("#salary-slider").noUiSlider({
         start: [ 0, 1000000 ],
@@ -395,28 +352,18 @@
       cashslider.Link('lower').to($('#filter_pay_cash_min'));
       cashslider.Link('upper').to($('#filter_pay_cash_max'));
     };
+    
     $('#salary-slider').on('set', function(){
-      var selectedvalue = $('input[name="currency"]:checked').val();
-      if(selectedvalue){
-        if($("#pay-salary").is(":checked")){
+      if($('input[name="currency"]:checked')){
         var salarymin = $(this).val()[0].replace(/,/g,"");
         var salarymax = $(this).val()[1].replace(/,/g,"");
-          $('#salary-p-min').attr("name","pmin").val(salarymin.substring(1));
-          $('#salary-p-max').attr("name","pmax").val(salarymax.substring(1));
-          var btntext = $(".pay-range").html();
-          btntext = "(" + salarymin +"," + salarymax + ") ";
-          $(".pay-range").text(btntext);
-        }
+        $('#salary-p-min').attr("name","pmin").val(salarymin.substring(1));
+        $('#salary-p-max').attr("name","pmax").val(salarymax.substring(1));
+        var btntext = $(".pay-range").html();
+        btntext = "(" + salarymin +"," + salarymax + ") ";
       }
     });
-    //currency_options($("input[type=radio][name=s]:checked"));
-    $("#pay-salary").on('change', function() {
-      if(!$(this).is(":checked")){
-        $('#salary-p-min').attr("name","");
-        $('#salary-p-max').attr("name","");
-        $("input[type='radio'][name='currency']:checked").prop('checked', false);
-      }
-    });
+    
     $("input[type='radio'][name='currency']").on('change', function() {
       currency_options($(this));
       if($('input:radio[name="currency"]:checked').is(":checked")){
@@ -428,7 +375,7 @@
     });
 
     $("#filter-toggle").click(function(event){
-      $("."+$(this).attr("data-target")).slideToggle( "slow" );
+      $("."+$(this).attr("data-target")).slideToggle("slow");
     })      
 
     activate_geoname_autocomplete("#location-filter", "https://api.hasgeek.com/1/geo/autocomplete", "https://api.hasgeek.com/1/geo/get_by_names");
