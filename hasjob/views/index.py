@@ -319,6 +319,8 @@ def browse_by_location(location):
         geodata = location_geodata(location)
     if not geodata:
         abort(404)
+    if location != geodata['name']:
+        return redirect(url_for('browse_by_location', location=geodata['name']))
     basequery = JobPost.query.filter(db.and_(
         JobLocation.jobpost_id == JobPost.id, JobLocation.geonameid == geodata['geonameid']))
     return index(basequery=basequery, location=geodata, title=geodata['use_title'])
