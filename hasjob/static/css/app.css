@@ -133,6 +133,7 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
 
 .pay-range {
   font-size: 12px;
+  padding-left: 6px;
 }
 
 .header-section .filter-dropdown {

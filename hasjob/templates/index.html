@@ -30,14 +30,14 @@
                   <li><p class="category-title">Type</p></li>
                   {%- for job_type in job_type_choices -%}
                   <li>
-                    <input type="checkbox" id="type-{{job_type[0]}}" value="{{job_type[1]}}" name="t"></input>
+                    <input type="checkbox" id="type-{{job_type[0]}}" value="{{job_type[1]}}" name="t" {% if job_type[1]|string in request.args.getlist('t') %} checked="checked" {% endif %}></input>
                     <label for="type-{{job_type[0]}}">{{job_type[1]}}</label>
                   </li>
                   {%- endfor -%}
                   <li><p class="category-title">Category</p></li>
                   {%- for job_cat in job_category_choices -%}
                   <li>
-                    <input type="checkbox" id="cat-{{job_cat[0]}}" value="{{job_cat[1]}}" name="c"></input>
+                    <input type="checkbox" id="cat-{{job_cat[0]}}" value="{{job_cat[1]}}" name="c" {% if job_cat[1]|string in request.args.getlist('c') %} checked="checked" {% endif %}></input>
                     <label for="cat-{{job_cat[0]}}">{{job_cat[1]}}</label>
                   </li>
                   {%- endfor -%}
@@ -48,19 +48,20 @@
               <div class="filter-group pay-group">
                 <button class="filter-select btn btn-default" title="Pay"><span class="pay-range"></span><span class="filter-text">Pay</span><span class="caret"></span></button>
                 <ul class="pay-filter-dropdown filter-dropdown">
-                  <li><input type="checkbox" id="pay-salary" value="Pay"></input><label for="pay-salary">Pay</label>
-                      <div class="salary-filter-dropdown">
-                        <input type="radio" id="salary-inr" name="currency" value="INR"></input><label for="salary-inr">INR</label>
-                        <input type="radio" id="salary-usd" name="currency" value="USD"></input><label for="salary-usd">USD</label>
-                        <input type="radio" id="salary-eur" name="currency" value="EUR"></input><label for="salary-eur">EUR</label>
-                      </div>
-                      <div class="pay-filter-slider">
-                        <span id="filter_pay_cash_min"></span>
-                        <input type="hidden" id="salary-p-min" value="">
-                        <span id="filter_pay_cash_max"></span>
-                        <input type="hidden" id="salary-p-max" value="">
-                        <div id="salary-slider"></div>
-                      </div>
+                  <li>
+                    <input type="checkbox" id="pay-salary" value="Pay"></input><label for="pay-salary">Pay</label>
+                    <div class="salary-filter-dropdown">
+                      <input type="radio" id="salary-inr" name="currency" value="INR"></input><label for="salary-inr">INR</label>
+                      <input type="radio" id="salary-usd" name="currency" value="USD"></input><label for="salary-usd">USD</label>
+                      <input type="radio" id="salary-eur" name="currency" value="EUR"></input><label for="salary-eur">EUR</label>
+                    </div>
+                    <div class="pay-filter-slider">
+                      <span id="filter_pay_cash_min"></span>
+                      <input type="hidden" id="salary-p-min" value="">
+                      <span id="filter_pay_cash_max"></span>
+                      <input type="hidden" id="salary-p-max" value="">
+                      <div id="salary-slider"></div>
+                    </div>
                   </li>
                   <li><input type="checkbox" name="equity" id="pay-equity" value="Equity"></input><label for="pay-equity">Equity</label></li>
                 </ul>
@@ -239,36 +240,45 @@
   $(document).ready(function() {
     $(".filter-select").click(function(event){
       event.preventDefault();
-      var parent_div = $(this).parent("div")
-      if(parent_div.hasClass("open")) {
-         parent_div.removeClass("open");
-         parent_div.children("ul").hide()
+      var parent_div = $(this).parent("div");
+      var other_div = $(".filter-select").not($(this)).parent("div")
+      if(other_div.hasClass("open")){
+        other_div.removeClass("open");
+        other_div.children("ul").hide();
+      }
+      if(parent_div.hasClass("open"))
+      {
+        parent_div.removeClass("open");
+        parent_div.children("ul").hide();
       }
       else{
-         parent_div.addClass("open");
-         parent_div.children("ul").show()
+        parent_div.addClass("open");
+        parent_div.children("ul").show();
       }
     });
 
     $(document).click(function(e){
-      var container = $(".category-group");
-      //console.log(e.target);
-      if (!container.is(e.target) && container.has(e.target).length === 0 && container.hasClass("open")) {
-        $(".category-group .filter-select").click();
-      } else {
-        var container = $(".pay-group");
-        if (!container.is(e.target) && container.has(e.target).length === 0 && container.hasClass("open")) {
-          $(".pay-group .filter-select").click();
-        }
+      var container1 = $(".category-group");
+      var container2 = $(".pay-group");
+      if (!container1.is(e.target)&& container1.has(e.target).length === 0 && !container2.is(e.target)&& container2.has(e.target).length === 0)
+      {
+        if(container1.hasClass("open")) $(".category-group .filter-select").click();
+        if(container2.hasClass("open")) $(".pay-group .filter-select").click();
       }
     });
 
     var filter_text = function(currentfilter) {
       if(currentfilter.find(".filter-dropdown li>input:checked").is(":checked")){
+        var counter = 0;
         var selectedval = currentfilter.find('.filter-dropdown li>input:checked').map(function() {
+          counter++;
           return this.value;
         }).get();
-        currentfilter.find(".filter-select .filter-text").text(selectedval);
+        if(counter > 2){
+          selectedval = counter + " selected";
+          currentfilter.find(".filter-select .filter-text").text(selectedval)
+        }
+        else currentfilter.find(".filter-select .filter-text").text(selectedval);
        }
        else{
         selectedval = currentfilter.find(".filter-select").attr("title")
