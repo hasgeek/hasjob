@@ -18,7 +18,7 @@
   {% block description %}{% if location and location.description %}{{ location.description|firstline }}{% else %}{{ super() }}{% endif %}{% endblock %}
   {% block headertoo %}
     <div class="header-section">
-      <form id="new-search" action="{{ url_for('search') }}" class="form-inline" role="form">
+      <form id="job-filters" action="{{ url_for('search') }}" class="form-inline" role="form">
         <div class="container">
             <div class="filters">
               <input id="location-filter" type="text" placeholder="Location" name="l" value="{{ request.args.l }}" class="form-control" style="width:100%"/>
@@ -36,6 +36,32 @@
                   <option value="{{job_category[0]}}" {% if job_category[0]|string in request.args.getlist('c') %} selected="selected" {% endif %}>{{job_category[1]}}</option>
                 {%- endfor -%}
               </select>
+            </div>
+            <div class="filters dropdown">
+              <input class="filter-select pay-filter dropdown-toggle" type="text" placeholder="Pay" id="pay-filter-text-input" data-toggle="dropdown" aria-expanded="true" {% if request.args.get('pmin') %} value="{{request.args.get('pmin')}} - {{request.args.get('pmax')}}" {% endif %}/>
+              <ul class="dropdown-menu pay-filter" role="menu" aria-labelledby="pay-filter-text-input">
+                <li>
+                  <input type="radio" id="salary-inr" name="currency" value="INR" {% if not request.args.get('currency') or request.args.get('currency')== "INR" %} checked="checked" {% endif %} %></input>
+                  <label for="salary-inr">INR</label>
+                  <input type="radio" id="salary-usd" name="currency" value="USD" {% if request.args.get('currency') == "USD" %} checked="checked" {% endif %}></input>
+                  <label for="salary-usd">USD</label>
+                  <input type="radio" id="salary-eur" name="currency" value="EUR" {% if request.args.get('currency') == "EUR" %} checked="checked" {% endif %}></input>
+                  <label for="salary-eur">EUR</label>
+                </li>
+                <li>
+                  <div class="pay-filter-slider">
+                    <span id="filter_pay_cash_min"></span>
+                    <input type="hidden" name="pmin" id="job-filters-pmin" value="">
+                    <span id="filter_pay_cash_max"></span>
+                    <input type="hidden" name="pmax" id="job-filters-pmax" value="">
+                    <div id="salary-slider"></div>
+                  </div>
+                </li>
+                <li>
+                  <input type="checkbox" name="equity" id="pay-equity" {% if request.args.get('equity') %} checked="checked" value="1" {% endif %}></input>
+                  <label for="pay-equity">Equity</label>
+                </li>
+              </ul>
             </div>
             <div class="filters">
               <input class="filter-select keyword-search" type="text" placeholder="Keywords" name="q" value="{{ request.args.q }}"/>
@@ -228,8 +254,6 @@
           edit: indian_rupee_encoder
         })
       });
-    cashslider.Link('lower').to($('#filter_pay_cash_min'));
-    cashslider.Link('upper').to($('#filter_pay_cash_max'));
 
     var indian_rupee_encoder = function(value) {
       value=value.toString();
@@ -294,28 +318,32 @@
       cashslider.Link('upper').to($('#filter_pay_cash_max'));
     };
     
+    $(".pay-filter-slider").show();
+    currency_options($("input[type='radio'][name='currency']:checked"));
+    $("input[type='radio'][name='currency']").on('change', function() {
+      currency_options($(this));
+    });
+
+    // Set the default value on $('#pay-filter-text-input') using JS
     $('#salary-slider').on('set', function(){
       if($('input[name="currency"]:checked')){
-        var salarymin = $(this).val()[0].replace(/,/g,"");
-        var salarymax = $(this).val()[1].replace(/,/g,"");
-        $('#salary-p-min').attr("name","pmin").val(salarymin.substring(1));
-        $('#salary-p-max').attr("name","pmax").val(salarymax.substring(1));
-        var btntext = $(".pay-range").html();
-        btntext = "(" + salarymin +"," + salarymax + ") ";
+        var pmin = $(this).val()[0];
+        var pmax = $(this).val()[1];
+        console.log(pmin);
+        $('#pay-filter-text-input').val(pmin + " - " + pmax);
+        $('#job-filters-pmin').attr("name","pmin").val(pmin);
+        $('#job-filters-pmax').attr("name","pmax").val(pmax);
       }
     });
     
-    $('.pay-filter').on('change', function(){
-      console.log($(this));
-      if ($(this).val() !== "") {
-        $(".pay-filter-slider").show();
-      } else {
-        $(".pay-filter-slider").hide();
-      }
-    });
+    
+
 
     $("#job-type-filter").select2();
     $("#job-category-filter").select2();
+    $('ul.pay-filter').click(function(e) {
+      e.stopPropagation();
+    });
     activate_geoname_autocomplete("#location-filter", "https://api.hasgeek.com/1/geo/autocomplete", "https://api.hasgeek.com/1/geo/get_by_names");
   });
 </script>
