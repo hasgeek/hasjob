@@ -40,7 +40,7 @@
             </div>
             <div class="filters dropdown">
               <input class="filter-select pay-filter dropdown-toggle" type="text" placeholder="Pay" id="pay-filter-text-input" data-toggle="dropdown" aria-expanded="true" {% if request.args.get('pmin') %} value="{{request.args.get('pmin')}} - {{request.args.get('pmax')}}" {% endif %}/>
-              <ul class="dropdown-menu pay-filter" role="menu" aria-labelledby="pay-filter-text-input">
+              <ul class="dropdown-menu pay-filter-dropdown" role="menu" aria-labelledby="pay-filter-text-input">
                 <li>
                   <input type="radio" id="salary-inr" name="currency" value="INR" {% if not request.args.get('currency') or request.args.get('currency')== "INR" %} checked="checked" {% endif %} %></input>
                   <label for="salary-inr">INR</label>
@@ -353,7 +353,7 @@
       currency_options($(this));
     });
 
-    // Set the default value on $('#pay-filter-text-input') using JS
+    // update the pmin and pmax when slider is set
     $('#salary-slider').on('set', function(){
       if($('input[name="currency"]:checked')){
         var pmin = $(this).val()[0];
@@ -365,8 +365,12 @@
       }
     });
     
-    
-
+    // update the hidden pmin pmax fields when input field is manipulated directly
+    $('#pay-filter-text-input').on('change', function(){
+      var pmin_pmax = $(this).val().split('-')
+      $('#job-filters-pmin').attr("name","pmin").val(pmin_pmax[0].trim());
+      $('#job-filters-pmax').attr("name","pmax").val(pmin_pmax[1].trim());
+    });
 
     $("#job-type-filter").select2();
     $("#job-category-filter").select2();
