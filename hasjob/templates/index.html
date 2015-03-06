@@ -24,48 +24,19 @@
               <input id="location-filter" type="text" placeholder="Location" name="l" value="{{ request.args.l }}" class="form-control" style="width:100%"/>
             </div>
             <div class="filters">
-              <div class="filter-group category-group">
-                <button class="filter-select btn btn-default" title="Type/Category"><span class="filter-text">Type/Category</span><span class="caret"></span></button>
-                <ul class="category-filter-dropdown filter-dropdown">
-                  <li><p class="category-title">Type</p></li>
-                  {%- for job_type in job_type_choices -%}
-                  <li>
-                    <input type="checkbox" id="type-{{job_type[0]}}" value="{{job_type[1]}}" name="t" {% if job_type[1]|string in request.args.getlist('t') %} checked="checked" {% endif %}></input>
-                    <label for="type-{{job_type[0]}}">{{job_type[1]}}</label>
-                  </li>
-                  {%- endfor -%}
-                  <li><p class="category-title">Category</p></li>
-                  {%- for job_cat in job_category_choices -%}
-                  <li>
-                    <input type="checkbox" id="cat-{{job_cat[0]}}" value="{{job_cat[1]}}" name="c" {% if job_cat[1]|string in request.args.getlist('c') %} checked="checked" {% endif %}></input>
-                    <label for="cat-{{job_cat[0]}}">{{job_cat[1]}}</label>
-                  </li>
-                  {%- endfor -%}
-                </ul>
-              </div>
+              <select id="job-type-filter" name="t" multiple="multiple" class="notselect" placeholder="Job Type">
+                {%- for job_type in job_type_choices -%}
+                  <option value="{{job_type[0]}}" {% if job_type[0]|string in request.args.getlist('t') %} selected="selected" {% endif %}>{{job_type[1]}}</option>
+                {%- endfor -%}
+              </select>
             </div>
             <div class="filters">
-              <div class="filter-group pay-group">
-                <button class="filter-select btn btn-default" title="Pay"><span class="pay-range"></span><span class="filter-text">Pay</span><span class="caret"></span></button>
-                <ul class="pay-filter-dropdown filter-dropdown">
-                  <li>
-                    <div class="salary-filter-dropdown">
-                      <input type="radio" id="salary-inr" name="currency" value="INR"></input><label for="salary-inr">INR</label>
-                      <input type="radio" id="salary-usd" name="currency" value="USD"></input><label for="salary-usd">USD</label>
-                      <input type="radio" id="salary-eur" name="currency" value="EUR"></input><label for="salary-eur">EUR</label>
-                    </div>
-                    <div class="pay-filter-slider">
-                      <span id="filter_pay_cash_min"></span>
-                      <input type="hidden" id="salary-p-min" value="">
-                      <span id="filter_pay_cash_max"></span>
-                      <input type="hidden" id="salary-p-max" value="">
-                      <div id="salary-slider"></div>
-                    </div>
-                  </li>
-                  <li><input type="checkbox" name="equity" id="pay-equity" value="Equity"></input><label for="pay-equity">Equity</label></li>
-                </ul>
-              </div> 
-            </div><!--eof last pay-filter column-->
+              <select id="job-category-filter" name="c" multiple="multiple" class="notselect" placeholder="Job Category">
+                {%- for job_category in job_category_choices -%}
+                  <option value="{{job_category[0]}}" {% if job_category[0]|string in request.args.getlist('c') %} selected="selected" {% endif %}>{{job_category[1]}}</option>
+                {%- endfor -%}
+              </select>
+            </div>
             <div class="filters">
               <input class="filter-select keyword-search" type="text" placeholder="Keywords" name="q" value="{{ request.args.q }}"/>
             </div>
@@ -237,37 +208,7 @@
     });
   });
   $(document).ready(function() {
-    $(".filter-select").click(function(event){
-      event.preventDefault();
-      var parent_div = $(this).parent("div");
-      var other_div = $(".filter-select").not($(this)).parent("div")
-      if(other_div.hasClass("open")){
-        other_div.removeClass("open");
-        other_div.children("ul").hide();
-      }
-      if(parent_div.hasClass("open"))
-      {
-        parent_div.removeClass("open");
-        parent_div.children("ul").hide();
-      }
-      else{
-        parent_div.addClass("open");
-        parent_div.children("ul").show();
-      }
-    });
-
-    $(document).click(function(e){
-      var container1 = $(".category-group");
-      var container2 = $(".pay-group");
-      if (!container1.is(e.target)&& container1.has(e.target).length === 0 && !container2.is(e.target)&& container2.has(e.target).length === 0)
-      {
-        if(container1.hasClass("open")) $(".category-group .filter-select").click();
-        if(container2.hasClass("open")) $(".pay-group .filter-select").click();
-      }
-    });
-
-    $(".salary-filter-dropdown").show();
-
+    
     var cashslider = $("#salary-slider").noUiSlider({
         start: [ 0, 1000000 ],
         step: 1,
@@ -364,20 +305,17 @@
       }
     });
     
-    $("input[type='radio'][name='currency']").on('change', function() {
-      currency_options($(this));
-      if($('input:radio[name="currency"]:checked').is(":checked")){
+    $('.pay-filter').on('change', function(){
+      console.log($(this));
+      if ($(this).val() !== "") {
         $(".pay-filter-slider").show();
-      }
-      else{
+      } else {
         $(".pay-filter-slider").hide();
       }
     });
 
-    $("#filter-toggle").click(function(event){
-      $("."+$(this).attr("data-target")).slideToggle("slow");
-    })      
-
+    $("#job-type-filter").select2();
+    $("#job-category-filter").select2();
     activate_geoname_autocomplete("#location-filter", "https://api.hasgeek.com/1/geo/autocomplete", "https://api.hasgeek.com/1/geo/get_by_names");
   });
 </script>

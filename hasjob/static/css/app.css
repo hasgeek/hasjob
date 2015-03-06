@@ -277,6 +277,16 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
     font-size: 13px;
   }
 }
+#s2id_job-type-filter {
+  line-height: 1.5em;
+  width: 100%;
+}
+
+#s2id_job-category-filter {
+  line-height: 1.5em;
+  width: 100%;
+}
+
 .input-group-btn > .btn {
   border-bottom: 1px solid #ccc;
 }
