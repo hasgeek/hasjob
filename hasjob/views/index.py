@@ -43,13 +43,13 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
         f_types.remove('')
     if f_types:
         data_filters['types'] = f_types
-        basequery = basequery.join(JobType).filter(JobType.name.in_(f_types))
+        basequery = basequery.join(JobType).filter(JobType.id.in_(f_types))
     f_categories = request.args.getlist('c')
     while '' in f_categories:
         f_categories.remove('')
     if f_categories:
         data_filters['categories'] = f_categories
-        basequery = basequery.join(JobCategory).filter(JobCategory.name.in_(f_categories))
+        basequery = basequery.join(JobCategory).filter(JobCategory.id.in_(f_categories))
     r_locations = request.args.getlist('l')
     f_locations = []
     for rl in r_locations:
