@@ -193,6 +193,7 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
   display: none;
   font-size: 11px;
   line-height: 2;
+  width: 13.4em;
 }
 
 .pay-filter-slider .noUi-horizontal .noUi-handle {
