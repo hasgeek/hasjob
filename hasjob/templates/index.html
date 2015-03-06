@@ -52,9 +52,9 @@
                 <li>
                   <div class="pay-filter-slider">
                     <span id="filter_pay_cash_min"></span>
-                    <input type="hidden" name="pmin" id="job-filters-pmin" value="">
+                    <input type="hidden" name="pmin" id="job-filters-pmin" {% if request.args.get('pmin') %} value="{{request.args.get('pmin')}}" {% endif %}>
                     <span id="filter_pay_cash_max"></span>
-                    <input type="hidden" name="pmax" id="job-filters-pmax" value="">
+                    <input type="hidden" name="pmax" id="job-filters-pmax" {% if request.args.get('pmax') %} value="{{request.args.get('pmax')}}"{% endif %}>
                     <div id="salary-slider"></div>
                   </div>
                 </li>
@@ -263,7 +263,7 @@
   $(document).ready(function() {
     
     var cashslider = $("#salary-slider").noUiSlider({
-        start: [ 0, 1000000 ],
+        start: [ $('#job-filters-pmin').val() || 0, $('#job-filters-pmax').val() || 1000000 ],
         step: 1,
         connect: true,
         behaviour: "tap",
@@ -281,6 +281,8 @@
           edit: indian_rupee_encoder
         })
       });
+    // cashslider.Link('lower').to($('#job-filters-pmin'));
+    // cashslider.Link('upper').to($('#job-filters-pmax'));
 
     var indian_rupee_encoder = function(value) {
       value=value.toString();
