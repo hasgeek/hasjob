@@ -255,7 +255,8 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
                            location=location, showall=showall, tag=tag, is_index=is_index,
                            header_campaign=header_campaign, loadmore=loadmore,
                            location_prompts=location_prompts, search_domains=search_domains,
-                           is_siteadmin=lastuser.has_permission('siteadmin'))
+                           is_siteadmin=lastuser.has_permission('siteadmin'),
+                           job_type_choices=JobType.choices(g.board), job_category_choices=JobCategory.choices(g.board))
 
 
 @csrf.exempt
