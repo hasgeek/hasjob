@@ -10,12 +10,14 @@ from hasjob import app
 
 
 @job('hasjob')
-def tweet(title, url, location=None, parsed_location=None):
+def tweet(title, url, location=None, parsed_location=None, username=None):
     auth = OAuthHandler(app.config['TWITTER_CONSUMER_KEY'], app.config['TWITTER_CONSUMER_SECRET'])
     auth.set_access_token(app.config['TWITTER_ACCESS_KEY'], app.config['TWITTER_ACCESS_SECRET'])
     api = API(auth)
     urllength = 23  # Current Twitter standard for HTTPS (as of Oct 2014)
     maxlength = 140 - urllength - 1  # == 116
+    if username:
+        maxlength -= len(username) + 2
     locationtag = u''
     if parsed_location:
         locationtags = []
@@ -40,6 +42,8 @@ def tweet(title, url, location=None, parsed_location=None):
     text = text + ' ' + url  # Don't shorten URLs, now that there's t.co
     if locationtag:
         text = text + ' ' + locationtag
+    if username:
+        text = text + ' @' + username
     api.update_status(text)
 
 

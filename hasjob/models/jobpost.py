@@ -103,6 +103,7 @@ class JobPost(BaseMixin, db.Model):
     company_name = db.Column(db.Unicode(80), nullable=False)
     company_logo = db.Column(db.Unicode(255), nullable=True)
     company_url = db.Column(db.Unicode(255), nullable=False, default=u'')
+    twitter = db.Column(db.Unicode(15), nullable=True)
     fullname = db.Column(db.Unicode(80), nullable=True)  # Deprecated field, used before user_id was introduced
     email = db.Column(db.Unicode(80), nullable=False)
     email_domain = db.Column(db.Unicode(80), nullable=False, index=True)

@@ -11,7 +11,6 @@ import baseframe.forms as forms
 from baseframe.forms.sqlalchemy import AvailableName
 from baseframe.staticdata import webmail_domains
 from wtforms.widgets import CheckboxInput, ListWidget
-from wtforms.fields.html5 import EmailField, URLField
 from wtforms.ext.sqlalchemy.fields import QuerySelectMultipleField
 from coaster.utils import getbool, get_email_domain
 from flask.ext.lastuser import LastuserResourceException
@@ -27,6 +26,7 @@ QUOTES_RE = re.compile(ur'[\'"`‘’“”′″‴«»]+')
 
 CAPS_RE = re.compile('[A-Z]')
 SMALL_RE = re.compile('[a-z]')
+INVALID_TWITTER_RE = re.compile('[^a-z0-9_]', re.I)
 
 
 def content_css():
@@ -141,7 +141,7 @@ class ListingForm(forms.Form):
     # poster_name = forms.StringField("Name",
     #     description=u"This is your name, for our records. Will not be revealed to applicants",
     #     validators=[forms.validators.DataRequired("We need your name")])
-    poster_email = EmailField("Email",
+    poster_email = forms.EmailField("Email",
         description=Markup(u"This is where we’ll send your confirmation email and all job applications. "
                     u"We recommend using a shared email address such as jobs@your-organization.com. "
                     u"<strong>Listings are classified by your email domain,</strong> "
@@ -150,12 +150,24 @@ class ListingForm(forms.Form):
         validators=[forms.validators.DataRequired("We need to confirm your email address before the job can be listed"),
             forms.validators.Length(min=5, max=80, message="%(max)d characters maximum"),
             forms.validators.ValidEmail("This does not appear to be a valid email address")])
+    twitter = forms.AnnotatedNullTextField("Twitter",
+        description=(u"Optional — your organization’s Twitter account. "
+            u"We’ll tweet mentioning you so you get included on replies"),
+        prefix='@', validators=[
+            forms.validators.Optional(),
+            forms.validators.Length(min=0, max=15, message=u"Twitter accounts can’t be over %(max)d characters long")])
     collaborators = forms.UserSelectMultiField(u"Collaborators",
         description=u"If someone is helping you evaluate candidates, type their names here. "
                     u"They must have a HasGeek account. They will not receive email notifications "
                     u"— use a shared email address above for that — but they will be able to respond "
                     u"to candidates who apply",
         usermodel=User, lastuser=lastuser)
+
+    def validate_twitter(self, field):
+        if field.data.startswith('@'):
+            field.data = field.data[1:]
+        if INVALID_TWITTER_RE.search(field.data):
+            raise forms.ValidationError("That does not appear to be a valid Twitter account")
 
     def validate_poster_email(form, field):
         field.data = field.data.lower()
@@ -582,7 +594,7 @@ class CampaignContentForm(forms.Form):
         description=__("Optional additional content to follow after the blurb"),
         content_css=content_css,
         validators=[forms.validators.Optional(), forms.validators.AllUrlsValid()])
-    banner_image = URLField(__("Banner image URL"), validators=[forms.validators.Optional()],  # TODO: Use ImgeeField
+    banner_image = forms.URLField(__("Banner image URL"), validators=[forms.validators.Optional()],  # TODO: Use ImgeeField
         description=__("An image to illustrate your campaign"))
     banner_location = forms.RadioField(__("Banner location"), choices=BANNER_LOCATION.items(), coerce=int,
         description=__("Where should this banner appear relative to text?"))
@@ -641,7 +653,7 @@ class CampaignActionForm(forms.Form):
         description=__("Message shown after the user has performed an action (for forms and RSVP type)"),
         content_css=content_css,
         validators=[forms.validators.Optional(), forms.validators.AllUrlsValid()])
-    link = URLField(__("Link"), description=__(u"URL to redirect to, if type is “follow link”"),
+    link = forms.URLField(__("Link"), description=__(u"URL to redirect to, if type is “follow link”"),
         validators=[optional_url, forms.validators.Length(min=0, max=250, message="%(max)d characters maximum"), forms.validators.ValidUrl()])
     form = forms.TextAreaField(__("Form JSON"), description=__("Form definition (for form type)"),
         validators=[forms.validators.Optional()])
@@ -654,7 +666,7 @@ class DomainForm(forms.Form):
         description=__("The name of your organization, excluding legal suffixes like Pvt Ltd"))
     legal_title = forms.NullTextField(__("Legal name"), validators=[forms.validators.Optional()],
         description=__(u"Optional — The full legal name of your organization"))
-    logo_url = URLField(__("Logo URL"), validators=[forms.validators.Optional()],  # TODO: Use ImgeeField
+    logo_url = forms.URLField(__("Logo URL"), validators=[forms.validators.Optional()],  # TODO: Use ImgeeField
         description=__(u"Optional — Your organization’s logo"))
     description = forms.TinyMce4Field(__("Description"),
         description=__("Who are you and why should someone work for you? Tell your story"),
