@@ -118,7 +118,7 @@
             {%- endif %}
             {% if campaign.subject %}<h2>{{ campaign.subject_for(g.user) }}</h2>{% endif %}
             {% if campaign.blurb %}{{ campaign.blurb_for(g.user) }}{% endif %}
-            {% if campaign.description %}<p class="read-more no-jshidden"><a title="Read more…" href="#"><i class="fa fa-ellipsis-h"></i></a>
+            {% if campaign.description %}<p class="read-more no-jshidden">(<a href="#">Read more…</a>)
             <div class="jshidden read-more-text">{{ campaign.description_for(g.user) }}</div>
             {%- endif %}
             {%- if i == 3 %}
