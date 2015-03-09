@@ -73,7 +73,7 @@ header
 
 .header-section .filter-select
   display: block
-  padding: 6px 12px
+  padding: 6px
   font-size: 16px
   line-height: normal
   width: 100%
@@ -81,53 +81,11 @@ header
   color: #333
   border: 1px solid #ccc
   border-radius: 4px
-  border-bottom: 2px solid #ADADAD
-
-.category-group .filter-text
-  padding: 6px 0
 
 .header-section .keyword-search
   color: #999
   background-color: #FFF
   border-bottom: 1px solid #ccc
-
-.header-section .filter-select .caret
-  margin-left: 5px
-
-.pay-range
-  font-size: 12px
-
-.header-section .filter-dropdown
-  position: absolute
-  top: 100%
-  left: 0
-  z-index: 1000
-  display: none
-  float: left
-  min-width: 160px
-  list-style: none
-  font-size: 14px
-  text-align: left
-  background-color: #fff
-  border: 1px solid rgba(0,0,0,0.15)
-  border-radius: 4px
-  -webkit-box-shadow: 0 6px 12px rgba(0,0,0,0.175)
-  box-shadow: 0 6px 12px rgba(0,0,0,0.175)
-  background-clip: padding-box
-  padding: 5px 10px
-  width: 100%
-  max-height: 300px
-  overflow-y: auto
-
-.category-title
-  font-size: 16px
-  font-weight: bold
-  margin: 0 0 5px
-  line-height: normal
-
-.filter-dropdown label
-  margin-left: 3px
-  font-weight: normal
 
 .header-section .submit-btn
   text-align: center
@@ -168,19 +126,58 @@ header
 #filter-toggle
   display: none
 
+#s2id_job-type-filter
+  line-height: 1.5em
+  width: 100%
+
+#s2id_job-category-filter
+  line-height: 1.5em
+  width: 100%
+
+.header-section .select2-container
+  display: block
+  min-width: 100px
+
+.header-section ::-webkit-input-placeholder
+  color: #999
+
+.header-section :-moz-placeholder
+  color: #999
+  opacity: 1
+
+.header-section ::-moz-placeholder
+  color: #999
+  opacity: 1
+
+.header-section :-ms-input-placeholder
+  color: #999
+
 @media (min-width: 768px) and (max-width: 1023px) 
   .header-section .filter-select
     font-size: 12px
-    padding: 10px 12px
+    padding: 10px 6px
+
   .header-section .submit-btn
     font-size: 12px
     padding: 9px 0
 
-  .header-section .filter-dropdown
-    font-size: 11px
+  .header-section .pay-filter-dropdown 
+    font-size: 12px
 
-  .category-title
-    font-size: 13px
+  .header-section .select2-container
+    font-size: 12px
+    line-height: 2.1em
+
+  .header-section .select2-container-multi .select2-choices .select2-search-choice
+    font-size: 12px
+
+  #s2id_job-type-filter
+    line-height: 2.1em
+    font-size: 12px
+
+  #s2id_job-category-filter
+    line-height: 2.1em
+    font-size: 12px
 
 @media screen and (max-width: 767px)
   #filter-toggle
@@ -198,24 +195,5 @@ header
     padding: 5px 0
     width: 20%
 
-  .header-section .filter-select
-    font-size: 12px
-    padding: 10px 12px
-
-  .header-section .submit-btn
-    font-size: 12px
-    padding: 9px 0
-
-  .header-section .filter-dropdown
-    font-size: 11px
-
-  .category-title
-    font-size: 13px
-
-#s2id_job-type-filter
-  line-height: 1.5em
-  width: 100%
-
-#s2id_job-category-filter
-  line-height: 1.5em
-  width: 100%
+  .header-section .dropdown-menu
+    right: 0

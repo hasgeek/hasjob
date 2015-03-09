@@ -22,7 +22,7 @@
       <form id="job-filters" action="{{ url_for('search') }}" class="form-inline" role="form">
         <div class="container">
             <div class="filters">
-              <input id="location-filter" type="text" placeholder="Location" name="l" value="{{ request.args.l }}" class="form-control" style="width:100%"/>
+              <input id="location-filter" type="text" placeholder="Location" name="l" value="{{ request.args.l }}" class="form-control"/>
             </div>
             <div class="filters">
               <select id="job-type-filter" name="t" multiple="multiple" class="notselect" placeholder="Job Type">
