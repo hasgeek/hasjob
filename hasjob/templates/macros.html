@@ -104,7 +104,7 @@
   {#- In campaign.banner_location, 0 = top, 1 = right, 2 = bottom, 3 = left. In here, add +1 to avoid matching 0 == false #}
   {% with view=campaign.view_for(g.user), i=campaign.banner_image and (campaign.banner_location + 1) %}
     {% if not view or (campaign == g.preview_campaign) or (view and not view.dismissed) %}
-      <div class="row campaign-box">
+      <div class="row campaign-box move-to-header">
         <div class="col-md-10 col-md-offset-1 col-xs-12 col-sm-12">
           <div class="flash">
             {% if i in [2, 4] %}
@@ -167,6 +167,7 @@
 {% macro campaign_script() %}
   <script type="text/javascript">
     $(function() {
+      $('#header-campaign').replaceWith($('.campaign-box.move-to-header'));
       $('.read-more a').click(function(e) {
         $(this).parent().slideUp().parent().find('.read-more-text').hide().removeClass('jshidden').slideDown();
         e.preventDefault();
