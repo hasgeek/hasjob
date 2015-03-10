@@ -18,7 +18,7 @@
   {% endblock %}
   {% block description %}{% if location and location.description %}{{ location.description|firstline }}{% else %}{{ super() }}{% endif %}{% endblock %}
   {% block hasjob_nav %}
-    <div class="header-section">
+    <div class="header-section hidden-xs">
       <form id="job-filters" action="{{ url_for('search') }}" class="form-inline" role="form">
         <div class="container">
             <div class="filters">
@@ -39,22 +39,22 @@
               </select>
             </div>
             <div class="filters dropdown">
-              <input class="filter-select pay-filter dropdown-toggle" type="text" placeholder="Pay" id="pay-filter-text-input" data-toggle="dropdown" aria-expanded="true" {% if request.args.get('pmin') %} value="{{request.args.get('pmin')}} - {{request.args.get('pmax')}}" {% endif %}/>
+              <input class="filter-select pay-filter dropdown-toggle" type="text" placeholder="Pay" id="pay-filter-text-input" data-toggle="dropdown" aria-expanded="true" autocomplete="off" />
               <ul class="dropdown-menu pay-filter-dropdown" role="menu" aria-labelledby="pay-filter-text-input">
                 <li>
-                  <input type="radio" id="salary-inr" name="currency" value="INR" {% if not request.args.get('currency') or request.args.get('currency')== "INR" %} checked="checked" {% endif %} %></input>
+                  <input type="radio" id="salary-na" name="currency" value="NA"></input>
+                  <label for="salary-na">N/A</label>
+                  <input type="radio" id="salary-inr" name="currency" value="INR"></input>
                   <label for="salary-inr">INR</label>
-                  <input type="radio" id="salary-usd" name="currency" value="USD" {% if request.args.get('currency') == "USD" %} checked="checked" {% endif %}></input>
+                  <input type="radio" id="salary-usd" name="currency" value="USD"></input>
                   <label for="salary-usd">USD</label>
-                  <input type="radio" id="salary-eur" name="currency" value="EUR" {% if request.args.get('currency') == "EUR" %} checked="checked" {% endif %}></input>
+                  <input type="radio" id="salary-eur" name="currency" value="EUR"></input>
                   <label for="salary-eur">EUR</label>
                 </li>
                 <li>
                   <div class="pay-filter-slider">
-                    <span id="filter_pay_cash_min"></span>
-                    <input type="hidden" name="pmin" id="job-filters-pmin" {% if request.args.get('pmin') %} value="{{request.args.get('pmin')}}" {% endif %}>
-                    <span id="filter_pay_cash_max"></span>
-                    <input type="hidden" name="pmax" id="job-filters-pmax" {% if request.args.get('pmax') %} value="{{request.args.get('pmax')}}"{% endif %}>
+                    <input type="hidden" name="pmin" id="job-filters-pmin">
+                    <input type="hidden" name="pmax" id="job-filters-pmax">
                     <div id="salary-slider"></div>
                   </div>
                 </li>
@@ -259,122 +259,64 @@
     }).blur(function() {
       $(this).val($(this).val().replace(/(\r\n|\n|\r)/gm," ").replace(/\s+/g," "));
     });
-  });
-  $(document).ready(function() {
     
-    var cashslider = $("#salary-slider").noUiSlider({
-      start: [ $('#job-filters-pmin').val() || 0, $('#job-filters-pmax').val() || 1000000 ],
-      step: 1,
-      connect: true,
-      behaviour: "tap",
-      range: {
-        'min': [0, 5000],
-        '5%':  [100000, 10000],
-        '80%': [1000000, 50000],
-        '90%': [2000000, 100000],
-        'max': [10000000, 1000000],
-      },
-      format: wNumb({
-        decimals: 0,
-        thousand: ',',
-        prefix: '₹',
-        edit: indian_rupee_encoder
-      })
-    });
-
-    var indian_rupee_encoder = function(value) {
-      value=value.toString();
-      value = value.replace(/[^0-9.]/g, '');  // Remove non-digits, assume . for decimals
-      var afterPoint = '';
-      if (value.indexOf('.') > 0)
-        afterPoint = value.substring(value.indexOf('.'), value.length);
-      value = Math.floor(value);
-      value = value.toString();
-      var lastThree = value.substring(value.length - 3);
-      var otherNumbers = value.substring(0, value.length - 3);
-      if (otherNumbers != '')
-          lastThree = ',' + lastThree;
-      var res = '₹' + otherNumbers.replace(/\B(?=(\d{2})+(?!\d))/g, ",") + lastThree + afterPoint;
-      return res;
-    };
-
-    var currency_options = function(currency) {
-      var start = cashslider.val()[0].slice(1).replace(',', ''),
-        end = cashslider.val()[1].slice(1).replace(',', ''),
-        prefix = '¤',
-        thousand = ',',
-        encoder = null;
-      switch(currency.val()) {
-        case 'INR':
-          prefix = '₹';
-          // thousand = '';
-          encoder = indian_rupee_encoder;
-          break;
-        case 'USD':
-        case 'SGD':
-          prefix = '$';
-          break;
-        case 'EUR':
-          prefix = '€';
-          break;
-        case 'GBP':
-          prefix = '£';
-          break;
-      };
-      if (encoder === null) {
-        cashslider.noUiSlider({
-          start: [start, end],
-          format: wNumb({
-            decimals: 0,
-            thousand: thousand,
-            prefix: prefix,
-          })
-        }, true);
-      } else {
-        cashslider.noUiSlider({
-          start: [start, end],
-          format: wNumb({
-            decimals: 0,
-            thousand: thousand,
-            prefix: prefix,
-            edit: encoder
-          })
-        }, true);
-      };
-      cashslider.Link('lower').to($('#filter_pay_cash_min'));
-      cashslider.Link('upper').to($('#filter_pay_cash_max'));
-    };
-    
-    $(".pay-filter-slider").show();
-    currency_options($("input[type='radio'][name='currency']:checked"));
-    $("input[type='radio'][name='currency']").on('change', function() {
-      currency_options($(this));
-    });
-
-    // update the pmin and pmax when slider is set
-    $('#salary-slider').on('set', function(){
-      if($('input[name="currency"]:checked')){
-        var pmin = $(this).val()[0];
-        var pmax = $(this).val()[1];
-        console.log(pmin);
-        $('#pay-filter-text-input').val(pmin + " - " + pmax);
-        $('#job-filters-pmin').attr("name","pmin").val(pmin);
-        $('#job-filters-pmax').attr("name","pmax").val(pmax);
-      }
-    });
-    
-    // update the hidden pmin pmax fields when input field is manipulated directly
-    $('#pay-filter-text-input').on('change', function(){
-      var pmin_pmax = $(this).val().split('-')
-      $('#job-filters-pmin').attr("name","pmin").val(pmin_pmax[0].trim());
-      $('#job-filters-pmax').attr("name","pmax").val(pmin_pmax[1].trim());
-    });
-
-    $("#job-type-filter").select2();
-    $("#job-category-filter").select2();
     $('ul.pay-filter-dropdown').click(function(e) {
       e.stopPropagation();
     });
+    
+    window.payState = {
+      currency: Hasjob.Util.getQueryParam('currency') || 'NA',
+      pmin: Hasjob.Util.getQueryParam('pmin'),
+      pmax: Hasjob.Util.getQueryParam('pmax')
+    }
+
+    var renderCashSlider = function(options){
+      console.log(options.end);
+      $(options.element).noUiSlider({
+        start: [options.start, options.end],
+        step: 1,
+        connect: true,
+        behaviour: "tap",
+        range: {
+          'min': [0, 5000],
+          '5%':  [100000, 10000],
+          '80%': [1000000, 50000],
+          '90%': [2000000, 100000],
+          'max': [10000000, 1000000],
+        }
+      });
+      if ($("input[type='radio'][name='currency']:checked").val() === 'NA') {
+        $(options.element).hide();
+      }
+    }
+
+    var renderPayTextInput = function() {
+      if (payState.pmin){
+        $('#pay-filter-text-input').val(payState.pmin + ' - ' + payState.pmax)
+      }
+    }
+
+    var renderCurrencyInput = function() {
+      $.each($("input[type='radio'][name='currency']"), function(index, currencyRadio){
+        if ($(currencyRadio).val() === payState.currency) {
+          $(currencyRadio).attr('checked', 'checked');
+        }
+      });
+    }
+
+    renderPayTextInput();
+
+    renderCurrencyInput();
+
+    renderCashSlider({
+      element: "#salary-slider",
+      start: parseInt(payState.pmin,10) || 0,
+      end: parseInt(payState.pmax,10) || 1000000
+    });
+
+
+    $("#job-type-filter").select2();
+    $("#job-category-filter").select2();
     activate_geoname_autocomplete("#location-filter", "https://api.hasgeek.com/1/geo/autocomplete", "https://api.hasgeek.com/1/geo/get_by_names");
   });
 </script>
