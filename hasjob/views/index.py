@@ -68,7 +68,7 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
         basequery = basequery.filter(JobPost.remote_location == True)  # NOQA
     if 'currency' in request.args and request.args['currency'] in CURRENCY.keys():
         data_filters['currency'] = request.args['currency']
-        basequery.filter(JobPost.pay_currency == request.args['currency'])
+        basequery = basequery.filter(JobPost.pay_currency == request.args['currency'])
     if getbool(request.args.get('equity')):
         # Only works as a positive filter: you can't search for jobs that DON'T pay in equity
         data_filters['equity'] = True
