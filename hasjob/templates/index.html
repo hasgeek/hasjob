@@ -18,7 +18,7 @@
   {% endblock %}
   {% block description %}{% if location and location.description %}{{ location.description|firstline }}{% else %}{{ super() }}{% endif %}{% endblock %}
   {% block hasjob_nav %}
-    <div class="header-section hidden-xs">
+    <div class="header-section">
       <form id="job-filters" action="{{ url_for('search') }}" class="form-inline" role="form">
         <div class="container">
             <div class="filters">
@@ -264,56 +264,109 @@
       e.stopPropagation();
     });
     
-    window.payState = {
-      currency: Hasjob.Util.getQueryParam('currency') || 'NA',
-      pmin: Hasjob.Util.getQueryParam('pmin'),
-      pmax: Hasjob.Util.getQueryParam('pmax')
-    }
-
-    var renderCashSlider = function(options){
-      console.log(options.end);
-      $(options.element).noUiSlider({
-        start: [options.start, options.end],
-        step: 1,
-        connect: true,
-        behaviour: "tap",
-        range: {
-          'min': [0, 5000],
-          '5%':  [100000, 10000],
-          '80%': [1000000, 50000],
-          '90%': [2000000, 100000],
-          'max': [10000000, 1000000],
+    var payTextInput = {
+      render: function(pmin, pmax){
+        if (pmin){
+          $('#pay-filter-text-input').val(pmin + ' - ' + pmax)
         }
-      });
-      if ($("input[type='radio'][name='currency']:checked").val() === 'NA') {
-        $(options.element).hide();
       }
     }
 
-    var renderPayTextInput = function() {
-      if (payState.pmin){
-        $('#pay-filter-text-input').val(payState.pmin + ' - ' + payState.pmax)
+    var paySlider = {
+      render: function(options){
+        var prefix = '¤',
+            thousand = ',',
+            encoder = null;
+
+        if (!$(options.element).hasClass('noUi-target')) {
+          this.slider = $(options.element).noUiSlider({
+            start: [options.start, options.end],
+            step: 1,
+            connect: true,
+            behaviour: "tap",
+            range: {
+              'min': [0, 5000],
+              '5%':  [100000, 10000],
+              '80%': [1000000, 50000],
+              '90%': [2000000, 100000],
+              'max': [10000000, 1000000],
+            }
+          });
+          $(options.element).on('set', function(){
+            payFilter.setState({pmin: $(this).val()[0], pmax: $(this).val()[1]})
+          });
+        } else {
+          if (encoder === null) {
+            this.slider.noUiSlider({
+              start: [options.start, options.end],
+              format: wNumb({
+                decimals: 0,
+                thousand: thousand,
+                prefix: prefix,
+              })
+            }, true);
+          } else {
+            this.slider.noUiSlider({
+              start: [options.start, options.end],
+              format: wNumb({
+                decimals: 0,
+                thousand: thousand,
+                prefix: prefix,
+                edit: encoder
+              })
+            }, true);
+          };
+        }
+        if ($("input[type='radio'][name='currency']:checked").val() === 'NA') {
+          $(options.element).hide();
+        } else {
+          $(options.element).show();
+        }
       }
     }
 
-    var renderCurrencyInput = function() {
-      $.each($("input[type='radio'][name='currency']"), function(index, currencyRadio){
-        if ($(currencyRadio).val() === payState.currency) {
-          $(currencyRadio).attr('checked', 'checked');
-        }
-      });
+    var currencyInput =  {
+      render: function(currency) {
+        $.each($("input[type='radio'][name='currency']"), function(index, currencyRadio){
+          if ($(currencyRadio).val() === currency) {
+            $(currencyRadio).attr('checked', 'checked');
+          }
+        });
+        $("input[type='radio'][name='currency']").on('change',function(){
+          payFilter.setState({currency: $("input[type='radio'][name='currency']:checked").val()})
+        });
+      }
     }
 
-    renderPayTextInput();
+    var payFilter = {
+      setState: function(state){
+        for (var key in state) {
+          if (this.state.hasOwnProperty(key)) {
+            this.state[key] = state[key];
+          }
+        }
+        console.log(this.state)
+        this.render();
+      },
+      state: {
+        currency: Hasjob.Util.getQueryParam('currency') || 'NA',
+        pmin: Hasjob.Util.getQueryParam('pmin'),
+        pmax: Hasjob.Util.getQueryParam('pmax')
+      },
+      render: function(){
+        payTextInput.render(this.state.pmin, this.state.pmax);
 
-    renderCurrencyInput();
+        currencyInput.render(this.state.currency);
 
-    renderCashSlider({
-      element: "#salary-slider",
-      start: parseInt(payState.pmin,10) || 0,
-      end: parseInt(payState.pmax,10) || 1000000
-    });
+        paySlider.render({
+          element: "#salary-slider",
+          start: parseInt(this.state.pmin,10) || 0,
+          end: parseInt(this.state.pmax,10) || 1000000
+        });
+      }
+    }
 
+    payFilter.render();
 
     $("#job-type-filter").select2();
     $("#job-category-filter").select2();
