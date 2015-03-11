@@ -40,7 +40,7 @@
             </div>
             <div class="filters dropdown">
 <!--               <input class="filter-select pay-filter dropdown-toggle" type="text" placeholder="Pay" id="pay-filter-text-input" data-toggle="dropdown" aria-expanded="true" autocomplete="off" disabled="true" />
- -->              <button id="pay-filter-text-input" data-toggle="dropdown" aria-expanded="true">Pay</button>
+ -->              <button id="pay-filter-text-input" data-toggle="dropdown" aria-expanded="true" class="filter-select">Pay</button>
               <ul class="dropdown-menu pay-filter-dropdown" role="menu" aria-labelledby="pay-filter-text-input">
                 <li>
                   <input type="radio" id="salary-na" name="currency" value="NA"></input>
@@ -66,7 +66,7 @@
               </ul>
             </div>
             <div class="filters">
-              <input class="filter-select keyword-search" type="text" placeholder="Keywords" name="q" value="{{ request.args.q }}"/>
+              <input class="filter-select" type="text" placeholder="Keywords" name="q" value="{{ request.args.q }}"/>
             </div>
             <div class="sumbit-filters">
               <input id='job-filters-submit' type="submit" class="btn btn-default submit-btn" value="Filter"/>
