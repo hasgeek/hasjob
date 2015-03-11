@@ -39,8 +39,7 @@
               </select>
             </div>
             <div class="filters dropdown">
-<!--               <input class="filter-select pay-filter dropdown-toggle" type="text" placeholder="Pay" id="pay-filter-text-input" data-toggle="dropdown" aria-expanded="true" autocomplete="off" disabled="true" />
- -->              <button id="pay-filter-text-input" data-toggle="dropdown" aria-expanded="true" class="filter-select">Pay</button>
+              <div id="pay-filter-text-input" data-toggle="dropdown" aria-expanded="true" class="filter-select">Pay</div>
               <ul class="dropdown-menu pay-filter-dropdown" role="menu" aria-labelledby="pay-filter-text-input">
                 <li>
                   <input type="radio" id="salary-na" name="currency" value="NA"></input>
@@ -261,30 +260,6 @@
       $(this).val($(this).val().replace(/(\r\n|\n|\r)/gm," ").replace(/\s+/g," "));
     });
     
-    $('ul.pay-filter-dropdown').click(function(e) {
-      e.stopPropagation();
-    });
-
-    var presetCurrency = Hasjob.Util.getQueryParam('currency') || 'NA';
-    $.each($("input[type='radio'][name='currency']"), function(index, currencyRadio){
-      if ($(currencyRadio).val() === presetCurrency) {
-        $(currencyRadio).attr('checked', 'checked');
-      }
-    });
-
-    var setPaySliderVisibility = function(){
-      if ($("input[type='radio'][name='currency']:checked").val() === 'NA') {
-        $("#pay-slider").hide();
-      } else {
-        $("#pay-slider").show();
-      }
-    }
-    setPaySliderVisibility();
-
-    var getCurrencyVal = function() {
-      return $("input[type='radio'][name='currency']:checked").val();
-    }
-
     var setPayTextField = function(currency, pmin, pmax){
       if (currency.toLowerCase() === 'na'){
         $('#pay-filter-text-input').html('Pay');
@@ -293,32 +268,59 @@
       }
     }
 
+    // set initial value for the currency radio button
+    var presetCurrency = Hasjob.Util.getQueryParam('currency') || 'NA';
+    $.each($("input[type='radio'][name='currency']"), function(index, currencyRadio){
+      if ($(currencyRadio).val() === presetCurrency) {
+        $(currencyRadio).attr('checked', 'checked');
+      }
+    });
+    var getCurrencyVal = function() {
+      return $("input[type='radio'][name='currency']:checked").val();
+    }
     $("input[type='radio'][name='currency']").on('change',function(){
       setPaySliderVisibility();
       paySlider.resetSlider(getCurrencyVal());
-      setPayTextField(getCurrencyVal(), $('#job-filters-pmin').val(), $('#job-filters-pmax').val())
+      setPayTextField(getCurrencyVal(), $('#job-filters-pmin').val(), $('#job-filters-pmax').val());
     });
 
+    // prevent the pay filter dropdown from hiding on click
+    $('ul.pay-filter-dropdown').click(function(e) {
+      e.stopPropagation();
+    });
 
-    window.paySlider = new Hasjob.PaySlider({
+    var setPaySliderVisibility = function(){
+      if (getCurrencyVal().toLowerCase() === 'na') {
+        $("#pay-slider").hide();
+      } else {
+        $("#pay-slider").show();
+      }
+    }
+    var paySlider = new Hasjob.PaySlider({
       start: Hasjob.Util.getQueryParam('pmin') || 0, 
       end: Hasjob.Util.getQueryParam('pmax') || 10000000,
       selector: "#pay-slider",
       minField: '#job-filters-pmin',
       maxField: '#job-filters-pmax'
-    })
+    });
     paySlider.resetSlider(getCurrencyVal());
-
     $("#pay-slider").on('set', function(){
       setPayTextField(getCurrencyVal(), $('#job-filters-pmin').val(), $('#job-filters-pmax').val());
     });
 
+    setPaySliderVisibility();
     setPayTextField(getCurrencyVal(), $('#job-filters-pmin').val(), $('#job-filters-pmax').val());
 
+    // remove currency formatting before submitting
     $('#job-filters-submit').on('click', function(e){
-      $('#job-filters-pmin').val(Hasjob.PaySlider.toNumeric($('#job-filters-pmin').val()));
-      $('#job-filters-pmax').val(Hasjob.PaySlider.toNumeric($('#job-filters-pmax').val()));
-    })
+      if (getCurrencyVal().toLowerCase() === 'na') {
+        $('#job-filters-pmin').val('');
+        $('#job-filters-pmax').val('');
+      } else {
+        $('#job-filters-pmin').val(Hasjob.PaySlider.toNumeric($('#job-filters-pmin').val()));
+        $('#job-filters-pmax').val(Hasjob.PaySlider.toNumeric($('#job-filters-pmax').val()));
+      }
+    });
     
     $("#job-type-filter").select2();
     $("#job-category-filter").select2();
