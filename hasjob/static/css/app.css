@@ -1,7 +1,7 @@
 @charset "UTF-8";
 body {
   font-family: "Fira Sans", arial, sans-serif;
-  background: #e8e7e6 url('../img/canvas.jpg?1416495026');
+  background: #e8e7e6 url('../img/canvas.jpg?1425290105');
 }
 
 header {
@@ -49,7 +49,7 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
   overflow: hidden;
   text-align: left;
   text-transform: capitalize;
-  background-image: url('../img/logo-star.png?1424329162');
+  background-image: url('../img/logo-star.png?1425290105');
   background-repeat: no-repeat;
   background-position: 50% 50%;
   width: 170px;
@@ -63,7 +63,7 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
   overflow: hidden;
   text-align: left;
   text-transform: capitalize;
-  background-image: url('../img/logo-star.png?1424329162');
+  background-image: url('../img/logo-star.png?1425290105');
   background-repeat: no-repeat;
   background-position: 50% 50%;
   width: 170px;
@@ -111,15 +111,10 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
   line-height: normal;
   width: 100%;
   text-align: left;
-  color: #333;
+  color: #999;
   border: 1px solid #ccc;
   border-radius: 4px;
-}
-
-.header-section .keyword-search {
-  color: #999;
-  background-color: #FFF;
-  border-bottom: 1px solid #ccc;
+  background-color: #fff;
 }
 
 .header-section .submit-btn {
@@ -209,6 +204,7 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
 
   .header-section .submit-btn {
     font-size: 12px;
+    line-height: 2.1em;
   }
 
   .header-section .pay-filter-dropdown {
@@ -270,7 +266,7 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
   line-height: 36px;
 }
 #search input[type="text"] {
-  background: white url('../img/search.png?1416495026') 4px center no-repeat;
+  background: white url('../img/search.png?1425290105') 4px center no-repeat;
   padding: 7px 10px 3px 20px;
 }
 #search .btn {
