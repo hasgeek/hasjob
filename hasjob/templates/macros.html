@@ -80,7 +80,7 @@
               <button name="action" value="{{ action.name }}" type="submit" class="btn btn-sm btn-{{ action.category }}">{% if action.icon %}<i class="fa fa-{{ action.icon }}"></i> {% endif %}{{ action.title }}{% if action.name in ua %} <i class="fa fa-check"></i>{% endif %}</button>
             {%- endif %}
           {%- endif %}{%- endfor %}
-          {% if user or anon_user %}<button type="submit" name="dismiss" value="dismiss" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>{% endif %}
+          <button type="submit" name="dismiss" value="dismiss" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
           <span class="loading hidden">&nbsp;</span>
         </p>
       </form>
@@ -104,7 +104,7 @@
   {#- In campaign.banner_location, 0 = top, 1 = right, 2 = bottom, 3 = left. In here, add +1 to avoid matching 0 == false #}
   {% with view=campaign.view_for(g.user), i=campaign.banner_image and (campaign.banner_location + 1) %}
     {% if not view or (campaign == g.preview_campaign) or (view and not view.dismissed) %}
-      <div class="row campaign-box">
+      <div class="row campaign-box move-to-header">
         <div class="col-md-10 col-md-offset-1 col-xs-12 col-sm-12">
           <div class="flash">
             {% if i in [2, 4] %}
@@ -118,7 +118,7 @@
             {%- endif %}
             {% if campaign.subject %}<h2>{{ campaign.subject_for(g.user) }}</h2>{% endif %}
             {% if campaign.blurb %}{{ campaign.blurb_for(g.user) }}{% endif %}
-            {% if campaign.description %}<p class="read-more no-jshidden"><a title="Read more…" href="#"><i class="fa fa-ellipsis-h"></i></a>
+            {% if campaign.description %}<p class="read-more no-jshidden">(<a href="#">Read more…</a>)
             <div class="jshidden read-more-text">{{ campaign.description_for(g.user) }}</div>
             {%- endif %}
             {%- if i == 3 %}
@@ -167,6 +167,7 @@
 {% macro campaign_script() %}
   <script type="text/javascript">
     $(function() {
+      $('#header-campaign').replaceWith($('.campaign-box.move-to-header'));
       $('.read-more a').click(function(e) {
         $(this).parent().slideUp().parent().find('.read-more-text').hide().removeClass('jshidden').slideDown();
         e.preventDefault();

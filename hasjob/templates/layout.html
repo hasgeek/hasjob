@@ -76,8 +76,9 @@
 {% endblock %}
 
 {% block basecontent -%}
-  {%- if header_campaign %}{{ campaign_header(g, header_campaign) }}{% endif %}
+  {%- if header_campaign %}<div id="header-campaign"></div>{% endif %}
   {% block content %}{% endblock %}
+  {%- if header_campaign %}{{ campaign_header(g, header_campaign) }}{% endif %}
 {%- endblock %}
 
 {% block footer %}

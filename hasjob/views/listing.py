@@ -691,12 +691,12 @@ def confirm_email(domain, hashid, key):
             if app.config['TWITTER_ENABLED']:
                 if post.headlineb:
                     tweet.delay(post.headline, post.url_for(b=0, _external=True),
-                        post.location, dict(post.parsed_location or {}))
+                        post.location, dict(post.parsed_location or {}), username=post.twitter)
                     tweet.delay(post.headlineb, post.url_for(b=1, _external=True),
-                        post.location, dict(post.parsed_location or {}))
+                        post.location, dict(post.parsed_location or {}), username=post.twitter)
                 else:
                     tweet.delay(post.headline, post.url_for(_external=True),
-                        post.location, dict(post.parsed_location or {}))
+                        post.location, dict(post.parsed_location or {}), username=post.twitter)
             add_to_boards.delay(post.id)
             flash("Congratulations! Your job post has been published. As a bonus for being an employer on Hasjob, "
                 "you can now see how your post is performing relative to others. Look in the sidebar of any post.",
@@ -819,6 +819,7 @@ def editjob(hashid, key, domain=None, form=None, validated=False, newpost=None):
             post.company_name = form.company_name.data
             post.company_url = form.company_url.data
             post.hr_contact = form.hr_contact.data
+            post.twitter = form.twitter.data
 
             post.pay_type = form.job_pay_type.data
             if post.pay_type == -1:
@@ -898,6 +899,7 @@ def editjob(hashid, key, domain=None, form=None, validated=False, newpost=None):
         form.company_url.data = post.company_url
         # form.poster_name.data = post.fullname  # Deprecated 2013-11-20
         form.poster_email.data = post.email
+        form.twitter.data = post.twitter
         form.hr_contact.data = int(post.hr_contact or False)
         form.collaborators.data = post.admins
 
