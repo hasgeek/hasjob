@@ -39,7 +39,8 @@
               </select>
             </div>
             <div class="filters dropdown">
-              <input class="filter-select pay-filter dropdown-toggle" type="text" placeholder="Pay" id="pay-filter-text-input" data-toggle="dropdown" aria-expanded="true" autocomplete="off" />
+<!--               <input class="filter-select pay-filter dropdown-toggle" type="text" placeholder="Pay" id="pay-filter-text-input" data-toggle="dropdown" aria-expanded="true" autocomplete="off" disabled="true" />
+ -->              <button id="pay-filter-text-input" data-toggle="dropdown" aria-expanded="true">Pay</button>
               <ul class="dropdown-menu pay-filter-dropdown" role="menu" aria-labelledby="pay-filter-text-input">
                 <li>
                   <input type="radio" id="salary-na" name="currency" value="NA"></input>
@@ -55,7 +56,7 @@
                   <div class="pay-filter-slider">
                     <input type="hidden" name="pmin" id="job-filters-pmin">
                     <input type="hidden" name="pmax" id="job-filters-pmax">
-                    <div id="salary-slider"></div>
+                    <div id="pay-slider"></div>
                   </div>
                 </li>
                 <li>
@@ -247,6 +248,107 @@
 {%- if not request.is_xhr -%}
 <script type="text/javascript">
   $(function() {
+    Hasjob.PaySlider = function(options){
+      this.selector = options.selector;
+      this.slider = null;
+      this.start = options.start,
+      this.end = options.end;
+      this.minField = options.minField;
+      this.maxField = options.maxField;
+      this.init();
+    }
+
+    Hasjob.PaySlider.indian_rupee_encoder = function(value) {
+      value = value.toString();
+      value = value.replace(/[^0-9.]/g, '');  // Remove non-digits, assume . for decimals
+      var afterPoint = '';
+      if (value.indexOf('.') > 0)
+        afterPoint = value.substring(value.indexOf('.'), value.length);
+      value = Math.floor(value);
+      value = value.toString();
+      var lastThree = value.substring(value.length - 3);
+      var otherNumbers = value.substring(0, value.length - 3);
+      if (otherNumbers !== '')
+          lastThree = ',' + lastThree;
+      var res = '₹' + otherNumbers.replace(/\B(?=(\d{2})+(?!\d))/g, ",") + lastThree + afterPoint;
+      return res;
+    };
+
+    Hasjob.PaySlider.prefix = function(currency){
+      var currencyMap = {
+        'na': '¤',
+        'inr': '₹',
+        'usd': '$',
+        'sgd': '$',
+        'eur': '€',
+        'gbp': '£'
+      };
+      return currencyMap[currency.toLowerCase()];
+    };
+
+    Hasjob.PaySlider.prototype.init = function(){
+      this.slider = $(this.selector).noUiSlider({
+        start: [this.start, this.end],
+        step: 1,
+        connect: true,
+        behaviour: "tap",
+        range: {
+          'min': [0, 5000],
+          '5%':  [100000, 10000],
+          '80%': [1000000, 50000],
+          '90%': [2000000, 100000],
+          'max': [10000000, 1000000],
+        },
+        format: wNumb({
+          decimals: 0,
+          thousand: ',',
+          prefix: '¤'
+        })
+      });
+      this.slider.Link('lower').to($(this.minField));
+      this.slider.Link('upper').to($(this.maxField));
+      return this;
+    };
+
+    Hasjob.PaySlider.prototype.resetSlider = function(currency) {
+      var start = this.slider.val()[0].slice(1).replace(',', ''),
+      end = this.slider.val()[1].slice(1).replace(',', ''),
+      prefix = '¤',
+      thousand = ',',
+      encoder = null;
+
+      if (currency === 'INR') {
+        encoder = Hasjob.PaySlider.indian_rupee_encoder;
+      };
+
+      prefix = Hasjob.PaySlider.prefix(currency);
+
+      console.log(prefix);
+      console.log(start);
+
+      if (encoder === null) {
+        this.slider.noUiSlider({
+          start: [start, end],
+          format: wNumb({
+            decimals: 0,
+            thousand: thousand,
+            prefix: prefix,
+          })
+        }, true);
+      } else {
+        this.slider.noUiSlider({
+          start: [start, end],
+          format: wNumb({
+            decimals: 0,
+            thousand: thousand,
+            prefix: prefix,
+            edit: encoder
+          })
+        }, true);
+      };
+      this.slider.Link('lower').to($(this.minField));
+      this.slider.Link('upper').to($(this.maxField));
+    };
     $('textarea').autosize();
     $("#newpost_details").hide().removeClass('jshidden');
     $("#newpost_headline").focus(function() {
@@ -263,111 +365,51 @@
     $('ul.pay-filter-dropdown').click(function(e) {
       e.stopPropagation();
     });
+
+    var presetCurrency = Hasjob.Util.getQueryParam('currency') || 'NA';
+    $.each($("input[type='radio'][name='currency']"), function(index, currencyRadio){
+      if ($(currencyRadio).val() === presetCurrency) {
+        $(currencyRadio).attr('checked', 'checked');
+      }
+    });
+
+    var setPaySliderVisibility = function(){
+      if ($("input[type='radio'][name='currency']:checked").val() === 'NA') {
+        $("#pay-slider").hide();
+      } else {
+        $("#pay-slider").show();
+      }
+    }
+    setPaySliderVisibility();
+
+    var getCurrencyVal = function() {
+      return $("input[type='radio'][name='currency']:checked").val();
+    }
+
+    $("input[type='radio'][name='currency']").on('change',function(){
+      setPaySliderVisibility();
+      paySlider.resetSlider(getCurrencyVal());
+      setPayTextField(getCurrencyVal(), $('#job-filters-pmin').val(), $('#job-filters-pmax').val())
+    });
+
+    var setPayTextField = function(currency, pmin, pmax){
+      $('#pay-filter-text-input').html(pmin + ' - ' + pmax);
+    }
+
+    window.paySlider = new Hasjob.PaySlider({
+      start: Hasjob.Util.getQueryParam('pmin') || 0, 
+      end: Hasjob.Util.getQueryParam('pmax') || 10000000,
+      selector: "#pay-slider",
+      minField: '#job-filters-pmin',
+      maxField: '#job-filters-pmax'
+    })
+    $("#pay-slider").on('set', function(){
+      setPayTextField(getCurrencyVal(), $('#job-filters-pmin').val(), $('#job-filters-pmax').val())
+    });
+
+    console.log(getCurrencyVal())
+    paySlider.resetSlider(getCurrencyVal());
     
-    var payTextInput = {
-      render: function(pmin, pmax){
-        if (pmin){
-          $('#pay-filter-text-input').val(pmin + ' - ' + pmax)
-        }
-      }
-    }
-
-    var paySlider = {
-      render: function(options){
-        var prefix = '¤',
-            thousand = ',',
-            encoder = null;
-
-        if (!$(options.element).hasClass('noUi-target')) {
-          this.slider = $(options.element).noUiSlider({
-            start: [options.start, options.end],
-            step: 1,
-            connect: true,
-            behaviour: "tap",
-            range: {
-              'min': [0, 5000],
-              '5%':  [100000, 10000],
-              '80%': [1000000, 50000],
-              '90%': [2000000, 100000],
-              'max': [10000000, 1000000],
-            }
-          });
-          $(options.element).on('set', function(){
-            payFilter.setState({pmin: $(this).val()[0], pmax: $(this).val()[1]})
-          });
-        } else {
-          if (encoder === null) {
-            this.slider.noUiSlider({
-              start: [options.start, options.end],
-              format: wNumb({
-                decimals: 0,
-                thousand: thousand,
-                prefix: prefix,
-              })
-            }, true);
-          } else {
-            this.slider.noUiSlider({
-              start: [options.start, options.end],
-              format: wNumb({
-                decimals: 0,
-                thousand: thousand,
-                prefix: prefix,
-                edit: encoder
-              })
-            }, true);
-          };
-        }
-        if ($("input[type='radio'][name='currency']:checked").val() === 'NA') {
-          $(options.element).hide();
-        } else {
-          $(options.element).show();
-        }
-      }
-    }
-
-    var currencyInput =  {
-      render: function(currency) {
-        $.each($("input[type='radio'][name='currency']"), function(index, currencyRadio){
-          if ($(currencyRadio).val() === currency) {
-            $(currencyRadio).attr('checked', 'checked');
-          }
-        });
-        $("input[type='radio'][name='currency']").on('change',function(){
-          payFilter.setState({currency: $("input[type='radio'][name='currency']:checked").val()})
-        });
-      }
-    }
-
-    var payFilter = {
-      setState: function(state){
-        for (var key in state) {
-          if (this.state.hasOwnProperty(key)) {
-            this.state[key] = state[key];
-          }
-        }
-        console.log(this.state)
-        this.render();
-      },
-      state: {
-        currency: Hasjob.Util.getQueryParam('currency') || 'NA',
-        pmin: Hasjob.Util.getQueryParam('pmin'),
-        pmax: Hasjob.Util.getQueryParam('pmax')
-      },
-      render: function(){
-        payTextInput.render(this.state.pmin, this.state.pmax);
-
-        currencyInput.render(this.state.currency);
-
-        paySlider.render({
-          element: "#salary-slider",
-          start: parseInt(this.state.pmin,10) || 0,
-          end: parseInt(this.state.pmax,10) || 1000000
-        });
-      }
-    }
-
-    payFilter.render();
-
     $("#job-type-filter").select2();
     $("#job-category-filter").select2();
     activate_geoname_autocomplete("#location-filter", "https://api.hasgeek.com/1/geo/autocomplete", "https://api.hasgeek.com/1/geo/get_by_names");
