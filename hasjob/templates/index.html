@@ -22,34 +22,34 @@
       <form id="job-filters" action="{{ url_for('search') }}" class="form-inline" role="form">
         <div class="container">
             <div class="filters">
-              <input id="location-filter" type="text" placeholder="Location" name="l" value="{{ request.args.l }}" class="form-control"/>
+              <input id="job-filters-location" type="text" placeholder="Location" name="l" value="{{ request.args.l }}" class="form-control"/>
             </div>
             <div class="filters">
-              <select id="job-type-filter" name="t" multiple="multiple" class="notselect" placeholder="Job Type">
+              <select id="job-filters-type" name="t" multiple="multiple" class="job-filters-select2" placeholder="Job Type">
                 {%- for job_type in job_type_choices -%}
                   <option value="{{job_type[0]}}" {% if job_type[0]|string in request.args.getlist('t') %} selected="selected" {% endif %}>{{job_type[1]}}</option>
                 {%- endfor -%}
               </select>
             </div>
             <div class="filters">
-              <select id="job-category-filter" name="c" multiple="multiple" class="notselect" placeholder="Job Category">
+              <select id="job-filters-category" name="c" multiple="multiple" class="job-filters-select2" placeholder="Job Category">
                 {%- for job_category in job_category_choices -%}
                   <option value="{{job_category[0]}}" {% if job_category[0]|string in request.args.getlist('c') %} selected="selected" {% endif %}>{{job_category[1]}}</option>
                 {%- endfor -%}
               </select>
             </div>
             <div class="filters dropdown">
-              <div id="pay-filter-text-input" data-toggle="dropdown" aria-expanded="true" class="filter-select">Pay</div>
-              <ul class="dropdown-menu pay-filter-dropdown" role="menu" aria-labelledby="pay-filter-text-input">
+              <div id="job-filters-pay" data-toggle="dropdown" aria-expanded="true" class="filter-select">Pay</div>
+              <ul class="dropdown-menu pay-filter-dropdown" role="menu" aria-labelledby="job-filters-pay">
                 <li>
-                  <input type="radio" id="salary-na" name="currency" value="NA"></input>
-                  <label for="salary-na">N/A</label>
-                  <input type="radio" id="salary-inr" name="currency" value="INR"></input>
-                  <label for="salary-inr">INR</label>
-                  <input type="radio" id="salary-usd" name="currency" value="USD"></input>
-                  <label for="salary-usd">USD</label>
-                  <input type="radio" id="salary-eur" name="currency" value="EUR"></input>
-                  <label for="salary-eur">EUR</label>
+                  <input type="radio" id="job-filters-na" name="currency" value="NA"></input>
+                  <label for="job-filters-na">N/A</label>
+                  <input type="radio" id="job-filters-inr" name="currency" value="INR"></input>
+                  <label for="job-filters-inr">INR</label>
+                  <input type="radio" id="job-filters-usd" name="currency" value="USD"></input>
+                  <label for="job-filters-usd">USD</label>
+                  <input type="radio" id="job-filters-eur" name="currency" value="EUR"></input>
+                  <label for="job-filters-eur">EUR</label>
                 </li>
                 <li>
                   <div class="pay-filter-slider">
@@ -59,19 +59,19 @@
                   </div>
                 </li>
                 <li>
-                  <input type="checkbox" name="equity" id="pay-equity" {% if request.args.get('equity') %} checked="checked" {% endif %} value="1"></input>
-                  <label for="pay-equity">Equity</label>
+                  <input type="checkbox" name="equity" id="job-filters-equity" {% if request.args.get('equity') %} checked="checked" {% endif %} value="1"></input>
+                  <label for="job-filters-equity">Equity</label>
                 </li>
               </ul>
             </div>
             <div class="filters">
-              <input class="filter-select" type="text" placeholder="Keywords" name="q" value="{{ request.args.q }}"/>
+              <input id="job-filters-keywords" class="filter-select" type="text" placeholder="Keywords" name="q" value="{{ request.args.q }}"/>
             </div>
             <div class="sumbit-filters">
               <input id='job-filters-submit' type="submit" class="btn btn-default submit-btn" value="Filter"/>
             </div>      
         </div><!--eof container-->
-    </form>
+      </form>
     </div><!--eof header-section-->
   {% endblock %}
 {% endif %}
@@ -262,9 +262,9 @@
     
     var setPayTextField = function(currency, pmin, pmax){
       if (currency.toLowerCase() === 'na'){
-        $('#pay-filter-text-input').html('Pay');
+        $('#job-filters-pay').html('Pay');
       } else {
-        $('#pay-filter-text-input').html(pmin + ' - ' + pmax);
+        $('#job-filters-pay').html(pmin + ' - ' + pmax);
       }
     }
 
@@ -312,19 +312,26 @@
     setPayTextField(getCurrencyVal(), $('#job-filters-pmin').val(), $('#job-filters-pmax').val());
 
     // remove currency formatting before submitting
-    $('#job-filters-submit').on('click', function(e){
+    $('#job-filters').on('submit', function(e){
+      console.log("hello")
       if (getCurrencyVal().toLowerCase() === 'na') {
+        $('#job-filters-na').attr('checked', false);
         $('#job-filters-pmin').val('');
         $('#job-filters-pmax').val('');
       } else {
         $('#job-filters-pmin').val(Hasjob.PaySlider.toNumeric($('#job-filters-pmin').val()));
         $('#job-filters-pmax').val(Hasjob.PaySlider.toNumeric($('#job-filters-pmax').val()));
       }
+      $.each($('#job-filters-location, #job-filters-pmin, #job-filters-pmax, #job-filters-keywords'), function(index, element){
+        if ($(element).val() === '') {
+          $(element).attr("disabled", "disabled");
+        }
+      });
     });
     
-    $("#job-type-filter").select2();
-    $("#job-category-filter").select2();
-    activate_geoname_autocomplete("#location-filter", "https://api.hasgeek.com/1/geo/autocomplete", "https://api.hasgeek.com/1/geo/get_by_names");
+    $("#job-filters-type").select2();
+    $("#job-filters-category").select2();
+    activate_geoname_autocomplete("#job-filters-location", "https://api.hasgeek.com/1/geo/autocomplete", "https://api.hasgeek.com/1/geo/get_by_names");
   });
 </script>
 {%- endif -%}

@@ -1,7 +1,7 @@
 @charset "UTF-8";
 body {
   font-family: "Fira Sans", arial, sans-serif;
-  background: #e8e7e6 url('../img/canvas.jpg?1425290105');
+  background: #e8e7e6 url('../img/canvas.jpg?1416495026');
 }
 
 header {
@@ -49,7 +49,7 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
   overflow: hidden;
   text-align: left;
   text-transform: capitalize;
-  background-image: url('../img/logo-star.png?1425290105');
+  background-image: url('../img/logo-star.png?1424329162');
   background-repeat: no-repeat;
   background-position: 50% 50%;
   width: 170px;
@@ -63,7 +63,7 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
   overflow: hidden;
   text-align: left;
   text-transform: capitalize;
-  background-image: url('../img/logo-star.png?1425290105');
+  background-image: url('../img/logo-star.png?1424329162');
   background-repeat: no-repeat;
   background-position: 50% 50%;
   width: 170px;
@@ -125,11 +125,6 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
   width: 100%;
 }
 
-#filter_pay_cash_max {
-  float: right;
-  margin-right: 15px;
-}
-
 .pay-filter-dropdown {
   padding: 10px;
   margin-top: -7px;
@@ -163,12 +158,7 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
   display: none;
 }
 
-#s2id_job-type-filter {
-  line-height: 1.5em;
-  width: 100%;
-}
-
-#s2id_job-category-filter {
+.job-filters-select2 {
   line-height: 1.5em;
   width: 100%;
 }
@@ -266,7 +256,7 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
   line-height: 36px;
 }
 #search input[type="text"] {
-  background: white url('../img/search.png?1425290105') 4px center no-repeat;
+  background: white url('../img/search.png?1416495026') 4px center no-repeat;
   padding: 7px 10px 3px 20px;
 }
 #search .btn {

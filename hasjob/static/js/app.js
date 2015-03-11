@@ -137,7 +137,7 @@ Hasjob.PaySlider.prototype.resetSlider = function(currency) {
 
   if (encoder === null) {
     this.slider.noUiSlider({
-      start: [this.start, this.end],
+      start: [start, end],
       format: wNumb({
         decimals: 0,
         thousand: thousand,
@@ -146,7 +146,7 @@ Hasjob.PaySlider.prototype.resetSlider = function(currency) {
     }, true);
   } else {
     this.slider.noUiSlider({
-      start: [this.start, this.end],
+      start: [start, end],
       format: wNumb({
         decimals: 0,
         thousand: thousand,
