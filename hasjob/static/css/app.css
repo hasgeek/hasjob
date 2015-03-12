@@ -152,12 +152,16 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
 
 .job-filters-select2 {
   line-height: 1.5em;
-  width: 100%;
 }
 
 .header-section .select2-container {
   display: block;
   min-width: 100px;
+}
+
+.header-section .select2-container-multi .select2-choices .select2-search-choice {
+  font-size: 12px;
+  margin-right: 3px;
 }
 
 .header-section ::-webkit-input-placeholder {
@@ -187,6 +191,7 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
   .header-section .submit-btn {
     font-size: 12px;
     line-height: 2.1em;
+    padding: 5px 0;
   }
 
   .header-section .pay-filter-dropdown {
@@ -196,11 +201,6 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
   .header-section .select2-container {
     font-size: 12px;
     line-height: 2.1em;
-  }
-
-  .header-section .select2-container-multi .select2-choices .select2-search-choice {
-    font-size: 12px;
-    margin-right: 3px;
   }
 
   .select2-drop {
