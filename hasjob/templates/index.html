@@ -281,7 +281,7 @@
     };
 
     // set initial value for the currency radio button
-    var presetCurrency = Hasjob.Util.getQueryParam('currency') || 'NA';
+    var presetCurrency = {{request.args.get('currency')|tojson|safe}} || 'NA';
     $.each($("input[type='radio'][name='currency']"), function(index, currencyRadio){
       if ($(currencyRadio).val() === presetCurrency) {
         $(currencyRadio).attr('checked', 'checked');
@@ -312,8 +312,8 @@
     };
 
     var paySlider = new Hasjob.PaySlider({
-      start: Hasjob.Util.getQueryParam('pmin') || 0, 
-      end: Hasjob.Util.getQueryParam('pmax') || 10000000,
+      start: {{request.args.get('pmin')|tojson|safe}} || 0,
+      end: {{request.args.get('pmax')|tojson|safe}} || 10000000,
       selector: "#pay-slider",
       minField: '#job-filters-pmin',
       maxField: '#job-filters-pmax'
