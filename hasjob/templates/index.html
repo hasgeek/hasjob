@@ -278,7 +278,7 @@
       } else {
         $('#job-filters-pay').removeClass('placeholder-fontcolor').html(pmin + ' - ' + pmax);
       }
-    }
+    };
 
     // set initial value for the currency radio button
     var presetCurrency = Hasjob.Util.getQueryParam('currency') || 'NA';
@@ -287,9 +287,11 @@
         $(currencyRadio).attr('checked', 'checked');
       }
     });
+
     var getCurrencyVal = function() {
       return $("input[type='radio'][name='currency']:checked").val();
-    }
+    };
+
     $("input[type='radio'][name='currency']").on('change',function(){
       setPaySliderVisibility();
       paySlider.resetSlider(getCurrencyVal());
@@ -307,7 +309,8 @@
       } else {
         $("#pay-slider").show();
       }
-    }
+    };
+
     var paySlider = new Hasjob.PaySlider({
       start: Hasjob.Util.getQueryParam('pmin') || 0, 
       end: Hasjob.Util.getQueryParam('pmax') || 10000000,
@@ -315,25 +318,27 @@
       minField: '#job-filters-pmin',
       maxField: '#job-filters-pmax'
     });
-    paySlider.resetSlider(getCurrencyVal());
+
     $("#pay-slider").on('set', function(){
       setPayTextField(getCurrencyVal(), $('#job-filters-pmin').val(), $('#job-filters-pmax').val());
     });
 
     setPaySliderVisibility();
+    paySlider.resetSlider(getCurrencyVal());
     setPayTextField(getCurrencyVal(), $('#job-filters-pmin').val(), $('#job-filters-pmax').val());
 
-    // remove currency formatting before submitting
     $('#job-filters').on('submit', function(e){
-      console.log("hello")
+      // remove currency params from URL if currency is n/a
       if (getCurrencyVal().toLowerCase() === 'na') {
         $('#job-filters-na').attr('checked', false);
         $('#job-filters-pmin').val('');
         $('#job-filters-pmax').val('');
       } else {
+        // remove currency formatting before submitting
         $('#job-filters-pmin').val(Hasjob.PaySlider.toNumeric($('#job-filters-pmin').val()));
         $('#job-filters-pmax').val(Hasjob.PaySlider.toNumeric($('#job-filters-pmax').val()));
       }
+      // remove filters from the url param list if they are empty
       $.each($('#job-filters-location, #job-filters-pmin, #job-filters-pmax, #job-filters-keywords'), function(index, element){
         if ($(element).val() === '') {
           $(element).attr("disabled", "disabled");
