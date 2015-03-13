@@ -52,13 +52,14 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
         basequery = basequery.join(JobCategory).filter(JobCategory.id.in_(f_categories))
     r_locations = request.args.getlist('l')
     f_locations = []
-    for rl in r_locations:
-        if rl.isdigit():
-            f_locations.append(int(rl))
-        elif rl:
-            ld = location_geodata(rl)
-            if ld:
-                f_locations.append(ld['geonameid'])
+    if r_locations:
+        for rl in r_locations[0].split(','):
+            if rl.isdigit():
+                f_locations.append(int(rl))
+            elif rl:
+                ld = location_geodata(rl)
+                if ld:
+                    f_locations.append(ld['geonameid'])
     if f_locations:
         data_filters['locations'] = f_locations
         basequery = basequery.join(JobLocation).filter(JobLocation.geonameid.in_(f_locations))
