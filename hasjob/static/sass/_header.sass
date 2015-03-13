@@ -58,29 +58,32 @@ header
 .header-section
   padding: 10px 0
 
-.header-section .filters
+.filters
   float: left
   padding: 5px 10px 5px 0
   width: 19%
 
-.header-section .sumbit-filters
+.sumbit-filters
   float: left
   padding: 5px 0
   width: 5%
 
-.header-section .filter-select
+.filter-select
   display: block
   padding: 6px
   font-size: 16px
   line-height: normal
   width: 100%
   text-align: left
-  color: #999
+  color: #333
   border: 1px solid #ccc
   border-radius: 4px
   background-color: #fff
 
-.header-section .submit-btn
+.header-section .placeholder-fontcolor
+  color: #999
+
+.submit-btn
   text-align: center
   line-height: normal
   padding: 5px
@@ -90,12 +93,24 @@ header
 .pay-filter-dropdown
   padding: 10px
   margin-top: -7px
+  width: 120%
+
+.currency-placeholder
+  color: #999
+
+.currency-checkbox
+  float: left
+  width: 25%
+
+.pay-filter-dropdown label
+  font-weight: normal
+
+.currency-checkbox label
+  font-size: 14px
 
 .pay-filter-slider
-  margin: 10px 25px 15px 12px
-  font-size: 11px 
-  line-height: 2
-  width: 13.4em
+  margin: 15px auto
+  padding: 0 15px
 
 .pay-filter-slider .noUi-horizontal .noUi-handle
   width: 20px
@@ -136,17 +151,24 @@ header
 .header-section :-ms-input-placeholder
   color: #999
 
-@media (min-width: 768px) and (max-width: 1023px) 
-  .header-section .filter-select
+@media (min-width: 768px) and (max-width: 1024px) 
+  .filter-select
     font-size: 12px
     padding: 10px 6px
 
-  .header-section .submit-btn
+  .dropdown .filter-select
+    font-size: 10px
+
+  .submit-btn
     font-size: 12px
     line-height: 2.1em
     padding: 5px 0
 
-  .header-section .pay-filter-dropdown 
+  .pay-filter-dropdown 
+    font-size: 12px
+    width: 150%
+
+  .currency-checkbox label
     font-size: 12px
 
   .header-section .select2-container
@@ -157,14 +179,14 @@ header
     font-size: 12px
 
 @media screen and (max-width: 767px)
-  .header-section .filters
+  .filters
     float: none
     padding: 5px 0
     width: 100%
 
-  .header-section .sumbit-filters
+  .sumbit-filters
     padding: 5px 0
     width: 20%
 
-  .header-section .dropdown-menu
-    right: 0
+  .pay-filter-dropdown
+    width: 100%
