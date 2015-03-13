@@ -39,17 +39,25 @@
             </select>
           </div>
           <div class="filters dropdown">
-            <div id="job-filters-pay" data-toggle="dropdown" aria-expanded="true" class="filter-select">Pay</div>
+            <div id="job-filters-pay" data-toggle="dropdown" aria-expanded="true" class="filter-select placeholder-fontcolor">Pay</div>
             <ul class="dropdown-menu pay-filter-dropdown" role="menu" aria-labelledby="job-filters-pay">
-              <li>
-                <input type="radio" id="job-filters-na" name="currency" value="NA"></input>
-                <label for="job-filters-na">N/A</label>
-                <input type="radio" id="job-filters-inr" name="currency" value="INR"></input>
-                <label for="job-filters-inr">INR</label>
-                <input type="radio" id="job-filters-usd" name="currency" value="USD"></input>
-                <label for="job-filters-usd">USD</label>
-                <input type="radio" id="job-filters-eur" name="currency" value="EUR"></input>
-                <label for="job-filters-eur">EUR</label>
+              <li class="clearfix">
+                <div class="currency-checkbox">
+                  <input type="radio" id="job-filters-na" name="currency" value="NA"></input>
+                  <label for="job-filters-na">N/A</label>
+                </div>
+                <div class="currency-checkbox">
+                  <input type="radio" id="job-filters-inr" name="currency" value="INR"></input>
+                  <label for="job-filters-inr">INR</label>
+                </div>
+                <div class="currency-checkbox">
+                  <input type="radio" id="job-filters-usd" name="currency" value="USD"></input>
+                  <label for="job-filters-usd">USD</label>
+                </div>
+                <div class="currency-checkbox">
+                  <input type="radio" id="job-filters-eur" name="currency" value="EUR"></input>
+                  <label for="job-filters-eur">EUR</label>
+                </div>
               </li>
               <li>
                 <div class="pay-filter-slider">
@@ -69,12 +77,7 @@
           </div>
           <div class="sumbit-filters">
             <input id='job-filters-submit' type="submit" class="btn btn-default submit-btn" value="Filter"/>
-          </div>
-          <div class="row">
-            <div class="col-md-12">
-              <h5>"Full Time, Freelance" "Python" jobs in "Bangalore, IN" under "Programming" in pay range "5,30,000-9,30,000"</h5>
-            </div>
-          </div>
+          </div>      
         </div><!--eof container-->
       </form>
     </div><!--eof header-section-->
@@ -267,9 +270,9 @@
     
     var setPayTextField = function(currency, pmin, pmax){
       if (currency.toLowerCase() === 'na'){
-        $('#job-filters-pay').html('Pay');
+        $('#job-filters-pay').addClass('placeholder-fontcolor').html('Pay');
       } else {
-        $('#job-filters-pay').html(pmin + ' - ' + pmax);
+        $('#job-filters-pay').removeClass('placeholder-fontcolor').html(pmin + ' - ' + pmax);
       }
     }
 
