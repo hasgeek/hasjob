@@ -12,7 +12,7 @@ from .. import app, lastuser
 from ..models import (db, JobCategory, JobPost, JobType, POSTSTATUS, newlimit, agelimit, JobLocation,
     Domain, Location, Tag, JobPostTag, Campaign, CAMPAIGN_POSITION, CURRENCY)
 from ..views.helper import (getposts, getallposts, gettags, location_geodata, cache_viewcounts, session_jobpost_ab,
-    bgroup)
+    bgroup, filter_locations)
 from ..uploads import uploaded_logos
 from ..utils import string_to_number
 
@@ -52,14 +52,13 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
         basequery = basequery.join(JobCategory).filter(JobCategory.id.in_(f_categories))
     r_locations = request.args.getlist('l')
     f_locations = []
-    if r_locations:
-        for rl in r_locations[0].split(','):
-            if rl.isdigit():
-                f_locations.append(int(rl))
-            elif rl:
-                ld = location_geodata(rl)
-                if ld:
-                    f_locations.append(ld['geonameid'])
+    for rl in r_locations:
+        if rl.isdigit():
+            f_locations.append(int(rl))
+        elif rl:
+            ld = location_geodata(rl)
+            if ld:
+                f_locations.append(ld['geonameid'])
     if f_locations:
         data_filters['locations'] = f_locations
         basequery = basequery.join(JobLocation).filter(JobLocation.geonameid.in_(f_locations))
@@ -257,6 +256,7 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
                            header_campaign=header_campaign, loadmore=loadmore,
                            location_prompts=location_prompts, search_domains=search_domains,
                            is_siteadmin=lastuser.has_permission('siteadmin'),
+                           job_locations=filter_locations(),
                            job_type_choices=JobType.choices(g.board), job_category_choices=JobCategory.choices(g.board))
 
 
