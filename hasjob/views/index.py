@@ -12,7 +12,7 @@ from .. import app, lastuser
 from ..models import (db, JobCategory, JobPost, JobType, POSTSTATUS, newlimit, agelimit, JobLocation,
     Domain, Location, Tag, JobPostTag, Campaign, CAMPAIGN_POSITION, CURRENCY)
 from ..views.helper import (getposts, getallposts, gettags, location_geodata, cache_viewcounts, session_jobpost_ab,
-    bgroup)
+    bgroup, filter_locations)
 from ..uploads import uploaded_logos
 from ..utils import string_to_number
 
@@ -43,13 +43,13 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
         f_types.remove('')
     if f_types:
         data_filters['types'] = f_types
-        basequery = basequery.join(JobType).filter(JobType.name.in_(f_types))
+        basequery = basequery.join(JobType).filter(JobType.id.in_(f_types))
     f_categories = request.args.getlist('c')
     while '' in f_categories:
         f_categories.remove('')
     if f_categories:
         data_filters['categories'] = f_categories
-        basequery = basequery.join(JobCategory).filter(JobCategory.name.in_(f_categories))
+        basequery = basequery.join(JobCategory).filter(JobCategory.id.in_(f_categories))
     r_locations = request.args.getlist('l')
     f_locations = []
     for rl in r_locations:
@@ -68,7 +68,7 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
         basequery = basequery.filter(JobPost.remote_location == True)  # NOQA
     if 'currency' in request.args and request.args['currency'] in CURRENCY.keys():
         data_filters['currency'] = request.args['currency']
-        basequery.filter(JobPost.pay_currency == request.args['currency'])
+        basequery = basequery.filter(JobPost.pay_currency == request.args['currency'])
     if getbool(request.args.get('equity')):
         # Only works as a positive filter: you can't search for jobs that DON'T pay in equity
         data_filters['equity'] = True
@@ -255,7 +255,9 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
                            location=location, showall=showall, tag=tag, is_index=is_index,
                            header_campaign=header_campaign, loadmore=loadmore,
                            location_prompts=location_prompts, search_domains=search_domains,
-                           is_siteadmin=lastuser.has_permission('siteadmin'))
+                           is_siteadmin=lastuser.has_permission('siteadmin'),
+                           job_locations=filter_locations(),
+                           job_type_choices=JobType.choices(g.board), job_category_choices=JobCategory.choices(g.board))
 
 
 @csrf.exempt

@@ -1,5 +1,6 @@
 {%- from "macros.html" import stickie %}
 {%- from "domain.html" import org_profile with context %}
+{% from "baseframe/forms.html" import renderfield, widgetscripts %}
 {%- if not request.is_xhr -%}
   {% extends "layout.html" %}
   {% block titletags -%}
@@ -16,6 +17,75 @@
   {%- if location %}<link rel="alternate" type="application/atom+xml" title="Jobs in {{ location['use_title'] }} – {{ config['SITE_TITLE'] }}" href="{{ url_for('feed_by_location', location=location['name']) }}" />{% endif -%}
   {% endblock %}
   {% block description %}{% if location and location.description %}{{ location.description|firstline }}{% else %}{{ super() }}{% endif %}{% endblock %}
+  {% block hasjob_nav %}
+    <div class="header-section">
+      <form id="job-filters" action="{{ url_for('search') }}" class="form-inline" role="form">
+        <div class="container">
+          <div class="filters">
+            <select id="job-filters-location" name="l" multiple="multiple" class="job-filters-select2" placeholder="Location">
+              {%- for location in job_locations -%}
+                <option value="{{location[0]}}" {% if location[0]|string in request.args.getlist('l') %} selected="selected" {% endif %}>{{location[1]}}</option>
+              {%- endfor -%}
+            </select>
+          </div>
+          <div class="filters">
+            <select id="job-filters-type" name="t" multiple="multiple" class="job-filters-select2" placeholder="Job Type">
+              {%- for job_type in job_type_choices -%}
+                <option value="{{job_type[0]}}" {% if job_type[0]|string in request.args.getlist('t') %} selected="selected" {% endif %}>{{job_type[1]}}</option>
+              {%- endfor -%}
+            </select>
+          </div>
+          <div class="filters">
+            <select id="job-filters-category" name="c" multiple="multiple" class="job-filters-select2" placeholder="Job Category">
+              {%- for job_category in job_category_choices -%}
+                <option value="{{job_category[0]}}" {% if job_category[0]|string in request.args.getlist('c') %} selected="selected" {% endif %}>{{job_category[1]}}</option>
+              {%- endfor -%}
+            </select>
+          </div>
+          <div class="filters dropdown">
+            <div id="job-filters-pay" data-toggle="dropdown" aria-expanded="true" class="filter-select placeholder-fontcolor">Pay</div>
+            <ul class="dropdown-menu pay-filter-dropdown" role="menu" aria-labelledby="job-filters-pay">
+              <li class="clearfix">
+                <div class="currency-checkbox">
+                  <input type="radio" id="job-filters-na" name="currency" value="NA"></input>
+                  <label for="job-filters-na">N/A</label>
+                </div>
+                <div class="currency-checkbox">
+                  <input type="radio" id="job-filters-inr" name="currency" value="INR"></input>
+                  <label for="job-filters-inr">INR</label>
+                </div>
+                <div class="currency-checkbox">
+                  <input type="radio" id="job-filters-usd" name="currency" value="USD"></input>
+                  <label for="job-filters-usd">USD</label>
+                </div>
+                <div class="currency-checkbox">
+                  <input type="radio" id="job-filters-eur" name="currency" value="EUR"></input>
+                  <label for="job-filters-eur">EUR</label>
+                </div>
+              </li>
+              <li>
+                <div class="pay-filter-slider">
+                  <input type="hidden" name="pmin" id="job-filters-pmin">
+                  <input type="hidden" name="pmax" id="job-filters-pmax">
+                  <div id="pay-slider"></div>
+                </div>
+              </li>
+              <li>
+                <input type="checkbox" name="equity" id="job-filters-equity" {% if request.args.get('equity') %} checked="checked" {% endif %} value="1"></input>
+                <label for="job-filters-equity">Equity</label>
+              </li>
+            </ul>
+          </div>
+          <div class="filters">
+            <input id="job-filters-keywords" class="filter-select" type="text" placeholder="Keywords" name="q" value="{{ request.args.q }}"/>
+          </div>
+          <div class="sumbit-filters">
+            <input id='job-filters-submit' type="submit" class="btn btn-default submit-btn" value="Filter"/>
+          </div>      
+        </div><!--eof container-->
+      </form>
+    </div><!--eof header-section-->
+  {% endblock %}
 {% endif %}
 {% block content %}{% with gkiosk=g.kiosk, gboard=g.board, guser=g.user, gstarred_ids=g.starred_ids %}
 {%- if not request.is_xhr -%}
@@ -200,6 +270,80 @@
       }
     }).blur(function() {
       $(this).val($(this).val().replace(/(\r\n|\n|\r)/gm," ").replace(/\s+/g," "));
+    });
+    
+    var setPayTextField = function(currency, pmin, pmax){
+      if (currency.toLowerCase() === 'na'){
+        $('#job-filters-pay').addClass('placeholder-fontcolor').html('Pay');
+      } else {
+        $('#job-filters-pay').removeClass('placeholder-fontcolor').html(pmin + ' - ' + pmax);
+      }
+    };
+
+    // set initial value for the currency radio button
+    var presetCurrency = {{request.args.get('currency')|tojson|safe}} || 'NA';
+    $.each($("input[type='radio'][name='currency']"), function(index, currencyRadio){
+      if ($(currencyRadio).val() === presetCurrency) {
+        $(currencyRadio).attr('checked', 'checked');
+      }
+    });
+
+    var getCurrencyVal = function() {
+      return $("input[type='radio'][name='currency']:checked").val();
+    };
+
+    $("input[type='radio'][name='currency']").on('change',function(){
+      setPaySliderVisibility();
+      paySlider.resetSlider(getCurrencyVal());
+      setPayTextField(getCurrencyVal(), $('#job-filters-pmin').val(), $('#job-filters-pmax').val());
+    });
+
+    // prevent the pay filter dropdown from hiding on click
+    $('ul.pay-filter-dropdown').click(function(e) {
+      e.stopPropagation();
+    });
+
+    var setPaySliderVisibility = function(){
+      if (getCurrencyVal().toLowerCase() === 'na') {
+        $("#pay-slider").hide();
+      } else {
+        $("#pay-slider").show();
+      }
+    };
+
+    var paySlider = new Hasjob.PaySlider({
+      start: {{request.args.get('pmin')|tojson|safe}} || 0,
+      end: {{request.args.get('pmax')|tojson|safe}} || 10000000,
+      selector: "#pay-slider",
+      minField: '#job-filters-pmin',
+      maxField: '#job-filters-pmax'
+    });
+
+    $("#pay-slider").on('set', function(){
+      setPayTextField(getCurrencyVal(), $('#job-filters-pmin').val(), $('#job-filters-pmax').val());
+    });
+
+    setPaySliderVisibility();
+    paySlider.resetSlider(getCurrencyVal());
+    setPayTextField(getCurrencyVal(), $('#job-filters-pmin').val(), $('#job-filters-pmax').val());
+
+    $('#job-filters').on('submit', function(e){
+      // remove currency params from URL if currency is n/a
+      if (getCurrencyVal().toLowerCase() === 'na') {
+        $('#job-filters-na').attr('checked', false);
+        $('#job-filters-pmin').val('');
+        $('#job-filters-pmax').val('');
+      } else {
+        // remove currency formatting before submitting
+        $('#job-filters-pmin').val(Hasjob.PaySlider.toNumeric($('#job-filters-pmin').val()));
+        $('#job-filters-pmax').val(Hasjob.PaySlider.toNumeric($('#job-filters-pmax').val()));
+      }
+      // remove filters from the url param list if they are empty
+      $.each($('#job-filters-location, #job-filters-pmin, #job-filters-pmax, #job-filters-keywords'), function(index, element){
+        if ($(element).val() === '') {
+          $(element).attr("disabled", "disabled");
+        }
+      });
     });
   });
 </script>

@@ -20,7 +20,7 @@ from baseframe.signals import form_validation_error, form_validation_success
 from .. import app, redis_store
 from ..models import (agelimit, newlimit, db, JobCategory, JobPost, JobType, POSTSTATUS, BoardJobPost, Tag, JobPostTag,
     Campaign, CampaignView, CampaignAnonView, EventSessionBase, EventSession, UserEventBase, UserEvent, JobImpression,
-    JobViewSession, AnonUser, campaign_event_session_table)
+    JobViewSession, AnonUser, campaign_event_session_table, JobLocation)
 from ..utils import scrubemail, redactemail, randbool
 
 
@@ -447,6 +447,17 @@ def campaign_view_count_update(campaign_id, user_id=None, anon_user_id=None):
 
     cv.session_count = query.first()[0]
     db.session.commit()
+
+
+@cache.cached(key_prefix='helper/filter_locations', timeout=3600)
+def filter_locations():
+    now = datetime.utcnow()
+    geonameids = [r.geonameid for r in
+        db.session.query(JobLocation.geonameid, db.func.count(JobLocation.geonameid).label('count')
+            ).join(JobPost).filter(JobPost.status.in_(POSTSTATUS.LISTED), JobPost.datetime > now - agelimit,
+            JobLocation.primary == True).group_by(JobLocation.geonameid).order_by('count DESC')]  # NOQA
+    data = location_geodata(geonameids)
+    return [(data[geonameid]['name'], data[geonameid]['picker_title']) for geonameid in geonameids]
 
 
 @cache.memoize(timeout=86400)
