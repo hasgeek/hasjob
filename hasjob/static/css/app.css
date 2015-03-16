@@ -267,7 +267,9 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
 
 #job-filters-pay {
   background-color: #F5F5F5;
-  cursor: pointer;
+}
+#job-filters-pay .btn {
+  text-align: left;
 }
 
 #job-filters-pay-text {

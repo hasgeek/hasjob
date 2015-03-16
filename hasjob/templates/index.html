@@ -43,41 +43,43 @@
             </select>
           </div>
           <div class="filters dropdown">
-            <div id="job-filters-pay" data-toggle="dropdown" aria-expanded="true" class="filter-select placeholder-fontcolor">
-              <span id="job-filters-pay-text" class='dark-text'></span>
-              <span class="caret dark-text"></span>
+            <div id="job-filters-pay" class="btn-group btn-block">
+              <button type="button" class="btn btn-default dropdown-toggle placeholder-fontcolor btn-block" data-toggle="dropdown" aria-expanded="false">
+                <span id="job-filters-pay-text" class='dark-text'></span>
+                <span class="caret dark-text"></span>
+              </button>
+              <ul class="dropdown-menu pay-filter-dropdown" role="menu" aria-labelledby="job-filters-pay">
+                <li class="clearfix">
+                  <div class="currency-checkbox">
+                    <input type="radio" id="job-filters-na" name="currency" value="NA"></input>
+                    <label for="job-filters-na">N/A</label>
+                  </div>
+                  <div class="currency-checkbox">
+                    <input type="radio" id="job-filters-inr" name="currency" value="INR"></input>
+                    <label for="job-filters-inr">INR</label>
+                  </div>
+                  <div class="currency-checkbox">
+                    <input type="radio" id="job-filters-usd" name="currency" value="USD"></input>
+                    <label for="job-filters-usd">USD</label>
+                  </div>
+                  <div class="currency-checkbox">
+                    <input type="radio" id="job-filters-eur" name="currency" value="EUR"></input>
+                    <label for="job-filters-eur">EUR</label>
+                  </div>
+                </li>
+                <li>
+                  <div class="pay-filter-slider">
+                    <input type="hidden" name="pmin" id="job-filters-pmin">
+                    <input type="hidden" name="pmax" id="job-filters-pmax">
+                    <div id="pay-slider"></div>
+                  </div>
+                </li>
+                <li>
+                  <input type="checkbox" name="equity" id="job-filters-equity" {% if request.args.get('equity') %} checked="checked" {% endif %} value="1"></input>
+                  <label for="job-filters-equity">Equity</label>
+                </li>
+              </ul>
             </div>
-            <ul class="dropdown-menu pay-filter-dropdown" role="menu" aria-labelledby="job-filters-pay">
-              <li class="clearfix">
-                <div class="currency-checkbox">
-                  <input type="radio" id="job-filters-na" name="currency" value="NA"></input>
-                  <label for="job-filters-na">N/A</label>
-                </div>
-                <div class="currency-checkbox">
-                  <input type="radio" id="job-filters-inr" name="currency" value="INR"></input>
-                  <label for="job-filters-inr">INR</label>
-                </div>
-                <div class="currency-checkbox">
-                  <input type="radio" id="job-filters-usd" name="currency" value="USD"></input>
-                  <label for="job-filters-usd">USD</label>
-                </div>
-                <div class="currency-checkbox">
-                  <input type="radio" id="job-filters-eur" name="currency" value="EUR"></input>
-                  <label for="job-filters-eur">EUR</label>
-                </div>
-              </li>
-              <li>
-                <div class="pay-filter-slider">
-                  <input type="hidden" name="pmin" id="job-filters-pmin">
-                  <input type="hidden" name="pmax" id="job-filters-pmax">
-                  <div id="pay-slider"></div>
-                </div>
-              </li>
-              <li>
-                <input type="checkbox" name="equity" id="job-filters-equity" {% if request.args.get('equity') %} checked="checked" {% endif %} value="1"></input>
-                <label for="job-filters-equity">Equity</label>
-              </li>
-            </ul>
           </div>
           <div class="filters">
             <input id="job-filters-keywords" class="filter-select form-control" type="text" placeholder="Keywords" name="q" value="{{ request.args.q }}"/>
