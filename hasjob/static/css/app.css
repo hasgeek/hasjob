@@ -267,8 +267,15 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
 
 #job-filters-pay {
   background-color: #F5F5F5;
-  color: #000;
   cursor: pointer;
+}
+
+#job-filters-pay-text {
+  color: #000;
+}
+
+.dark-text {
+  color: #000;
 }
 
 .input-group-btn > .btn {
