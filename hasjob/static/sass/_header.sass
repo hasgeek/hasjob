@@ -66,12 +66,10 @@ header
     border-bottom: 1px solid #ccc
     padding: 6px 0
 
-  .pay-btn
-    width: 100%
-    padding: 6px 10px
+  .pay-field
+    padding-left: 10px
 
   .submit-btn
-    text-align: center
     line-height: normal
     font-size: 14px
     padding: 8px 3px
@@ -80,9 +78,17 @@ header
 
   .filter-select
     width: 100%
+    padding-left: 10px
 
   .dropdown-menu > li > a
     padding: 5px 10px
+
+  .dropdown-menu > li > a:hover
+    background-color: #f5f5f5
+
+  .dropdown-menu > .active > a
+    color: #333
+    background-color: inherit
 
   .multiselect-selected-text
     padding: 0 10px
@@ -111,8 +117,16 @@ header
 
 .pay-filter-dropdown 
   width: 120%
-  padding: 5px 10px 0
-  margin-top: -2px
+  padding: 5px 0
+
+  li
+    padding: 0 10px
+
+  li:hover
+    background-color: #f5f5f5
+
+  li:nth-child(2):hover
+    background-color: transparent
 
 .submit-btn .fa-filter
   margin-right: 3px
@@ -151,7 +165,10 @@ header
 
   .sumbit-filters
     float: left
-    width: 9%
+    width: 10%
+
+  .header-section .submit-btn
+    padding-left: 10px
 
 @media screen and (max-width: 767px)
   .filters
@@ -162,6 +179,9 @@ header
   .sumbit-filters
     padding: 5px 0
     width: 20%
+
+  .header-section .submit-btn
+    text-align: center
 
   .pay-filter-dropdown
     width: 100%
