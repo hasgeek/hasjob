@@ -42,7 +42,16 @@ def jobtype_choices(cls, board=None):
     else:
         return [(ob.id, ob.title) for ob in cls.query.filter_by(private=False, public=True).order_by('seq')]
 
+
+def jobtype_name_title_pairs(cls, board=None):
+    if board:
+        return [(ob.name, ob.title) for ob in board.types if not ob.private]
+    else:
+        return [(ob.name, ob.title) for ob in cls.query.filter_by(private=False, public=True).order_by('seq')]
+
+
 JobType.choices = classmethod(jobtype_choices)
+JobType.name_title_pairs = classmethod(jobtype_name_title_pairs)
 
 
 def jobcategory_choices(cls, board=None):
@@ -51,7 +60,16 @@ def jobcategory_choices(cls, board=None):
     else:
         return [(ob.id, ob.title) for ob in cls.query.filter_by(private=False, public=True).order_by('seq')]
 
+
+def jobcategory_name_title_pairs(cls, board=None):
+    if board:
+        return [(ob.name, ob.title) for ob in board.categories if not ob.private]
+    else:
+        return [(ob.name, ob.title) for ob in cls.query.filter_by(private=False, public=True).order_by('seq')]
+
+
 JobCategory.choices = classmethod(jobcategory_choices)
+JobCategory.name_title_pairs = classmethod(jobcategory_name_title_pairs)
 
 
 class BoardDomain(TimestampMixin, db.Model):

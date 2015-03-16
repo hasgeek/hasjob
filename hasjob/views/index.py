@@ -43,13 +43,13 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
         f_types.remove('')
     if f_types:
         data_filters['types'] = f_types
-        basequery = basequery.join(JobType).filter(JobType.id.in_(f_types))
+        basequery = basequery.join(JobType).filter(JobType.name.in_(f_types))
     f_categories = request.args.getlist('c')
     while '' in f_categories:
         f_categories.remove('')
     if f_categories:
         data_filters['categories'] = f_categories
-        basequery = basequery.join(JobCategory).filter(JobCategory.id.in_(f_categories))
+        basequery = basequery.join(JobCategory).filter(JobCategory.name.in_(f_categories))
     r_locations = request.args.getlist('l')
     f_locations = []
     for rl in r_locations:
@@ -257,7 +257,8 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
                            location_prompts=location_prompts, search_domains=search_domains,
                            is_siteadmin=lastuser.has_permission('siteadmin'),
                            job_locations=filter_locations(),
-                           job_type_choices=JobType.choices(g.board), job_category_choices=JobCategory.choices(g.board))
+                           job_type_choices=JobType.name_title_pairs(g.board),
+                           job_category_choices=JobCategory.name_title_pairs(g.board))
 
 
 @csrf.exempt
