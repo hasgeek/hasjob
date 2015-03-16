@@ -84,9 +84,11 @@
           <div class="filters">
             <input id="job-filters-keywords" class="filter-select form-control" type="text" placeholder="Keywords" name="q" value="{{ request.args.q }}"/>
           </div>
-          <div class="sumbit-filters">
-            <label for="job-filters-submit" class="btn btn-default submit-btn"><i class="fa fa-filter"></i>Filter</label>
-            <input id='job-filters-submit' type="submit" class="hidden" value="Filter"></input>
+          <div class="submit-filters">
+            <button id='job-filters-submit' type="submit" class="btn btn-default">
+              <i class="fa fa-filter"></i>
+              Filter
+            </button>
           </div>      
         </div><!--eof container-->
       </form>

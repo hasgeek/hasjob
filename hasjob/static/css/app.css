@@ -1,7 +1,7 @@
 @charset "UTF-8";
 body {
   font-family: "Fira Sans", arial, sans-serif;
-  background: #e8e7e6 url('../img/canvas.jpg?1425290105');
+  background: #e8e7e6 url('../img/canvas.jpg?1416495026');
 }
 
 header {
@@ -49,7 +49,7 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
   overflow: hidden;
   text-align: left;
   text-transform: capitalize;
-  background-image: url('../img/logo-star.png?1425290105');
+  background-image: url('../img/logo-star.png?1424329162');
   background-repeat: no-repeat;
   background-position: 50% 50%;
   width: 170px;
@@ -63,7 +63,7 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
   overflow: hidden;
   text-align: left;
   text-transform: capitalize;
-  background-image: url('../img/logo-star.png?1425290105');
+  background-image: url('../img/logo-star.png?1424329162');
   background-repeat: no-repeat;
   background-position: 50% 50%;
   width: 170px;
@@ -89,11 +89,6 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
 }
 .header-section label {
   font-weight: normal;
-}
-.header-section .btn {
-  text-align: left;
-  border-bottom: 1px solid #ccc;
-  padding: 6px 0;
 }
 .header-section .pay-field {
   padding-left: 10px;
@@ -143,7 +138,7 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
   width: 19%;
 }
 
-.sumbit-filters {
+.submit-filters {
   float: left;
   padding: 5px 0;
   width: 5%;
@@ -207,7 +202,7 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
     width: 33.3%;
   }
 
-  .sumbit-filters {
+  .submit-filters {
     float: left;
     width: 10%;
   }
@@ -223,7 +218,7 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
     width: 100%;
   }
 
-  .sumbit-filters {
+  .submit-filters {
     padding: 5px 0;
     width: 20%;
   }
@@ -249,7 +244,7 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
   line-height: 36px;
 }
 #search input[type="text"] {
-  background: white url('../img/search.png?1425290105') 4px center no-repeat;
+  background: white url('../img/search.png?1416495026') 4px center no-repeat;
   padding: 7px 10px 3px 20px;
 }
 #search .btn {
