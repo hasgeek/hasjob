@@ -43,7 +43,7 @@
             </select>
           </div>
           <div class="filters dropdown">
-            <div id="job-filters-pay" data-toggle="dropdown" aria-expanded="true" class="filter-select placeholder-fontcolor">Pay</div>
+            <div id="job-filters-pay" data-toggle="dropdown" aria-expanded="true" class="filter-select placeholder-fontcolor"></div>
             <ul class="dropdown-menu pay-filter-dropdown" role="menu" aria-labelledby="job-filters-pay">
               <li class="clearfix">
                 <div class="currency-checkbox">
@@ -274,7 +274,7 @@
     
     var setPayTextField = function(currency, pmin, pmax){
       if (currency.toLowerCase() === 'na'){
-        $('#job-filters-pay').addClass('placeholder-fontcolor').html('Pay');
+        $('#job-filters-pay').addClass('placeholder-fontcolor').html('Pay <span class="caret"></span>');
       } else {
         $('#job-filters-pay').removeClass('placeholder-fontcolor').html(pmin + ' - ' + pmax);
       }
@@ -341,9 +341,21 @@
       });
     });
     
-    $("#job-filters-location").multiselect();
-    $("#job-filters-type").multiselect();
-    $("#job-filters-category").multiselect();
+    $("#job-filters-location").multiselect({
+      nonSelectedText: 'Location',
+      numberDisplayed: 1,
+      buttonWidth: '100%'
+    });
+    $("#job-filters-type").multiselect({
+      nonSelectedText: 'Job Type',
+      numberDisplayed: 1,
+      buttonWidth: '100%'
+    });
+    $("#job-filters-category").multiselect({
+      nonSelectedText: 'Job Category',
+      numberDisplayed: 1,
+      buttonWidth: '100%'
+    });
   });
 </script>
 {%- endif -%}

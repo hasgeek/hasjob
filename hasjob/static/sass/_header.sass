@@ -190,3 +190,20 @@ header
 
   .pay-filter-dropdown
     width: 100%
+
+#job-filters
+  button.multiselect
+    text-align: left
+
+  ul.multiselect-container
+    max-height: 20em
+    overflow: auto
+
+  @media screen and (max-width: 767px)
+    ul.multiselect-container
+      padding: 2px 0 0 %10px
+
+#job-filters-pay
+  background-color: #F5F5F5
+  color: #000
+  cursor: pointer

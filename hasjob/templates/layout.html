@@ -66,7 +66,6 @@
     </div>
   </div>
   {% block hasjob_nav %}{% endblock %}
-  <link rel="stylesheet" href="http://davidstutz.github.io/bootstrap-multiselect/dist/css/bootstrap-multiselect.css">
 </header>
 {%- endblock %}
 
@@ -108,5 +107,4 @@
 {% block layoutscripts %}
   {%- if header_campaign %}{{ campaign_script() }}{% endif %}
   {% block footerscripts %}{% endblock %}
-  <script src="http://davidstutz.github.io/bootstrap-multiselect/dist/js/bootstrap-multiselect.js"></script>
 {% endblock %}

@@ -1,7 +1,7 @@
 @charset "UTF-8";
 body {
   font-family: "Fira Sans", arial, sans-serif;
-  background: #e8e7e6 url('../img/canvas.jpg?1425290105');
+  background: #e8e7e6 url('../img/canvas.jpg?1416495026');
 }
 
 header {
@@ -49,7 +49,7 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
   overflow: hidden;
   text-align: left;
   text-transform: capitalize;
-  background-image: url('../img/logo-star.png?1425290105');
+  background-image: url('../img/logo-star.png?1424329162');
   background-repeat: no-repeat;
   background-position: 50% 50%;
   width: 170px;
@@ -63,7 +63,7 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
   overflow: hidden;
   text-align: left;
   text-transform: capitalize;
-  background-image: url('../img/logo-star.png?1425290105');
+  background-image: url('../img/logo-star.png?1424329162');
   background-repeat: no-repeat;
   background-position: 50% 50%;
   width: 170px;
@@ -252,6 +252,25 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
     width: 100%;
   }
 }
+#job-filters button.multiselect {
+  text-align: left;
+}
+#job-filters ul.multiselect-container {
+  max-height: 20em;
+  overflow: auto;
+}
+@media screen and (max-width: 767px) {
+  #job-filters ul.multiselect-container {
+    padding: 2px 0 0px;
+  }
+}
+
+#job-filters-pay {
+  background-color: #F5F5F5;
+  color: #000;
+  cursor: pointer;
+}
+
 .input-group-btn > .btn {
   border-bottom: 1px solid #ccc;
 }
@@ -265,7 +284,7 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
   line-height: 36px;
 }
 #search input[type="text"] {
-  background: white url('../img/search.png?1425290105') 4px center no-repeat;
+  background: white url('../img/search.png?1416495026') 4px center no-repeat;
   padding: 7px 10px 3px 20px;
 }
 #search .btn {
