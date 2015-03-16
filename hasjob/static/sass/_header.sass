@@ -96,13 +96,6 @@ header
 
 .filters
   float: left
-  padding: 5px 10px 5px 0
-  width: 19%
-
-.submit-filters
-  float: left
-  padding: 5px 0
-  width: 5%
 
 .pay-filter-dropdown 
   width: 120%
@@ -147,35 +140,17 @@ header
 .pay-filter-slider .noUi-horizontal .noUi-handle:after
   left: 12px
 
-@media (min-width: 768px) and (max-width: 1024px) 
-  .filters
-    float: left
-    width: 33.3%
-
-  .submit-filters
-    float: left
-    width: 10%
-
-  .header-section .submit-btn
-    padding-left: 10px
-
-@media screen and (max-width: 767px)
-  .filters
-    float: none
-    padding: 5px 0
-    width: 100%
-
-  .submit-filters
-    padding: 5px 0
-    width: 20%
-
-  .header-section .submit-btn
-    text-align: center
-
-  .pay-filter-dropdown
-    width: 100%
-
 #job-filters
   button.btn
     text-align: left
     border-bottom: 1px solid #ccc
+
+.job-filter
+  margin-top: 10px
+
+@media (min-width: 992px)
+  button#job-filters-submit
+    margin-left: -12px
+    
+  .job-filter
+    margin-top: 0
