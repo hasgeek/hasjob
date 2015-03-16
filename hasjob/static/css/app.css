@@ -90,9 +90,6 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
 .header-section label {
   font-weight: normal;
 }
-.header-section .pay-field {
-  padding-left: 10px;
-}
 .header-section .submit-btn {
   line-height: normal;
   font-size: 14px;
@@ -113,9 +110,6 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
 .header-section .dropdown-menu > .active > a {
   color: #333;
   background-color: inherit;
-}
-.header-section .multiselect-selected-text {
-  padding: 0 10px;
 }
 .header-section ul.multiselect-container {
   max-height: 20em;
@@ -231,6 +225,11 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
     width: 100%;
   }
 }
+#job-filters button.btn {
+  text-align: left;
+  border-bottom: 1px solid #ccc;
+}
+
 .input-group-btn > .btn {
   border-bottom: 1px solid #ccc;
 }
