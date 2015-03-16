@@ -16,8 +16,8 @@ header {
 header h1 {
   color: #df5e0e;
   font-size: 30px;
-  margin-top: 12px;
-  margin-bottom: 0;
+  margin-top: 10px;
+  margin-bottom: 10px;
 }
 header h1 small {
   display: inline-block;
@@ -87,6 +87,49 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
 .header-section {
   padding: 10px 0;
 }
+.header-section label {
+  font-weight: normal;
+}
+.header-section .btn {
+  text-align: left;
+  border-bottom: 1px solid #ccc;
+  padding: 6px 0;
+}
+.header-section .pay-btn {
+  width: 100%;
+  padding: 6px 10px;
+}
+.header-section .submit-btn {
+  text-align: center;
+  line-height: normal;
+  font-size: 14px;
+  padding: 8px 3px;
+  display: block;
+  width: 100%;
+}
+.header-section .filter-select {
+  width: 100%;
+}
+.header-section .dropdown-menu > li > a {
+  padding: 5px 10px;
+}
+.header-section .multiselect-selected-text {
+  padding: 0 10px;
+}
+.header-section ul.multiselect-container {
+  max-height: 20em;
+  overflow: auto;
+}
+@media screen and (max-width: 767px) {
+  .header-section ul.multiselect-container {
+    padding: 2px 0 0px;
+  }
+}
+
+.pay-filter-dropdown {
+  padding: 5px 10px;
+  width: 120%;
+}
 
 .filters {
   float: left;
@@ -100,48 +143,19 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
   width: 5%;
 }
 
-.filter-select {
-  display: block;
-  padding: 6px;
-  font-size: 16px;
-  line-height: normal;
-  width: 100%;
-  text-align: left;
-  color: #333;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  background-color: #fff;
-}
-
-.header-section .placeholder-fontcolor {
-  color: #999;
-}
-
-.submit-btn {
-  text-align: center;
-  line-height: normal;
-  padding: 5px;
-  display: block;
-  width: 100%;
-}
-
 .pay-filter-dropdown {
-  padding: 10px;
-  margin-top: -7px;
   width: 120%;
+  padding: 5px 10px 0;
+  margin-top: -2px;
 }
 
-.currency-placeholder {
-  color: #999;
+.submit-btn .fa-filter {
+  margin-right: 3px;
 }
 
 .currency-checkbox {
   float: left;
   width: 25%;
-}
-
-.pay-filter-dropdown label {
-  font-weight: normal;
 }
 
 .currency-checkbox label {
@@ -150,7 +164,10 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
 
 .pay-filter-slider {
   margin: 15px auto;
-  padding: 0 15px;
+}
+
+.pay-filter-slider .noUi-horizontal .noUi-origin:first-child {
+  margin-left: 15px;
 }
 
 .pay-filter-slider .noUi-horizontal .noUi-handle {
@@ -170,70 +187,15 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
   left: 12px;
 }
 
-.job-filters-select2 {
-  line-height: 1.5em;
-}
-
-.header-section .select2-container {
-  display: block;
-  min-width: 100px;
-}
-
-.header-section .select2-container-multi .select2-choices .select2-search-choice {
-  font-size: 12px;
-  margin-right: 3px;
-}
-
-.header-section ::-webkit-input-placeholder {
-  color: #999;
-}
-
-.header-section :-moz-placeholder {
-  color: #999;
-  opacity: 1;
-}
-
-.header-section ::-moz-placeholder {
-  color: #999;
-  opacity: 1;
-}
-
-.header-section :-ms-input-placeholder {
-  color: #999;
-}
-
 @media (min-width: 768px) and (max-width: 1024px) {
-  .filter-select {
-    font-size: 12px;
-    padding: 10px 6px;
+  .filters {
+    float: left;
+    width: 33.3%;
   }
 
-  .dropdown .filter-select {
-    font-size: 10px;
-  }
-
-  .submit-btn {
-    font-size: 12px;
-    line-height: 2.1em;
-    padding: 5px 0;
-  }
-
-  .pay-filter-dropdown {
-    font-size: 12px;
-    width: 150%;
-  }
-
-  .currency-checkbox label {
-    font-size: 12px;
-  }
-
-  .header-section .select2-container {
-    font-size: 12px;
-    line-height: 2.1em;
-  }
-
-  .select2-drop {
-    font-size: 12px;
+  .sumbit-filters {
+    float: left;
+    width: 9%;
   }
 }
 @media screen and (max-width: 767px) {
@@ -252,34 +214,6 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
     width: 100%;
   }
 }
-#job-filters button.multiselect {
-  text-align: left;
-}
-#job-filters ul.multiselect-container {
-  max-height: 20em;
-  overflow: auto;
-}
-@media screen and (max-width: 767px) {
-  #job-filters ul.multiselect-container {
-    padding: 2px 0 0px;
-  }
-}
-
-#job-filters-pay {
-  background-color: #F5F5F5;
-}
-#job-filters-pay .btn {
-  text-align: left;
-}
-
-#job-filters-pay-text {
-  color: #000;
-}
-
-.dark-text {
-  color: #000;
-}
-
 .input-group-btn > .btn {
   border-bottom: 1px solid #ccc;
 }
