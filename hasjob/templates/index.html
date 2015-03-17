@@ -337,21 +337,35 @@
 
     $('#job-filters').on('submit', function(e){
       // remove currency params from URL if currency is n/a
-      if (getCurrencyVal().toLowerCase() === 'na') {
-        $('#job-filters-na').attr('checked', false);
-        $('#job-filters-pmin').val('');
-        $('#job-filters-pmax').val('');
-      } else {
-        // remove currency formatting before submitting
-        $('#job-filters-pmin').val(Hasjob.PaySlider.toNumeric($('#job-filters-pmin').val()));
-        $('#job-filters-pmax').val(Hasjob.PaySlider.toNumeric($('#job-filters-pmax').val()));
-      }
-      // remove filters from the url param list if they are empty
-      $.each($('#job-filters-location, #job-filters-pmin, #job-filters-pmax, #job-filters-keywords'), function(index, element){
-        if ($(element).val() === '') {
-          $(element).attr("disabled", "disabled");
+      e.preventDefault();
+      var formParams = $(this).serializeArray();
+      var sortedFilterParams = [];
+      for (var fpIndex=0; fpIndex < formParams.length; fpIndex++) {
+        // set value to empty string if currency is n/a
+        if (formParams[fpIndex].name === 'currency') {
+          if (formParams[fpIndex].value.toLowerCase() === 'na') {
+            formParams[fpIndex].value = "";
+          }
+          var currencyVal = formParams[fpIndex].value;
         }
-      });
+        // format pmin and pmax based on currency value
+        if (formParams[fpIndex].name === 'pmin' || formParams[fpIndex].name === 'pmax') {
+          if (currencyVal === '') {
+            formParams[fpIndex].value = '';
+          } else {
+            formParams[fpIndex].value = Hasjob.PaySlider.toNumeric(formParams[fpIndex].value);
+          }
+        }
+        // remove empty values
+        if (formParams[fpIndex].value !== '') {
+          sortedFilterParams.push(formParams[fpIndex]);
+        }
+      }
+
+      // only redirect if there are filters applied
+      if (sortedFilterParams.length > 0) {
+        window.location.href = {{url_for('index')|tojson|safe}} + '?' + $.param(sortedFilterParams);
+      }
     });
     
     $("#job-filters-location").multiselect({
