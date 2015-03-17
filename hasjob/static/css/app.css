@@ -138,16 +138,6 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
   max-height: 20em;
   overflow: auto;
 }
-@media screen and (max-width: 767px) {
-  .header-section ul.multiselect-container {
-    padding: 2px 0 0px;
-  }
-}
-
-.pay-filter-dropdown {
-  padding: 5px 10px;
-  width: 135%;
-}
 
 .filters {
   float: left;
@@ -162,7 +152,7 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
 }
 
 .pay-filter-dropdown {
-  width: 120%;
+  width: 135%;
   padding: 5px 0;
 }
 .pay-filter-dropdown li {
