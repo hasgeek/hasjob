@@ -373,8 +373,20 @@
     $("#job-filters-location").multiselect({
       nonSelectedText: 'Location',
       numberDisplayed: 1,
-      buttonWidth: '100%'
+      buttonWidth: '100%',
+      enableFiltering: true,
+      enableCaseInsensitiveFiltering: true,
+      templates: {
+        filter: '<form class="form-inline"><div class="form-group"><div class="input-group"><div class="input-group-addon"><i class="fa fa-search"></i></div><input type="text" class="form-control" id="job-filter-location-search" placeholder="Search">',
+        filterClearBtn: '<div class="input-group-addon job-filter-location-search-clear"><i class="fa fa-times-circle"></i></div></div></div></form>'
+      }
     });
+
+    // clear location search on clicking the clear control
+    $('.job-filter-location-search-clear').click(function(e){
+      $('#job-filter-location-search').val('');
+    });
+
     $("#job-filters-type").multiselect({
       nonSelectedText: 'Job Type',
       numberDisplayed: 1,
