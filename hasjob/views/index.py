@@ -256,7 +256,7 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
                            header_campaign=header_campaign, loadmore=loadmore,
                            location_prompts=location_prompts, search_domains=search_domains,
                            is_siteadmin=lastuser.has_permission('siteadmin'),
-                           job_locations=filter_locations(),
+                           job_locations=[(u'bangalore', u'Bangalore'), (u'mumbai', u'Mumbai')],
                            job_type_choices=JobType.name_title_pairs(g.board),
                            job_category_choices=JobCategory.name_title_pairs(g.board))
 
