@@ -12,7 +12,7 @@ from .. import app, lastuser
 from ..models import (db, JobCategory, JobPost, JobType, POSTSTATUS, newlimit, agelimit, JobLocation,
     Domain, Location, Tag, JobPostTag, Campaign, CAMPAIGN_POSITION, CURRENCY)
 from ..views.helper import (getposts, getallposts, gettags, location_geodata, cache_viewcounts, session_jobpost_ab,
-    bgroup)
+    bgroup, filter_locations)
 from ..uploads import uploaded_logos
 from ..utils import string_to_number
 
@@ -68,7 +68,7 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
         basequery = basequery.filter(JobPost.remote_location == True)  # NOQA
     if 'currency' in request.args and request.args['currency'] in CURRENCY.keys():
         data_filters['currency'] = request.args['currency']
-        basequery.filter(JobPost.pay_currency == request.args['currency'])
+        basequery = basequery.filter(JobPost.pay_currency == request.args['currency'])
     if getbool(request.args.get('equity')):
         # Only works as a positive filter: you can't search for jobs that DON'T pay in equity
         data_filters['equity'] = True
@@ -255,7 +255,10 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
                            location=location, showall=showall, tag=tag, is_index=is_index,
                            header_campaign=header_campaign, loadmore=loadmore,
                            location_prompts=location_prompts, search_domains=search_domains,
-                           is_siteadmin=lastuser.has_permission('siteadmin'))
+                           is_siteadmin=lastuser.has_permission('siteadmin'),
+                           job_locations=filter_locations(),
+                           job_type_choices=JobType.name_title_pairs(g.board),
+                           job_category_choices=JobCategory.name_title_pairs(g.board))
 
 
 @csrf.exempt

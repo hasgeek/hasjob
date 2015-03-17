@@ -56,6 +56,109 @@ window.Hasjob.JobPost = {
   }
 };
 
+window.Hasjob.PaySlider = function(options){
+  this.selector = options.selector;
+  this.slider = null;
+  this.start = options.start,
+  this.end = options.end;
+  this.minField = options.minField;
+  this.maxField = options.maxField;
+  this.init();
+};
+
+window.Hasjob.PaySlider.indian_rupee_encoder = function(value) {
+  value = value.toString();
+  value = value.replace(/[^0-9.]/g, '');  // Remove non-digits, assume . for decimals
+  var afterPoint = '';
+  if (value.indexOf('.') > 0)
+    afterPoint = value.substring(value.indexOf('.'), value.length);
+  value = Math.floor(value);
+  value = value.toString();
+  var lastThree = value.substring(value.length - 3);
+  var otherNumbers = value.substring(0, value.length - 3);
+  if (otherNumbers !== '')
+      lastThree = ',' + lastThree;
+  var res = '₹' + otherNumbers.replace(/\B(?=(\d{2})+(?!\d))/g, ",") + lastThree + afterPoint;
+  return res;
+};
+
+window.Hasjob.PaySlider.prefix = function(currency){
+  var currencyMap = {
+    'na': '¤',
+    'inr': '₹',
+    'usd': '$',
+    'sgd': '$',
+    'eur': '€',
+    'gbp': '£'
+  };
+  return currencyMap[currency.toLowerCase()];
+};
+
+window.Hasjob.PaySlider.toNumeric = function(str){
+  return str.slice(1).replace(/,/g, '');
+};
+
+window.Hasjob.PaySlider.prototype.init = function(){
+  this.slider = $(this.selector).noUiSlider({
+    start: [this.start, this.end],
+    step: 1,
+    connect: true,
+    behaviour: "tap",
+    range: {
+      'min': [0, 5000],
+      '5%':  [100000, 10000],
+      '80%': [1000000, 50000],
+      '90%': [2000000, 100000],
+      'max': [10000000, 1000000],
+    },
+    format: window.wNumb({
+      decimals: 0,
+      thousand: ',',
+      prefix: '¤'
+    })
+  });
+  this.slider.Link('lower').to($(this.minField));
+  this.slider.Link('upper').to($(this.maxField));
+  return this;
+};
+
+window.Hasjob.PaySlider.prototype.resetSlider = function(currency) {
+  var start = Hasjob.PaySlider.toNumeric(this.slider.val()[0]),
+      end = Hasjob.PaySlider.toNumeric(this.slider.val()[1]),
+      prefix = '¤',
+      thousand = ',',
+      encoder = null;
+
+  if (currency === 'INR') {
+    encoder = Hasjob.PaySlider.indian_rupee_encoder;
+  }
+
+  prefix = Hasjob.PaySlider.prefix(currency);
+
+  if (encoder === null) {
+    this.slider.noUiSlider({
+      start: [start, end],
+      format: window.wNumb({
+        decimals: 0,
+        thousand: thousand,
+        prefix: prefix,
+      })
+    }, true);
+  } else {
+    this.slider.noUiSlider({
+      start: [start, end],
+      format: window.wNumb({
+        decimals: 0,
+        thousand: thousand,
+        prefix: prefix,
+        edit: encoder
+      })
+    }, true);
+  }
+  this.slider.Link('lower').to($(this.minField));
+  this.slider.Link('upper').to($(this.maxField));
+};
+
 $(function() {
   window.Hasjob.JobPost.handleGroupClick();
   $(".pstar").off().click(window.Hasjob.JobPost.handleStarClick);
