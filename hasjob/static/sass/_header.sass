@@ -56,7 +56,7 @@ header
       display: inline
 
 .header-section
-  padding: 10px 0
+  padding: 10px 0 5px
 
   label
     font-weight: normal
@@ -64,7 +64,7 @@ header
 
   .btn
     text-align: left
-    padding: 6px 10px 6px 0 //Left padding added to button's span
+    padding: 6px 0
     border-bottom: 1px solid #ccc
     font-size: 14px
     border-radius: 3px
@@ -80,10 +80,8 @@ header
     padding-left: 10px //Left padding remains same for longer text
 
   .submit-btn
-    display: block
-    width: 100%
     text-align: center
-    padding: 6px 0
+    padding: 6px 11px
 
     .fa-filter
       margin-right: 5px
@@ -109,19 +107,19 @@ header
     max-height: 20em
     overflow: auto
 
+  .form-inline .multiselect-container label.checkbox, .form-inline .multiselect-container label.radio
+    padding: 0 0 0 20px
+
 .filters
-  float: left
-  padding: 5px 10px 5px 0
-  width: 18.5%
+  margin-bottom: 5px
 
 .submit-filters
-  float: left
-  padding: 6px 0 5px
-  width: 7%
+  margin: 1px 0 5px
 
 .pay-filter-dropdown 
   width: 135%
-  padding: 5px 0
+  padding: 0
+  margin-top: 0
 
   li
     padding: 0 10px
@@ -153,33 +151,21 @@ header
 .pay-filter-slider .noUi-horizontal .noUi-handle:after
   left: 12px
 
-@media (min-width: 768px) and (max-width: 1024px) 
+@media (min-width: 1200px)
+  .header-section
+    padding-bottom: 10px 
+
   .filters
-    float: left
-    width: 33.3%
-    padding-right: 20px
+    padding: 0 10px 0 0
+    width: 18.5%
 
-  .filter-col2
-    padding-left: 10px
-    padding-right: 10px
-
-  .filter-col3
-    padding-left: 20px
-    padding-right: 0
+  .filters-col1
+    padding-left: 15px 
 
   .submit-filters
-    float: left
-    width: 12%
+    width: 6.5%
+    padding: 0
 
 @media screen and (max-width: 767px)
-  .filters
-    float: none
-    padding: 5px 0
-    width: 100%
-
-  .submit-filters
-    padding: 5px 0
-    width: 20%
-
   .pay-filter-dropdown
     width: 100%
