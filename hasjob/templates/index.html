@@ -76,8 +76,8 @@
                     </div>
                   </li>
                   <li>
-                    <input type="checkbox" name="equity" id="job-filters-equity" {% if request.args.get('equity') %} checked="checked" {% endif %} value="1"></input>
-                    <label for="job-filters-equity">Equity</label>
+                    <label for="job-filters-equity" class="equity-label">
+                      <input type="checkbox" name="equity" id="job-filters-equity" {% if request.args.get('equity') %} checked="checked" {% endif %} value="1"></input> Equity</label>
                   </li>
                 </ul>
               </div>

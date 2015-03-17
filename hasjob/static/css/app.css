@@ -122,9 +122,6 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
   height: auto;
   border-radius: 3px;
 }
-.header-section .dropdown-menu > li > a {
-  padding: 5px 10px;
-}
 .header-section .dropdown-menu > li > a:hover {
   background-color: #f5f5f5;
 }
@@ -138,7 +135,8 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
   width: 20em;
 }
 .header-section .form-inline .multiselect-container label.checkbox, .header-section .form-inline .multiselect-container label.radio {
-  padding: 0 0 0 20px;
+  padding: 5px 0 5px 30px;
+  width: 100%;
 }
 
 .filters {
@@ -163,8 +161,9 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
   width: 25%;
 }
 
-.currency-checkbox label {
-  font-size: 14px;
+.equity-label {
+  width: 100%;
+  cursor: pointer;
 }
 
 .pay-filter-slider {
