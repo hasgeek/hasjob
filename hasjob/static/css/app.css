@@ -1,7 +1,7 @@
 @charset "UTF-8";
 body {
   font-family: "Fira Sans", arial, sans-serif;
-  background: #e8e7e6 url('../img/canvas.jpg?1416495026');
+  background: #e8e7e6 url('../img/canvas.jpg?1425290105');
 }
 
 header {
@@ -49,7 +49,7 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
   overflow: hidden;
   text-align: left;
   text-transform: capitalize;
-  background-image: url('../img/logo-star.png?1424329162');
+  background-image: url('../img/logo-star.png?1425290105');
   background-repeat: no-repeat;
   background-position: 50% 50%;
   width: 170px;
@@ -63,7 +63,7 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
   overflow: hidden;
   text-align: left;
   text-transform: capitalize;
-  background-image: url('../img/logo-star.png?1424329162');
+  background-image: url('../img/logo-star.png?1425290105');
   background-repeat: no-repeat;
   background-position: 50% 50%;
   width: 170px;
@@ -94,7 +94,7 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
 .header-section .btn {
   text-align: left;
   padding: 6px 0;
-  border-bottom: 1px solid #ccc;
+  border: 1px solid #ccc;
   font-size: 14px;
   border-radius: 3px;
   text-overflow: ellipsis;
@@ -103,7 +103,7 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
   padding-left: 10px;
 }
 .header-section .btn:hover {
-  border-bottom: 1px solid #adadad;
+  border: 1px solid #adadad;
 }
 .header-section .pay-field {
   padding-left: 10px;
@@ -215,6 +215,10 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
   .pay-filter-dropdown {
     width: 100%;
   }
+
+  .header-section ul.multiselect-container {
+    width: 100%;
+  }
 }
 .input-group-btn > .btn {
   border-bottom: 1px solid #ccc;
@@ -229,7 +233,7 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
   line-height: 36px;
 }
 #search input[type="text"] {
-  background: white url('../img/search.png?1416495026') 4px center no-repeat;
+  background: white url('../img/search.png?1425290105') 4px center no-repeat;
   padding: 7px 10px 3px 20px;
 }
 #search .btn {
