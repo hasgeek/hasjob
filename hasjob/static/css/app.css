@@ -130,7 +130,6 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
   background-color: inherit;
 }
 .header-section ul.multiselect-container {
-  max-height: 20em;
   overflow: auto;
   width: 20em;
 }
@@ -193,7 +192,7 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
 
 @media (min-width: 1200px) {
   .header-section {
-    padding-bottom: 10px;
+    padding-bottom: 4px;
   }
 
   .filters {
