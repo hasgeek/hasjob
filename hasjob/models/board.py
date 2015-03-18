@@ -228,7 +228,7 @@ class BoardJobPost(TimestampMixin, db.Model):
     board = db.relationship(Board, backref=db.backref('boardposts',
         lazy='dynamic', cascade='all, delete-orphan'))
     #: Linked JobPost
-    jobpost_id = db.Column(None, db.ForeignKey('jobpost.id'), primary_key=True)
+    jobpost_id = db.Column(None, db.ForeignKey('jobpost.id'), primary_key=True, index=True)
     jobpost = db.relationship(JobPost, backref=db.backref('postboards',
         lazy='dynamic', order_by='BoardJobPost.created_at', cascade='all, delete-orphan'))
     #: Is this post pinned on this board?
