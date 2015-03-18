@@ -284,13 +284,34 @@
       $(this).val($(this).val().replace(/(\r\n|\n|\r)/gm," ").replace(/\s+/g," "));
     });
     
-    var setPayTextField = function(currency, pmin, pmax){
-      if (currency.toLowerCase() === 'na'){
-        $('#job-filters-pay-text').html('Pay');
-      } else {
-        $('#job-filters-pay-text').html(pmin + ' - ' + pmax);
-      }
+    var getCurrencyVal = function() {
+      return $("input[type='radio'][name='currency']:checked").val();
     };
+
+    var setPayTextField = function(){
+      var currencyLabel = 'Pay';
+      var equityLabel = '';
+      var payFieldLabel;
+
+      if ($('#job-filters-equity').is(":checked")) {
+        equityLabel += ' + ' + '%';
+      }
+      if (getCurrencyVal().toLowerCase() === 'na'){
+        currencyLabel = 'Pay';
+      } else {
+        currencyLabel = $('#job-filters-pmin').val() + ' - ' + $('#job-filters-pmax').val();
+      }
+      if (currencyLabel === 'Pay' && equityLabel !== '') {
+        payFieldLabel = 'Equity (%)';
+      } else {
+        payFieldLabel = currencyLabel + equityLabel;
+      }
+      $('#job-filters-pay-text').html(payFieldLabel);
+    };
+
+    $('#job-filters-equity').on('change', function(){
+      setPayTextField();
+    });
 
     // set initial value for the currency radio button
     var presetCurrency = {{ request.args.get('currency')|tojson }} || 'NA';
@@ -300,14 +321,10 @@
       }
     });
 
-    var getCurrencyVal = function() {
-      return $("input[type='radio'][name='currency']:checked").val();
-    };
-
     $("input[type='radio'][name='currency']").on('change',function(){
       setPaySliderVisibility();
       paySlider.resetSlider(getCurrencyVal());
-      setPayTextField(getCurrencyVal(), $('#job-filters-pmin').val(), $('#job-filters-pmax').val());
+      setPayTextField();
     });
 
     // prevent the pay filter dropdown from hiding on click
@@ -332,12 +349,12 @@
     });
 
     $("#pay-slider").on('slide', function(){
-      setPayTextField(getCurrencyVal(), $('#job-filters-pmin').val(), $('#job-filters-pmax').val());
+      setPayTextField();
     });
 
     setPaySliderVisibility();
     paySlider.resetSlider(getCurrencyVal());
-    setPayTextField(getCurrencyVal(), $('#job-filters-pmin').val(), $('#job-filters-pmax').val());
+    setPayTextField();
 
     $('#job-filters').on('submit', function(e){
       // remove currency params from URL if currency is n/a
