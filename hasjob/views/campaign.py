@@ -265,6 +265,11 @@ def campaign_action(campaign):
             if view:
                 view.dismissed = True
                 db.session.commit()
+        elif g.anon_user:
+            view = campaign.view_for(anon_user=g.anon_user)
+            if view:
+                view.dismissed = True
+                db.session.commit()
         return render_template('campaign_action_response.html',
             campaign=campaign, dismiss=True)
 
