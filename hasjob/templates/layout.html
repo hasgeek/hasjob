@@ -49,21 +49,15 @@
     {%- endif %}
   {%- endblock %}
   <div class="container">
-    <div class="row">
-      <div class="col-xs-10 col-sm-6 col-md-8 col-lg-9">
-        <h1><a href="{{ url_for('index') }}">
-          {%- if g.board -%}
-            {{ g.board.title }} <small>
-              {%- if g.board.caption -%} {{ g.board.caption }} {%- else -%} Powered by Hasjob {%- endif -%}
-            </small>
-          {%- else -%}
-            Hasjob <small>The HasGeek Job Board</small>
-          {%- endif -%}
-        </a></h1>
-      </div>
-      <div class="col-xs-2 col-sm-6 col-md-4 col-lg-3">
-      </div>
-    </div>
+    <h1><a href="{{ url_for('index') }}">
+      {%- if g.board -%}
+        {{ g.board.title }} <small>
+          {%- if g.board.caption -%} {{ g.board.caption }} {%- else -%} Powered by Hasjob {%- endif -%}
+        </small>
+      {%- else -%}
+        Hasjob <small>The HasGeek Job Board</small>
+      {%- endif -%}
+    </a></h1>
   </div>
   {% block hasjob_nav %}{% endblock %}
 </header>
