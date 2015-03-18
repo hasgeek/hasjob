@@ -449,6 +449,7 @@ def campaign_view_count_update(campaign_id, user_id=None, anon_user_id=None):
     db.session.commit()
 
 
+@cache.cached(key_prefix='helper/filter_locations', timeout=3600)
 def filter_locations():
     now = datetime.utcnow()
     geonameids = [r.geonameid for r in
