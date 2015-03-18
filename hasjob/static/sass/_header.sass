@@ -103,8 +103,9 @@ header
   ul.multiselect-container
     overflow: auto
     width: 20em
+    padding: 5px 0
 
-  .form-inline .multiselect-container label.checkbox, .form-inline .multiselect-container label.radio
+  .multiselect-container label.checkbox, .multiselect-container label.radio
     padding: 5px 0 5px 30px
     width: 100%
 
@@ -116,11 +117,11 @@ header
 
 .pay-filter-dropdown 
   width: 135%
-  padding: 0
+  padding: 5px 0
   margin-top: 0
 
   li
-    padding: 0 10px
+    padding: 5px 10px
 
 .currency-checkbox
   float: left
@@ -131,7 +132,7 @@ header
   cursor: pointer
 
 .pay-filter-slider
-  margin: 15px auto
+  margin: 5px auto
 
 .pay-filter-slider .noUi-horizontal .noUi-origin:first-child
   margin-left: 15px
@@ -150,6 +151,16 @@ header
 .pay-filter-slider .noUi-horizontal .noUi-handle:after
   left: 12px
 
+.job-filter-location-search-clear
+  cursor: pointer
+
+@media screen and (max-width: 767px)
+  .pay-filter-dropdown
+    width: 100%
+
+  .header-section ul.multiselect-container  
+    width: 100%
+
 @media (min-width: 1200px)
   .header-section
     padding-bottom: 4px
@@ -164,13 +175,3 @@ header
   .submit-filters
     width: 6.5%
     padding: 0
-
-@media screen and (max-width: 767px)
-  .pay-filter-dropdown
-    width: 100%
-
-  .header-section ul.multiselect-container  
-    width: 100%
-
-.job-filter-location-search-clear
-  cursor: pointer

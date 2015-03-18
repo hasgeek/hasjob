@@ -54,7 +54,7 @@
                     <li class="clearfix">
                       <div class="currency-checkbox">
                         <input type="radio" id="job-filters-na" name="currency" value="NA"></input>
-                        <label for="job-filters-na">N/A</label>
+                        <label for="job-filters-na">Any</label>
                       </div>
                       <div class="currency-checkbox">
                         <input type="radio" id="job-filters-inr" name="currency" value="INR"></input>
@@ -69,8 +69,8 @@
                         <label for="job-filters-eur">EUR</label>
                       </div>
                     </li>
-                    <li>
-                      <div class="pay-filter-slider">
+                    <li class="pay-filter-slider">
+                      <div>
                         <input type="hidden" name="pmin" id="job-filters-pmin">
                         <input type="hidden" name="pmax" id="job-filters-pmax">
                         <div id="pay-slider"></div>
@@ -334,9 +334,9 @@
 
     var setPaySliderVisibility = function(){
       if (getCurrencyVal().toLowerCase() === 'na') {
-        $("#pay-slider").hide();
+        $(".pay-filter-slider").slideUp();
       } else {
-        $("#pay-slider").show();
+        $(".pay-filter-slider").slideDown();
       }
     };
 
