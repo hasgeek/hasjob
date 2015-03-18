@@ -20,7 +20,7 @@
   {% block hasjob_nav %}
     {%- if showall -%}
       <div class="header-section">
-        <form id="job-filters" action="{{ url_for('search') }}" class="form-inline" role="form">
+        <form id="job-filters" action="{{ url_for('search') }}" role="form">
           <div class="container">
            <div class="row">
               <div class="filters filters-col1 col-xs-12 col-sm-4 col-md-3">
@@ -379,8 +379,8 @@
       enableFiltering: true,
       enableCaseInsensitiveFiltering: true,
       templates: {
-        filter: '<form class="form-inline"><div class="form-group"><div class="input-group"><div class="input-group-addon"><i class="fa fa-search"></i></div><input type="text" class="form-control" id="job-filter-location-search" placeholder="Search">',
-        filterClearBtn: '<div class="input-group-addon job-filter-location-search-clear"><i class="fa fa-times-circle"></i></div></div></div></form>'
+        filter: '<li><div class="input-group input-group-sm"><div class="input-group-addon"><i class="fa fa-search"></i></div><input type="text" class="form-control" id="job-filter-location-search" placeholder="Search">',
+        filterClearBtn: '<div class="input-group-addon job-filter-location-search-clear"><i class="fa fa-times"></i></div></div></li>'
       }
     });
 
