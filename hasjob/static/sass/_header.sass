@@ -12,8 +12,8 @@ header
   h1
     color: $color-title-has
     font-size: 30px
-    margin-top: 12px
-    margin-bottom: 0
+    margin-top: 10px
+    margin-bottom: 10px
     small
       display: inline-block
       color: $color-title-geek
@@ -28,6 +28,9 @@ header
     a:hover, a:focus, a:active
       // background-image: linear-gradient(to top, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0) 8px, $color-title-jobs 8px, $color-title-jobs 13px, rgba(0, 0, 0, 0) 13px)
       background-image: linear-gradient(to top, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0) 12%, $color-title-jobs 12%, $color-title-jobs 23%, rgba(0, 0, 0, 0) 23%)
+
+.header-section
+  +box-shadow(inset 0 2px 5px -2px rgba(0,0,0,0.1))
 
 #page-header
   border-bottom: none
@@ -51,3 +54,123 @@ header
     margin-bottom: 12px
     h1 small
       display: inline
+
+.header-section
+  padding: 10px 0 5px
+
+  label
+    font-weight: normal
+    font-size: 14px
+
+  .btn
+    text-align: left
+    padding: 6px 0
+    border: 1px solid #ccc
+    font-size: 14px
+    border-radius: 3px
+    text-overflow: ellipsis
+ 
+    .multiselect-selected-text
+      padding-left: 10px //Left padding remains same for longer text
+
+  .btn:hover
+    border: 1px solid #adadad
+
+  .pay-field
+    padding-left: 10px //Left padding remains same for longer text
+
+  .submit-btn
+    text-align: center
+    padding: 6px 11px
+
+    .fa-filter
+      margin-right: 5px
+
+  .filter-select
+    width: 100%
+    padding-left: 10px
+    font-size: 14px
+    height: auto
+    border-radius: 3px
+
+  .dropdown-menu > li > a:hover
+    background-color: #f5f5f5
+
+  .dropdown-menu > .active > a
+    color: #333
+    background-color: inherit
+
+  ul.multiselect-container
+    overflow: auto
+    width: 20em
+
+  .form-inline .multiselect-container label.checkbox, .form-inline .multiselect-container label.radio
+    padding: 5px 0 5px 30px
+    width: 100%
+
+.filters
+  margin-bottom: 5px
+
+.submit-filters
+  margin: 1px 0 5px
+
+.pay-filter-dropdown 
+  width: 135%
+  padding: 0
+  margin-top: 0
+
+  li
+    padding: 0 10px
+
+.currency-checkbox
+  float: left
+  width: 25%
+
+.equity-label
+  width: 100%
+  cursor: pointer
+
+.pay-filter-slider
+  margin: 15px auto
+
+.pay-filter-slider .noUi-horizontal .noUi-origin:first-child
+  margin-left: 15px
+
+.pay-filter-slider .noUi-horizontal .noUi-handle
+  width: 20px
+  height: 25px
+  left: -17px
+  top: -4px
+
+.pay-filter-slider .noUi-horizontal .noUi-handle:after, .pay-filter-slider .noUi-horizontal .noUi-handle:before 
+  height: 10px
+  left: 7px
+  top: 6px
+
+.pay-filter-slider .noUi-horizontal .noUi-handle:after
+  left: 12px
+
+@media (min-width: 1200px)
+  .header-section
+    padding-bottom: 4px
+
+  .filters
+    padding: 0 10px 0 0
+    width: 18.5%
+
+  .filters-col1
+    padding-left: 15px 
+
+  .submit-filters
+    width: 6.5%
+    padding: 0
+
+@media screen and (max-width: 767px)
+  .pay-filter-dropdown
+    width: 100%
+
+  .header-section ul.multiselect-container  
+    width: 100%
+
+.job-filter-location-search-clear
+  cursor: pointer
