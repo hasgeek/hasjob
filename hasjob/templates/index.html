@@ -454,17 +454,20 @@
       },
       axis: {
         x: {
+          // padding: {
+          //   left: 60000,
+          //   right: 100000
+          // },
           type: 'indexed',
           tick: {
+            fit: true,
             format: function (x) { return window.Hasjob.Currency.formatTo({{ pay_graph_data['currency']|tojson }}, x); },
-            count: 20,
-            culling: {
-              max: 6
-            }
+            // values: {{ pay_graph_data['xaxis']|tojson }}
           }
         },
         y: {
-          show: false
+          label: "Jobs",
+          show: true,
         }
       }
     });
