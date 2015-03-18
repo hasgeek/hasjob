@@ -26,21 +26,21 @@
               <div class="filters filters-col1 col-xs-12 col-sm-4 col-md-3">
                 <select id="job-filters-location" name="l" multiple="multiple" class="job-filters-select2 notselect" placeholder="Location">
                   {%- for location in job_locations -%}
-                    <option value="{{location[0]}}" {% if location[0]|string in request.args.getlist('l') %} selected="selected" {% endif %}>{{location[1]}}</option>
+                    <option value="{{ location[0] }}" {% if location[0]|string in request.args.getlist('l') %} selected="selected" {% endif %}>{{ location[1] }}</option>
                   {%- endfor -%}
                 </select>
               </div>
               <div class="filters col-xs-12 col-sm-4 col-md-3">
                 <select id="job-filters-type" name="t" multiple="multiple" class="job-filters-select2 notselect" placeholder="Job Type">
                   {%- for job_type in job_type_choices -%}
-                    <option value="{{job_type[0]}}" {% if job_type[0]|string in request.args.getlist('t') %} selected="selected" {% endif %}>{{job_type[1]}}</option>
+                    <option value="{{ job_type[0] }}" {% if job_type[0]|string in request.args.getlist('t') %} selected="selected" {% endif %}>{{ job_type[1] }}</option>
                   {%- endfor -%}
                 </select>
               </div>
               <div class="filters col-xs-12 col-sm-4 col-md-3">
                 <select id="job-filters-category" name="c" multiple="multiple" class="job-filters-select2 notselect" placeholder="Job Category">
                   {%- for job_category in job_category_choices -%}
-                    <option value="{{job_category[0]}}" {% if job_category[0]|string in request.args.getlist('c') %} selected="selected" {% endif %}>{{job_category[1]}}</option>
+                    <option value="{{ job_category[0] }}" {% if job_category[0]|string in request.args.getlist('c') %} selected="selected" {% endif %}>{{ job_category[1] }}</option>
                   {%- endfor -%}
                 </select>
               </div>
@@ -293,7 +293,7 @@
     };
 
     // set initial value for the currency radio button
-    var presetCurrency = {{request.args.get('currency')|tojson|safe}} || 'NA';
+    var presetCurrency = {{ request.args.get('currency')|tojson|safe }} || 'NA';
     $.each($("input[type='radio'][name='currency']"), function(index, currencyRadio){
       if ($(currencyRadio).val() === presetCurrency) {
         $(currencyRadio).attr('checked', 'checked');
@@ -324,8 +324,8 @@
     };
 
     var paySlider = new Hasjob.PaySlider({
-      start: {{request.args.get('pmin')|tojson|safe}} || 0,
-      end: {{request.args.get('pmax')|tojson|safe}} || 10000000,
+      start: {{ request.args.get('pmin')|tojson|safe }} || 0,
+      end: {{ request.args.get('pmax')|tojson|safe }} || 10000000,
       selector: "#pay-slider",
       minField: '#job-filters-pmin',
       maxField: '#job-filters-pmax'
