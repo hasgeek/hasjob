@@ -415,7 +415,11 @@ def make_pay_graph(currency, posts, rmin=None, rmax=None, minposts=5):
         for bucket in rbuckets:
             if bucket >= pmin and bucket <= pmax:
                 buckets[bucket] += 1
-    return {'currency': currency, 'data': sorted(buckets.items())}
+    data = sorted(buckets.items())
+    # pruned_data = [data[0]] + [
+    #     data[c] for c in range(1, len(data)) if not (data[c][1] == data[c - 1][1] and data[c][1] == data[c + 1][1])
+    #     ] + [data[-1]]
+    return {'currency': currency, 'data': data}
 
 
 @job('hasjob')
