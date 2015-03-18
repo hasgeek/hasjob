@@ -52,7 +52,7 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
         basequery = basequery.join(JobCategory).filter(JobCategory.name.in_(f_categories))
     r_locations = request.args.getlist('l')
     f_locations = []
-    remote_location = False
+    remote_location = getbool(request.args.get('anywhere')) or False
     for rl in r_locations:
         if rl == 'anywhere':
             remote_location = True
@@ -62,13 +62,19 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
             ld = location_geodata(rl)
             if ld:
                 f_locations.append(ld['geonameid'])
-    if f_locations:
+    remote_location_query = basequery.filter(JobPost.remote_location == True) # NOQA
+    locations_query = basequery.join(JobLocation).filter(JobLocation.geonameid.in_(f_locations))
+    if f_locations and remote_location:
         data_filters['locations'] = f_locations
-        basequery = basequery.join(JobLocation).filter(JobLocation.geonameid.in_(f_locations))
-    if remote_location or getbool(request.args.get('anywhere')):
+        data_filters['anywhere'] = True
+        basequery = locations_query.union(remote_location_query)
+    elif f_locations:
+        data_filters['locations'] = f_locations
+        basequery = locations_query
+    elif remote_location:
         data_filters['anywhere'] = True
         # Only works as a positive filter: you can't search for jobs that are NOT anywhere
-        basequery = basequery.filter(JobPost.remote_location == True)  # NOQA
+        basequery = remote_location_query
     if 'currency' in request.args and request.args['currency'] in CURRENCY.keys():
         currency = request.args['currency']
         data_filters['currency'] = currency
