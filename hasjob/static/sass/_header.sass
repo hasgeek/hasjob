@@ -102,7 +102,7 @@ header
 
   ul.multiselect-container
     overflow: auto
-    width: 20em
+    width: 100%
     padding: 5px 0
 
   .multiselect-container label.checkbox, .multiselect-container label.radio
@@ -116,7 +116,7 @@ header
   margin: 1px 0 5px
 
 .pay-filter-dropdown 
-  width: 135%
+  width: 100%
   padding: 5px 0
   margin-top: 0
 
@@ -154,12 +154,22 @@ header
 .job-filter-location-search-clear
   cursor: pointer
 
-@media screen and (max-width: 767px)
-  .pay-filter-dropdown
-    width: 100%
+@media (min-width: 768px)
+  .header-section ul.multiselect-container
+    width: 20em
 
-  .header-section ul.multiselect-container  
-    width: 100%
+  .pay-filter-dropdown
+    width: 135%
+
+@media (min-width: 768px) and (max-width: 991px)
+  .category-filter ul.multiselect-container
+    right: 0
+    left: auto
+    
+@media (min-width: 992px) and (max-width: 1199px)
+  .pay-filter-dropdown
+    right: 0
+    left: auto
 
 @media (min-width: 1200px)
   .header-section
