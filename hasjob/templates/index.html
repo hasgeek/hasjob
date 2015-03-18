@@ -15,6 +15,7 @@
   {%- if md5sum %}<link rel="alternate" type="application/atom+xml" title="Jobs at {{ employer_name }} – {{ config['SITE_TITLE'] }}" href="{{ url_for('feed_by_email', md5sum=md5sum) }}" />{% endif -%}
   {%- if domain %}<link rel="alternate" type="application/atom+xml" title="Jobs at {{ employer_name }} – {{ config['SITE_TITLE'] }}" href="{{ url_for('feed_by_domain', domain=domain) }}" />{% endif -%}
   {%- if location %}<link rel="alternate" type="application/atom+xml" title="Jobs in {{ location['use_title'] }} – {{ config['SITE_TITLE'] }}" href="{{ url_for('feed_by_location', location=location['name']) }}" />{% endif -%}
+  {%- if pay_graph_data %}<link href="//cdnjs.cloudflare.com/ajax/libs/c3/0.4.10/c3.min.css" rel="stylesheet" />{% endif -%}
   {% endblock %}
   {% block description %}{% if location and location.description %}{{ location.description|firstline }}{% else %}{{ super() }}{% endif %}{% endblock %}
   {% block canonical_url %}
@@ -127,6 +128,12 @@
   {%- endif %}
   {%- if domain and domain.has_profile %}
     {{ org_profile(domain) }}
+  {%- endif %}
+  {%- if pay_graph_data %}
+    <div class="flash info">
+      <h2>What these jobs pay</h2>
+      <div id="pay-graph"></div>
+    </div>
   {%- endif %}
   <ul id="stickie-area" class="row">
     {%- if jobtype or jobcategory -%}
@@ -421,7 +428,48 @@
     });
   });
 </script>
-{%- endif -%}
+{%- if pay_graph_data %}
+  <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
+  <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/c3/0.4.10/c3.min.js"></script>
+  <script type="text/javascript">
+    c3.generate({
+      bindto: '#pay-graph',
+      size: {
+        height: 150
+      },
+      data: {
+        x: 'x',
+        type: 'spline',
+        columns: [
+          ['x', {% for row in pay_graph_data['data'] %}{{ row[0]|tojson }}{% if not loop.last %}, {% endif %}{% endfor %}],
+          ['jobs', {% for row in pay_graph_data['data'] %}{{ row[1]|tojson }}{% if not loop.last %}, {% endif %}{% endfor %}]
+        ],
+        names: {
+          jobs: "Jobs"
+        }
+      },
+      legend: {
+        show: false
+      },
+      axis: {
+        x: {
+          type: 'indexed',
+          tick: {
+            format: function (x) { return window.Hasjob.Currency.formatTo({{ pay_graph_data['currency']|tojson }}, x); },
+            count: 20,
+            culling: {
+              max: 6
+            }
+          }
+        },
+        y: {
+          show: false
+        }
+      }
+    });
+  </script>
+{%- endif %}
+{%- endif -%} {#- if not request.xhr -#}
 {%- if loadmore -%}
   {{ loadmore_script() }}
 {%- endif -%}

@@ -352,6 +352,10 @@ h1 small, h2 small, h3 small {
   margin: 12px 0 0.25em;
 }
 
+.c3 svg {
+  font-family: inherit;
+}
+
 .list-group-item .badge {
   float: right;
 }

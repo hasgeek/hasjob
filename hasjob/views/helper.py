@@ -20,7 +20,7 @@ from baseframe.signals import form_validation_error, form_validation_success
 from .. import app, redis_store
 from ..models import (agelimit, newlimit, db, JobCategory, JobPost, JobType, POSTSTATUS, BoardJobPost, Tag, JobPostTag,
     Campaign, CampaignView, CampaignAnonView, EventSessionBase, EventSession, UserEventBase, UserEvent, JobImpression,
-    JobViewSession, AnonUser, campaign_event_session_table, JobLocation)
+    JobViewSession, AnonUser, campaign_event_session_table, JobLocation, PAY_TYPE)
 from ..utils import scrubemail, redactemail, randbool
 
 
@@ -382,6 +382,34 @@ def gettags(alltime=False):
     if g.board:
         query = query.join(JobPost.postboards).filter(BoardJobPost.board == g.board)
     return query.all()
+
+
+# pay_graph_buckets = ([0] +
+#     range(5000, 100000, 20000) +
+#     range(100000, 1000000, 40000) +
+#     range(1000000, 10000000, 100000) +
+#     [10000000])
+
+pay_graph_buckets = (
+    range(0, 1000000, 50000) +
+    range(1000000, 10000000, 100000) +
+    [10000000])
+
+
+def make_pay_graph(currency, posts, rmin=None, rmax=None, minposts=5):
+    pay_data = [(post.pay_cash_min, post.pay_cash_max)
+        for post in posts if post.pay_type in (PAY_TYPE.ONETIME, PAY_TYPE.RECURRING)]
+    if len(pay_data) < minposts:
+        return  # No graph if less than the minimum required match
+    rmin = max(rmin or 0, min([d[0] for d in pay_data]))
+    rmax = min(rmax or 0, max([d[1] for d in pay_data]))
+    rbuckets = [bucket for bucket in pay_graph_buckets if (bucket >= rmin and bucket <= rmax)]
+    buckets = {bucket: 0 for bucket in rbuckets}
+    for pmin, pmax in pay_data:
+        for bucket in rbuckets:
+            if bucket >= pmin and bucket <= pmax:
+                buckets[bucket] += 1
+    return {'currency': currency, 'data': sorted(buckets.items())}
 
 
 @job('hasjob')

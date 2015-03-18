@@ -12,7 +12,7 @@ from .. import app, lastuser
 from ..models import (db, JobCategory, JobPost, JobType, POSTSTATUS, newlimit, agelimit, JobLocation,
     Domain, Location, Tag, JobPostTag, Campaign, CAMPAIGN_POSITION, CURRENCY)
 from ..views.helper import (getposts, getallposts, gettags, location_geodata, cache_viewcounts, session_jobpost_ab,
-    bgroup, filter_locations)
+    bgroup, filter_locations, make_pay_graph)
 from ..uploads import uploaded_logos
 from ..utils import string_to_number
 
@@ -70,8 +70,12 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
         # Only works as a positive filter: you can't search for jobs that are NOT anywhere
         basequery = basequery.filter(JobPost.remote_location == True)  # NOQA
     if 'currency' in request.args and request.args['currency'] in CURRENCY.keys():
-        data_filters['currency'] = request.args['currency']
-        basequery = basequery.filter(JobPost.pay_currency == request.args['currency'])
+        currency = request.args['currency']
+        data_filters['currency'] = currency
+        basequery = basequery.filter(JobPost.pay_currency == currency)
+        pay_graph = currency
+    else:
+        pay_graph = False
     if getbool(request.args.get('equity')):
         # Only works as a positive filter: you can't search for jobs that DON'T pay in equity
         data_filters['equity'] = True
@@ -83,6 +87,9 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
             data_filters['pay_min'] = f_min
             data_filters['pay_max'] = f_max
             basequery = basequery.filter(JobPost.pay_cash_min < f_max, JobPost.pay_cash_max >= f_min)
+    else:
+        f_min = None
+        f_max = None
 
     search_domains = None
     if request.args.get('q'):
@@ -170,6 +177,7 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
             pinsandposts = [(post.pinned, post, bgroup(jobpost_ab, post)) for post in posts]
 
     # Pick a header campaign (only if not kiosk or an XHR reload)
+    pay_graph_data = None
     if not g.kiosk and not request.is_xhr:
         if g.preview_campaign:
             header_campaign = g.preview_campaign
@@ -180,6 +188,8 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
                 geonameids = g.user_geonameids
             header_campaign = Campaign.for_context(CAMPAIGN_POSITION.HEADER, board=g.board, user=g.user,
                 anon_user=g.anon_user, geonameids=geonameids)
+        if pay_graph:
+            pay_graph_data = make_pay_graph(pay_graph, posts, rmin=f_min, rmax=f_max)
     else:
         header_campaign = None
 
@@ -251,7 +261,8 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
                            is_siteadmin=lastuser.has_permission('siteadmin'),
                            job_locations=filter_locations(),
                            job_type_choices=JobType.name_title_pairs(g.board),
-                           job_category_choices=JobCategory.name_title_pairs(g.board))
+                           job_category_choices=JobCategory.name_title_pairs(g.board),
+                           pay_graph_data=pay_graph_data)
 
 
 @csrf.exempt
