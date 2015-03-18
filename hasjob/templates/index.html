@@ -37,7 +37,7 @@
                   {%- endfor -%}
                 </select>
               </div>
-              <div class="filters col-xs-12 col-sm-4 col-md-3">
+              <div class="filters col-xs-12 col-sm-4 col-md-3 category-filter">
                 <select id="job-filters-category" name="c" multiple="multiple" class="job-filters-select2 notselect" placeholder="Job Category">
                   {%- for job_category in job_category_choices -%}
                     <option value="{{ job_category[0] }}" {% if job_category[0]|string in request.args.getlist('c') %} selected="selected" {% endif %}>{{ job_category[1] }}</option>
