@@ -368,7 +368,9 @@
 
       // only redirect if there are filters applied
       if (sortedFilterParams.length > 0) {
-        window.location.href = {{url_for('index')|tojson|safe}} + '?' + $.param(sortedFilterParams);
+        window.location.href = {{ url_for('index')|tojson }} + '?' + $.param(sortedFilterParams);
+      } else {
+        window.location.href = {{ url_for('index')|tojson }};
       }
     });
     
