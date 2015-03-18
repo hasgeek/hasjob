@@ -402,13 +402,13 @@ pay_graph_buckets['GBP'] = pay_graph_buckets['USD']
 
 def make_pay_graph(currency, posts, rmin=None, rmax=None, minposts=5):
     if currency not in pay_graph_buckets:
-        return
+        return  # No graph if we don't know about this currency
     pay_data = [(post.pay_cash_min, post.pay_cash_max)
         for post in posts if post.pay_type == PAY_TYPE.RECURRING]
     if len(pay_data) < minposts:
         return  # No graph if less than the minimum required match
     rmin = max(rmin or 0, min([d[0] for d in pay_data]))
-    rmax = min(rmax or 0, max([d[1] for d in pay_data]))
+    rmax = min(rmax or 10000000, max([d[1] for d in pay_data]))
     rbuckets = [bucket for bucket in pay_graph_buckets[currency] if (bucket >= rmin and bucket <= rmax)]
     buckets = {bucket: 0 for bucket in rbuckets}
     for pmin, pmax in pay_data:
