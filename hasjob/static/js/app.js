@@ -66,7 +66,9 @@ window.Hasjob.PaySlider = function(options){
   this.init();
 };
 
-window.Hasjob.PaySlider.indian_rupee_encoder = function(value) {
+window.Hasjob.Currency = {};
+
+window.Hasjob.Currency.indian_rupee_encoder = function(value) {
   value = value.toString();
   value = value.replace(/[^0-9.]/g, '');  // Remove non-digits, assume . for decimals
   var afterPoint = '';
@@ -82,7 +84,7 @@ window.Hasjob.PaySlider.indian_rupee_encoder = function(value) {
   return res;
 };
 
-window.Hasjob.PaySlider.prefix = function(currency){
+window.Hasjob.Currency.prefix = function(currency){
   var currencyMap = {
     'na': '¤',
     'inr': '₹',
@@ -92,6 +94,39 @@ window.Hasjob.PaySlider.prefix = function(currency){
     'gbp': '£'
   };
   return currencyMap[currency.toLowerCase()];
+};
+
+window.Hasjob.Currency.wNumbFormat = function(currency) {
+  var prefix = '¤',
+      thousand = ',',
+      encoder = null,
+      format = null;
+
+  if (currency === 'INR') {
+    encoder = Hasjob.Currency.indian_rupee_encoder;
+  }
+
+  prefix = Hasjob.Currency.prefix(currency);
+
+  if (encoder === null) {
+    format = window.wNumb({
+      decimals: 0,
+      thousand: thousand,
+      prefix: prefix,
+    });
+  } else {
+    format = window.wNumb({
+      decimals: 0,
+      thousand: thousand,
+      prefix: prefix,
+      edit: encoder
+    })
+  }
+  return format;
+};
+
+window.Hasjob.Currency.formatTo = function(currency, value) {
+  return window.Hasjob.Currency.wNumbFormat(currency).to(value);
 };
 
 window.Hasjob.PaySlider.toNumeric = function(str){
@@ -124,37 +159,13 @@ window.Hasjob.PaySlider.prototype.init = function(){
 
 window.Hasjob.PaySlider.prototype.resetSlider = function(currency) {
   var start = Hasjob.PaySlider.toNumeric(this.slider.val()[0]),
-      end = Hasjob.PaySlider.toNumeric(this.slider.val()[1]),
-      prefix = '¤',
-      thousand = ',',
-      encoder = null;
+      end = Hasjob.PaySlider.toNumeric(this.slider.val()[1]);
 
-  if (currency === 'INR') {
-    encoder = Hasjob.PaySlider.indian_rupee_encoder;
-  }
+  this.slider.noUiSlider({
+    start: [start, end],
+    format: Hasjob.Currency.wNumbFormat(currency)
+  }, true);
 
-  prefix = Hasjob.PaySlider.prefix(currency);
-
-  if (encoder === null) {
-    this.slider.noUiSlider({
-      start: [start, end],
-      format: window.wNumb({
-        decimals: 0,
-        thousand: thousand,
-        prefix: prefix,
-      })
-    }, true);
-  } else {
-    this.slider.noUiSlider({
-      start: [start, end],
-      format: window.wNumb({
-        decimals: 0,
-        thousand: thousand,
-        prefix: prefix,
-        edit: encoder
-      })
-    }, true);
-  }
   this.slider.Link('lower').to($(this.minField));
   this.slider.Link('upper').to($(this.maxField));
 };
