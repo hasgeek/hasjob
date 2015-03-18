@@ -17,6 +17,15 @@
   {%- if location %}<link rel="alternate" type="application/atom+xml" title="Jobs in {{ location['use_title'] }} – {{ config['SITE_TITLE'] }}" href="{{ url_for('feed_by_location', location=location['name']) }}" />{% endif -%}
   {% endblock %}
   {% block description %}{% if location and location.description %}{{ location.description|firstline }}{% else %}{{ super() }}{% endif %}{% endblock %}
+  {% block canonical_url %}
+    {%- if g.board and g.board.not_root and domain %}
+      <link rel="canonical" href="{{ domain.url_for(subdomain=none) }}" />
+      <meta property="og:url" content="{{ domain.url_for(subdomain=none) }}" />
+    {%- else %}
+      <link rel="canonical" href="{{ request.base_url }}" />
+      <meta property="og:url" content="{{ request.base_url }}" />
+    {%- endif %}
+  {% endblock %}
   {% block filters %}
     {%- if showall -%}
       <div class="header-section">
