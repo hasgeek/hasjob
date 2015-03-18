@@ -54,7 +54,7 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
     f_locations = []
     remote_location = False
     for rl in r_locations:
-        if rl == 'remote':
+        if rl == 'anywhere':
             remote_location = True
         elif rl.isdigit():
             f_locations.append(int(rl))
