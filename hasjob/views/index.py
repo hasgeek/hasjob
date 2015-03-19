@@ -67,7 +67,8 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
     if f_locations and remote_location:
         data_filters['locations'] = f_locations
         data_filters['anywhere'] = True
-        basequery = locations_query.union(remote_location_query)
+        recency = JobPost.datetime > datetime.utcnow() - agelimit
+        basequery = locations_query.filter(recency).union(remote_location_query.filter(recency))
     elif f_locations:
         data_filters['locations'] = f_locations
         basequery = locations_query
