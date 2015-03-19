@@ -96,13 +96,17 @@ window.Hasjob.Currency.prefix = function(currency){
   return currencyMap[currency.toLowerCase()];
 };
 
+window.Hasjob.Currency.isRupee = function(currency) {
+  return currency.toLowerCase() === 'inr';
+};
+
 window.Hasjob.Currency.wNumbFormat = function(currency) {
   var prefix = '¤',
       thousand = ',',
       encoder = null,
       format = null;
 
-  if (currency === 'INR') {
+  if (window.Hasjob.Currency.isRupee(currency)) {
     encoder = Hasjob.Currency.indian_rupee_encoder;
   }
 

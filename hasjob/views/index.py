@@ -120,6 +120,8 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
 
     if data_filters:
         g.event_data['filters'] = data_filters
+        showall = True
+        batched = True
 
     # getposts sets g.board_jobs, used below
     posts = getposts(basequery, pinned=True, showall=showall, statuses=statuses).all()
