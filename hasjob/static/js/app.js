@@ -86,14 +86,18 @@ window.Hasjob.Currency.indian_rupee_encoder = function(value) {
 
 window.Hasjob.Currency.prefix = function(currency){
   var currencyMap = {
-    'na': '¤',
+    'default': '¤',
     'inr': '₹',
     'usd': '$',
     'sgd': '$',
     'eur': '€',
     'gbp': '£'
   };
-  return currencyMap[currency.toLowerCase()];
+  if (currency == undefined || currency.toLowerCase() == 'na') {
+    return currencyMap['default'];
+  } else {
+    return currencyMap[currency.toLowerCase()];
+  }
 };
 
 window.Hasjob.Currency.isRupee = function(currency) {
@@ -106,7 +110,7 @@ window.Hasjob.Currency.wNumbFormat = function(currency) {
       encoder = null,
       format = null;
 
-  if (window.Hasjob.Currency.isRupee(currency)) {
+  if (currency && window.Hasjob.Currency.isRupee(currency)) {
     encoder = Hasjob.Currency.indian_rupee_encoder;
   }
 
@@ -131,6 +135,10 @@ window.Hasjob.Currency.wNumbFormat = function(currency) {
 
 window.Hasjob.Currency.formatTo = function(currency, value) {
   return window.Hasjob.Currency.wNumbFormat(currency).to(value);
+};
+
+window.Hasjob.Currency.formatFrom = function(currency, value) {
+  return window.Hasjob.Currency.wNumbFormat(currency).from(value);
 };
 
 window.Hasjob.PaySlider.toNumeric = function(str){
