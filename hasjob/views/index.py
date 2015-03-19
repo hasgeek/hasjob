@@ -15,7 +15,7 @@ from ..views.helper import (getposts, getallposts, gettags, location_geodata, ca
     bgroup, filter_locations, make_pay_graph)
 from ..uploads import uploaded_logos
 from ..utils import string_to_number
-
+from sqlalchemy.dialects import postgresql
 
 @csrf.exempt
 @app.route('/', methods=['GET', 'POST'], subdomain='<subdomain>')
@@ -67,9 +67,8 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
     if f_locations and remote_location:
         data_filters['locations'] = f_locations
         data_filters['anywhere'] = True
-        basequery = locations_query.union(remote_location_query)
-        # basequery = getposts(locations_query).union(getposts(remote_location_query))
-        # basequery = getposts(locations_query, pinned=True, showall=showall, statuses=statuses).union(getposts(remote_location_query, pinned=True, showall=showall, statuses=statuses))
+        recency = JobPost.datetime > datetime.utcnow() - agelimit
+        basequery = locations_query.filter(recency).union(remote_location_query.filter(recency))
     elif f_locations:
         data_filters['locations'] = f_locations
         basequery = locations_query
