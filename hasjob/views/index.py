@@ -15,7 +15,7 @@ from ..views.helper import (getposts, getallposts, gettags, location_geodata, ca
     bgroup, filter_locations, make_pay_graph)
 from ..uploads import uploaded_logos
 from ..utils import string_to_number
-from sqlalchemy.dialects import postgresql
+
 
 @csrf.exempt
 @app.route('/', methods=['GET', 'POST'], subdomain='<subdomain>')
