@@ -416,6 +416,8 @@ def make_pay_graph(currency, posts, rmin=None, rmax=None, minposts=5):
             if bucket >= pmin and bucket <= pmax:
                 buckets[bucket] += 1
     data = sorted(buckets.items())
+    if not data:
+        return
 
     xlen = len(data)
     xpoints = 5
