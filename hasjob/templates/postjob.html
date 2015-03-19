@@ -144,26 +144,59 @@
       }).blur(function() {
         $(this).val(removeLineBreaks($(this).val()));
       });
-      var cashslider = $("#cashslider").noUiSlider({
-        start: [{{ (form.job_pay_cash_min.data or 0)|tojson }}, {{ (form.job_pay_cash_max.data or 10000000)|tojson }}],
-        step: 1,
-        connect: true,
-        behaviour: "tap",
-        range: {
-          'min': [0, 5000],
-          '5%':  [100000, 10000],
-          '80%': [1000000, 50000],
-          '90%': [2000000, 100000],
-          'max': [10000000, 1000000],
-        },
-        format: wNumb({
-          decimals: 0,
-          thousand: ',',
-          prefix: '¤'
-        })
+
+      var cashslider = new Hasjob.PaySlider({
+        start: {{ (form.job_pay_cash_min.data or 0)|tojson }},
+        end: {{ (form.job_pay_cash_max.data or 10000000)|tojson }},
+        selector: "#cashslider",
+        minField: '#job_pay_cash_min',
+        maxField: '#job_pay_cash_max'
       });
-      cashslider.Link('lower').to($('#job_pay_cash_min'));
-      cashslider.Link('upper').to($('#job_pay_cash_max'));
+
+      var getCurrencyVal = function() {
+        return $("input[type=radio][name=job_pay_currency]:checked").val();
+      };
+
+      cashslider.resetSlider(getCurrencyVal());
+      $("input[type=radio][name=job_pay_currency]").on('change', function() {
+        cashslider.resetSlider(getCurrencyVal());
+      });
+
+      $("#job_pay_cash_min").keydown(function(e) {
+        // Convert the string to a number.
+        var value = window.Hasjob.Currency.formatFrom(getCurrencyVal(), cashslider.slider.val()[0]);
+        var delta = cashslider.slider.noUiSlider('step');
+        // 38 is key up,
+        // 40 is key down.
+        switch ( e.which ) {
+          case 38:
+            cashslider.slider.val([value + delta[0][1], null]);
+            e.preventDefault();
+            break;
+          case 40:
+            cashslider.slider.val([value - delta[0][0], null]);
+            e.preventDefault();
+            break;
+        };
+      });
+
+      $("#job_pay_cash_max").keydown(function(e) {
+        // Convert the string to a number.
+        var value = window.Hasjob.Currency.formatFrom(getCurrencyVal(), cashslider.slider.val()[1]);
+        var delta = cashslider.slider.noUiSlider('step');
+        // 38 is key up,
+        // 40 is key down.
+        switch ( e.which ) {
+          case 38:
+            cashslider.slider.val([null, value + delta[1][1]]);
+            e.preventDefault();
+            break;
+          case 40:
+            cashslider.slider.val([null, value - delta[1][0]]);
+            e.preventDefault();
+            break;
+        };
+      });
 
       var equityslider = $("#equityslider").noUiSlider({
         start: [{{ (form.job_pay_equity_min.data or 0)|tojson }}, {{ (form.job_pay_equity_max.data or 100)|tojson }}],
@@ -181,40 +214,6 @@
       });
       $('#equityslider').Link('lower').to($('#job_pay_equity_min'));
       $('#equityslider').Link('upper').to($('#job_pay_equity_max'));
-      $("#job_pay_cash_min").keydown(function(e) {
-        // Convert the string to a number.
-        var value = Number(cashslider.val()[0].slice(1).replace(',', ''));
-        console.log(value);
-        // 38 is key up,
-        // 40 is key down.
-        switch ( e.which ) {
-          case 38:
-            cashslider.val([value + 10, null]);
-            e.preventDefault();
-            break;
-          case 40:
-            cashslider.val([value - 10, null]);
-            e.preventDefault();
-            break;
-        };
-      });
-      $("#job_pay_cash_max").keydown(function(e) {
-        // Convert the string to a number.
-        var value = Number(cashslider.val()[1].slice(1).replace(',', ''));
-        console.log(value);
-        // 38 is key up,
-        // 40 is key down.
-        switch ( e.which ) {
-          case 38:
-            cashslider.val([null, value + 10]);
-            e.preventDefault();
-            break;
-          case 40:
-            cashslider.val([null, value - 10]);
-            e.preventDefault();
-            break;
-        };
-      });
       $("#job_pay_equity_min").keydown(function(e) {
         // Convert the string to a number.
         var value = Number(equityslider.val()[0].slice(0, -1));
@@ -249,72 +248,6 @@
         };
       });
 
-      var indian_rupee_encoder = function(value) {
-        value=value.toString();
-        value = value.replace(/[^0-9.]/g, '');  // Remove non-digits, assume . for decimals
-        var afterPoint = '';
-        if (value.indexOf('.') > 0)
-          afterPoint = value.substring(value.indexOf('.'), value.length);
-        value = Math.floor(value);
-        value = value.toString();
-        var lastThree = value.substring(value.length - 3);
-        var otherNumbers = value.substring(0, value.length - 3);
-        if (otherNumbers != '')
-            lastThree = ',' + lastThree;
-        var res = '₹' + otherNumbers.replace(/\B(?=(\d{2})+(?!\d))/g, ",") + lastThree + afterPoint;
-        return res;
-      }
-
-      var currency_options = function(currency) {
-        var start = cashslider.val()[0].slice(1).replace(',', ''),
-          end = cashslider.val()[1].slice(1).replace(',', ''),
-          prefix = '¤',
-          thousand = ',',
-          encoder = null;
-        switch(currency.val()) {
-          case 'INR':
-            prefix = '₹';
-            // thousand = '';
-            encoder = indian_rupee_encoder;
-            break;
-          case 'USD':
-          case 'SGD':
-            prefix = '$';
-            break;
-          case 'EUR':
-            prefix = '€';
-            break;
-          case 'GBP':
-            prefix = '£';
-            break;
-        };
-        if (encoder === null) {
-          cashslider.noUiSlider({
-            start: [start, end],
-            format: wNumb({
-              decimals: 0,
-              thousand: thousand,
-              prefix: prefix,
-            })
-          }, true);
-        } else {
-          cashslider.noUiSlider({
-            start: [start, end],
-            format: wNumb({
-              decimals: 0,
-              thousand: thousand,
-              prefix: prefix,
-              edit: encoder
-            })
-          }, true);
-        };
-        cashslider.Link('lower').to($('#job_pay_cash_min'));
-        cashslider.Link('upper').to($('#job_pay_cash_max'));
-      };
-      currency_options($("input[type=radio][name=job_pay_currency]:checked"));
-      $("input[type=radio][name=job_pay_currency]").on('change', function() {
-        currency_options($(this));
-      })
       // Set initial state of pay currency
       $(".alert.hidden").hide().removeClass('hidden');
       switch($("input[type=radio][name=job_pay_type]:checked").val()) {
