@@ -90,7 +90,7 @@
           <div class="list-group">
             {%- if g.user %}
               <a class="list-group-item sidebar-pstar" href="#">
-                <i class="fa fa-star{% if post not in g.user.starred_jobs %}-o{% endif %} pstar"
+                <i class="fa fa-fw fa-star{% if post not in g.user.starred_jobs %}-o{% endif %} pstar"
                    data-id="{{ post.hashid }}"></i>
                 &nbsp;&nbsp; <span class="pstar-caption">{% if post not in g.user.starred_jobs %}Bookmark this{% else %}Bookmarked{% endif %}</span>
               </a>
