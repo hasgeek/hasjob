@@ -188,7 +188,27 @@ h1 small, h2 small, h3 small
   display: none
 
 .sliderholder
-  padding-top: 10px
+  padding-top: 15px
+  float: none
+  clear: both
+  margin: auto
+
+.cash-slider, .equity-slider
+  position: relative
+
+.max-field
+  position: absolute
+  top: 0
+  right: 0
+
+.sliderholder .noUi-horizontal
+  padding-right: 32px
+
+.sliderholder .noUi-horizontal .noUi-handle
+  left: -1px
+
+.sliderholder .noUi-horizontal .noUi-origin
+  right: -32px
 
 // Ugly temp hack
 #banner-bottom
@@ -237,6 +257,11 @@ h1 small, h2 small, h3 small
   .section
     padding: 12px 30px 0
 
+  .sliderholder
+    padding-top: 10px
+    float: left
+    clear: none
+
 @media screen and (min-width: 992px)
   .sheet
     .list-group
@@ -249,3 +274,4 @@ h1 small, h2 small, h3 small
 
     .list-group-item:first-child
       border-top: none
+      
