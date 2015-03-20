@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 from urlparse import urlparse
 
 from hasjob import init_for, app
