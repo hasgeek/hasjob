@@ -52,9 +52,9 @@
             For recurring pay (a salary), please specify an <strong>annual</strong> range
           </div>
           <div class="row form-group cash-slider">
-            <div class="col-xs-5 col-sm-3 col-md-3 col-lg-2">{{ form.job_pay_cash_min(class="form-control") }}</div>
-            <div class="col-xs-11 col-sm-11 col-md-11 col-lg-8 sliderholder"><div id="cashslider"></div></div>
-            <div class="col-xs-5 col-sm-3 col-md-3 col-lg-2 max-field">{{ form.job_pay_cash_max(class="form-control") }}</div>
+            <div class="col-xs-5 col-sm-3 col-lg-2">{{ form.job_pay_cash_min(class="form-control") }}</div>
+            <div class="col-xs-11 col-sm-6 col-lg-8 sliderholder"><div id="cashslider"></div></div>
+            <div class="col-xs-5 col-sm-3 col-lg-2 max-field">{{ form.job_pay_cash_max(class="form-control") }}</div>
           </div>
           {% for error in form.job_pay_cash_min.errors %}<div><p class="help-error">{{ error }}</p></div>{% endfor %}
           {% for error in form.job_pay_cash_max.errors %}<div><p class="help-error">{{ error }}</p></div>{% endfor %}
@@ -63,9 +63,9 @@
         {{ renderfield(form.job_pay_equity, style="wide") }}
         <div id="field-equityslider">
           <div class="row form-group equity-slider">
-            <div class="col-xs-5 col-sm-3 col-md-3 col-lg-2">{{ form.job_pay_equity_min(class="form-control") }}</div>
-            <div class="col-xs-11 col-sm-11 col-md-11 col-lg-8 sliderholder"><div id="equityslider"></div></div>
-            <div class="col-xs-5 col-sm-3 col-md-3 col-lg-2 max-field">{{ form.job_pay_equity_max(class="form-control") }}</div>
+            <div class="col-xs-5 col-sm-3 col-lg-2">{{ form.job_pay_equity_min(class="form-control") }}</div>
+            <div class="col-xs-11 col-sm-6 col-lg-8 sliderholder"><div id="equityslider"></div></div>
+            <div class="col-xs-5 col-sm-3 col-lg-2 max-field">{{ form.job_pay_equity_max(class="form-control") }}</div>
           </div>
           {% for error in form.job_pay_equity_min.errors %}<div><p class="help-error">{{ error }}</p></div>{% endfor %}
           {% for error in form.job_pay_equity_max.errors %}<div><p class="help-error">{{ error }}</p></div>{% endfor %}
