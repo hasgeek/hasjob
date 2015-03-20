@@ -89,7 +89,8 @@ window.Hasjob.Currency.prefix = function(currency){
     'default': '¤',
     'inr': '₹',
     'usd': '$',
-    'sgd': '$',
+    'sgd': 'S$',
+    'aud': 'A$',
     'eur': '€',
     'gbp': '£'
   };
