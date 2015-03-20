@@ -498,7 +498,32 @@ h1 small, h2 small, h3 small {
 }
 
 .sliderholder {
-  padding-top: 10px;
+  padding-top: 15px;
+  float: none;
+  clear: both;
+  margin: auto;
+}
+
+.cash-slider, .equity-slider {
+  position: relative;
+}
+
+.max-field {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+.sliderholder .noUi-horizontal {
+  padding-right: 32px;
+}
+
+.sliderholder .noUi-horizontal .noUi-handle {
+  left: -1px;
+}
+
+.sliderholder .noUi-horizontal .noUi-origin {
+  right: -32px;
 }
 
 #banner-bottom {
@@ -581,6 +606,13 @@ h1 small, h2 small, h3 small {
   }
   .sheet .list-group-item:first-child {
     border-top: none;
+  }
+}
+@media (min-width: 1200px) {
+  .sliderholder {
+    padding-top: 10px;
+    float: left;
+    clear: none;
   }
 }
 .sheet .list-group-item a.popup {
