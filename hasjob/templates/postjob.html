@@ -3,7 +3,7 @@
 {% block title %}List a job{% endblock %}
 {% block content %}
   <div class="sheet">
-    <div class="section first">
+    <div class="sheet__section--first">
       <div class="page-header"><h1>
         {{ self.title()|e }}
       </h1></div>
@@ -21,11 +21,11 @@
         </p>
       {%- endif %}
     </div>
-    <form data-parsley-validate id="newjob" class="form-horizontal" enctype="multipart/form-data" method="POST">
+    <form data-parsley-validate id="newjob" class="form-horizontal sheet__form" enctype="multipart/form-data" method="POST">
       <input type="hidden" name="_charset_"/>
       <input type="hidden" name="form.id" value="newjob"/>
       {{ form.hidden_tag() }}
-      <div class="section">
+      <div class="sheet__section">
         <h2>First, tell us about the position</h2>
         {{ renderfield(form.job_headline, widget_css_class="field-title", autofocus=true) }}
         {{ renderfield(form.job_headlineb, css_class=form.job_headlineb.data and " " or "jshidden", widget_css_class="field-title") }}
@@ -53,7 +53,7 @@
           </div>
           <div class="row form-group">
             <div class="col-xs-3 col-sm-2">{{ form.job_pay_cash_min(class="form-control input-xs-small") }}</div>
-            <div class="col-xs-6 col-sm-8 sliderholder"><div id="cashslider"></div></div>
+            <div class="col-xs-6 col-sm-8 sheet__section__sliderholder"><div id="cashslider"></div></div>
             <div class="col-xs-3 col-sm-2">{{ form.job_pay_cash_max(class="form-control input-xs-small") }}</div>
           </div>
           {% for error in form.job_pay_cash_min.errors %}<div><p class="help-error">{{ error }}</p></div>{% endfor %}
@@ -64,7 +64,7 @@
         <div id="field-equityslider">
           <div class="row form-group">
             <div class="col-xs-3 col-sm-2">{{ form.job_pay_equity_min(class="form-control") }}</div>
-            <div class="col-xs-6 col-sm-8 sliderholder"><div id="equityslider"></div></div>
+            <div class="col-xs-6 col-sm-8 sheet__section__sliderholder"><div id="equityslider"></div></div>
             <div class="col-xs-3 col-sm-2">{{ form.job_pay_equity_max(class="form-control") }}</div>
           </div>
           {% for error in form.job_pay_equity_min.errors %}<div><p class="help-error">{{ error }}</p></div>{% endfor %}
@@ -75,7 +75,7 @@
         </p>
         {{ renderfield(form.job_how_to_apply, style="wide") }}
       </div>
-      <div class="section">
+      <div class="sheet__section">
         <h2>Next, tell us about your organization</h2>
         {{ renderfield(form.company_name, widget_css_class="field-title") }}
         {{ renderfield(form.company_logo) }}

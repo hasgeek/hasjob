@@ -6,10 +6,10 @@
 
 {% block content %}
   <div class="sheet">
-    <div class="section first">
+    <div class="sheet__section--first">
       {{ jobheader(post, return=true) }}
     </div>
-    <div class="section"><div class="row">
+    <div class="sheet__section"><div class="row">
       <div class="col-md-9">
         <h2>{{ job_application.fullname }}</h2>
         <p class="post-date">
@@ -26,7 +26,7 @@
         </p>
         {{ job_application.message|safe }}
         <hr>
-        <form id="response_form" method="POST" action="{{ job_application.url_for('process') }}">
+        <form id="response_form" method="POST" action="{{ job_application.url_for('process') }}" class="sheet__form">
           <input type="hidden" name="_charset_"/>
           <input type="hidden" name="form.id" value="process_application_form"/>
           {{ response_form.hidden_tag() }}
@@ -95,9 +95,9 @@
         </div>
       </div>
       <div class="col-md-3">
-        <div class="list-group">
+        <div class="list-group sheet__list">
           {%- for appl in post.applications %}
-            <a class="list-group-item status_{{ appl.status|lower }}" href="{{ appl.url_for() }}">
+            <a class="list-group-item sheet__list__item status_{{ appl.status|lower }}" href="{{ appl.url_for() }}">
               {%- if appl == job_application -%}
                 <strong>{{ appl.fullname }}</strong>
               {%- else -%}

@@ -102,7 +102,7 @@
 {% block content %}{% with gkiosk=g.kiosk, gboard=g.board, guser=g.user, gstarred_ids=g.starred_ids %}
 {%- if not request.is_xhr -%}
   {%- if gboard and gboard.not_root %}
-    <div class="flash info">
+    <div class="info-box">
       {{ gboard.description|safe }}
       {%- if gkiosk and g.peopleflow_url %}
         <p>If you find a job worth applying for here, tap your badge on the reader attached to this kiosk and we’ll send an email connecting you with the employer.</p>
@@ -110,12 +110,12 @@
     </div>
   {%- endif %}
   {%- if location and location.use_title and location.description %}
-    <div class="flash info">
+    <div class="info-box">
       <h2>{{ location.use_title }}</h2>
       {{ location.description }}
     </div>
   {%- elif location_prompts and not domain %}
-    <div class="flash info">
+    <div class="info-box">
       <p>In {{ location_prompts[0]['use_title'] }}? Filter this view:</p>
       <p class="button-bar">
         {%- for loc in location_prompts %}
@@ -232,7 +232,7 @@
 {%- if not request.is_xhr -%}
   </ul>
   {%- if not showall -%}
-    <div class="flash info">
+    <div class="info-box info-box--login">
       <p>
         You are only seeing jobs listed in the last 24 hours. To see everything,
         <a class="btn btn-primary btn-sm" href="{{ url_for('login') }}">Login with Twitter or Google</a>

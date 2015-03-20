@@ -5,8 +5,8 @@
 
 {% block content %}
   <div class="sheet">
-    <ul class="nav nav-tabs nav-tabs-top">
-        <li role="presentation" {%- if request.endpoint == 'admin_dashboard' %} class="active"{% endif %}><a href="{{ url_for('admin_dashboard') }}" role="tab">Current</a></li>
+    <ul class="nav nav-tabs sheet__nav">
+        <li role="presentation" {%- if request.endpoint == 'admin_dashboard' %}class="active"{% endif %}><a href="{{ url_for('admin_dashboard') }}" role="tab">Current</a></li>
         <li role="presentation" {%- if request.endpoint == 'admin_dashboard_historical' %} class="active"{% endif %}><a href="{{ url_for('admin_dashboard_historical') }}" role="tab">Historical</a></li>
     </ul>
 

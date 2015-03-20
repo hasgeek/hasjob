@@ -2,7 +2,7 @@
 {% block title %}{{ post.headline|e }}{% endblock %}
 {% block content %}
   <div class="sheet">
-    <div class="section first">
+    <div class="sheet__section--first">
       <div class="page-header">
         <h1>One last step&hellip;</h1>
       </div>
@@ -29,16 +29,16 @@
       </p>
     </div>
   {#
-    <!-- <div class="section">
+    <!-- <div class="sheet__section">
       <p>
         Does your organization build mobile apps? Please take our
         <a href="https://survey.hasgeek.com/survey/index?sid=842153&amp;lang=en">survey on intellectual property rights</a>.
       </p>
     </div> -->
 
-    <div class="section">
+    <div class="sheet__section">
       <a href="https://rootconf.in/2014/" title="Rootconf 2014"><img id="banner-bottom" src="{{
-        url_for('static', filename='img/banner.png') }}" width="170" height="156" alt="Rootconf" align="right" /></a>
+        url_for('static', filename='img/banner.png') }}" width="170" height="156" alt="Rootconf" align="right" class="sheet__section__banner"/></a>
       <div class="page-header"><h2>Meet DevOps professionals in real life</h2></div>
       <p>
         Are you hiring a cloud/infrastructure developer?

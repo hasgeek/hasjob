@@ -4,12 +4,12 @@
 {% block content %}
   {% if post.is_draft %}
     <div class="sheet">
-      <div class="section first">
+      <div class="sheet__section--first">
         <div class="page-header">
           <h1>Terms of service</h1>
         </div>
         {% include "inc/tos.html" %}
-        <form method="POST" class="form-horizontal">
+        <form method="POST" class="form-horizontal sheet__form">
           <input type="hidden" name="_charset_"/>
           <input type="hidden" name="form.id" value="confirmjob"/>
           {{ form.hidden_tag() }}
@@ -19,7 +19,7 @@
       </div>
     </div>
   {% else %}
-    <div class="flash">
+    <div class="info-box">
         <p>Nothing to confirm. <a href="{{ post.url_for() }}">See the post</a>?</p>
     </div>
   {% endif %}

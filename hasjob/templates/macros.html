@@ -37,7 +37,7 @@
 {%- macro jobheader(post, kiosk=false, return=false, user=none, headline=none) %}
   {%- if post.company_logo %}
     <div class="row">
-      <div class="img-container col-xs-12 col-sm-3 col-sm-push-9 post-company-logo">
+      <div class="img-container col-xs-12 col-sm-3 col-sm-push-9 sheet__section__logo">
         <img itemprop="image" alt="Logo" src="{{ post.url_for('logo') }}"/>
       </div>
       <div class="col-xs-12 col-sm-9 col-sm-pull-3">
@@ -69,7 +69,7 @@
 
 {% macro campaign_action_form(campaign, user, anon_user, message='', redirect=none, dismiss=false) %}
   {%- with ua=campaign.useractions(user) %}
-    <div id="header-campaign-actions">
+    <div id="header-campaign-actions" class="campaign__box__action">
       <form id="header-campaign-form" action="{{ url_for('campaign_action', campaign=campaign.name) }}" method="POST">
         {{ campaign.form().hidden_tag() }}
         <p class="button-bar">
@@ -80,7 +80,7 @@
               <button name="action" value="{{ action.name }}" type="submit" class="btn btn-sm btn-{{ action.category }}">{% if action.icon %}<i class="fa fa-{{ action.icon }}"></i> {% endif %}{{ action.title }}{% if action.name in ua %} <i class="fa fa-check"></i>{% endif %}</button>
             {%- endif %}
           {%- endif %}{%- endfor %}
-          <button type="submit" name="dismiss" value="dismiss" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <button type="submit" name="dismiss" value="dismiss" class="close campaign__box__close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
           <span class="loading hidden">&nbsp;</span>
         </p>
       </form>
@@ -93,7 +93,7 @@
       {%- elif dismiss %}
         {#- FIXME: Find a way to refer to context instead of hardcoding #}
         <script type="text/javascript">
-          $("#header-campaign-actions").closest('.campaign-box').slideUp();
+          $("#header-campaign-actions").closest('.campaign').slideUp();
         </script>
       {%- endif %}
     </div>
@@ -104,25 +104,25 @@
   {#- In campaign.banner_location, 0 = top, 1 = right, 2 = bottom, 3 = left. In here, add +1 to avoid matching 0 == false #}
   {% with view=campaign.view_for(g.user), i=campaign.banner_image and (campaign.banner_location + 1) %}
     {% if not view or (campaign == g.preview_campaign) or (view and not view.dismissed) %}
-      <div class="row campaign-box move-to-header">
+      <div class="row campaign move-to-header">
         <div class="col-md-10 col-md-offset-1 col-xs-12 col-sm-12">
-          <div class="flash">
+          <div class="campaign__box">
             {% if i in [2, 4] %}
               <div class="row">
                 <div class="img-container col-xs-12 col-sm-3 col-md-2 {%- if i == 2 %} col-sm-push-9 col-md-push-10 {%- endif %}">
-                  <img src="{{ campaign.banner_image }}">
+                  <img src="{{ campaign.banner_image }}" class="campaign__box__logo">
                 </div>
                 <div class="col-xs-12 col-sm-9 col-md-10 {%- if i == 2 %} col-sm-pull-3 col-md-pull-2 {%- endif %}">
             {%- elif i == 1 %}
               <div><img src="{{ campaign.banner_image }}"/></div>
             {%- endif %}
-            {% if campaign.subject %}<h2>{{ campaign.subject_for(g.user) }}</h2>{% endif %}
+            {% if campaign.subject %}<h2 class="campaign__box__heading">{{ campaign.subject_for(g.user) }}</h2>{% endif %}
             {% if campaign.blurb %}{{ campaign.blurb_for(g.user) }}{% endif %}
             {% if campaign.description %}<p class="read-more no-jshidden">(<a href="#">Read more…</a>)
             <div class="jshidden read-more-text">{{ campaign.description_for(g.user) }}</div>
             {%- endif %}
             {%- if i == 3 %}
-              <div><img src="{{ campaign.banner_image }}"/></div>
+              <div><img src="{{ campaign.banner_image }}" class="campaign__box__logo"/></div>
             {%- endif %}
             {%- if i in [2, 4] %}
                 </div>
@@ -167,7 +167,7 @@
 {% macro campaign_script() %}
   <script type="text/javascript">
     $(function() {
-      $('#header-campaign').replaceWith($('.campaign-box.move-to-header'));
+      $('#header-campaign').replaceWith($('.campaign.move-to-header'));
       $('.read-more a').click(function(e) {
         $(this).parent().slideUp().parent().find('.read-more-text').hide().removeClass('jshidden').slideDown();
         e.preventDefault();

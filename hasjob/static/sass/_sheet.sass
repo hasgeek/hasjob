@@ -1,49 +1,3 @@
-.flash, .guide
-  background: $color-sheet
-  position: relative
-  margin: 0 -15px
-  padding: 14px 15px 1px
-  border-top: 1px solid $color-sheet-border
-  border-bottom: 1px solid $color-sheet-border
-
-  h2
-    margin: 0
-
-  .close
-    position: absolute
-    top: 2px
-    right: 5px
-
-.flash.info
-  padding-left: 15px
-  padding-right: 15px
-  background: #ebe7e4
-  border: none
-  +box-shadow(0 1px 5px $color-shadow, 0 0 10px rgba(0, 0, 0, 0.1) inset)
-
-.flash-interactive:before, .guide:before
-  content: ""
-  display: block // reduce the damage in FF3.0
-  position: absolute
-  bottom: -21px // value = - border-top-width - border-bottom-width
-  left: 30px // controls horizontal position 
-  width: 0
-  height: 0
-  border: 10px solid transparent
-  border-top-color: $color-sheet-border
-
-/* creates the smaller  triangle */
-.flash-interactive:after, .guide:after
-  content: ""
-  display: block // reduce the damage in FF3.0
-  position: absolute
-  bottom: -20px // value = - border-top-width - border-bottom-width
-  left: 30px // value = (:before left) + (:before border-left) - (:after border-left)
-  width: 0
-  height: 0
-  border: 10px solid transparent
-  border-top-color: $color-sheet
-
 h1
   color: $color-title-has
   font-size: 30px
@@ -65,13 +19,55 @@ h1 small, h2 small, h3 small
   font-size: smaller
   margin: $body-line-height / 2 0 0.25em
 
+.guide, .info-box, .campaign__box
+  background: $color-sheet
+  position: relative
+  margin: 0 -15px
+  padding: 14px 15px 1px
+  border-top: 1px solid $color-sheet-border
+  border-bottom: 1px solid $color-sheet-border
+
+.info-box__heading, .campaign__box__heading
+  margin: 0
+
+.guide__heading
+  margin: 0 0 12px
+
+.guide__close, .info-box__close, .campaign__box__close 
+  position: absolute
+  top: 2px
+  right: 5px
+
+.info-box--login
+  padding-left: 15px
+  padding-right: 15px
+  border: none
+  +box-shadow(0 1px 5px $color-shadow, 0 0 10px rgba(0, 0, 0, 0.1) inset)
+
+.guide:before, .info-box--interactive:before
+  content: ""
+  display: block // reduce the damage in FF3.0
+  position: absolute
+  bottom: -21px // value = - border-top-width - border-bottom-width
+  left: 30px // controls horizontal position 
+  width: 0
+  height: 0
+  border: 10px solid transparent
+  border-top-color: $color-sheet-border
+
+/* creates the smaller  triangle */
+.guide:after, .info-box--interactive:after
+  content: ""
+  display: block // reduce the damage in FF3.0
+  position: absolute
+  bottom: -20px // value = - border-top-width - border-bottom-width
+  left: 30px // value = (:before left) + (:before border-left) - (:after border-left)
+  width: 0
+  height: 0
+  border: 10px solid transparent
+  border-top-color: $color-sheet
+
 // --- Sheet ------------------------------------------------------------------
-
-.list-group-item .badge
-  float: right
-
-.badge-new
-  background-color: #428bca
 
 .sheet
   background: $color-sheet
@@ -81,114 +77,119 @@ h1 small, h2 small, h3 small
   +box-shadow(0 2px 10px $color-shadow)
   text-rendering: optimizeLegibility
 
-  .nav-tabs-top
-    background: #ebe7e4
-    border-bottom: 0
-    +box-shadow(0 0 10px rgba(0,0,0,0.1) inset)
-
-    & > li
-      margin-bottom: 0
-      float: left
-      margin-left: 0
-      margin-right: 0
-
-      & > a
-        color: inherit
-        font-variant: small-caps
-        text-transform: lowercase
-        border: none
-        border-radius: 0
-
-  .nav-tabs-top>li.active>a
-    +box-shadow(0 10px 10px -10px rgba(0,0,0,0.1) inset)
-    border: none
-
-  .nav-tabs-top>li:first-child.active>a
-    +box-shadow(0 10px 10px -10px rgba(0,0,0,0.1) inset, 10px 0 10px -10px rgba(0,0,0,0.1) inset)
-
-  .nav-tabs-top>li>a:hover
-    +box-shadow(0 10px 10px -10px rgba(0,0,0,0.1) inset, 0 -10px 10px -10px rgba(0,0,0,0.1) inset)
-
-  .nav-tabs-top>li.active>a:hover, .nav-tabs-top>li.active>a:focus
-    +box-shadow(0 10px 10px -10px rgba(0,0,0,0.1) inset)
-    border: none
-
-  .nav-tabs-top>li:first-child.active>a:hover, .nav-tabs-top>li:first-child.active>a:focus
-    +box-shadow(0 10px 10px -10px rgba(0,0,0,0.1) inset, 10px 0 10px -10px rgba(0,0,0,0.1) inset)
-
-
-  .table
-    th:first-child, td:first-child
-      padding-left: 0
-
-    th:last-child, td:last-child
-      padding-right: 0
-
-    // & > thead > tr > th
-    //   border-bottom-width: 1px
-
-  .list-group
-    margin: 0 -15px
-    font-size: 80%
-
-  .badge
-    font-size: inherit
-
-  .list-group-item
-    border-left: none
-    border-right: none
-    background-color: inherit
-
   a.list-group-item
     color: inherit
 
-  .list-group-item:first-child
-    +border-top-radius(0)
+.sheet__list
+  margin: 0 -15px
+  font-size: 80%
 
-  .list-group-item:last-child
-    +border-bottom-radius(0)
-    margin-bottom: -1px
+.sheet__list__badge
+  font-size: inherit
 
-  .list-group-item.no-bottom-border
-    border-bottom: 0
+.sheet__list__badge--new
+  @extend .sheet__list__badge
+  background-color: #428bca
+
+.sheet__list__item
+  border-left: none
+  border-right: none
+  background-color: inherit
+
+.sheet__list__item:first-child
+  +border-top-radius(0)
+
+.sheet__list__item:last-child
+  +border-bottom-radius(0)
+  margin-bottom: -1px
+
+.sheet__list__item--noborder
+  @extend .sheet__list__item
+  border-bottom: 0
+  margin-bottom: 0
+
+.sheet__alert
+  margin-bottom: 12px
+
+.sheet__form
+  margin-bottom: 12px
+
+.form-horizontal .help-required
+  display: none
+
+.sheet__nav
+  background: #ebe7e4
+  border-bottom: 0
+  +box-shadow(0 0 10px rgba(0,0,0,0.1) inset)
+
+  & > li
     margin-bottom: 0
+    float: left
+    margin-left: 0
+    margin-right: 0
 
-  .alert
-    margin-bottom: 12px
+    & > a
+      color: inherit
+      font-variant: small-caps
+      text-transform: lowercase
+      border: none
+      border-radius: 0
 
-  form
-    margin-bottom: 12px
+.sheet__nav>li.active>a
+  +box-shadow(0 10px 10px -10px rgba(0,0,0,0.1) inset)
+  border: none
 
-.post-company-logo
-  text-align: center
+.sheet__nav>li:first-child.active>a
+  +box-shadow(0 10px 10px -10px rgba(0,0,0,0.1) inset, 10px 0 10px -10px rgba(0,0,0,0.1) inset)
 
-.section
+.sheet__nav>li>a:hover
+  +box-shadow(0 10px 10px -10px rgba(0,0,0,0.1) inset, 0 -10px 10px -10px rgba(0,0,0,0.1) inset)
+
+.sheet__nav>li.active>a:hover, .nav-tabs-top>li.active>a:focus
+  +box-shadow(0 10px 10px -10px rgba(0,0,0,0.1) inset)
+  border: none
+
+.sheet__nav>li:first-child.active>a:hover, .nav-tabs-top>li:first-child.active>a:focus
+  +box-shadow(0 10px 10px -10px rgba(0,0,0,0.1) inset, 10px 0 10px -10px rgba(0,0,0,0.1) inset)
+
+.sheet__section
   +pie-clearfix
   border-top: 1px solid $color-outline-thin
   padding: 12px 15px 0
   margin-bottom: 0
-  &.first
-    border-top: none
-  &.unmarked
-    border-top: none
-    padding-top: 0
 
   h1:first-child, h2:first-child, h3:first-child
     margin-top: 0
+
+.sheet__section--first
+  @extend .sheet__section
+  border-top: none
+
+.sheet__section--unmarked
+  @extend .sheet__section
+  border-top: none
+  padding-top: 0
+
+.sheet__section__table
+  th:first-child, td:first-child
+    padding-left: 0
+
+  th:last-child, td:last-child
+    padding-right: 0
+
+    // & > thead > tr > th
+    //   border-bottom-width: 1px
 
 .post-date
   font-size: 75%
   line-height: 24px
   color: #666
 
-.form-horizontal .help-required
-  display: none
-
-.sliderholder
+.sheet__section__sliderholder
   padding-top: 10px
 
 // Ugly temp hack
-#banner-bottom
+.sheet__section__banner
   margin: 0 0 24px 30px
 
 @media screen and (max-width: 767px)
@@ -199,12 +200,12 @@ h1 small, h2 small, h3 small
   .form-horizontal .control-label
     text-align: left
 
-  .post-company-logo
+  .sheet__section__logo
     text-align: right
     img
       margin-bottom: $body-line-height / 2
 
-  .flash, .guide
+  .guide, .info-box, .campaign__box
     padding: 14px 30px 1px
     margin: 12px 0 24px
     border: 1px solid $color-sheet-border
@@ -215,7 +216,10 @@ h1 small, h2 small, h3 small
     form
       margin-bottom: 12px
 
-  .flash.info
+  .info-box--login
+    padding: 14px 15px 1px
+    border: none
+    +box-shadow(0 1px 5px $color-shadow, 0 0 10px rgba(0, 0, 0, 0.1) inset)
     margin-bottom: 24px
 
   .sheet
@@ -224,25 +228,25 @@ h1 small, h2 small, h3 small
     +border-radius(4px)
     +box-shadow(0 2px 10px $color-shadow, 0 0 10px rgba(0, 0, 0, 0.1) inset)
 
-    .nav-tabs
-      +border-top-left-radius(4px)
-      +border-top-right-radius(4px)
+  .sheet__nav
+    +border-top-left-radius(4px)
+    +border-top-right-radius(4px)
 
-      & > li > a
-        +border-radius(4px 4px 0 0)
+  .sheet__nav_items > a
+    +border-radius(4px 4px 0 0)
 
-  .section
+  .sheet__section
     padding: 12px 30px 0
 
 @media screen and (min-width: 992px)
   .sheet
-    .list-group
+    .sheet__list
       margin: -12px -30px 20px -15px // Undo section's padding-top, flush with right edge of sheet
       margin-top: -12px
       margin-right: -30px
 
-    .list-group-item
+    .sheet__list__item
       padding-right: 30px // Restore padding on right
 
-    .list-group-item:first-child
+    .sheet__list__item:first-child
       border-top: none

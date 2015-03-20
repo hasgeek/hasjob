@@ -7,9 +7,9 @@
 
 {% block content %}
   <div class="sheet">
-    <div class="section first">
+    <div class="sheet__section--first">
       <div class="row">
-        <div class="img-container col-xs-12 col-sm-3 col-sm-push-9 post-company-logo">
+        <div class="img-container col-xs-12 col-sm-3 col-sm-push-9 sheet__section__logo">
           {% if campaign.banner_image %}<img alt="Logo" src="{{ campaign.banner_image }}"/>{% endif %}
         </div>
         <div class="col-xs-12 col-sm-9 col-sm-pull-3">
@@ -23,7 +23,7 @@
         </div>
       </div>      
     </div>
-    <div class="section">
+    <div class="sheet__section">
       <div class="row">
         <div class="col-md-9">
           <h2>{{ campaign.subject }}</h2>
@@ -38,27 +38,27 @@
           </p>
         </div>
         <div class="col-md-3">
-          <div class="list-group">
-            <a class="list-group-item" href="{{ url_for('index', preview=campaign.name) }}">
+          <div class="list-group sheet__list">
+            <a class="list-group-item sheet__list__item" href="{{ url_for('index', preview=campaign.name) }}">
               <i class="fa fa-fw fa-eye"></i>&nbsp;&nbsp; Preview this
             </a>
-            <a class="list-group-item" href="{{ url_for('campaign_edit', campaign=campaign.name) }}">
+            <a class="list-group-item sheet__list__item" href="{{ url_for('campaign_edit', campaign=campaign.name) }}">
               <i class="fa fa-fw fa-pencil"></i>&nbsp;&nbsp; Edit this
             </a>
-            <a class="list-group-item" href="{{ url_for('campaign_delete', campaign=campaign.name) }}">
+            <a class="list-group-item sheet__list__item" href="{{ url_for('campaign_delete', campaign=campaign.name) }}">
               <i class="fa fa-fw fa-trash-o"></i>&nbsp;&nbsp; Delete this
             </a>
             {% with reach=campaign.estimated_reach() %}{% if reach != none %}<span class="list-group-item"><i class="fa fa-fw fa-bullhorn"></i>&nbsp;&nbsp; Target size: {{ reach }} {{ ngettext("user", "users", reach) }}</span>{% endif %}{% endwith %}
-            <span class="list-group-item"><i class="fa fa-fw fa-info-circle"></i>&nbsp;&nbsp; Views: {{ campaign.views.count() }}</span>
+            <span class="list-group-item sheet__list__item"><i class="fa fa-fw fa-info-circle"></i>&nbsp;&nbsp; Views: {{ campaign.views.count() }}</span>
           </div>
         </div>
       </div>
     </div>
     {%- if interval %}
-    <div class="section">
+    <div class="sheet__section">
       <div id="chart"></div>
     </div>
-    <div class="section" role="tabpanel">
+    <div class="sheet__section" role="tabpanel">
       <ul class="nav nav-tabs">
         {%- for action in campaign.actions if action.type in ('Y', 'N', 'M', 'F') %}
           <li role="presentation" {%- if loop.first %} class="active" {%- endif %}><a href="#users-{{ action.name }}" aria-controls="users-{{ action.name }}" role="tab" data-toggle="tab">{{ action.title }}</a></li>
@@ -70,7 +70,7 @@
             <p class="tab-download">
               <a href="{{ action.url_for('csv') }}"><i class="fa fa-download"></i> Download CSV</a>
             </p>
-            <table class="table table-responsive">
+            <table class="table table-responsive sheet__section__table">
               <thead>
                 <tr>
                   <th>#</th>
