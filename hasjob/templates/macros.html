@@ -38,12 +38,12 @@
   {%- if post.company_logo %}
     <div class="row">
       <div class="img-container col-xs-12 col-sm-3 col-sm-push-9 sheet__section__logo">
-        <img itemprop="image" alt="Logo" src="{{ post.url_for('logo') }}"/>
+        <img itemprop="image" alt="Logo" src="{{ post.url_for('logo') }}" class="img-responsive"/>
       </div>
       <div class="col-xs-12 col-sm-9 col-sm-pull-3">
   {%- endif %}
     <h1 itemprop="name">{{ headline or post.headline }}</h1>
-    <p class="post-date">Posted <time itemprop="datePublished" content="{{ post.datetime.isoformat() }}Z" datetime="{{ post.datetime.isoformat() }}Z">{{ post.datetime|longdate }}</time>
+    <p class="sheet__section__post-date">Posted <time itemprop="datePublished" content="{{ post.datetime.isoformat() }}Z" datetime="{{ post.datetime.isoformat() }}Z">{{ post.datetime|longdate }}</time>
       {%- if post.user %} by <span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">{{ post.user.pickername }}</span></span>{% endif %}</p>
     <p>
       {% if return %}<a href="{{ post.url_for() }}"><i class="fa fa-angle-left"></i> Post</a> &middot; {% endif -%}
@@ -110,11 +110,11 @@
             {% if i in [2, 4] %}
               <div class="row">
                 <div class="img-container col-xs-12 col-sm-3 col-md-2 {%- if i == 2 %} col-sm-push-9 col-md-push-10 {%- endif %}">
-                  <img src="{{ campaign.banner_image }}" class="campaign__box__logo">
+                  <img src="{{ campaign.banner_image }}" class="campaign__box__logo img-responsive">
                 </div>
                 <div class="col-xs-12 col-sm-9 col-md-10 {%- if i == 2 %} col-sm-pull-3 col-md-pull-2 {%- endif %}">
             {%- elif i == 1 %}
-              <div><img src="{{ campaign.banner_image }}"/></div>
+              <div><img src="{{ campaign.banner_image }}" class="campaign__box__logo img-responsive"/></div>
             {%- endif %}
             {% if campaign.subject %}<h2 class="campaign__box__heading">{{ campaign.subject_for(g.user) }}</h2>{% endif %}
             {% if campaign.blurb %}{{ campaign.blurb_for(g.user) }}{% endif %}
@@ -122,7 +122,7 @@
             <div class="jshidden read-more-text">{{ campaign.description_for(g.user) }}</div>
             {%- endif %}
             {%- if i == 3 %}
-              <div><img src="{{ campaign.banner_image }}" class="campaign__box__logo"/></div>
+              <div><img src="{{ campaign.banner_image }}" class="campaign__box__logo img-responsive"/></div>
             {%- endif %}
             {%- if i in [2, 4] %}
                 </div>

@@ -1,15 +1,13 @@
-.sheet
-  //.list-group-item
-  .sheet__list__item
-    a.popup
-      color: inherit
-      display: block
-      margin: -10px -15px
-      padding: 10px 15px
+.sheet__section__list__item
+  a.popup
+    color: inherit
+    display: block
+    margin: -10px -15px
+    padding: 10px 15px
 
-    a.popup:hover, a.popup:focus
-      text-decoration: none
-      background-color: #f5f5f5
+  a.popup:hover, a.popup:focus
+    text-decoration: none
+    background-color: #f5f5f5
 
 .popup-box
   display: none
@@ -26,12 +24,10 @@
   padding: 0
 
 @media screen and (min-width: 768px)
-  .sheet
-    //.list-group-item
-    .sheet__list__item
-      a.popup
-        margin-right: -30px // Replace .list-group-item's padding
-        padding-right: 30px
+  .sheet__section__list__item
+    a.popup
+      margin-right: -30px // Replace .list-group-item's padding
+      padding-right: 30px
 
   .popup-box
     background: $color-sheet

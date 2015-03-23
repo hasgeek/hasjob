@@ -27,45 +27,45 @@
 {% endblock %}
 {% block content %}
   {% if post.is_unpublished() %}
-  <div class="guide">
-    <h2 class="guide__heading">Review this post</h2>
+  <div class="guide-box">
+    <h2 class="guide-box__heading">Review this post</h2>
     <p>
       This is a preview. It is only visible to you. You may edit again or confirm this post.
     </p>
-    <form action="{{ post.url_for('confirm')|usessl }}" method="POST" class="form-group button-bar">
+    <form action="{{ post.url_for('confirm')|usessl }}" method="POST" class="form-group button-bar guide-box__form">
       <input type="submit" class="btn btn-primary btn-sm" value="This looks good, confirm it"/>
       <a href="{{ post.url_for('edit')|usessl }}" class="btn btn-info btn-sm">Edit again</a>
     </form>
   </div>
   {% elif post.is_flagged() %}
-  <div class="guide">
-    <h2 class="guide__heading">This post has been flagged for review</h2>
+  <div class="guide-box">
+    <h2 class="guide-box__heading">This post has been flagged for review</h2>
     <p>
       Previous viewers of this post flagged it for review by a moderator.
       A review is currently pending.
     </p>
   </div>
   {% elif post.is_moderated() %}
-  <div class="guide">
+  <div class="guide-box">
     <p>
       This post has been marked by a moderator as carrying potentially inaccurate or incomplete
       information. Please proceed with caution.
     </p>
   </div>
   {% elif post.is_old() %}
-  <div class="guide">
+  <div class="guide-box">
     <p>
       This post is over 30 days old. The position may no longer be available.
     </p>
   </div>
   {% elif post.from_webmail_domain %}
-  <div class="guide">
+  <div class="guide-box">
     <p>
       This post was made with a public webmail address. The employer’s identity has not been verified.
     </p>
   </div>
   {% elif domain_mismatch %}
-  <div class="guide">
+  <div class="guide-box">
     <p>
       This post is from {{ post.email_domain }}, which may or may not be affiliated with
       {{ post.company_url_domain_zone }}. Please proceed with caution.
@@ -87,32 +87,32 @@
           {% endif %}
         </div>
         <div class="col-md-3">{% if not g.kiosk %}
-          <div class="list-group sheet__list">
+          <div class="list-group sheet__section__list">
             {%- if g.user %}
-              <a class="list-group-item sheet__list__item sidebar-pstar" href="#">
+              <a class="list-group-item sheet__section__list__item sidebar-pstar" href="#">
                 <i class="fa fa-star{% if post not in g.user.starred_jobs %}-o{% endif %} pstar"
                    data-id="{{ post.hashid }}"></i>
                 &nbsp;&nbsp; <span class="pstar-caption">{% if post not in g.user.starred_jobs %}Bookmark this{% else %}Bookmarked{% endif %}</span>
               </a>
             {%- endif %}
-            <a class="list-group-item sheet__list__item" href="mailto:?subject=Job%3A%20{{ headline|urlquoteplus }}&amp;body={{ post.url_for(utm_campaign='share', utm_medium='email', _external=true)|urlquoteplus }}">
+            <a class="list-group-item sheet__section__list__item" href="mailto:?subject=Job%3A%20{{ headline|urlquoteplus }}&amp;body={{ post.url_for(utm_campaign='share', utm_medium='email', _external=true)|urlquoteplus }}">
               <i class="fa fa-fw fa-envelope"></i>&nbsp;&nbsp; Email this
             </a>
-            <a class="list-group-item sheet__list__item visible-xs-block visible-sm-block" href="whatsapp://send?text={{ headline|urlquoteplus }}+{{ post.url_for(utm_campaign='share', utm_medium='whatsapp', _external=true)|urlquoteplus }}">
+            <a class="list-group-item sheet__section__list__item visible-xs-block visible-sm-block" href="whatsapp://send?text={{ headline|urlquoteplus }}+{{ post.url_for(utm_campaign='share', utm_medium='whatsapp', _external=true)|urlquoteplus }}">
               <i class="fa fa-fw fa-whatsapp"></i>&nbsp;&nbsp; Share on WhatsApp
             </a>
-            <a class="list-group-item sheet__list__item share-popup" data-width="550" data-height="250" target="_blank" href="https://twitter.com/share?url={{ post.url_for(utm_campaign='share', utm_medium='twitter', _external=true)|urlquoteplus }}&amp;counturl={{ post.url_for(_external=true)|urlquoteplus }}&amp;via=hasjob&amp;related=hasjob:HasGeek%20Job%20Board&amp;text=Job%3A%20{{ headline|urlquoteplus }}">
-              <span class="badge sheet__list__badge" id="tweet-count"></span><i class="fa fa-fw fa-twitter"></i>&nbsp;&nbsp; Tweet this
+            <a class="list-group-item sheet__section__list__item share-popup" data-width="550" data-height="250" target="_blank" href="https://twitter.com/share?url={{ post.url_for(utm_campaign='share', utm_medium='twitter', _external=true)|urlquoteplus }}&amp;counturl={{ post.url_for(_external=true)|urlquoteplus }}&amp;via=hasjob&amp;related=hasjob:HasGeek%20Job%20Board&amp;text=Job%3A%20{{ headline|urlquoteplus }}">
+              <span class="badge sheet__section__badge" id="tweet-count"></span><i class="fa fa-fw fa-twitter"></i>&nbsp;&nbsp; Tweet this
             </a>
-            <a class="list-group-item sheet__list__item share-popup" data-width="520" data-height="230" target="_blank" href="http://www.facebook.com/sharer.php?s=100&p[url]={{ post.url_for(utm_campaign='share', utm_medium='facebook', _external=true)|urlquoteplus }}">
+            <a class="list-group-item sheet__section__list__item share-popup" data-width="520" data-height="230" target="_blank" href="http://www.facebook.com/sharer.php?s=100&p[url]={{ post.url_for(utm_campaign='share', utm_medium='facebook', _external=true)|urlquoteplus }}">
               <i class="fa fa-fw fa-facebook"></i>&nbsp;&nbsp; Share on Facebook
             </a>
             {%- if not g.kiosk and not post.is_announcement() %}
-              <div class="list-group-item sheet__list__item">
+              <div class="list-group-item sheet__section__list__item">
                 <a class="popup" href="#report">
                   <i class="fa fa-fw fa-flag"></i>&nbsp;&nbsp; {% if report -%} Reported {%- else -%} Report this {%- endif %}
                   {%- if is_siteadmin and post.flags %}
-                    <span class="badge sheet__list__badge">{% for report in post.reports() -%}
+                    <span class="badge sheet__section__badge">{% for report in post.reports() -%}
                       {%if not loop.first %} &middot; {% endif %}<span title="{{ report.title }}">{{ report.count }}</span>
                     {%- endfor %}</span>
                   {%- endif -%}
@@ -130,17 +130,17 @@
               </div>
             {%- endif %}
             {%- if post.admin_is(g.user) %}
-              <a class="list-group-item sheet__list__item" href="{{ post.url_for('edit') }}">
+              <a class="list-group-item sheet__section__list__item" href="{{ post.url_for('edit') }}">
                 <i class="fa fa-fw fa-pencil"></i>&nbsp;&nbsp; Edit this
               </a>
               {%- if post.is_public() %}
-                <a class="list-group-item sheet__list__item" href="{{ post.url_for('withdraw') }}">
+                <a class="list-group-item sheet__section__list__item" href="{{ post.url_for('withdraw') }}">
                   <i class="fa fa-fw fa-trash-o"></i>&nbsp;&nbsp; Withdraw this
                 </a>
               {%- endif %}
             {%- endif %}
             {%- if is_siteadmin %}
-              <div class="list-group-item sheet__list__item">
+              <div class="list-group-item sheet__section__list__item">
                 <a class="popup" href="#reject">
                   <i class="fa fa-fw fa-trash-o"></i>&nbsp;&nbsp; Reject this
                 </a>
@@ -150,7 +150,7 @@
                   {% include "inc/rejectform.html" %}
                 </div>
               </div>
-              <div class="list-group-item sheet__list__item">
+              <div class="list-group-item sheet__section__list__item">
                 <a class="popup" href="#moderate">
                   <i class="fa fa-fw fa-thumbs-down"></i>&nbsp;&nbsp; Moderate this
                 </a>
@@ -162,18 +162,18 @@
               </div>
             {%- endif %}
             {%- if is_siteadmin or (g.user and g.board and g.board.owner_is(g.user)) %}
-              <div class="list-group-item sheet__list__item">
+              <div class="list-group-item sheet__section__list__item">
                 <a class="popup" href="#makepinned">
                   <i class="fa fa-fw fa-thumb-tack"></i>&nbsp;&nbsp; Pin this
                 </a>
-                <div class="popup-box" id="makepinned">
+                <div class="popup-box sheet__section__list__item__form-box" id="makepinned">
                   <a class="close-popup" href="#">&#10005;</a>
                   {% include "inc/pinnedform.html" %}
                 </div>
               </div>
             {%- endif %}
             {%- if g.user and g.user.flags.has_boards %}
-              <div class="list-group-item sheet__list__item">
+              <div class="list-group-item sheet__section__list__item">
                 <a class="popup" href="#add-to-board">
                   <i class="fa fa-fw fa-plus"></i>&nbsp;&nbsp; Add to board
                 </a>
@@ -190,24 +190,24 @@
             {%- endif %}
             {%- if is_siteadmin or post.admin_is(g.user) %}
               {%- if post.pay_type is not none and not post.is_announcement() %}
-                <span class="list-group-item sheet__list__item">
+                <span class="list-group-item sheet__section__list__item">
                   <i class="fa fa-fw fa-money"></i>&nbsp;&nbsp; {{ post.pay_label() }}
                 </span>
               {%- endif %}
               {%- with appl=post.viewcounts['applied'], newappl=post.new_applications %}{% if appl %}
-                <a class="list-group-item sheet__list__item" href="{{ post.url_for('manage') }}">
+                <a class="list-group-item sheet__section__list__item" href="{{ post.url_for('manage') }}">
                   <i class="fa fa-fw fa-file-text-o"></i>&nbsp;&nbsp; View candidates
-                  {%- if newappl %} <span class="badge sheet__list__badge--new">{{ newappl }}/{{ appl }}</span>
-                  {%- else %} <span class="badge sheet__list__badge">{{ appl }}</span>
+                  {%- if newappl %} <span class="badge sheet__section__badge--new">{{ newappl }}/{{ appl }}</span>
+                  {%- else %} <span class="badge sheet__section__badge">{{ appl }}</span>
                   {%- endif -%}
                 </a>
               {%- endif %}{% endwith -%}
               {%- if post.headlineb %}{% with ab_views=post.ab_views %}
-                <span class="list-group-item sheet__list__item" title="Headline A/B test"><i class="fa fa-fw fa-hand-o-up"></i>&nbsp;&nbsp; {{ ab_views.NA }} NA &middot; {{ ab_views.A }} A &middot; {{ ab_views.B }} B</span>
+                <span class="list-group-item sheet__section__list__item" title="Headline A/B test"><i class="fa fa-fw fa-hand-o-up"></i>&nbsp;&nbsp; {{ ab_views.NA }} NA &middot; {{ ab_views.A }} A &middot; {{ ab_views.B }} B</span>
               {%- endwith %}{% endif %}
             {%- endif %}
             {%- if is_siteadmin or post.admin_is(g.user) or (g.user and g.user.flags.is_employer_month) %}
-              <div class="list-group-item sheet__list__item--noborder">
+              <div class="list-group-item sheet__section__list__item--noborder">
                 <i class="fa fa-fw fa-bar-chart-o"></i>&nbsp;&nbsp; <span title="Viewed › Opened form › Applied">{{ post.viewcounts['viewed'] }} › {{ post.viewcounts['opened'] }} › {{ post.viewcounts['applied'] }}</span> &middot;
                 {%- with unittype = post.viewstats[0] %}
                   {%- if unittype == 'q' %} Per 15m:
@@ -218,7 +218,7 @@
                 <div id="statsline" class="hidden"></div>
               </div>
             {%- endif %}
-            {#<div class="list-group-item sheet__list__item" id="banner">
+            {#<div class="list-group-item sheet__section__list__item" id="banner">
               <a href="https://rootconf.in/2014/" target="_blank" title="Rootconf 2014"><img src="{{
                 url_for('static', filename='img/banner.png') }}" width="170" height="156" alt="Rootconf" /></a>
             </div>#}

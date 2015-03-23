@@ -275,9 +275,6 @@ h1 small, h2 small, h3 small {
 .img-container {
   text-align: center;
 }
-.img-container img {
-  max-width: 100%;
-}
 
 .label {
   padding: 0 0.6em;
@@ -288,7 +285,7 @@ h1 small, h2 small, h3 small {
   margin: 12px 0 0.25em;
 }
 
-.guide, .info-box, .campaign__box {
+.guide-box, .info-box, .campaign__box {
   background: #fff;
   position: relative;
   margin: 0 -15px;
@@ -297,18 +294,18 @@ h1 small, h2 small, h3 small {
   border-bottom: 1px solid #afafaf;
 }
 
-.info-box__heading, .campaign__box__heading {
+.guide-box__heading, .info-box__heading, .campaign__box__heading {
   margin: 0;
 }
 
-.guide__heading {
-  margin: 0 0 12px;
-}
-
-.guide__close, .info-box__close, .campaign__box__close {
+.guide-box__close, .info-box__close, .campaign__box__close {
   position: absolute;
   top: 2px;
   right: 5px;
+}
+
+.campaign__box__logo {
+  margin: auto;
 }
 
 .info-box--login {
@@ -320,7 +317,7 @@ h1 small, h2 small, h3 small {
   box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4), 0 0 10px rgba(0, 0, 0, 0.1) inset;
 }
 
-.guide:before, .info-box--interactive:before {
+.guide-box:before {
   content: "";
   display: block;
   position: absolute;
@@ -333,7 +330,7 @@ h1 small, h2 small, h3 small {
 }
 
 /* creates the smaller  triangle */
-.guide:after, .info-box--interactive:after {
+.guide-box:after {
   content: "";
   display: block;
   position: absolute;
@@ -358,60 +355,17 @@ h1 small, h2 small, h3 small {
 .sheet a.list-group-item {
   color: inherit;
 }
-
-.sheet__list {
-  margin: 0 -15px;
-  font-size: 80%;
-}
-
-.sheet__list__badge, .sheet__list__badge--new {
-  font-size: inherit;
-}
-
-.sheet__list__badge--new {
-  background-color: #428bca;
-}
-
-.sheet__list__item, .sheet__list__item--noborder {
-  border-left: none;
-  border-right: none;
-  background-color: inherit;
-}
-
-.sheet__list__item:first-child, .sheet__list__item--noborder:first-child {
-  -moz-border-radius-topleft: 0;
-  -webkit-border-top-left-radius: 0;
-  border-top-left-radius: 0;
-  -moz-border-radius-topright: 0;
-  -webkit-border-top-right-radius: 0;
-  border-top-right-radius: 0;
-}
-
-.sheet__list__item:last-child, .sheet__list__item--noborder:last-child {
-  -moz-border-radius-bottomleft: 0;
-  -webkit-border-bottom-left-radius: 0;
-  border-bottom-left-radius: 0;
-  -moz-border-radius-bottomright: 0;
-  -webkit-border-bottom-right-radius: 0;
-  border-bottom-right-radius: 0;
-  margin-bottom: -1px;
-}
-
-.sheet__list__item--noborder {
-  border-bottom: 0;
-  margin-bottom: 0;
-}
-
-.sheet__alert {
+.sheet .alert {
   margin-bottom: 12px;
 }
-
-.sheet__form {
+.sheet form {
   margin-bottom: 12px;
 }
-
-.form-horizontal .help-required {
-  display: none;
+.sheet .table th:first-child, .sheet .table td:first-child {
+  padding-left: 0;
+}
+.sheet .table th:last-child, .sheet .table td:last-child {
+  padding-right: 0;
 }
 
 .sheet__nav {
@@ -491,14 +445,62 @@ h1 small, h2 small, h3 small {
   padding-top: 0;
 }
 
-.sheet__section__table th:first-child, .sheet__section__table td:first-child {
-  padding-left: 0;
-}
-.sheet__section__table th:last-child, .sheet__section__table td:last-child {
-  padding-right: 0;
+.sheet__section__badge, .sheet__section__badge--new {
+  font-size: inherit;
 }
 
-.post-date {
+.sheet__section__badge--new {
+  background-color: #428bca;
+}
+
+.sheet__section__list {
+  margin: 0 -15px;
+  font-size: 80%;
+}
+
+.sheet__section__list__item, .sheet__section__list__item--noborder {
+  border-left: none;
+  border-right: none;
+  background-color: inherit;
+}
+
+.sheet__section__list__item:first-child, .sheet__section__list__item--noborder:first-child {
+  -moz-border-radius-topleft: 0;
+  -webkit-border-top-left-radius: 0;
+  border-top-left-radius: 0;
+  -moz-border-radius-topright: 0;
+  -webkit-border-top-right-radius: 0;
+  border-top-right-radius: 0;
+}
+
+.sheet__section__list__item:last-child, .sheet__section__list__item--noborder:last-child {
+  -moz-border-radius-bottomleft: 0;
+  -webkit-border-bottom-left-radius: 0;
+  border-bottom-left-radius: 0;
+  -moz-border-radius-bottomright: 0;
+  -webkit-border-bottom-right-radius: 0;
+  border-bottom-right-radius: 0;
+  margin-bottom: -1px;
+}
+
+.sheet__section__list__item--noborder {
+  border-bottom: 0;
+  margin-bottom: 0;
+}
+
+.sheet__section__list__item__form-box {
+  margin-top: 10px;
+}
+
+.sheet__section__form {
+  margin-bottom: 12px;
+}
+
+.form-horizontal .help-required {
+  display: none;
+}
+
+.sheet__section__post-date {
   font-size: 75%;
   line-height: 24px;
   color: #666;
@@ -529,7 +531,7 @@ h1 small, h2 small, h3 small {
     margin-bottom: 12px;
   }
 
-  .guide, .info-box, .campaign__box {
+  .guide-box, .info-box, .campaign__box {
     padding: 14px 30px 1px;
     margin: 12px 0 24px;
     border: 1px solid #afafaf;
@@ -541,7 +543,7 @@ h1 small, h2 small, h3 small {
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
   }
 
-  .guide form {
+  .guide-box__form {
     margin-bottom: 12px;
   }
 
@@ -585,25 +587,27 @@ h1 small, h2 small, h3 small {
   }
 }
 @media screen and (min-width: 992px) {
-  .sheet .sheet__list {
+  .sheet__section__list {
     margin: -12px -30px 20px -15px;
     margin-top: -12px;
     margin-right: -30px;
   }
-  .sheet .sheet__list__item, .sheet .sheet__list__item--noborder {
+
+  .sheet__section__list__item, .sheet__section__list__item--noborder {
     padding-right: 30px;
   }
-  .sheet .sheet__list__item:first-child, .sheet .sheet__list__item--noborder:first-child {
+
+  .sheet__section__list__item:first-child, .sheet__section__list__item--noborder:first-child {
     border-top: none;
   }
 }
-.sheet .sheet__list__item a.popup, .sheet .sheet__list__item--noborder a.popup {
+.sheet__section__list__item a.popup, .sheet__section__list__item--noborder a.popup {
   color: inherit;
   display: block;
   margin: -10px -15px;
   padding: 10px 15px;
 }
-.sheet .sheet__list__item a.popup:hover, .sheet .sheet__list__item--noborder a.popup:hover, .sheet .sheet__list__item a.popup:focus, .sheet .sheet__list__item--noborder a.popup:focus {
+.sheet__section__list__item a.popup:hover, .sheet__section__list__item--noborder a.popup:hover, .sheet__section__list__item a.popup:focus, .sheet__section__list__item--noborder a.popup:focus {
   text-decoration: none;
   background-color: #f5f5f5;
 }
@@ -626,7 +630,7 @@ h1 small, h2 small, h3 small {
 }
 
 @media screen and (min-width: 768px) {
-  .sheet .sheet__list__item a.popup, .sheet .sheet__list__item--noborder a.popup {
+  .sheet__section__list__item a.popup, .sheet__section__list__item--noborder a.popup {
     margin-right: -30px;
     padding-right: 30px;
   }

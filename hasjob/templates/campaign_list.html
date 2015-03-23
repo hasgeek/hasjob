@@ -12,7 +12,7 @@
         {%- for campaign in campaigns %}
           <li>
             <a href="{{ url_for('campaign_view', campaign=campaign.name) }}">{{ campaign.title }}</a>
-            <p class="post-date">
+            <p class="sheet__section__post-date">
               {%- if campaign.is_live %}<strong>Live</strong>{% elif campaign.public %}Offline{% else %}Disabled{% endif %} —
               <time datetime="{{ campaign.start_at.isoformat() }}Z">{{ campaign.start_at|longdate }}</time> –
               <time datetime="{{ campaign.end_at.isoformat() }}Z">{{ campaign.end_at|longdate }}</time>

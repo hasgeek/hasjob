@@ -12,7 +12,7 @@
     <div class="sheet__section"><div class="row">
       <div class="col-md-9">
         <h2>{{ job_application.fullname }}</h2>
-        <p class="post-date">
+        <p class="sheet__section__post-date">
           Applied {{ job_application.created_at|longdate }}
           {%- with counts = job_application.application_count() %}{% if counts.count %}
             &middot;
@@ -95,15 +95,15 @@
         </div>
       </div>
       <div class="col-md-3">
-        <div class="list-group sheet__list">
+        <div class="list-group sheet__section__list">
           {%- for appl in post.applications %}
-            <a class="list-group-item sheet__list__item status_{{ appl.status|lower }}" href="{{ appl.url_for() }}">
+            <a class="list-group-item sheet__section__list__item status_{{ appl.status|lower }}" href="{{ appl.url_for() }}">
               {%- if appl == job_application -%}
                 <strong>{{ appl.fullname }}</strong>
               {%- else -%}
                 {{ appl.fullname }}
               {%- endif -%}
-              <br><span class="post-date">{{ appl.created_at|shortdate }} &middot;
+              <br><span class="sheet__section__post-date">{{ appl.created_at|shortdate }} &middot;
               {%- if appl.is_new() %} <strong>{{ appl.status }}</strong>{% else %} {{ appl.status }}{% endif %}
               </span>
             </a>

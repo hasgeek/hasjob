@@ -9,13 +9,13 @@
           {%- if domain.logo_url %}
             <div class="row">
               <div class="img-container col-xs-12 col-sm-3 col-sm-push-9 sheet__section__logo">
-                <img itemprop="image" alt="Logo" src="{{ domain.logo_url }}"/>
+                <img itemprop="image" alt="Logo" src="{{ domain.logo_url }}" class="img-responsive"/>
               </div>
               <div class="col-xs-12 col-sm-9 col-sm-pull-3">
           {%- endif %}
           <h1>{{ domain.use_title }}</h1>
           {%- if domain.legal_title %}
-            <p class="post-date">{{ domain.legal_title }}</p>
+            <p class="sheet__section__post-date">{{ domain.legal_title }}</p>
           {%- endif %}
           {%- if domain.logo_url %}
               </div>
