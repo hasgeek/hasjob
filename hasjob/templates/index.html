@@ -423,6 +423,10 @@
       numberDisplayed: 1,
       buttonWidth: '100%'
     });
+
+    $("#job-filters-keywords").on("change",function(){
+      $(this).val($(this).val().trim());
+    });
   });
 </script>
 {%- if pay_graph_data %}
