@@ -764,15 +764,16 @@ h1 small, h2 small, h3 small {
   display: block;
 }
 .stickie .annotation {
-  font-size: 90%;
+  font-size: 75%;
   display: block;
   position: absolute;
   color: #816894;
-  font-family: "Walter Turncoat", sans-serif;
+  font-family: "McLaren", sans-serif;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
   height: 1.2em;
+  text-transform: uppercase;
 }
 .stickie .top-right {
   top: 0.1em;
@@ -795,7 +796,6 @@ h1 small, h2 small, h3 small {
 }
 .stickie .new {
   color: #df5e0e;
-  font-family: "Walter Turncoat", sans-serif;
   text-transform: lowercase;
 }
 .stickie .pinned {
@@ -1119,7 +1119,7 @@ h1 small, h2 small, h3 small {
 }
 
 #i40x-message {
-  font-family: 'Walter Turncoat', sans-serif;
+  font-family: "McLaren", sans-serif;
   color: #816894;
 }
 
