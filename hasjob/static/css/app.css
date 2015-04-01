@@ -2,10 +2,11 @@
 body {
   font-family: "Fira Sans", arial, sans-serif;
   background: #e8e7e6 url('../img/canvas.jpg?1425290105');
+  padding-top: 32px !important;
 }
 
 header {
-  padding-top: 50px;
+  padding-top: 5px;
   margin-bottom: 0;
   background: #ebe7e4;
   border-bottom: none;
@@ -15,7 +16,7 @@ header {
 }
 header h1 {
   color: #df5e0e;
-  font-size: 30px;
+  font-size: 25px;
   margin-top: 10px;
   margin-bottom: 10px;
 }
@@ -33,11 +34,9 @@ header h1 a, header h1 a:hover, header h1 a:focus, header h1 a:active, header h1
 header h1 a:hover, header h1 a:focus, header h1 a:active {
   background-image: linear-gradient(to top, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0) 12%, #f0a40c 12%, #f0a40c 23%, rgba(0, 0, 0, 0) 23%);
 }
-
-.header-section {
-  -moz-box-shadow: inset 0 2px 5px -2px rgba(0, 0, 0, 0.1);
-  -webkit-box-shadow: inset 0 2px 5px -2px rgba(0, 0, 0, 0.1);
-  box-shadow: inset 0 2px 5px -2px rgba(0, 0, 0, 0.1);
+header #hgnav {
+  background: #ebe7e4;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 #page-header {
@@ -56,28 +55,8 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
   height: 170px;
 }
 
-#hg-networkbar.navbar .navbar-brand {
-  padding: 0;
-  display: block;
-  text-indent: -119988px;
-  overflow: hidden;
-  text-align: left;
-  text-transform: capitalize;
-  background-image: url('../img/logo-star.png?1425290105');
-  background-repeat: no-repeat;
-  background-position: 50% 50%;
-  width: 170px;
-  height: 170px;
-  height: 48px;
-  background-position: left center;
-  background-size: auto 100%;
-  background-repeat: none;
-  text-indent: -1000px;
-}
-
 @media screen and (min-width: 768px) {
   header {
-    padding-top: 0;
     margin-bottom: 12px;
   }
   header h1 small {

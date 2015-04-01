@@ -186,4 +186,159 @@ window.Hasjob.PaySlider.prototype.resetSlider = function(currency) {
 $(function() {
   window.Hasjob.JobPost.handleGroupClick();
   $(".pstar").off().click(window.Hasjob.JobPost.handleStarClick);
+  if (window.location.pathname == "/"){
+    $(".search-text").hide();
+  }
+  else{
+    $(".filter-text").hide();
+  }
+  var query = [], parameters;
+  var filters = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+  for(var i = 0; i < filters.length; i++)
+  {
+      parameters = filters[i].split('=');
+      if (parameters[0] == 'currency' || parameters[0] == 'pmin' || parameters[0] == 'pmax'){
+        query[parameters[0]] = parameters[1];
+      }
+  }
+  console.log(query);
+
+  var getCurrencyVal = function() {
+    return $("input[type='radio'][name='currency']:checked").val();
+  };
+
+  var setPayTextField = function(){
+    var currencyLabel = 'Pay';
+    var equityLabel = '';
+    var payFieldLabel;
+
+    if ($('#job-filters-equity').is(":checked")) {
+      equityLabel += ' + ' + '%';
+    }
+    if (getCurrencyVal().toLowerCase() === 'na'){
+      currencyLabel = 'Pay';
+    } else {
+      currencyLabel = $('#job-filters-pmin').val() + ' - ' + $('#job-filters-pmax').val();
+    }
+    if (currencyLabel === 'Pay' && equityLabel !== '') {
+      payFieldLabel = 'Equity (%)';
+    } else {
+      payFieldLabel = currencyLabel + equityLabel;
+    }
+    $('#job-filters-pay-text').html(payFieldLabel);
+  };
+
+  $('#job-filters-equity').on('change', function(){
+    setPayTextField();
+  });
+
+  // set initial value for the currency radio button
+  //var presetCurrency = {{ request.args.get('currency')|tojson }} || 'NA';
+  var presetCurrency = query['currency'] || 'NA';
+  $.each($("input[type='radio'][name='currency']"), function(index, currencyRadio){
+    if ($(currencyRadio).val() === presetCurrency) {
+      $(currencyRadio).attr('checked', 'checked');
+    }
+  });
+
+  $("input[type='radio'][name='currency']").on('change',function(){
+    setPaySliderVisibility();
+    paySlider.resetSlider(getCurrencyVal());
+    setPayTextField();
+  });
+
+  // prevent the pay filter dropdown from hiding on click
+  $('ul.pay-filter-dropdown').click(function(e) {
+    e.stopPropagation();
+  });
+
+  var setPaySliderVisibility = function(){
+    if (getCurrencyVal().toLowerCase() === 'na') {
+      $(".pay-filter-slider").slideUp();
+    } else {
+      $(".pay-filter-slider").slideDown();
+    }
+  };
+
+  var paySlider = new Hasjob.PaySlider({
+    //start: {{ request.args.get('pmin')|tojson }} || 0,
+    //end: {{ request.args.get('pmax')|tojson }} || 10000000,
+    start: query['pmin'] || 0,
+    end: query['pmax'] || 10000000,
+    selector: "#pay-slider",
+    minField: '#job-filters-pmin',
+    maxField: '#job-filters-pmax'
+  });
+
+  $("#pay-slider").on('slide', function(){
+    setPayTextField();
+  });
+
+  setPaySliderVisibility();
+  paySlider.resetSlider(getCurrencyVal());
+  setPayTextField();
+
+  $('#job-filters').on('submit', function(e){
+    // remove currency params from URL if currency is n/a
+    e.preventDefault();
+    var formParams = $(this).serializeArray();
+    var sortedFilterParams = [];
+    for (var fpIndex=0; fpIndex < formParams.length; fpIndex++) {
+      // set value to empty string if currency is n/a
+      if (formParams[fpIndex].name === 'currency') {
+        if (formParams[fpIndex].value.toLowerCase() === 'na') {
+          formParams[fpIndex].value = "";
+        }
+        var currencyVal = formParams[fpIndex].value;
+      }
+      // format pmin and pmax based on currency value
+      if (formParams[fpIndex].name === 'pmin' || formParams[fpIndex].name === 'pmax') {
+        if (currencyVal === '') {
+          formParams[fpIndex].value = '';
+        } else {
+          formParams[fpIndex].value = Hasjob.PaySlider.toNumeric(formParams[fpIndex].value);
+        }
+      }
+      // remove empty values
+      if (formParams[fpIndex].value !== '') {
+        sortedFilterParams.push(formParams[fpIndex]);
+      }
+    }
+
+    // only redirect if there are filters applied
+    if (sortedFilterParams.length > 0) {
+      window.location.href = '/'+ '?' + $.param(sortedFilterParams);
+    } else {
+      window.location.href = '/';
+    }
+  });
+  
+  $("#job-filters-location").multiselect({
+    nonSelectedText: 'Location',
+    numberDisplayed: 1,
+    buttonWidth: '100%',
+    enableFiltering: true,
+    enableCaseInsensitiveFiltering: true,
+    templates: {
+      filter: '<li><div class="input-group input-group-sm"><div class="input-group-addon"><i class="fa fa-search"></i></div><input type="text" class="form-control" id="job-filter-location-search" placeholder="Search">',
+      filterClearBtn: '<div class="input-group-addon job-filter-location-search-clear"><i class="fa fa-times"></i></div></div></li>'
+    }
+  });
+
+  // clear location search on clicking the clear control
+  $('.job-filter-location-search-clear').click(function(e){
+    $('#job-filter-location-search').val('');
+  });
+
+  $("#job-filters-type").multiselect({
+    nonSelectedText: 'Job Type',
+    numberDisplayed: 1,
+    buttonWidth: '100%'
+  });
+
+  $("#job-filters-category").multiselect({
+    nonSelectedText: 'Job Category',
+    numberDisplayed: 1,
+    buttonWidth: '100%'
+  });
 });
