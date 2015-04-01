@@ -507,7 +507,7 @@ def filter_locations():
 
 @cache.memoize(timeout=86400)
 def location_geodata(location):
-    if 'HASCORE_SERVER' in app.config:
+    if 'HASCORE_SERVER' in app.config and location:
         if isinstance(location, (list, tuple)):
             url = urljoin(app.config['HASCORE_SERVER'], '/1/geo/get_by_names')
         else:
