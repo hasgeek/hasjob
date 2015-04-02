@@ -57,7 +57,7 @@ def kiosk_manifest():
         lines.extend(app.assets['css_all'].urls())
 
         # External resources
-        lines.append('//fonts.googleapis.com/css?family=McLaren')
+        lines.append('//fonts.googleapis.com/css?family=McLaren|Source+Sans+Pro:400,600')
         if app.config.get('TYPEKIT_CODE'):
             lines.append('//use.typekit.com/' + app.config['TYPEKIT_CODE'] + '.js')
 

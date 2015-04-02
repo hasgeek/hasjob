@@ -186,12 +186,14 @@ window.Hasjob.PaySlider.prototype.resetSlider = function(currency) {
 $(function() {
   window.Hasjob.JobPost.handleGroupClick();
   $(".pstar").off().click(window.Hasjob.JobPost.handleStarClick);
+
   if (window.location.pathname == "/"){
     $(".search-text").hide();
   }
   else{
     $(".filter-text").hide();
   }
+
   var query = [], parameters;
   var filters = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
   for(var i = 0; i < filters.length; i++)
@@ -201,7 +203,6 @@ $(function() {
         query[parameters[0]] = parameters[1];
       }
   }
-  console.log(query);
 
   var getCurrencyVal = function() {
     return $("input[type='radio'][name='currency']:checked").val();
@@ -277,6 +278,11 @@ $(function() {
   setPaySliderVisibility();
   paySlider.resetSlider(getCurrencyVal());
   setPayTextField();
+
+  //remove white spaces keyword input value
+  $("#job-filters-keywords").on("change",function(){
+    $(this).val($(this).val().trim());
+  });
 
   $('#job-filters').on('submit', function(e){
     // remove currency params from URL if currency is n/a

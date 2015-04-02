@@ -23,10 +23,6 @@ from ..models import (agelimit, newlimit, db, JobCategory, JobPost, JobType, POS
     JobViewSession, AnonUser, campaign_event_session_table, JobLocation, PAY_TYPE)
 from ..utils import scrubemail, redactemail, randbool
 
-@app.context_processor
-def inject_user():
-    return dict(job_locations=filter_locations(), job_type_choices=JobType.name_title_pairs(g.board), job_category_choices=JobCategory.name_title_pairs(g.board))
-
     
 gif1x1 = 'R0lGODlhAQABAJAAAP8AAAAAACH5BAUQAAAALAAAAAABAAEAAAICBAEAOw=='.decode('base64')
 
@@ -600,3 +596,9 @@ def usessl(url):
     if url.startswith('http:'):  # http://www.example.com
         url = 'https:' + url[5:]
     return url
+
+
+@app.context_processor
+def for_filter_fields():
+    return dict(job_locations=filter_locations(), job_type_choices=JobType.name_title_pairs(g.board), job_category_choices=JobCategory.name_title_pairs(g.board))
+
