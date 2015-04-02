@@ -16,7 +16,7 @@ header {
 }
 header h1 {
   color: #df5e0e;
-  font-size: 25px;
+  font-size: 16px;
   margin-top: 10px;
   margin-bottom: 10px;
 }
@@ -38,6 +38,17 @@ header #hgnav {
   background: #ebe7e4;
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 }
+header #hgnav.scroll {
+  -moz-box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
+  -webkit-box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
+}
+header .board-caption {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+header .board-caption h1 {
+  margin: 0;
+}
 
 #page-header {
   border-bottom: none;
@@ -58,6 +69,9 @@ header #hgnav {
 @media screen and (min-width: 768px) {
   header {
     margin-bottom: 12px;
+  }
+  header h1 {
+    font-size: 25px;
   }
   header h1 small {
     display: inline;
@@ -91,7 +105,7 @@ header #hgnav {
   text-align: center;
   padding: 6px 11px;
 }
-.header-section .submit-btn .fa-filter {
+.header-section .submit-btn i {
   margin-right: 5px;
 }
 .header-section .filter-select {

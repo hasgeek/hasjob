@@ -184,6 +184,16 @@ window.Hasjob.PaySlider.prototype.resetSlider = function(currency) {
 };
 
 $(function() {
+  var scrollheight = $("header").height();
+  $(window).scroll(function(){
+    if ($(this).scrollTop() > scrollheight){
+      $("#hgnav").addClass("scroll");
+    }
+    else{
+      $("#hgnav").removeClass("scroll");
+    }
+  });
+
   window.Hasjob.JobPost.handleGroupClick();
   $(".pstar").off().click(window.Hasjob.JobPost.handleStarClick);
 

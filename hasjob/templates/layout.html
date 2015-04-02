@@ -39,11 +39,11 @@
 {% block headerbox %}
 <header>
   {% macro site_title() %}
-   <div class="page-header">
+    <div class="page-header">
       <h1><a href="{{ url_for('index') }}">
         {%- if g.board -%}
           {{ g.board.title }}
-            <small>{%- if g.board.caption -%} {{ g.board.caption }} {%- else -%} Powered by Hasjob {%- endif -%}</small>
+            <small class="visible-lg">{%- if g.board.caption -%} {{ g.board.caption }} {%- else -%} Powered by Hasjob {%- endif -%}</small>
         {%- else -%}
           Hasjob <small>The HasGeek Job Board</small>
         {%- endif -%}
@@ -58,6 +58,11 @@
       {{ hgnav(site_title=site_title(), links=links) }}
     {% endwith %}
   {%- endif %}
+  {%- if g.board -%}
+    <div class="container board-caption visible-xs">
+      <h1><small>{%- if g.board.caption -%} {{ g.board.caption }} {%- else -%} Powered by Hasjob {%- endif -%}</small></h1>
+    </div>
+  {%- endif -%}
   <div class="header-section">
     <form id="job-filters" action="{{ url_for('search') }}" role="form">
       <div class="container">
@@ -129,7 +134,7 @@
           <div class="submit-filters col-xs-4 col-sm-2 col-md-2">
             <button id='job-filters-submit' type="submit" class="btn btn-default submit-btn">
                 <span class="filter-text"><i class="fa fa-filter"></i>Filter</span>
-                <span class="search-text">Search</span>
+                <span class="search-text"><i class="fa fa-search"></i>Search</span>
             </button>
           </div>
         </div><!--eof row-->
