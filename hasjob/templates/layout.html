@@ -43,7 +43,7 @@
       <h1><a href="{{ url_for('index') }}">
         {%- if g.board -%}
           {{ g.board.title }}
-            <small class="visible-lg">{%- if g.board.caption -%} {{ g.board.caption }} {%- else -%} Powered by Hasjob {%- endif -%}</small>
+            <small class="hidden-xs">{%- if g.board.caption -%} {{ g.board.caption }} {%- else -%} Powered by Hasjob {%- endif -%}</small>
         {%- else -%}
           Hasjob <small>The HasGeek Job Board</small>
         {%- endif -%}
