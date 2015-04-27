@@ -606,8 +606,8 @@ def moderatejob(domain, hashid):
         post.status = POSTSTATUS.MODERATED
         msg = Message(subject="About your job post on Hasjob",
             recipients=[post.email])
-        msg.body = render_template("moderate_email.md", post=post)
-        msg.html = markdown(msg.body)
+        msg.html = render_template("moderate_email.html", post=post)
+        msg.body = html2text(msg.html)
         mail.send(msg)
         db.session.commit()
         if request.is_xhr:
@@ -641,8 +641,8 @@ def confirm(domain, hashid):
         post.email_verify_key = random_long_key()
         msg = Message(subject="Confirmation of your job post at Hasjob",
             recipients=[post.email])
-        msg.body = render_template("confirm_email.md", post=post)
-        msg.html = markdown(msg.body)
+        msg.html = render_template("confirm_email.html", post=post)
+        msg.body = html2text(msg.html)
         mail.send(msg)
         post.email_sent = True
         post.status = POSTSTATUS.PENDING

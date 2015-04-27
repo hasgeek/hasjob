@@ -1,5 +1,16 @@
 {% extends "inc/email_layout_lite.html" %}
 {% block content %}
+<div itemscope itemtype="http://schema.org/EmailMessage">
+  <div itemprop="action" itemscope itemtype="http://schema.org/ViewAction">
+    <meta itemprop="name" content="Respond to Candidate"/>
+    <link itemprop="url" href="{{ archive_url }}"/>
+  </div>
+  <meta itemprop="description" content="View candidate details."/>
+  <div itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+    <meta itemprop="name" content="Hasjob"/>
+    <link itemprop="url" href="https://hasjob.co/"/>
+  </div>  
+</div>
 <p>
   <em><strong>{{ job_application.fullname }}</strong> has applied for <a href="{{ post.url_for(_external=true) }}" target="_blank">{{ post.headline }}</a>:</em>
 </p>
