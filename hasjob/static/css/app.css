@@ -2,7 +2,7 @@
 body {
   font-family: "Fira Sans", arial, sans-serif;
   background: #e8e7e6 url('../img/canvas.jpg?1425290105');
-  padding-top: 32px !important;
+  padding-top: 32px;
 }
 
 header {
