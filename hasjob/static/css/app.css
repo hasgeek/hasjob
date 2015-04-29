@@ -2,17 +2,11 @@
 body {
   font-family: "Fira Sans", arial, sans-serif;
   background: #e8e7e6 url('../img/canvas.jpg?1425290105');
-  padding-top: 32px;
 }
 
 header {
-  padding-top: 5px;
   margin-bottom: 0;
-  background: #ebe7e4;
-  border-bottom: none;
-  -moz-box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
-  -webkit-box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
-  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
+  min-height: 36px;
 }
 header h1 {
   color: #df5e0e;
@@ -37,17 +31,25 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
 header #hgnav {
   background: #ebe7e4;
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-}
-header #hgnav.scroll {
   -moz-box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
   -webkit-box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
   box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
 }
-header .board-caption {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-}
-header .board-caption h1 {
+header #hgnav h1 {
   margin: 0;
+}
+header #hgnav .hg-site-nav {
+  position: fixed;
+  top: 35px;
+  bottom: 0;
+  left: 0;
+  margin: 0;
+  max-height: 100%;
+  background: #ebe7e4;
+}
+
+header.long-title {
+  min-height: 72px;
 }
 
 #page-header {
@@ -66,17 +68,6 @@ header .board-caption h1 {
   height: 170px;
 }
 
-@media screen and (min-width: 768px) {
-  header {
-    margin-bottom: 12px;
-  }
-  header h1 {
-    font-size: 25px;
-  }
-  header h1 small {
-    display: inline;
-  }
-}
 .header-section {
   padding: 10px 0 5px;
 }
@@ -103,7 +94,10 @@ header .board-caption h1 {
 }
 .header-section .submit-btn {
   text-align: center;
-  padding: 6px 11px;
+  padding: 6px 0;
+  display: block;
+  width: 100%;
+  margin-top: -2px;
 }
 .header-section .submit-btn i {
   margin-right: 5px;
@@ -126,6 +120,7 @@ header .board-caption h1 {
   overflow: auto;
   width: 100%;
   padding: 5px 0;
+  left: 0;
 }
 .header-section .multiselect-container label.checkbox, .header-section .multiselect-container label.radio {
   padding: 5px 0 5px 30px;
@@ -144,6 +139,7 @@ header .board-caption h1 {
   width: 100%;
   padding: 5px 0;
   margin-top: 0;
+  left: 0;
 }
 .pay-filter-dropdown li {
   padding: 5px 10px;
@@ -180,6 +176,28 @@ header .board-caption h1 {
 }
 
 @media (min-width: 768px) {
+  header {
+    margin-bottom: 110px;
+  }
+  header h1 {
+    font-size: 25px;
+  }
+  header h1 small {
+    display: inline;
+  }
+  header #hgnav .hg-site-nav {
+    clear: both;
+    margin: 0;
+    position: relative;
+    top: 0;
+    width: 100%;
+    max-height: auto;
+  }
+
+  header.long-title {
+    min-height: 36px;
+  }
+
   .header-section ul.multiselect-container {
     width: 20em;
   }
@@ -201,6 +219,10 @@ header .board-caption h1 {
   }
 }
 @media (min-width: 1200px) {
+  header {
+    margin-bottom: 70px;
+  }
+
   .header-section {
     padding-bottom: 4px;
   }
@@ -215,7 +237,7 @@ header .board-caption h1 {
   }
 
   .submit-filters {
-    width: 6.5%;
+    width: 6%;
     padding: 0;
   }
 }

@@ -37,7 +37,7 @@
 {%- endblock %}
 
 {% block headerbox %}
-<header>
+<header {%- if g.board -%} class="long-title" {%- endif -%}>
   {% macro site_title() %}
     <div class="page-header">
       <h1><a href="{{ url_for('index') }}">
@@ -49,98 +49,98 @@
         {%- endif -%}
       </a></h1>
     </div>
+    {%- if g.board -%}
+      <div class="visible-xs">
+        <h1><a href="{{ url_for('index') }}"><small>{%- if g.board.caption -%} {{ g.board.caption }} {%- else -%} Powered by Hasjob {%- endif -%}</small></a></h1>
+      </div>
+    {%- endif -%}
   {% endmacro %}
-  {% if not g.kiosk %}
-    {% with links = [] %}
-      {%- if g.user and g.user.flags.has_jobpost_unconfirmed_month %}
-          {% set links = links + [{'title': "Drafts", 'url': url_for('browse_drafts')}] %}
-      {%- endif %}
-      {{ hgnav(site_title=site_title(), links=links) }}
-    {% endwith %}
-  {%- endif %}
-  {%- if g.board -%}
-    <div class="container board-caption visible-xs">
-      <h1><small>{%- if g.board.caption -%} {{ g.board.caption }} {%- else -%} Powered by Hasjob {%- endif -%}</small></h1>
-    </div>
-  {%- endif -%}
-  <div class="header-section">
-    <form id="job-filters" action="{{ url_for('search') }}" role="form">
-      <div class="container">
-       <div class="row">
-          <div class="filters filters-col1 col-xs-12 col-sm-4 col-md-3">
-            <select id="job-filters-location" name="l" multiple="multiple" class="job-filters-select2 notselect hidden" placeholder="Location">
-              <option value="anywhere" id='job-filters-remote-check' {% if 'anywhere' in request.args.getlist('l') %} selected="selected" {% endif %}>Anywhere/Remote</option>
-              {%- for location in job_locations -%}
-                <option value="{{ location[0] }}" {% if location[0]|string in request.args.getlist('l') %} selected="selected" {% endif %}>{{ location[1] }}</option>
-              {%- endfor -%}
-            </select>
-          </div>
-          <div class="filters col-xs-12 col-sm-4 col-md-3">
-            <select id="job-filters-type" name="t" multiple="multiple" class="job-filters-select2 notselect hidden" placeholder="Job Type">
-              {%- for job_type in job_type_choices -%}
-                <option value="{{ job_type[0] }}" {% if job_type[0]|string in request.args.getlist('t') %} selected="selected" {% endif %}>{{ job_type[1] }}</option>
-              {%- endfor -%}
-            </select>
-          </div>
-          <div class="filters col-xs-12 col-sm-4 col-md-3 category-filter">
-            <select id="job-filters-category" name="c" multiple="multiple" class="job-filters-select2 notselect hidden" placeholder="Job Category">
-              {%- for job_category in job_category_choices -%}
-                <option value="{{ job_category[0] }}" {% if job_category[0]|string in request.args.getlist('c') %} selected="selected" {% endif %}>{{ job_category[1] }}</option>
-              {%- endfor -%}
-            </select>
-          </div>
-          <div class="filters dropdown col-xs-12 col-sm-4 col-md-3">
-            <div id="job-filters-pay" class="btn-group btn-block no-jshidden">
-              <button type="button" class="btn btn-default dropdown-toggle btn-block" data-toggle="dropdown" aria-expanded="false">
-                <span id="job-filters-pay-text" class="pay-field"></span>
-                <span class="caret"></span>
-              </button>
-              <ul class="dropdown-menu pay-filter-dropdown" role="menu" aria-labelledby="job-filters-pay">
-                <li class="clearfix">
-                  <div class="currency-checkbox">
-                    <input type="radio" id="job-filters-na" name="currency" value="NA"></input>
-                    <label for="job-filters-na">Any</label>
-                  </div>
-                  <div class="currency-checkbox">
-                    <input type="radio" id="job-filters-inr" name="currency" value="INR"></input>
-                    <label for="job-filters-inr">INR</label>
-                  </div>
-                  <div class="currency-checkbox">
-                    <input type="radio" id="job-filters-usd" name="currency" value="USD"></input>
-                    <label for="job-filters-usd">USD</label>
-                  </div>
-                  <div class="currency-checkbox">
-                    <input type="radio" id="job-filters-eur" name="currency" value="EUR"></input>
-                    <label for="job-filters-eur">EUR</label>
-                  </div>
-                </li>
-                <li class="pay-filter-slider">
-                  <div>
-                    <input type="hidden" name="pmin" id="job-filters-pmin">
-                    <input type="hidden" name="pmax" id="job-filters-pmax">
-                    <div id="pay-slider"></div>
-                  </div>
-                </li>
-                <li>
-                  <label for="job-filters-equity" class="equity-label">
-                    <input type="checkbox" name="equity" id="job-filters-equity" {% if request.args.get('equity') %} checked="checked" {% endif %} value="1"></input> Equity</label>
-                </li>
-              </ul>
+  {% macro site_nav() %}
+    <div class="header-section" id="filter-dropdown">
+      <form id="job-filters" action="{{ url_for('search') }}" role="form">
+         <div class="row">
+            <div class="filters filters-col1 col-xs-12 col-sm-4 col-md-3">
+              <select id="job-filters-location" name="l" multiple="multiple" class="job-filters-select2 notselect hidden" placeholder="Location">
+                <option value="anywhere" id='job-filters-remote-check' {% if 'anywhere' in request.args.getlist('l') %} selected="selected" {% endif %}>Anywhere/Remote</option>
+                {%- for location in job_locations -%}
+                  <option value="{{ location[0] }}" {% if location[0]|string in request.args.getlist('l') %} selected="selected" {% endif %}>{{ location[1] }}</option>
+                {%- endfor -%}
+              </select>
             </div>
-          </div>
-          <div class="filters col-xs-12 col-sm-4 col-md-3">
-            <input id="job-filters-keywords" class="filter-select form-control" type="text" placeholder="Keywords" name="q" value="{{ request.args.q }}"/>
-          </div>
-          <div class="submit-filters col-xs-4 col-sm-2 col-md-2">
-            <button id='job-filters-submit' type="submit" class="btn btn-default submit-btn">
+            <div class="filters col-xs-12 col-sm-4 col-md-3">
+              <select id="job-filters-type" name="t" multiple="multiple" class="job-filters-select2 notselect hidden" placeholder="Job Type">
+                {%- for job_type in job_type_choices -%}
+                  <option value="{{ job_type[0] }}" {% if job_type[0]|string in request.args.getlist('t') %} selected="selected" {% endif %}>{{ job_type[1] }}</option>
+                {%- endfor -%}
+              </select>
+            </div>
+            <div class="filters col-xs-12 col-sm-4 col-md-3 category-filter">
+              <select id="job-filters-category" name="c" multiple="multiple" class="job-filters-select2 notselect hidden" placeholder="Job Category">
+                {%- for job_category in job_category_choices -%}
+                  <option value="{{ job_category[0] }}" {% if job_category[0]|string in request.args.getlist('c') %} selected="selected" {% endif %}>{{ job_category[1] }}</option>
+                {%- endfor -%}
+              </select>
+            </div>
+            <div class="filters dropdown col-xs-12 col-sm-4 col-md-3">
+              <div id="job-filters-pay" class="btn-group btn-block no-jshidden">
+                <button type="button" class="btn btn-default dropdown-toggle btn-block" data-toggle="dropdown" aria-expanded="false">
+                  <span id="job-filters-pay-text" class="pay-field"></span>
+                  <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu pay-filter-dropdown" role="menu" aria-labelledby="job-filters-pay">
+                  <li class="clearfix">
+                    <div class="currency-checkbox">
+                      <input type="radio" id="job-filters-na" name="currency" value="NA"></input>
+                      <label for="job-filters-na">Any</label>
+                    </div>
+                    <div class="currency-checkbox">
+                      <input type="radio" id="job-filters-inr" name="currency" value="INR"></input>
+                      <label for="job-filters-inr">INR</label>
+                    </div>
+                    <div class="currency-checkbox">
+                      <input type="radio" id="job-filters-usd" name="currency" value="USD"></input>
+                      <label for="job-filters-usd">USD</label>
+                    </div>
+                    <div class="currency-checkbox">
+                      <input type="radio" id="job-filters-eur" name="currency" value="EUR"></input>
+                      <label for="job-filters-eur">EUR</label>
+                    </div>
+                  </li>
+                  <li class="pay-filter-slider">
+                    <div>
+                      <input type="hidden" name="pmin" id="job-filters-pmin">
+                      <input type="hidden" name="pmax" id="job-filters-pmax">
+                      <div id="pay-slider"></div>
+                    </div>
+                  </li>
+                  <li>
+                    <label for="job-filters-equity" class="equity-label">
+                      <input type="checkbox" name="equity" id="job-filters-equity" {% if request.args.get('equity') %} checked="checked" {% endif %} value="1"></input> Equity</label>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <div class="filters col-xs-12 col-sm-4 col-md-3">
+              <input id="job-filters-keywords" class="filter-select form-control" type="text" placeholder="Keywords" name="q" value="{{ request.args.q }}"/>
+            </div>
+            <div class="submit-filters col-xs-4 col-sm-2 col-md-2">
+              <button id='job-filters-submit' type="submit" class="btn btn-default submit-btn">
                 <span class="filter-text"><i class="fa fa-filter"></i>Filter</span>
                 <span class="search-text"><i class="fa fa-search"></i>Search</span>
-            </button>
-          </div>
-        </div><!--eof row-->
-      </div><!--eof container-->
-    </form>
-  </div><!--eof header-section-->
+              </button>
+            </div>
+          </div><!--eof row-->
+      </form>
+    </div><!--eof header-section-->
+  {% endmacro %}
+  {% if not g.kiosk %}
+  {% with links = [] %}
+    {%- if g.user and g.user.flags.has_jobpost_unconfirmed_month %}
+        {% set links = links + [{'title': "Drafts", 'url': url_for('browse_drafts')}] %}
+    {%- endif %}
+    {{ hgnav(site_title=site_title(), site_nav=site_nav(), links=links) }}
+  {% endwith %}
+  {%- endif %}
 </header>
 {% endblock %}
 
