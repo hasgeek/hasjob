@@ -47,6 +47,9 @@ header #hgnav .hg-site-nav {
   max-height: 100%;
   background: #ebe7e4;
 }
+header #hgnav .fa {
+  width: 14px;
+}
 
 header.long-title {
   min-height: 72px;
@@ -193,6 +196,9 @@ header.long-title {
     width: 100%;
     max-height: auto;
   }
+  header #hgnav .hg-site-nav-toggle {
+    display: none;
+  }
 
   header.long-title {
     min-height: 36px;
@@ -237,7 +243,7 @@ header.long-title {
   }
 
   .submit-filters {
-    width: 6.3%;
+    width: 6.2%;
     padding: 0;
   }
 }

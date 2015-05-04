@@ -43,6 +43,9 @@ header
       max-height: 100%
       background: #ebe7e4
 
+    .fa
+      width: 14px //same as font-size
+
 header.long-title
   min-height: 72px
 
@@ -158,13 +161,17 @@ header.long-title
     h1 small
       display: inline
 
-    #hgnav .hg-site-nav
-      clear: both
-      margin: 0
-      position: relative
-      top: 0
-      width: 100%
-      max-height: auto
+    #hgnav 
+      .hg-site-nav
+        clear: both
+        margin: 0
+        position: relative
+        top: 0
+        width: 100%
+        max-height: auto
+
+      .hg-site-nav-toggle
+        display: none
 
   header.long-title
     min-height: 36px
@@ -200,5 +207,5 @@ header.long-title
     padding-left: 15px 
 
   .submit-filters
-    width: 6.3%
+    width: 6.2%
     padding: 0

@@ -184,17 +184,26 @@ window.Hasjob.PaySlider.prototype.resetSlider = function(currency) {
 };
 
 $(function() {
-    var scrollheight = $("nav").height() - $(".hg-site-nav").height();
-    $(window).scroll(function(){
-      if($(window).width() > 767){
-        if ($(this).scrollTop() > scrollheight){
-          $(".header-section").slideUp();
-        }
-        else{
-          $(".header-section").slideDown();
-        }
+    //Change site button to filter icon
+  $(".hg-site-nav-toggle").find("i").removeClass("fa-bars").addClass("fa-search");
+  $("#hg-sitenav").on("shown.bs.collapse", function(){
+    $(".hg-site-nav-toggle").find("i").removeClass("fa-search").addClass("fa-close");
+  });
+  $("#hg-sitenav").on("hidden.bs.collapse", function(){
+    $(".hg-site-nav-toggle").find("i").removeClass("fa-close").addClass("fa-search");
+  });
+  
+  var scrollheight = $("nav").height() - $(".hg-site-nav").height();
+  $(window).scroll(function(){
+    if($(window).width() > 767){
+      if ($(this).scrollTop() > scrollheight){
+        $(".header-section").slideUp();
       }
-    });
+      else{
+        $(".header-section").slideDown();
+      }
+    }
+  });
 
   window.Hasjob.JobPost.handleGroupClick();
   $(".pstar").off().click(window.Hasjob.JobPost.handleStarClick);
@@ -358,14 +367,5 @@ $(function() {
     nonSelectedText: 'Job Category',
     numberDisplayed: 1,
     buttonWidth: '100%'
-  });
-
-  //Change site button to filter icon
-  $(".hg-site-nav-toggle").find("i").removeClass("fa-bars").addClass("fa-filter");
-  $("#hg-sitenav").on("shown.bs.collapse", function(){
-    $(".hg-site-nav-toggle").find("i").removeClass("fa-filter").addClass("fa-close");
-  });
-  $("#hg-sitenav").on("hidden.bs.collapse", function(){
-    $(".hg-site-nav-toggle").find("i").removeClass("fa-close").addClass("fa-filter");
   });
 });
