@@ -37,11 +37,7 @@
 {%- endblock %}
 
 {% block headerbox %}
-{%- if g.board -%} 
-  <header class="long-title">
-{%- else -%}
-  <header>
-{%- endif -%}
+  <header {% if g.board %} class="long-title" {% endif %}>
   {% macro site_title() %}
     <div class="page-header">
       <h1><a href="{{ url_for('index') }}">

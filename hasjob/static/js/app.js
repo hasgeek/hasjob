@@ -188,7 +188,6 @@ $(function() {
     $(window).scroll(function(){
       if($(window).width() > 767){
         if ($(this).scrollTop() > scrollheight){
-          console.log("true",scrollheight);
           $(".header-section").slideUp();
         }
         else{
