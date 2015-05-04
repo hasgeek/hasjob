@@ -45,7 +45,10 @@ def event_form_validation_success(form):
 @form_validation_error.connect
 def event_form_validation_error(form):
     g.event_data['form_validation'] = 'error'
-    g.event_data['form_errors'] = form.errors  # Dict of field: [errors]. Hopefully serializes into JSON
+    if hasattr(form, 'errors_with_data'):
+        g.event_data['form_errors'] = form.errors_with_data()
+    else:
+        g.event_data['form_errors'] = form.errors  # Dict of field: [errors]
 
 
 @signal_user_looked_up.connect
