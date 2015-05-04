@@ -37,16 +37,20 @@
 {%- endblock %}
 
 {% block headerbox %}
-<header {%- if g.board -%} class="long-title" {%- endif -%}>
+{%- if g.board -%} 
+  <header class="long-title">
+{%- else -%}
+  <header>
+{%- endif -%}
   {% macro site_title() %}
     <div class="page-header">
       <h1><a href="{{ url_for('index') }}">
-        {%- if g.board -%}
-          {{ g.board.title }}
-            <small class="hidden-xs">{%- if g.board.caption -%} {{ g.board.caption }} {%- else -%} Powered by Hasjob {%- endif -%}</small>
-        {%- else -%}
-          Hasjob <small>The HasGeek Job Board</small>
-        {%- endif -%}
+      {%- if g.board -%}
+        {{ g.board.title }}
+          <small class="hidden-xs">{%- if g.board.caption -%} {{ g.board.caption }} {%- else -%} Powered by Hasjob {%- endif -%}</small>
+      {%- else -%}
+        Hasjob <small>The HasGeek Job Board</small>
+      {%- endif -%}
       </a></h1>
     </div>
     {%- if g.board -%}
