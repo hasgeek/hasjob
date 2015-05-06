@@ -192,6 +192,12 @@ $(function() {
   $("#hg-sitenav").on("hidden.bs.collapse", function(){
     $(".hg-site-nav-toggle").find("i").removeClass("fa-close").addClass("fa-search");
   });
+
+  //Add Cancel button for dropdown filter in mobile
+  $("#job-filters-cancel").click(function(event){
+    event.preventDefault();
+    $("#hg-sitenav").collapse("toggle");
+  });
   
   var scrollheight = $("nav").height() - $(".hg-site-nav").height();
   $(window).scroll(function(){
@@ -255,7 +261,6 @@ $(function() {
   });
 
   // set initial value for the currency radio button
-  //var presetCurrency = {{ request.args.get('currency')|tojson }} || 'NA';
   var presetCurrency = query['currency'] || 'NA';
   $.each($("input[type='radio'][name='currency']"), function(index, currencyRadio){
     if ($(currencyRadio).val() === presetCurrency) {
@@ -283,8 +288,6 @@ $(function() {
   };
 
   var paySlider = new Hasjob.PaySlider({
-    //start: {{ request.args.get('pmin')|tojson }} || 0,
-    //end: {{ request.args.get('pmax')|tojson }} || 10000000,
     start: query['pmin'] || 0,
     end: query['pmax'] || 10000000,
     selector: "#pay-slider",
@@ -368,4 +371,12 @@ $(function() {
     numberDisplayed: 1,
     buttonWidth: '100%'
   });
+});
+
+$(document).keydown(function(event) { 
+  if (event.keyCode==27 && $("#hg-sitenav").hasClass("in")){
+    $("#hg-sitenav").collapse("toggle");
+    event.preventDefault();
+    return false;
+  }
 });

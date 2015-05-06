@@ -96,11 +96,8 @@ header.long-title {
   padding-left: 10px;
 }
 .header-section .submit-btn {
-  text-align: center;
-  padding: 6px 0;
+  padding: 6px 10px;
   display: block;
-  width: 100%;
-  margin-top: -2px;
 }
 .header-section .submit-btn i {
   margin-right: 5px;
@@ -135,7 +132,14 @@ header.long-title {
 }
 
 .submit-filters {
+  margin: 1px 10px 5px 0;
+  padding-right: 0;
+  width: auto;
+}
+
+.cancel-filters {
   margin: 1px 0 5px;
+  padding: 0;
 }
 
 .pay-filter-dropdown {
@@ -231,6 +235,12 @@ header.long-title {
 
   .header-section {
     padding-bottom: 4px;
+  }
+  .header-section .submit-btn {
+    text-align: center;
+    padding: 6px 0;
+    width: 100%;
+    margin-top: -2px;
   }
 
   .filters {
