@@ -1,5 +1,15 @@
-#root #root_footer
-  height: 56px
+$footer-height: 100px
+$footer-height-tab: 80px
+$footer-height-desktop: 67px
+
+#root
+  margin-bottom: -$footer-height
+
+#root_footer
+  height: $footer-height - 10px
+
+footer
+  min-height: $footer-height - 10px
 
 footer .footer-inner
   background: #ebe7e4
@@ -7,3 +17,23 @@ footer .footer-inner
 
 footer .container
   padding-bottom: 0
+
+@media (min-width: 468px) and (max-width: 1199px)
+  #root
+    margin-bottom: -$footer-height-tab	
+  
+  #root_footer
+    height: $footer-height-tab - 10px
+
+  footer
+    min-height: $footer-height-tab - 10px
+
+@media (min-width: 1200px)
+  #root
+    margin-bottom: -$footer-height-desktop
+  
+  #root_footer
+    height: $footer-height-desktop - 10px
+
+  footer
+    min-height: $footer-height-desktop - 10px

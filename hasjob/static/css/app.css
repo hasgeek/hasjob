@@ -282,8 +282,16 @@ header.long-title {
     float: right;
   }
 }
-#root #root_footer {
-  height: 56px;
+#root {
+  margin-bottom: -100px;
+}
+
+#root_footer {
+  height: 90px;
+}
+
+footer {
+  min-height: 90px;
 }
 
 footer .footer-inner {
@@ -297,6 +305,32 @@ footer .container {
   padding-bottom: 0;
 }
 
+@media (min-width: 468px) and (max-width: 1199px) {
+  #root {
+    margin-bottom: -80px;
+  }
+
+  #root_footer {
+    height: 70px;
+  }
+
+  footer {
+    min-height: 70px;
+  }
+}
+@media (min-width: 1200px) {
+  #root {
+    margin-bottom: -67px;
+  }
+
+  #root_footer {
+    height: 57px;
+  }
+
+  footer {
+    min-height: 57px;
+  }
+}
 .flash, .guide {
   background: #fff;
   position: relative;
