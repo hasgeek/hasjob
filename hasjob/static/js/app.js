@@ -214,6 +214,7 @@ $(function() {
   $("#job-filters-cancel").click(function(event) {
     event.preventDefault();
     $("#hg-sitenav").collapse("toggle");
+    $('body').removeClass('nav-open');
   });
   
   var scrollheight = $("#hgnav").height() - $("#hg-sitenav").height();
@@ -380,6 +381,7 @@ $(document).keydown(function(event) {
   if (event.keyCode === 27 && $("#hg-sitenav").hasClass("in")) {
     event.preventDefault();
     $("#hg-sitenav").collapse("toggle");
+    $('body').removeClass('nav-open');
     return false;
   }
 });
