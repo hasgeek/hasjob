@@ -183,21 +183,21 @@ window.Hasjob.PaySlider.prototype.resetSlider = function(currency) {
   this.slider.Link('upper').to($(this.maxField));
 };
 
-window.Hasjob.queryParameters = function(url) {
-  var queryValues = {}, parameters;
+window.Hasjob.getPayQuery = function(url) {
+  var payQueryValues = {}, queryParameter;
   // check if query parameters are present
   if (url.indexOf('?') !== -1) {
     var queryString = url.slice(url.indexOf('?') + 1);
-    var filters = queryString.split('&');
-    for(var i = 0; i < filters.length; i++) {
-      parameters = filters[i].split('=');
-      //pmax and pmin is required to set the pay slider. 
-      if (parameters[0] == 'currency' || parameters[0] == 'pmin' || parameters[0] == 'pmax') {
-        queryValues[parameters[0]] = parameters[1];
+    var queries = queryString.split('&');
+    for(var i = 0; i < queries.length; i++) {
+      queryParameter = queries[i].split('=');
+      //store only pay queries (currency, pmin & pmax)
+      if (queryParameter[0] === 'currency' || queryParameter[0] === 'pmin' || queryParameter[0] === 'pmax') {
+        payQueryValues[queryParameter[0]] = queryParameter[1];
       }
     }
   }
-  return queryValues;
+  return payQueryValues;
 }
 
 $(function() {
@@ -261,10 +261,10 @@ $(function() {
   });
 
   // getting the query parameters (currency, pmax, pmin) to set the filters
-  query = window.Hasjob.queryParameters(window.location.href);
+  var payQuery = window.Hasjob.getPayQuery(window.location.href);
 
   // set initial value for the currency radio button
-  var presetCurrency = query['currency'] || 'NA';
+  var presetCurrency = payQuery['currency'] || 'NA';
   $.each($("input[type='radio'][name='currency']"), function(index, currencyRadio){
     if ($(currencyRadio).val() === presetCurrency) {
       $(currencyRadio).attr('checked', 'checked');
@@ -291,8 +291,8 @@ $(function() {
   };
 
   var paySlider = new Hasjob.PaySlider({
-    start: query['pmin'] || 0,
-    end: query['pmax'] || 10000000,
+    start: payQuery['pmin'] || 0,
+    end: payQuery['pmax'] || 10000000,
     selector: "#pay-slider",
     minField: '#job-filters-pmin',
     maxField: '#job-filters-pmax'
