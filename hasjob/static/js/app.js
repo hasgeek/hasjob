@@ -183,7 +183,7 @@ window.Hasjob.PaySlider.prototype.resetSlider = function(currency) {
   this.slider.Link('upper').to($(this.maxField));
 };
 
-window.Hasjob.QueryParameters = function(url){
+window.Hasjob.queryParameters = function(url){
   var queryValues = {}, parameters;
   // check if query parameters are present
   if (url.indexOf('?') !== -1){
@@ -262,7 +262,7 @@ $(function() {
   });
 
   // getting the query parameters (currency, pmax, pmin) to set the filters
-  query = window.Hasjob.QueryParameters(window.location.href);
+  query = window.Hasjob.queryParameters(window.location.href);
 
   // set initial value for the currency radio button
   var presetCurrency = query['currency'] || 'NA';
