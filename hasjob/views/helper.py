@@ -23,7 +23,7 @@ from ..models import (agelimit, newlimit, db, JobCategory, JobPost, JobType, POS
     JobViewSession, AnonUser, campaign_event_session_table, JobLocation, PAY_TYPE)
 from ..utils import scrubemail, redactemail, randbool
 
-    
+
 gif1x1 = 'R0lGODlhAQABAJAAAP8AAAAAACH5BAUQAAAALAAAAAABAAEAAAICBAEAOw=='.decode('base64')
 
 
