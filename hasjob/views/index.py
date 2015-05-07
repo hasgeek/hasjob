@@ -268,9 +268,6 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
                            header_campaign=header_campaign, loadmore=loadmore,
                            search_domains=search_domains,
                            is_siteadmin=lastuser.has_permission('siteadmin'),
-                           job_locations=filter_locations(),
-                           job_type_choices=JobType.name_title_pairs(g.board),
-                           job_category_choices=JobCategory.name_title_pairs(g.board),
                            pay_graph_data=pay_graph_data)
 
 

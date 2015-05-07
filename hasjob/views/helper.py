@@ -602,6 +602,6 @@ def usessl(url):
 
 
 @app.context_processor
-def for_filter_fields():
+def inject_filter_options():
     return dict(job_locations=filter_locations(), job_type_choices=JobType.name_title_pairs(g.board), job_category_choices=JobCategory.name_title_pairs(g.board))
 

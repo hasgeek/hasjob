@@ -1,5 +1,5 @@
 {% extends "baseframe.html" -%}
-{% from "baseframe/components.html" import hgnav with context %}
+{% from "baseframe/components.html" import hgnav %}
 {% from "macros.html" import campaign_header, campaign_script %}
 
 {% block doctypehtml -%}
@@ -125,13 +125,12 @@
             </div>
             <div class="submit-filters col-xs-4 col-sm-2 col-md-2">
               <button id='job-filters-submit' type="submit" class="btn btn-default submit-btn">
-                <span class="filter-text"><i class="fa fa-filter"></i>Filter</span>
-                <span class="search-text"><i class="fa fa-search"></i>Search</span>
-              </button>
+                {% if request.path == '/' %} <span><i class="fa fa-filter"></i>Filter</span>
+                {% else %} <span><i class="fa fa-search"></i>Search</span> {% endif %} </button>
             </div>
             <div class="cancel-filters col-xs-4 visible-xs">
               <button id='job-filters-cancel' class="btn btn-default submit-btn">
-                <span class="filter-text"><i class="fa fa-close"></i>Cancel</span>
+                <span><i class="fa fa-close"></i>Cancel</span>
               </button>
             </div>
           </div><!--eof row-->
