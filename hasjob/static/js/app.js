@@ -183,17 +183,16 @@ window.Hasjob.PaySlider.prototype.resetSlider = function(currency) {
   this.slider.Link('upper').to($(this.maxField));
 };
 
-window.Hasjob.queryParameters = function(url){
+window.Hasjob.queryParameters = function(url) {
   var queryValues = {}, parameters;
   // check if query parameters are present
-  if (url.indexOf('?') !== -1){
+  if (url.indexOf('?') !== -1) {
     var queryString = url.slice(url.indexOf('?') + 1);
     var filters = queryString.split('&');
-    for(var i = 0; i < filters.length; i++)
-    {
+    for(var i = 0; i < filters.length; i++) {
       parameters = filters[i].split('=');
       //pmax and pmin is required to set the pay slider. 
-      if (parameters[0] == 'currency' || parameters[0] == 'pmin' || parameters[0] == 'pmax'){
+      if (parameters[0] == 'currency' || parameters[0] == 'pmin' || parameters[0] == 'pmax') {
         queryValues[parameters[0]] = parameters[1];
       }
     }
@@ -204,23 +203,23 @@ window.Hasjob.queryParameters = function(url){
 $(function() {
   //Change site button to filter icon
   $(".hg-site-nav-toggle").find("i").removeClass("fa-bars").addClass("fa-search");
-  $("#hg-sitenav").on("shown.bs.collapse", function(){
+  $("#hg-sitenav").on("shown.bs.collapse", function() {
     $(".hg-site-nav-toggle").find("i").removeClass("fa-search").addClass("fa-close");
   });
-  $("#hg-sitenav").on("hidden.bs.collapse", function(){
+  $("#hg-sitenav").on("hidden.bs.collapse", function() {
     $(".hg-site-nav-toggle").find("i").removeClass("fa-close").addClass("fa-search");
   });
 
   //Add Cancel button for dropdown filter in mobile
-  $("#job-filters-cancel").click(function(event){
+  $("#job-filters-cancel").click(function(event) {
     event.preventDefault();
     $("#hg-sitenav").collapse("toggle");
   });
   
   var scrollheight = $("#hgnav").height() - $("#hg-sitenav").height();
-  $(window).scroll(function(){
-    if($(window).width() > 767){
-      if ($(this).scrollTop() > scrollheight){
+  $(window).scroll(function() {
+    if($(window).width() > 767) {
+      if ($(this).scrollTop() > scrollheight) {
         $(".header-section").slideUp();
       }
       else{
@@ -378,7 +377,7 @@ $(function() {
 });
 
 $(document).keydown(function(event) { 
-  if (event.keyCode === 27 && $("#hg-sitenav").hasClass("in")){
+  if (event.keyCode === 27 && $("#hg-sitenav").hasClass("in")) {
     event.preventDefault();
     $("#hg-sitenav").collapse("toggle");
     return false;
