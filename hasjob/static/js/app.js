@@ -183,22 +183,36 @@ window.Hasjob.PaySlider.prototype.resetSlider = function(currency) {
   this.slider.Link('upper').to($(this.maxField));
 };
 
-window.Hasjob.getPayQuery = function(url) {
-  var payQueryValues = {}, queryParameter;
+window.Hasjob.getQueryParameters = function(url) {
+  this.queryValues = {};
+  this.init(url);
+  this.getQueryValue = function(queryName) {
+    if (queryName in this.queryValues) {
+      return this.queryValues[queryName];
+    }
+    else {
+      return [];
+    } 
+  };
+};
+
+window.Hasjob.getQueryParameters.prototype.init = function(url) {
+  var queryParameter;
   // check if query parameters are present
   if (url.indexOf('?') !== -1) {
     var queryString = url.slice(url.indexOf('?') + 1);
     var queries = queryString.split('&');
     for(var i = 0; i < queries.length; i++) {
       queryParameter = queries[i].split('=');
-      //store only pay queries (currency, pmin & pmax)
-      if (queryParameter[0] === 'currency' || queryParameter[0] === 'pmin' || queryParameter[0] === 'pmax') {
-        payQueryValues[queryParameter[0]] = queryParameter[1];
+      if(queryParameter[0] in this.queryValues) {
+        this.queryValues[queryParameter[0]].push(queryParameter[1]);
+      }
+      else {
+        this.queryValues[queryParameter[0]] = [(queryParameter[1])];
       }
     }
   }
-  return payQueryValues;
-}
+};
 
 $(function() {
   //Change site button to filter icon
@@ -261,11 +275,11 @@ $(function() {
     setPayTextField();
   });
 
-  // getting the query parameters (currency, pmax, pmin) to set the filters
-  var payQuery = window.Hasjob.getPayQuery(window.location.href);
+  // get the query parameters from url to set the filters
+  var queryParameters = new Hasjob.getQueryParameters(window.location.href);
 
   // set initial value for the currency radio button
-  var presetCurrency = payQuery['currency'] || 'NA';
+  var presetCurrency = queryParameters.getQueryValue("currency").shift() || 'NA';
   $.each($("input[type='radio'][name='currency']"), function(index, currencyRadio){
     if ($(currencyRadio).val() === presetCurrency) {
       $(currencyRadio).attr('checked', 'checked');
@@ -292,8 +306,8 @@ $(function() {
   };
 
   var paySlider = new Hasjob.PaySlider({
-    start: payQuery['pmin'] || 0,
-    end: payQuery['pmax'] || 10000000,
+    start: queryParameters.getQueryValue("pmin").shift() || 0,
+    end: queryParameters.getQueryValue("pmax").shift() || 10000000,
     selector: "#pay-slider",
     minField: '#job-filters-pmin',
     maxField: '#job-filters-pmax'
@@ -382,6 +396,5 @@ $(document).keydown(function(event) {
     event.preventDefault();
     $("#hg-sitenav").collapse("toggle");
     $('body').removeClass('nav-open');
-    return false;
   }
 });
