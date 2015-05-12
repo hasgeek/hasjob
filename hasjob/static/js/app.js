@@ -212,15 +212,6 @@ $(function() {
     }
   });
 
-  //If Hasjob.PayFilterParameters is empty then assign default values
-  if (typeof window.Hasjob.PayFilterParameters === "undefined") {
-    window.Hasjob.PayFilterParameters = {
-      'currency': 'NA',
-      'pmin': 0,
-      'pmax': 10000000
-    };
-  }
-
   window.Hasjob.JobPost.handleGroupClick();
   $(".pstar").off().click(window.Hasjob.JobPost.handleStarClick);
 
@@ -252,6 +243,16 @@ $(function() {
   $('#job-filters-equity').on('change', function(){
     setPayTextField();
   });
+
+  /* Hasjob.PayFilterParameters are assigned request parameters in index.html.
+    If Hasjob.PayFilterParameters is empty then assign default values. */
+  if (typeof window.Hasjob.PayFilterParameters === "undefined") {
+    window.Hasjob.PayFilterParameters = {
+      'currency': 'NA',
+      'pmin': 0,
+      'pmax': 10000000
+    };
+  }
 
   // set initial value for the currency radio button
   var presetCurrency = window.Hasjob.PayFilterParameters.currency || 'NA';
