@@ -194,6 +194,13 @@
 {%- block footerscripts -%}
 {%- if not request.is_xhr -%}
 <script type="text/javascript">
+  //For setting the pay slider
+  window.Hasjob.PayFilterParameters = {
+    'currency': {{ request.args.get('currency') | tojson }},
+    'pmin': {{ request.args.get('pmin') | tojson }},
+    'pmax': {{ request.args.get('pmax') | tojson }}
+  };
+
   $(function() {
     $('textarea').autosize();
     $("#newpost_details").hide().removeClass('jshidden');

@@ -183,36 +183,6 @@ window.Hasjob.PaySlider.prototype.resetSlider = function(currency) {
   this.slider.Link('upper').to($(this.maxField));
 };
 
-window.Hasjob.getQueryParameters = function(url) {
-  var queryParameters = {};
-  // check if query parameters are present in the url
-  if (url.indexOf('?') !== -1) {
-    var queryString = url.slice(url.indexOf('?') + 1);
-    //split queryString into array of queries ("c=programming&currency=USD" -> ["c=programming"],["currency=USD"]")
-    var queries = queryString.split('&');
-    for(var i = 0; i < queries.length; i++) {
-      //split each queries into queryName and queryValue ("currency=USD" -> ["currency"]["USD"])  
-      var query = queries[i].split('=');
-      var queryName = query[0];
-      var queryValue = query[1];
-      if(queryName in queryParameters) {
-        if (queryParameters[queryName] instanceof Array) {
-          queryParameters[queryName].push(queryValue);
-        }
-        else {
-          //store previous queryValue into an array and push new queryValue to the array
-          queryParameters[queryName] = [queryParameters[queryValue]];
-          queryParameters[queryName].push(queryValue);
-        }
-      }
-      else {
-        queryParameters[queryName] = queryValue;
-      }
-    }
-  }
-  return queryParameters;
-};
-
 $(function() {
   //Change site button to filter icon
   $(".hg-site-nav-toggle").find("i").removeClass("fa-bars").addClass("fa-search");
@@ -241,6 +211,15 @@ $(function() {
       }
     }
   });
+
+  //If Hasjob.PayFilterParameters is empty then assign default values
+  if (typeof window.Hasjob.PayFilterParameters === "undefined") {
+    window.Hasjob.PayFilterParameters = {
+      'currency': 'NA',
+      'pmin': 0,
+      'pmax': 10000000
+    };
+  }
 
   window.Hasjob.JobPost.handleGroupClick();
   $(".pstar").off().click(window.Hasjob.JobPost.handleStarClick);
@@ -274,11 +253,8 @@ $(function() {
     setPayTextField();
   });
 
-  // get the query parameters from url to set the filters
-  var queryParameters = Hasjob.getQueryParameters(window.location.href);
-
   // set initial value for the currency radio button
-  var presetCurrency = queryParameters["currency"] || 'NA';
+  var presetCurrency = window.Hasjob.PayFilterParameters.currency || 'NA';
   $.each($("input[type='radio'][name='currency']"), function(index, currencyRadio){
     if ($(currencyRadio).val() === presetCurrency) {
       $(currencyRadio).attr('checked', 'checked');
@@ -305,8 +281,8 @@ $(function() {
   };
 
   var paySlider = new Hasjob.PaySlider({
-    start: queryParameters["pmin"] || 0,
-    end: queryParameters["pmax"] || 10000000,
+    start: window.Hasjob.PayFilterParameters.pmin || 0,
+    end: window.Hasjob.PayFilterParameters.pmax || 10000000,
     selector: "#pay-slider",
     minField: '#job-filters-pmin',
     maxField: '#job-filters-pmax'
