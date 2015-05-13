@@ -199,6 +199,15 @@ $(function() {
     $("#hg-sitenav").collapse("toggle");
     $('body').removeClass('nav-open');
   });
+
+  //On pressing ESC, close the filter dropdown if menu is open.
+  $(document).keydown(function(event) { 
+    if (event.keyCode === 27 && $("#hg-sitenav").hasClass("in")) {
+      event.preventDefault();
+      $("#hg-sitenav").collapse("toggle");
+      $('body').removeClass('nav-open');
+    }
+  });
   
   var scrollheight = $("#hgnav").height() - $("#hg-sitenav").height();
   $(window).scroll(function() {
@@ -244,18 +253,8 @@ $(function() {
     setPayTextField();
   });
 
-  /* Hasjob.PayFilterParameters are assigned request parameters in index.html.
-    If Hasjob.PayFilterParameters is empty then assign default values. */
-  if (typeof window.Hasjob.PayFilterParameters === "undefined") {
-    window.Hasjob.PayFilterParameters = {
-      'currency': 'NA',
-      'pmin': 0,
-      'pmax': 10000000
-    };
-  }
-
   // set initial value for the currency radio button
-  var presetCurrency = window.Hasjob.PayFilterParameters.currency || 'NA';
+  var presetCurrency = (Hasjob.PayFilterParameters && Hasjob.PayFilterParameters.currency) || 'NA';
   $.each($("input[type='radio'][name='currency']"), function(index, currencyRadio){
     if ($(currencyRadio).val() === presetCurrency) {
       $(currencyRadio).attr('checked', 'checked');
@@ -282,8 +281,8 @@ $(function() {
   };
 
   var paySlider = new Hasjob.PaySlider({
-    start: window.Hasjob.PayFilterParameters.pmin || 0,
-    end: window.Hasjob.PayFilterParameters.pmax || 10000000,
+    start: (Hasjob.PayFilterParameters && Hasjob.PayFilterParameters.pmin) || 0,
+    end: (Hasjob.PayFilterParameters && Hasjob.PayFilterParameters.pmax) || 10000000,
     selector: "#pay-slider",
     minField: '#job-filters-pmin',
     maxField: '#job-filters-pmax'
@@ -365,12 +364,4 @@ $(function() {
     numberDisplayed: 1,
     buttonWidth: '100%'
   });
-});
-
-$(document).keydown(function(event) { 
-  if (event.keyCode === 27 && $("#hg-sitenav").hasClass("in")) {
-    event.preventDefault();
-    $("#hg-sitenav").collapse("toggle");
-    $('body').removeClass('nav-open');
-  }
 });
