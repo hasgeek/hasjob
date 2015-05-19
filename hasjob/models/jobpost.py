@@ -461,6 +461,10 @@ class JobPost(BaseMixin, db.Model):
     def new_applications(self):
         return JobApplication.query.filter_by(jobpost=self, response=EMPLOYER_RESPONSE.NEW).count()
 
+    @property
+    def replied_applications(self):
+        return JobApplication.query.filter_by(jobpost=self, response=EMPLOYER_RESPONSE.REPLIED).count()
+
     def reports(self):
         if not self.flags:
             return []
