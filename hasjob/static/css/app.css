@@ -839,8 +839,7 @@ h1 small, h2 small, h3 small {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-  height: 1.2em;
-  text-transform: uppercase;
+  height: 1.5em;
 }
 .stickie .top-right {
   top: 0.1em;
@@ -853,13 +852,13 @@ h1 small, h2 small, h3 small {
 }
 .stickie .bottom-right {
   right: 0.5em;
-  bottom: 0.25em;
+  bottom: 0.1em;
   width: 75%;
   text-align: right;
 }
 .stickie .bottom-left {
   left: 0.5em;
-  bottom: 0.25em;
+  bottom: 0.1em;
 }
 .stickie .new {
   color: #df5e0e;
