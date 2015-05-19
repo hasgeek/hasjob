@@ -863,7 +863,6 @@ h1 small, h2 small, h3 small {
 }
 .stickie .new {
   color: #df5e0e;
-  text-transform: lowercase;
 }
 .stickie .pinned {
   text-indent: -10000px;
