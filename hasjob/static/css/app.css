@@ -1,7 +1,7 @@
 @charset "UTF-8";
 body {
   font-family: "Fira Sans", arial, sans-serif;
-  background: #e8e7e6 url('../img/canvas.jpg?1425290105');
+  background: #e8e7e6 url('../img/canvas.jpg?1400098749');
 }
 
 header {
@@ -64,7 +64,7 @@ header.long-title {
   overflow: hidden;
   text-align: left;
   text-transform: capitalize;
-  background-image: url('../img/logo-star.png?1425290105');
+  background-image: url('../img/logo-star.png?1424602497');
   background-repeat: no-repeat;
   background-position: 50% 50%;
   width: 170px;
@@ -272,7 +272,7 @@ header.long-title {
   line-height: 36px;
 }
 #search input[type="text"] {
-  background: white url('../img/search.png?1425290105') 4px center no-repeat;
+  background: white url('../img/search.png?1343882941') 4px center no-repeat;
   padding: 7px 10px 3px 20px;
 }
 #search .btn {
@@ -285,15 +285,15 @@ header.long-title {
   }
 }
 #root {
-  margin-bottom: -100px;
+  margin-bottom: -107px;
 }
 
 #root_footer {
-  height: 90px;
+  height: 97px;
 }
 
 footer {
-  min-height: 90px;
+  min-height: 97px;
 }
 
 footer .footer-inner {
@@ -309,15 +309,15 @@ footer .container {
 
 @media (min-width: 468px) and (max-width: 1199px) {
   #root {
-    margin-bottom: -80px;
+    margin-bottom: -86px;
   }
 
   #root_footer {
-    height: 70px;
+    height: 76px;
   }
 
   footer {
-    min-height: 70px;
+    min-height: 76px;
   }
 }
 @media (min-width: 1200px) {
