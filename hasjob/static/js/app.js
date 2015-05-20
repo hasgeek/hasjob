@@ -185,44 +185,44 @@ window.Hasjob.PaySlider.prototype.resetSlider = function(currency) {
 
 $(function() {
   //Change site button to filter icon
-  $(".hg-site-nav-toggle").find("i").removeClass("fa-bars").addClass("fa-search");
-  $("#hg-sitenav").on("shown.bs.collapse", function() {
-    $(".hg-site-nav-toggle").find("i").removeClass("fa-search").addClass("fa-close");
+  $('.hg-site-nav-toggle').find('i').removeClass('fa-bars').addClass('fa-search');
+  $('#hg-sitenav').on('shown.bs.collapse', function() {
+    $('.hg-site-nav-toggle').find('i').removeClass('fa-search').addClass('fa-close');
   });
-  $("#hg-sitenav").on("hidden.bs.collapse", function() {
-    $(".hg-site-nav-toggle").find("i").removeClass("fa-close").addClass("fa-search");
+  $('#hg-sitenav').on('hidden.bs.collapse', function() {
+    $('.hg-site-nav-toggle').find('i').removeClass('fa-close').addClass('fa-search');
   });
 
   //Add Cancel button for dropdown filter in mobile
-  $("#job-filters-cancel").click(function(event) {
+  $('#job-filters-cancel').click(function(event) {
     event.preventDefault();
-    $("#hg-sitenav").collapse("toggle");
+    $('#hg-sitenav').collapse('toggle');
     $('body').removeClass('nav-open');
   });
 
   //On pressing ESC, close the filter dropdown if menu is open.
   $(document).keydown(function(event) { 
-    if (event.keyCode === 27 && $("#hg-sitenav").hasClass("in")) {
+    if (event.keyCode === 27 && $('#hg-sitenav').hasClass('in')) {
       event.preventDefault();
-      $("#hg-sitenav").collapse("toggle");
+      $('#hg-sitenav').collapse('toggle');
       $('body').removeClass('nav-open');
     }
   });
   
-  var scrollheight = $("#hgnav").height() - $("#hg-sitenav").height();
+  var scrollheight = $('#hgnav').height() - $('#hg-sitenav').height();
   $(window).scroll(function() {
     if($(window).width() > 767) {
       if ($(this).scrollTop() > scrollheight) {
-        $(".header-section").slideUp();
+        $('.header-section').slideUp();
       }
       else{
-        $(".header-section").slideDown();
+        $('.header-section').slideDown();
       }
     }
   });
 
   window.Hasjob.JobPost.handleGroupClick();
-  $(".pstar").off().click(window.Hasjob.JobPost.handleStarClick);
+  $('.pstar').off().click(window.Hasjob.JobPost.handleStarClick);
 
   var getCurrencyVal = function() {
     return $("input[type='radio'][name='currency']:checked").val();
@@ -233,7 +233,7 @@ $(function() {
     var equityLabel = '';
     var payFieldLabel;
 
-    if ($('#job-filters-equity').is(":checked")) {
+    if ($('#job-filters-equity').is(':checked')) {
       equityLabel += ' + ' + '%';
     }
     if (getCurrencyVal().toLowerCase() === 'na'){
@@ -274,21 +274,21 @@ $(function() {
 
   var setPaySliderVisibility = function(){
     if (getCurrencyVal().toLowerCase() === 'na') {
-      $(".pay-filter-slider").slideUp();
+      $('.pay-filter-slider').slideUp();
     } else {
-      $(".pay-filter-slider").slideDown();
+      $('.pay-filter-slider').slideDown();
     }
   };
 
   var paySlider = new Hasjob.PaySlider({
     start: (Hasjob.PayFilterParameters && Hasjob.PayFilterParameters.pmin) || 0,
     end: (Hasjob.PayFilterParameters && Hasjob.PayFilterParameters.pmax) || 10000000,
-    selector: "#pay-slider",
+    selector: '#pay-slider',
     minField: '#job-filters-pmin',
     maxField: '#job-filters-pmax'
   });
 
-  $("#pay-slider").on('slide', function(){
+  $('#pay-slider').on('slide', function(){
     setPayTextField();
   });
 
@@ -297,7 +297,7 @@ $(function() {
   setPayTextField();
 
   //remove white spaces keyword input value
-  $("#job-filters-keywords").on("change",function(){
+  $('#job-filters-keywords').on('change',function(){
     $(this).val($(this).val().trim());
   });
 
@@ -336,7 +336,7 @@ $(function() {
     }
   });
   
-  $("#job-filters-location").multiselect({
+  $('#job-filters-location').multiselect({
     nonSelectedText: 'Location',
     numberDisplayed: 1,
     buttonWidth: '100%',
@@ -353,13 +353,13 @@ $(function() {
     $('#job-filter-location-search').val('');
   });
 
-  $("#job-filters-type").multiselect({
+  $('#job-filters-type').multiselect({
     nonSelectedText: 'Job Type',
     numberDisplayed: 1,
     buttonWidth: '100%'
   });
 
-  $("#job-filters-category").multiselect({
+  $('#job-filters-category').multiselect({
     nonSelectedText: 'Job Category',
     numberDisplayed: 1,
     buttonWidth: '100%'
