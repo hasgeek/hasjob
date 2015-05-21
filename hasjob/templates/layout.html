@@ -37,7 +37,7 @@
 {%- endblock %}
 
 {% block headerbox %}
-  <header {% if g.board.title|length > 10 %} class="long-title" {% endif %}>
+  <header {% if g.board and g.board.title|length > 10 %} class="long-title" {% endif %}>
   {% macro site_title() %}
     <div class="page-header">
       <h1><a href="{{ url_for('index') }}">
@@ -53,7 +53,7 @@
       {%- endif -%}
       </a></h1>
     </div>
-    {% if g.board.title|length > 10 %}
+    {% if g.board and g.board.title|length > 10 %}
       <div class="visible-xs">
         <h1><a href="{{ url_for('index') }}"><small>{%- if g.board.caption -%} {{ g.board.caption }} {%- else -%} Powered by Hasjob {%- endif -%}</small></a></h1>
       </div>
