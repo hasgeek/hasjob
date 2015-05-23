@@ -211,12 +211,15 @@ $(function() {
   
   var scrollheight = $('#hgnav').height() - $('#hg-sitenav').height();
   $(window).scroll(function() {
-    if($(window).width() > 767) {
-      if ($(this).scrollTop() > scrollheight) {
-        $('.header-section').slideUp();
-      }
-      else{
-        $('.header-section').slideDown();
+    // Auto-scroll only if a drop-down filter is not open
+    if (!$('.filters .btn-group').hasClass('open')) {
+      if($(window).width() > 767) {
+        if ($(this).scrollTop() > scrollheight) {
+          $('.header-section').slideUp();
+        }
+        else{
+          $('.header-section').slideDown();
+        }
       }
     }
   });
