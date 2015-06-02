@@ -351,6 +351,15 @@ $(function() {
     }
   });
 
+  $('.location-filter ul.dropdown-menu').mouseenter(function() {
+    //disable body scroll when mouse in on location dropdown
+    $('body').addClass('nav-open');
+  });
+
+  $('.location-filter ul.dropdown-menu').mouseleave(function() {
+    $('body').removeClass('nav-open');
+  });
+
   // clear location search on clicking the clear control
   $('.job-filter-location-search-clear').click(function(e){
     $('#job-filter-location-search').val('');
