@@ -1,5 +1,8 @@
 window.Hasjob = {};
 
+// config variables hashmap
+window.Hasjob.Config = {};
+
 window.Hasjob.JobPost = {
   handleStarClick: function (e) {
     var starlink = $(this);
@@ -349,15 +352,6 @@ $(function() {
       filter: '<li><div class="input-group input-group-sm"><div class="input-group-addon"><i class="fa fa-search"></i></div><input type="text" class="form-control" id="job-filter-location-search" placeholder="Search">',
       filterClearBtn: '<div class="input-group-addon job-filter-location-search-clear"><i class="fa fa-times"></i></div></div></li>'
     }
-  });
-
-  $('.location-filter ul.dropdown-menu').mouseenter(function() {
-    //disable body scroll when mouse in on location dropdown
-    $('body').addClass('nav-open');
-  });
-
-  $('.location-filter ul.dropdown-menu').mouseleave(function() {
-    $('body').removeClass('nav-open');
   });
 
   // clear location search on clicking the clear control
