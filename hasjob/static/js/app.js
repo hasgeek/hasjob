@@ -187,7 +187,7 @@ window.Hasjob.PaySlider.prototype.resetSlider = function(currency) {
 };
 
 $(function() {
-  var dropdownClosed = true;
+  var filterDropdownClosed = true;
 
   //Change site button to filter icon
   $('.hg-site-nav-toggle').find('i').removeClass('fa-bars').addClass('fa-search');
@@ -216,7 +216,7 @@ $(function() {
   
   var scrollheight = $('#hgnav').height() - $('#hg-sitenav').height();
   $(window).scroll(function() {
-    if($(window).width() > 767 && dropdownClosed) {
+    if($(window).width() > 767 && filterDropdownClosed) {
       if ($(this).scrollTop() > scrollheight) {
         $('.header-section').slideUp();
       }
@@ -353,10 +353,10 @@ $(function() {
     },
     onDropdownShow: function(event, ui) {
       // stop header filter rollup when dropdown is open
-      dropdownClosed = false;
+      filterDropdownClosed = false;
     },
     onDropdownHide: function(event, ui) {
-      dropdownClosed = true;
+      filterDropdownClosed = true;
     }
   });
 
@@ -371,10 +371,10 @@ $(function() {
     buttonWidth: '100%',
     onDropdownShow: function(event, ui) {
       // stop header filter rollup when dropdown is open
-      dropdownClosed = false;
+      filterDropdownClosed = false;
     },
     onDropdownHide: function(event, ui) {
-      dropdownClosed = true;
+      filterDropdownClosed = true;
     }
   });
 
@@ -384,17 +384,17 @@ $(function() {
     buttonWidth: '100%',
     onDropdownShow: function(event, ui) {
       // stop header filter rollup when dropdown is open
-      dropdownClosed = false;
+      filterDropdownClosed = false;
     },
     onDropdownHide: function(event, ui) {
-      dropdownClosed = true;
+      filterDropdownClosed = true;
     }
   });
   $('#job-filters-pay').on('shown.bs.dropdown', function() {
     // stop header filter rollup when dropdown is open
-    dropdownClosed = false;
+    filterDropdownClosed = false;
   });
   $('#job-filters-pay').on('hidden.bs.dropdown', function() {
-    dropdownClosed = true;
+    filterDropdownClosed = true;
   });
 });
