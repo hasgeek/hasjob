@@ -1,5 +1,8 @@
 window.Hasjob = {};
 
+// config variables hashmap
+window.Hasjob.Config = {};
+
 window.Hasjob.JobPost = {
   handleStarClick: function (e) {
     var starlink = $(this);
@@ -184,6 +187,8 @@ window.Hasjob.PaySlider.prototype.resetSlider = function(currency) {
 };
 
 $(function() {
+  var filterDropdownClosed = true;
+
   //Change site button to filter icon
   $('.hg-site-nav-toggle').find('i').removeClass('fa-bars').addClass('fa-search');
   $('#hg-sitenav').on('shown.bs.collapse', function() {
@@ -211,7 +216,7 @@ $(function() {
   
   var scrollheight = $('#hgnav').height() - $('#hg-sitenav').height();
   $(window).scroll(function() {
-    if($(window).width() > 767) {
+    if($(window).width() > 767 && filterDropdownClosed) {
       if ($(this).scrollTop() > scrollheight) {
         $('.header-section').slideUp();
       }
@@ -345,6 +350,13 @@ $(function() {
     templates: {
       filter: '<li><div class="input-group input-group-sm"><div class="input-group-addon"><i class="fa fa-search"></i></div><input type="text" class="form-control" id="job-filter-location-search" placeholder="Search">',
       filterClearBtn: '<div class="input-group-addon job-filter-location-search-clear"><i class="fa fa-times"></i></div></div></li>'
+    },
+    onDropdownShow: function(event, ui) {
+      // stop header filter rollup when dropdown is open
+      filterDropdownClosed = false;
+    },
+    onDropdownHide: function(event, ui) {
+      filterDropdownClosed = true;
     }
   });
 
@@ -356,12 +368,33 @@ $(function() {
   $('#job-filters-type').multiselect({
     nonSelectedText: 'Job Type',
     numberDisplayed: 1,
-    buttonWidth: '100%'
+    buttonWidth: '100%',
+    onDropdownShow: function(event, ui) {
+      // stop header filter rollup when dropdown is open
+      filterDropdownClosed = false;
+    },
+    onDropdownHide: function(event, ui) {
+      filterDropdownClosed = true;
+    }
   });
 
   $('#job-filters-category').multiselect({
     nonSelectedText: 'Job Category',
     numberDisplayed: 1,
-    buttonWidth: '100%'
+    buttonWidth: '100%',
+    onDropdownShow: function(event, ui) {
+      // stop header filter rollup when dropdown is open
+      filterDropdownClosed = false;
+    },
+    onDropdownHide: function(event, ui) {
+      filterDropdownClosed = true;
+    }
+  });
+  $('#job-filters-pay').on('shown.bs.dropdown', function() {
+    // stop header filter rollup when dropdown is open
+    filterDropdownClosed = false;
+  });
+  $('#job-filters-pay').on('hidden.bs.dropdown', function() {
+    filterDropdownClosed = true;
   });
 });

@@ -63,7 +63,7 @@
     <div class="header-section" id="filter-dropdown">
       <form id="job-filters" action="{{ url_for('search') }}" role="form">
          <div class="row">
-            <div class="filters filters-col1 col-xs-12 col-sm-4 col-md-3">
+            <div class="filters filters-col1 location-filter col-xs-12 col-sm-4 col-md-3">
               <select id="job-filters-location" name="l" multiple="multiple" class="job-filters-select2 notselect hidden" placeholder="Location">
                 <option value="anywhere" id='job-filters-remote-check' {% if 'anywhere' in request.args.getlist('l') %} selected="selected" {% endif %}>Anywhere/Remote</option>
                 {%- for location in job_locations -%}
