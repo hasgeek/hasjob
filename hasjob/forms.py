@@ -212,7 +212,7 @@ class ListingForm(forms.Form):
             raise forms.ValidationError(u"Come on, write your own headline. You aren’t just another run-of-the-mill employer, right?")
         caps = len(CAPS_RE.findall(field.data))
         small = len(SMALL_RE.findall(field.data))
-        if small == 0 or caps / float(small) > 0.5:
+        if small == 0 or caps / float(small) > 1.0:
             raise forms.ValidationError("No shouting, please. Reduce the number of capital letters in your headline")
         for word_list, message in app.config.get('BANNED_WORDS', []):
             for word in word_list:
