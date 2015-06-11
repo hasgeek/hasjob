@@ -8,7 +8,7 @@ Flask-RQ
 Flask-Testing
 Flask-Redis
 Pillow
-SQLAlchemy
+SQLAlchemy>=1.0.0
 pytz
 markdown
 tweepy
