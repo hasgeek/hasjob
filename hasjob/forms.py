@@ -73,11 +73,13 @@ class ListingForm(forms.Form):
         description=Markup("A single-line summary. This goes to the front page and across the network. "
             """<a id="abtest" class="no-jshidden" href="#">A/B test it?</a>"""),
         validators=[forms.validators.DataRequired("A headline is required"),
+            forms.validators.StripWhitespace(),
             forms.validators.Length(min=1, max=100, message="%(max)d characters maximum"),
             forms.validators.NoObfuscatedEmail(u"Do not include contact information in the post")])
     job_headlineb = forms.NullTextField("Headline B",
         description=u"An alternate headline that will be shown to 50% of users. You’ll get a count of views per headline",
         validators=[forms.validators.Optional(),
+            forms.validators.StripWhitespace(),
             forms.validators.Length(min=1, max=100, message="%(max)d characters maximum"),
             forms.validators.NoObfuscatedEmail(u"Do not include contact information in the post")])
     job_type = forms.RadioField("Type", coerce=int, validators=[forms.validators.InputRequired("The job type must be specified")])
@@ -85,6 +87,7 @@ class ListingForm(forms.Form):
     job_location = forms.StringField("Location",
         description=u'“Bangalore”, “Chennai”, “Pune”, etc or “Anywhere” (without quotes)',
         validators=[forms.validators.DataRequired(u"If this job doesn’t have a fixed location, use “Anywhere”"),
+            forms.validators.StripWhitespace(),
             forms.validators.Length(min=3, max=80, message="%(max)d characters maximum")])
     job_relocation_assist = forms.BooleanField("Relocation assistance available")
     job_description = forms.TinyMce4Field("Description",
@@ -123,6 +126,7 @@ class ListingForm(forms.Form):
                     u"yet. We do not accept posts from third parties such as recruitment consultants. Such posts "
                     u"may be removed without notice",
         validators=[forms.validators.DataRequired(u"This is required. Posting any name other than that of the actual organization is a violation of the ToS"),
+            forms.validators.StripWhitespace(),
             forms.validators.Length(min=4, max=80, message="The name must be within %(min)d to %(max)d characters")])
     company_logo = forms.FileField("Logo",
         description=u"Optional — Your organization’s logo will appear at the top of your post.",
@@ -130,7 +134,7 @@ class ListingForm(forms.Form):
     company_logo_remove = forms.BooleanField("Remove existing logo")
     company_url = forms.URLField("URL",
         description=u"Your organization’s website",
-        validators=[forms.validators.DataRequired(), optional_url,
+        validators=[forms.validators.DataRequired(), forms.validators.StripWhitespace(), optional_url,
             forms.validators.Length(max=255, message="%(max)d characters maximum"), forms.validators.ValidUrl()])
     hr_contact = forms.RadioField(u"Is it okay for recruiters and other "
         u"intermediaries to contact you about this post?", coerce=getbool,
@@ -148,6 +152,7 @@ class ListingForm(forms.Form):
                     u"so use a work email address. "
                     u"Your email address will not be revealed to applicants until you respond"),
         validators=[forms.validators.DataRequired("We need to confirm your email address before the job can be listed"),
+            forms.validators.StripWhitespace(),
             forms.validators.Length(min=5, max=80, message="%(max)d characters maximum"),
             forms.validators.ValidEmail("This does not appear to be a valid email address")])
     twitter = forms.AnnotatedNullTextField("Twitter",
@@ -155,6 +160,7 @@ class ListingForm(forms.Form):
             u"We’ll tweet mentioning you so you get included on replies"),
         prefix='@', validators=[
             forms.validators.Optional(),
+            forms.validators.StripWhitespace(),
             forms.validators.Length(min=0, max=15, message=u"Twitter accounts can’t be over %(max)d characters long")])
     collaborators = forms.UserSelectMultiField(u"Collaborators",
         description=u"If someone is helping you evaluate candidates, type their names here. "
@@ -206,7 +212,7 @@ class ListingForm(forms.Form):
             raise forms.ValidationError(u"Come on, write your own headline. You aren’t just another run-of-the-mill employer, right?")
         caps = len(CAPS_RE.findall(field.data))
         small = len(SMALL_RE.findall(field.data))
-        if small == 0 or caps / float(small) > 0.5:
+        if small == 0 or caps / float(small) > 1.0:
             raise forms.ValidationError("No shouting, please. Reduce the number of capital letters in your headline")
         for word_list, message in app.config.get('BANNED_WORDS', []):
             for word in word_list:
@@ -354,6 +360,7 @@ class ApplicationForm(forms.Form):
         description="Add new email addresses from your profile")
     apply_phone = forms.StringField("Phone",
         validators=[forms.validators.DataRequired("Specify a phone number"),
+            forms.validators.StripWhitespace(),
             forms.validators.Length(min=1, max=15, message="%(max)d characters maximum")],
         description="A phone number the employer can reach you at")
     apply_message = forms.TinyMce4Field("Job application",
@@ -493,7 +500,9 @@ class BoardOptionsForm(forms.Form):
             u"Pay data is used to match candidates to jobs. We recommend you collect it")
     newjob_headline = forms.NullTextField(u"Headline",
         description=u"The sample headline shown to employers when post a job",
-        validators=[forms.validators.Length(min=0, max=100, message="%(max)d characters maximum")])
+        validators=[
+            forms.validators.StripWhitespace(),
+            forms.validators.Length(min=0, max=100, message="%(max)d characters maximum")])
     newjob_blurb = forms.TinyMce4Field(u"Posting instructions",
         description=u"What should we tell employers when they post a job on your board? "
             u"Leave blank to use the default text",
@@ -549,9 +558,11 @@ class BoardForm(forms.Form):
     """
     title = forms.StringField(u"Title", validators=[
         forms.validators.DataRequired("The board needs a name"),
+        forms.validators.StripWhitespace(),
         forms.validators.Length(min=1, max=80, message="%(max)d characters maximum")])
     caption = forms.NullTextField(u"Caption", validators=[
         forms.validators.Optional(),
+        forms.validators.StripWhitespace(),
         forms.validators.Length(min=0, max=80, message="%(max)d characters maximum")],
         description=u"The title and caption appear at the top of the page. Keep them concise")
     name = forms.AnnotatedTextField(u"URL Name", prefix='https://', suffix=u'.hasjob.co',
@@ -585,7 +596,7 @@ class BoardForm(forms.Form):
 
 class CampaignContentForm(forms.Form):
     subject = forms.NullTextField(__("Subject"), description=__("A subject title shown to viewers"),
-        validators=[forms.validators.Optional()])
+        validators=[forms.validators.Optional(), forms.validators.StripWhitespace()])
     blurb = forms.TinyMce4Field(__("Blurb"),
         description=__("Teaser to introduce the campaign and convince users to interact"),
         content_css=content_css,
@@ -601,7 +612,8 @@ class CampaignContentForm(forms.Form):
 
 
 class CampaignForm(forms.Form):
-    title = forms.StringField(__("Title"), description=__("A reference name for looking up this campaign again"))
+    title = forms.StringField(__("Title"), description=__("A reference name for looking up this campaign again"),
+        validators=[forms.validators.DataRequired(__("A title is required")), forms.validators.StripWhitespace()])
     start_at = forms.DateTimeField(__("Start at"), timezone=lambda: g.user.timezone if g.user else None)
     end_at = forms.DateTimeField(__("End at"), timezone=lambda: g.user.timezone if g.user else None)
     public = forms.BooleanField(__("This campaign is live"))
@@ -633,7 +645,7 @@ class CampaignForm(forms.Form):
 
 class CampaignActionForm(forms.Form):
     title = forms.StringField(__("Title"), description=__("Contents of the call to action button"),
-        validators=[forms.validators.DataRequired("You must provide some text")])
+        validators=[forms.validators.DataRequired("You must provide some text"), forms.validators.StripWhitespace()])
     icon = forms.NullTextField(__("Icon"), validators=[forms.validators.Optional()],
         description=__("Optional Font-Awesome icon name"))
     public = forms.BooleanField(__("This action is live"))
@@ -654,7 +666,11 @@ class CampaignActionForm(forms.Form):
         content_css=content_css,
         validators=[forms.validators.Optional(), forms.validators.AllUrlsValid()])
     link = forms.URLField(__("Link"), description=__(u"URL to redirect to, if type is “follow link”"),
-        validators=[optional_url, forms.validators.Length(min=0, max=250, message="%(max)d characters maximum"), forms.validators.ValidUrl()])
+        validators=[
+            forms.validators.StripWhitespace(),
+            optional_url,
+            forms.validators.Length(min=0, max=250, message="%(max)d characters maximum"),
+            forms.validators.ValidUrl()])
     form = forms.TextAreaField(__("Form JSON"), description=__("Form definition (for form type)"),
         validators=[forms.validators.Optional()])
     seq = forms.IntegerField(__("Sequence #"), validators=[forms.validators.DataRequired(__("This is required"))],
@@ -662,7 +678,8 @@ class CampaignActionForm(forms.Form):
 
 
 class DomainForm(forms.Form):
-    title = forms.StringField(__(u"Common name"), validators=[forms.validators.DataRequired()],
+    title = forms.StringField(__(u"Common name"),
+        validators=[forms.validators.DataRequired(), forms.validators.StripWhitespace()],
         description=__("The name of your organization, excluding legal suffixes like Pvt Ltd"))
     legal_title = forms.NullTextField(__("Legal name"), validators=[forms.validators.Optional()],
         description=__(u"Optional — The full legal name of your organization"))

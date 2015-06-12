@@ -68,7 +68,7 @@ class EventSessionBase(object):
     def new_from_request(cls, request):
         instance = cls()
         instance.created_at = datetime.utcnow()
-        instance.referrer = request.referrer
+        instance.referrer = request.referrer[:2083] if request.referrer else None
         instance.utm_source = request.args.get('utm_source', '')[:250] or None
         instance.utm_medium = request.args.get('utm_medium', '')[:250] or None
         instance.utm_term = request.args.get('utm_term', '')[:250] or None

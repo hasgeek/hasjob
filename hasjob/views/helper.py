@@ -45,7 +45,10 @@ def event_form_validation_success(form):
 @form_validation_error.connect
 def event_form_validation_error(form):
     g.event_data['form_validation'] = 'error'
-    g.event_data['form_errors'] = form.errors  # Dict of field: [errors]. Hopefully serializes into JSON
+    if hasattr(form, 'errors_with_data'):
+        g.event_data['form_errors'] = form.errors_with_data()
+    else:
+        g.event_data['form_errors'] = form.errors  # Dict of field: [errors]
 
 
 @signal_user_looked_up.connect
@@ -596,3 +599,9 @@ def usessl(url):
     if url.startswith('http:'):  # http://www.example.com
         url = 'https:' + url[5:]
     return url
+
+
+@app.context_processor
+def inject_filter_options():
+    return dict(job_locations=filter_locations(), job_type_choices=JobType.name_title_pairs(g.board), job_category_choices=JobCategory.name_title_pairs(g.board))
+

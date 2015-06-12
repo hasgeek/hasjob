@@ -5,17 +5,12 @@ body {
 }
 
 header {
-  padding-top: 50px;
   margin-bottom: 0;
-  background: #ebe7e4;
-  border-bottom: none;
-  -moz-box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
-  -webkit-box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
-  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
+  min-height: 36px;
 }
 header h1 {
   color: #df5e0e;
-  font-size: 30px;
+  font-size: 16px;
   margin-top: 10px;
   margin-bottom: 10px;
 }
@@ -33,11 +28,31 @@ header h1 a, header h1 a:hover, header h1 a:focus, header h1 a:active, header h1
 header h1 a:hover, header h1 a:focus, header h1 a:active {
   background-image: linear-gradient(to top, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0) 12%, #f0a40c 12%, #f0a40c 23%, rgba(0, 0, 0, 0) 23%);
 }
+header #hgnav {
+  background: #ebe7e4;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  -moz-box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
+  -webkit-box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
+}
+header #hgnav h1 {
+  margin: 0;
+}
+header #hgnav .hg-site-nav {
+  position: fixed;
+  top: 35px;
+  bottom: 0;
+  left: 0;
+  margin: 0;
+  max-height: 100%;
+  background: #ebe7e4;
+}
+header #hgnav .fa {
+  width: 14px;
+}
 
-.header-section {
-  -moz-box-shadow: inset 0 2px 5px -2px rgba(0, 0, 0, 0.1);
-  -webkit-box-shadow: inset 0 2px 5px -2px rgba(0, 0, 0, 0.1);
-  box-shadow: inset 0 2px 5px -2px rgba(0, 0, 0, 0.1);
+header.long-title {
+  min-height: 72px;
 }
 
 #page-header {
@@ -56,34 +71,6 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
   height: 170px;
 }
 
-#hg-networkbar.navbar .navbar-brand {
-  padding: 0;
-  display: block;
-  text-indent: -119988px;
-  overflow: hidden;
-  text-align: left;
-  text-transform: capitalize;
-  background-image: url('../img/logo-star.png?1425290105');
-  background-repeat: no-repeat;
-  background-position: 50% 50%;
-  width: 170px;
-  height: 170px;
-  height: 48px;
-  background-position: left center;
-  background-size: auto 100%;
-  background-repeat: none;
-  text-indent: -1000px;
-}
-
-@media screen and (min-width: 768px) {
-  header {
-    padding-top: 0;
-    margin-bottom: 12px;
-  }
-  header h1 small {
-    display: inline;
-  }
-}
 .header-section {
   padding: 10px 0 5px;
 }
@@ -109,10 +96,10 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
   padding-left: 10px;
 }
 .header-section .submit-btn {
-  text-align: center;
-  padding: 6px 11px;
+  padding: 6px 10px;
+  display: block;
 }
-.header-section .submit-btn .fa-filter {
+.header-section .submit-btn i {
   margin-right: 5px;
 }
 .header-section .filter-select {
@@ -133,6 +120,7 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
   overflow: auto;
   width: 100%;
   padding: 5px 0;
+  left: 0;
 }
 .header-section .multiselect-container label.checkbox, .header-section .multiselect-container label.radio {
   padding: 5px 0 5px 30px;
@@ -142,15 +130,26 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
 .filters {
   margin-bottom: 5px;
 }
+.filters ul.dropdown-menu {
+  max-height: 68vh;
+}
 
 .submit-filters {
+  margin: 1px 10px 5px 0;
+  padding-right: 0;
+  width: auto;
+}
+
+.cancel-filters {
   margin: 1px 0 5px;
+  padding: 0;
 }
 
 .pay-filter-dropdown {
   width: 100%;
   padding: 5px 0;
   margin-top: 0;
+  left: 0;
 }
 .pay-filter-dropdown li {
   padding: 5px 10px;
@@ -187,12 +186,39 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
 }
 
 @media (min-width: 768px) {
+  header {
+    margin-bottom: 110px;
+  }
+  header h1 {
+    font-size: 25px;
+  }
+  header h1 small {
+    display: inline;
+  }
+  header #hgnav .hg-site-nav {
+    clear: both;
+    margin: 0;
+    position: relative;
+    top: 0;
+    width: 100%;
+    max-height: auto;
+  }
+  header #hgnav .hg-site-nav-toggle {
+    display: none;
+  }
+
+  header.long-title {
+    min-height: 36px;
+  }
+
   .header-section ul.multiselect-container {
     width: 20em;
   }
 
-  .pay-filter-dropdown {
+  .header-section .pay-filter-dropdown {
     width: 135%;
+    left: 0;
+    right: auto;
   }
 }
 @media (min-width: 768px) and (max-width: 991px) {
@@ -202,14 +228,24 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
   }
 }
 @media (min-width: 992px) and (max-width: 1199px) {
-  .pay-filter-dropdown {
+  .header-section .pay-filter-dropdown {
     right: 0;
     left: auto;
   }
 }
 @media (min-width: 1200px) {
+  header {
+    margin-bottom: 70px;
+  }
+
   .header-section {
     padding-bottom: 4px;
+  }
+  .header-section .submit-btn {
+    text-align: center;
+    padding: 6px 0;
+    width: 100%;
+    margin-top: -2px;
   }
 
   .filters {
@@ -222,7 +258,7 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
   }
 
   .submit-filters {
-    width: 6.5%;
+    width: 6.2%;
     padding: 0;
   }
 }
@@ -251,8 +287,16 @@ header h1 a:hover, header h1 a:focus, header h1 a:active {
     float: right;
   }
 }
-#root #root_footer {
-  height: 56px;
+#root {
+  margin-bottom: -107px;
+}
+
+#root_footer {
+  height: 97px;
+}
+
+footer {
+  min-height: 97px;
 }
 
 footer .footer-inner {
@@ -266,6 +310,32 @@ footer .container {
   padding-bottom: 0;
 }
 
+@media (min-width: 468px) and (max-width: 1199px) {
+  #root {
+    margin-bottom: -86px;
+  }
+
+  #root_footer {
+    height: 76px;
+  }
+
+  footer {
+    min-height: 76px;
+  }
+}
+@media (min-width: 1200px) {
+  #root {
+    margin-bottom: -67px;
+  }
+
+  #root_footer {
+    height: 57px;
+  }
+
+  footer {
+    min-height: 57px;
+  }
+}
 .flash, .guide {
   background: #fff;
   position: relative;
@@ -764,15 +834,15 @@ h1 small, h2 small, h3 small {
   display: block;
 }
 .stickie .annotation {
-  font-size: 90%;
+  font-size: 75%;
   display: block;
   position: absolute;
   color: #816894;
-  font-family: "Walter Turncoat", sans-serif;
+  font-family: "McLaren", sans-serif;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-  height: 1.2em;
+  height: 1.5em;
 }
 .stickie .top-right {
   top: 0.1em;
@@ -785,18 +855,16 @@ h1 small, h2 small, h3 small {
 }
 .stickie .bottom-right {
   right: 0.5em;
-  bottom: 0.25em;
+  bottom: 0.1em;
   width: 75%;
   text-align: right;
 }
 .stickie .bottom-left {
   left: 0.5em;
-  bottom: 0.25em;
+  bottom: 0.1em;
 }
 .stickie .new {
   color: #df5e0e;
-  font-family: "Walter Turncoat", sans-serif;
-  text-transform: lowercase;
 }
 .stickie .pinned {
   text-indent: -10000px;
@@ -1119,7 +1187,7 @@ h1 small, h2 small, h3 small {
 }
 
 #i40x-message {
-  font-family: 'Walter Turncoat', sans-serif;
+  font-family: "McLaren", sans-serif;
   color: #816894;
 }
 

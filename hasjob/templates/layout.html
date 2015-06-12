@@ -1,5 +1,5 @@
 {% extends "baseframe.html" -%}
-{% from "baseframe/components.html" import responsive_networkbar with context %}
+{% from "baseframe/components.html" import hgnav %}
 {% from "macros.html" import campaign_header, campaign_script %}
 
 {% block doctypehtml -%}
@@ -24,7 +24,7 @@
 {%- endblock %}
 
 {%- block layoutheaders %}
-  <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Walter+Turncoat|McLaren" />
+  <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=McLaren" />
   <link rel="stylesheet" type="text/css" href="//code.cdn.mozilla.net/fonts/fira.css">
   <!-- Feed and search -->
   <link rel="alternate" type="application/atom+xml" title="All jobs – {% if g.board -%} {{ g.board.title }} {%- else -%} {{ config['SITE_TITLE'] }} {%- endif %}" href="{{ url_for('feed') }}" />
@@ -36,32 +36,121 @@
   {%- endblock %}
 {%- endblock %}
 
-{% block headerbox -%}
-<header>
-  {% block networkbar -%}
-    {% if not g.kiosk %}
-      {% with links = [] %}
-        {%- if g.user and g.user.flags.has_jobpost_unconfirmed_month %}
-          {% set links = links + [{'title': "Drafts", 'url': url_for('browse_drafts')}] %}
-        {%- endif %}
-        {{ responsive_networkbar(siteid=config['SITE_ID'], login=true, links=links) }}
-      {% endwith %}
-    {%- endif %}
-  {%- endblock %}
-  <div class="container">
-    <h1><a href="{{ url_for('index') }}">
+{% block headerbox %}
+  <header {% if g.board and g.board.title|length > 10 %} class="long-title" {% endif %}>
+  {% macro site_title() %}
+    <div class="page-header">
+      <h1><a href="{{ url_for('index') }}">
       {%- if g.board -%}
-        {{ g.board.title }} <small>
-          {%- if g.board.caption -%} {{ g.board.caption }} {%- else -%} Powered by Hasjob {%- endif -%}
-        </small>
+        {{ g.board.title }}
+        {% if g.board.title|length > 10 %}
+          <small class="hidden-xs">{%- if g.board.caption -%} {{ g.board.caption }} {%- else -%} Powered by Hasjob {%- endif -%}</small>
+        {% else %}
+          <small>{%- if g.board.caption -%} {{ g.board.caption }} {%- else -%} Powered by Hasjob {%- endif -%}</small>
+        {% endif %}
       {%- else -%}
         Hasjob <small>The HasGeek Job Board</small>
       {%- endif -%}
-    </a></h1>
-  </div>
-  {% block filters %}{% endblock %}
+      </a></h1>
+    </div>
+    {% if g.board and g.board.title|length > 10 %}
+      <div class="visible-xs">
+        <h1><a href="{{ url_for('index') }}"><small>{%- if g.board.caption -%} {{ g.board.caption }} {%- else -%} Powered by Hasjob {%- endif -%}</small></a></h1>
+      </div>
+    {% endif %}
+  {% endmacro %}
+  {% macro site_nav() %}
+    <div class="header-section" id="filter-dropdown">
+      <form id="job-filters" action="{{ url_for('search') }}" role="form">
+         <div class="row">
+            <div class="filters filters-col1 location-filter col-xs-12 col-sm-4 col-md-3">
+              <select id="job-filters-location" name="l" multiple="multiple" class="job-filters-select2 notselect hidden" placeholder="Location">
+                <option value="anywhere" id='job-filters-remote-check' {% if 'anywhere' in request.args.getlist('l') %} selected="selected" {% endif %}>Anywhere/Remote</option>
+                {%- for location in job_locations -%}
+                  <option value="{{ location[0] }}" {% if location[0]|string in request.args.getlist('l') %} selected="selected" {% endif %}>{{ location[1] }}</option>
+                {%- endfor -%}
+              </select>
+            </div>
+            <div class="filters col-xs-12 col-sm-4 col-md-3">
+              <select id="job-filters-type" name="t" multiple="multiple" class="job-filters-select2 notselect hidden" placeholder="Job Type">
+                {%- for job_type in job_type_choices -%}
+                  <option value="{{ job_type[0] }}" {% if job_type[0]|string in request.args.getlist('t') %} selected="selected" {% endif %}>{{ job_type[1] }}</option>
+                {%- endfor -%}
+              </select>
+            </div>
+            <div class="filters col-xs-12 col-sm-4 col-md-3 category-filter">
+              <select id="job-filters-category" name="c" multiple="multiple" class="job-filters-select2 notselect hidden" placeholder="Job Category">
+                {%- for job_category in job_category_choices -%}
+                  <option value="{{ job_category[0] }}" {% if job_category[0]|string in request.args.getlist('c') %} selected="selected" {% endif %}>{{ job_category[1] }}</option>
+                {%- endfor -%}
+              </select>
+            </div>
+            <div class="filters dropdown col-xs-12 col-sm-4 col-md-3">
+              <div id="job-filters-pay" class="btn-group btn-block no-jshidden">
+                <button type="button" class="btn btn-default dropdown-toggle btn-block" data-toggle="dropdown" aria-expanded="false">
+                  <span id="job-filters-pay-text" class="pay-field"></span>
+                  <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu pay-filter-dropdown" role="menu" aria-labelledby="job-filters-pay">
+                  <li class="clearfix">
+                    <div class="currency-checkbox">
+                      <input type="radio" id="job-filters-na" name="currency" value="NA"></input>
+                      <label for="job-filters-na">Any</label>
+                    </div>
+                    <div class="currency-checkbox">
+                      <input type="radio" id="job-filters-inr" name="currency" value="INR"></input>
+                      <label for="job-filters-inr">INR</label>
+                    </div>
+                    <div class="currency-checkbox">
+                      <input type="radio" id="job-filters-usd" name="currency" value="USD"></input>
+                      <label for="job-filters-usd">USD</label>
+                    </div>
+                    <div class="currency-checkbox">
+                      <input type="radio" id="job-filters-eur" name="currency" value="EUR"></input>
+                      <label for="job-filters-eur">EUR</label>
+                    </div>
+                  </li>
+                  <li class="pay-filter-slider">
+                    <div>
+                      <input type="hidden" name="pmin" id="job-filters-pmin">
+                      <input type="hidden" name="pmax" id="job-filters-pmax">
+                      <div id="pay-slider"></div>
+                    </div>
+                  </li>
+                  <li>
+                    <label for="job-filters-equity" class="equity-label">
+                      <input type="checkbox" name="equity" id="job-filters-equity" {% if request.args.get('equity') %} checked="checked" {% endif %} value="1"></input> Equity</label>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <div class="filters col-xs-12 col-sm-4 col-md-3">
+              <input id="job-filters-keywords" class="filter-select form-control" type="text" placeholder="Keywords" name="q" value="{{ request.args.q }}"/>
+            </div>
+            <div class="submit-filters col-xs-4 col-sm-2 col-md-2">
+              <button id='job-filters-submit' type="submit" class="btn btn-default submit-btn">
+                {% if request.path == '/' %} <span><i class="fa fa-filter"></i>Filter</span>
+                {% else %} <span><i class="fa fa-search"></i>Search</span> {% endif %} </button>
+            </div>
+            <div class="cancel-filters col-xs-4 visible-xs">
+              <button id='job-filters-cancel' class="btn btn-default submit-btn">
+                <span><i class="fa fa-close"></i>Cancel</span>
+              </button>
+            </div>
+          </div><!--eof row-->
+      </form>
+    </div><!--eof header-section-->
+  {% endmacro %}
+  {% if not g.kiosk %}
+  {% with links = [] %}
+    {%- if g.user and g.user.flags.has_jobpost_unconfirmed_month %}
+        {% set links = links + [{'title': "Drafts", 'url': url_for('browse_drafts')}] %}
+    {%- endif %}
+    {{ hgnav(site_title=site_title(), site_nav=site_nav(), links=links) }}
+  {% endwith %}
+  {%- endif %}
 </header>
-{%- endblock %}
+{% endblock %}
 
 {% block messages %}
   {%- for category, msg in get_flashed_messages(with_categories=true) %}
