@@ -10,15 +10,21 @@ RUN apt-get install -y python python-dev python-setuptools
 RUN apt-get install -y software-properties-common python-software-properties
 RUN apt-get install -y libpq-dev libffi-dev libxml2-dev libxslt1-dev 
 RUN apt-get install -y pandoc
-RUN easy_install pip
+RUN easy_install-2.7 pip
 
 RUN apt-get -y update
 
-# install our code
-ADD . /code/hasjob
+# add our requirements
+ADD requirements.txt /code/hasjob/requirements.txt
 
 # run pip install
-RUN pip install -r /code/hasjob/requirements.txt
+RUN pip2.7 install -r /code/hasjob/requirements.txt
+
+# copy over our code
+ADD . /code/hasjob
+
+RUN pip2.7 uninstall dnspython3 -y
+RUN git clone https://github.com/rthalley/dnspython && cd dnspython && python setup.py install && cd .. && rm -rf dnspython
 
 EXPOSE 5000
 EXPOSE 5432

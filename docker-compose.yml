@@ -1,0 +1,16 @@
+web:
+  build: .
+  command: python /code/hasjob/runserver.py
+  links:
+   - pg
+   - redis
+  ports:
+   - "5432:5432"
+   - "6379:6379"
+pg:
+  image: postgres
+  environment:
+    POSTGRES_PASSWORD: postgres
+    POSTGRES_USER: postgres
+redis:
+  image: redis
