@@ -1,10 +1,13 @@
 web:
   build: .
-  command: python /code/hasjob/runserver.py
+  command: python /code/hasjob/runserver.py &
+  volumes:
+   - .:/code/hasjob
   links:
    - pg
    - redis
   ports:
+   - "5000:5000"
    - "5432:5432"
    - "6379:6379"
 pg:
