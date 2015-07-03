@@ -3,6 +3,11 @@ web:
   command: python /code/hasjob/runserver.py &
   volumes:
    - .:/code/hasjob
+  environment:
+    SERVER_NAME: hasjob.docker.dev
+    LASTUSER_SERVER: https://auth.hasgeek.com
+    LASTUSER_CLIENT_ID: client-key-here
+    LASTUSER_CLIENT_SECRET: client-secret-here
   links:
    - pg
    - redis
