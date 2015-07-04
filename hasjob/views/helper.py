@@ -34,7 +34,7 @@ def sniffle():
         'Cache-Control': 'no-cache, no-store, must-revalidate',
         'Pragma': 'no-cache',
         'Expires': '0'
-        }
+    }
 
 
 @form_validation_success.connect
@@ -306,7 +306,7 @@ def bgroup(jobpost_ab, post):
 
 
 def cache_viewcounts(posts):
-    redis_pipe = redis_store.connection.pipeline()
+    redis_pipe = redis_store.pipeline()
     viewcounts_keys = [p.viewcounts_key for p in posts]
     for key in viewcounts_keys:
         redis_pipe.hgetall(key)
@@ -330,7 +330,8 @@ def getposts(basequery=None, pinned=False, showall=False, statuses=None):
         g.board_jobs = {r.jobpost_id: r for r in
             BoardJobPost.query.join(BoardJobPost.jobpost).filter(
                 BoardJobPost.board == g.board, JobPost.datetime > now - agelimit).options(
-                db.load_only('jobpost_id', 'pinned')).all()}
+                    db.load_only('jobpost_id', 'pinned')).all()
+        }
         query = query.join(JobPost.postboards).filter(BoardJobPost.board == g.board)
 
     if showall:
@@ -397,7 +398,7 @@ pay_graph_buckets = {
         range(200000, 1000000, 50000) +
         range(1000000, 10000000, 100000) +
         [10000000])
-    }
+}
 pay_graph_buckets['EUR'] = pay_graph_buckets['USD']
 pay_graph_buckets['SGD'] = pay_graph_buckets['USD']
 pay_graph_buckets['GBP'] = pay_graph_buckets['USD']
@@ -604,4 +605,3 @@ def usessl(url):
 @app.context_processor
 def inject_filter_options():
     return dict(job_locations=filter_locations(), job_type_choices=JobType.name_title_pairs(g.board), job_category_choices=JobCategory.name_title_pairs(g.board))
-
