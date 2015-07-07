@@ -314,7 +314,9 @@ def cache_viewcounts(posts):
     g.viewcounts = dict(zip(viewcounts_keys, viewcounts_values))
 
 
-def getposts(basequery=None, pinned=False, showall=False, statuses=None):
+def getposts(basequery=None, pinned=False, showall=False, statuses=None, ageless=False, limit=2000):
+    if ageless:
+        pinned = False  # No pinning when browsing archives
     if not statuses:
         statuses = POSTSTATUS.LISTED
 
@@ -334,22 +336,23 @@ def getposts(basequery=None, pinned=False, showall=False, statuses=None):
         }
         query = query.join(JobPost.postboards).filter(BoardJobPost.board == g.board)
 
-    if showall:
-        query = query.filter(JobPost.datetime > datetime.utcnow() - agelimit)
-    else:
-        if pinned:
-            if g.board:
-                query = query.filter(
-                    db.or_(
-                        db.and_(BoardJobPost.pinned == True, JobPost.datetime > now - agelimit),
-                        db.and_(BoardJobPost.pinned == False, JobPost.datetime > now - newlimit)))  # NOQA
-            else:
-                query = query.filter(
-                    db.or_(
-                        db.and_(JobPost.pinned == True, JobPost.datetime > now - agelimit),
-                        db.and_(JobPost.pinned == False, JobPost.datetime > now - newlimit)))  # NOQA
+    if not ageless:
+        if showall:
+            query = query.filter(JobPost.datetime > datetime.utcnow() - agelimit)
         else:
-            query = query.filter(JobPost.datetime > datetime.utcnow() - newlimit)
+            if pinned:
+                if g.board:
+                    query = query.filter(
+                        db.or_(
+                            db.and_(BoardJobPost.pinned == True, JobPost.datetime > now - agelimit),
+                            db.and_(BoardJobPost.pinned == False, JobPost.datetime > now - newlimit)))  # NOQA
+                else:
+                    query = query.filter(
+                        db.or_(
+                            db.and_(JobPost.pinned == True, JobPost.datetime > now - agelimit),
+                            db.and_(JobPost.pinned == False, JobPost.datetime > now - newlimit)))  # NOQA
+            else:
+                query = query.filter(JobPost.datetime > datetime.utcnow() - newlimit)
 
     if pinned:
         if g.board:
@@ -357,7 +360,7 @@ def getposts(basequery=None, pinned=False, showall=False, statuses=None):
         else:
             query = query.order_by(db.desc(JobPost.pinned))
 
-    return query.order_by(db.desc(JobPost.datetime))
+    return query.order_by(db.desc(JobPost.datetime)).limit(limit)
 
 
 def getallposts(order_by=None, desc=False, start=None, limit=None):

@@ -12,7 +12,7 @@ from .. import app, lastuser
 from ..models import (db, JobCategory, JobPost, JobType, POSTSTATUS, newlimit, agelimit, JobLocation,
     Domain, Location, Tag, JobPostTag, Campaign, CAMPAIGN_POSITION, CURRENCY)
 from ..views.helper import (getposts, getallposts, gettags, location_geodata, cache_viewcounts, session_jobpost_ab,
-    bgroup, filter_locations, make_pay_graph)
+    bgroup, make_pay_graph)
 from ..uploads import uploaded_logos
 from ..utils import string_to_number
 
@@ -62,7 +62,7 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
             ld = location_geodata(rl)
             if ld:
                 f_locations.append(ld['geonameid'])
-    remote_location_query = basequery.filter(JobPost.remote_location == True) # NOQA
+    remote_location_query = basequery.filter(JobPost.remote_location == True)  # NOQA
     locations_query = basequery.join(JobLocation).filter(JobLocation.geonameid.in_(f_locations))
     if f_locations and remote_location:
         data_filters['locations'] = f_locations
@@ -98,6 +98,12 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
         f_min = None
         f_max = None
 
+    if getbool(request.args.get('archive')):
+        ageless = True
+        data_filters['archive'] = True
+    else:
+        ageless = False
+
     search_domains = None
     if request.args.get('q'):
         q = for_tsquery(request.args['q'])
@@ -123,7 +129,7 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
         batched = True
 
     # getposts sets g.board_jobs, used below
-    posts = getposts(basequery, pinned=True, showall=showall, statuses=statuses).all()
+    posts = getposts(basequery, pinned=True, showall=showall, statuses=statuses, ageless=ageless).all()
 
     # Cache viewcounts (admin view or not)
     cache_viewcounts(posts)
@@ -153,7 +159,7 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
         for post in posts:
             pinned = post.pinned
             if board is not None:
-                blink = board_jobs[post.id]
+                blink = board_jobs.get(post.id)  # board_jobs only contains the last 30 days, no archive
                 if blink is not None:
                     pinned = blink.pinned
             if pinned:
