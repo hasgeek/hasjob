@@ -184,7 +184,7 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
             for post in posts:
                 pinned = post.pinned
                 if board is not None:
-                    blink = board_jobs[post.id]
+                    blink = board_jobs.get(post.id)  # board_jobs only contains the last 30 days, no archive
                     if blink is not None:
                         pinned = blink.pinned
                 pinsandposts.append((pinned, post, bgroup(jobpost_ab, post)))
