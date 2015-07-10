@@ -435,8 +435,8 @@ def feed_by_email(md5sum):
     return feed(basequery=basequery, md5sum=md5sum)
 
 
-@app.route('/at/<domain>/feed', methods=['GET', 'POST'], subdomain='<subdomain>')
-@app.route('/at/<domain>/feed', methods=['GET', 'POST'])
+@app.route('/at/<domain>/feed', subdomain='<subdomain>')
+@app.route('/at/<domain>/feed')
 def feed_by_domain_legacy(domain):
     return redirect(url_for('feed_by_domain', domain=domain), code=301)
 
