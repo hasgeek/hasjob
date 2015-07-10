@@ -395,7 +395,7 @@ def feed(basequery=None, type=None, category=None, md5sum=None, domain=None, loc
         title = u"Jobs in {location}".format(location=location['use_title'])
     elif tag:
         title = u"Jobs tagged {tag}".format(tag=title)
-    posts = list(getposts(basequery, showall=False))
+    posts = list(getposts(basequery, showall=True, limit=100))
     if posts:  # Can't do this unless posts is a list
         updated = posts[0].datetime.isoformat() + 'Z'
         if md5sum:
@@ -435,8 +435,14 @@ def feed_by_email(md5sum):
     return feed(basequery=basequery, md5sum=md5sum)
 
 
-@app.route('/at/<domain>/feed', subdomain='<subdomain>')
-@app.route('/at/<domain>/feed')
+@app.route('/at/<domain>/feed', methods=['GET', 'POST'], subdomain='<subdomain>')
+@app.route('/at/<domain>/feed', methods=['GET', 'POST'])
+def feed_by_domain_legacy(domain):
+    return redirect(url_for('feed_by_domain', domain=domain), code=301)
+
+
+@app.route('/<domain>/feed', subdomain='<subdomain>')
+@app.route('/<domain>/feed')
 def feed_by_domain(domain):
     if not domain:
         abort(404)
