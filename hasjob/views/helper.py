@@ -34,7 +34,7 @@ def sniffle():
         'Cache-Control': 'no-cache, no-store, must-revalidate',
         'Pragma': 'no-cache',
         'Expires': '0'
-        }
+    }
 
 
 @form_validation_success.connect
@@ -306,7 +306,7 @@ def bgroup(jobpost_ab, post):
 
 
 def cache_viewcounts(posts):
-    redis_pipe = redis_store.connection.pipeline()
+    redis_pipe = redis_store.pipeline()
     viewcounts_keys = [p.viewcounts_key for p in posts]
     for key in viewcounts_keys:
         redis_pipe.hgetall(key)
@@ -314,7 +314,9 @@ def cache_viewcounts(posts):
     g.viewcounts = dict(zip(viewcounts_keys, viewcounts_values))
 
 
-def getposts(basequery=None, pinned=False, showall=False, statuses=None):
+def getposts(basequery=None, pinned=False, showall=False, statuses=None, ageless=False, limit=2000):
+    if ageless:
+        pinned = False  # No pinning when browsing archives
     if not statuses:
         statuses = POSTSTATUS.LISTED
 
@@ -330,25 +332,27 @@ def getposts(basequery=None, pinned=False, showall=False, statuses=None):
         g.board_jobs = {r.jobpost_id: r for r in
             BoardJobPost.query.join(BoardJobPost.jobpost).filter(
                 BoardJobPost.board == g.board, JobPost.datetime > now - agelimit).options(
-                db.load_only('jobpost_id', 'pinned')).all()}
+                    db.load_only('jobpost_id', 'pinned')).all()
+        }
         query = query.join(JobPost.postboards).filter(BoardJobPost.board == g.board)
 
-    if showall:
-        query = query.filter(JobPost.datetime > datetime.utcnow() - agelimit)
-    else:
-        if pinned:
-            if g.board:
-                query = query.filter(
-                    db.or_(
-                        db.and_(BoardJobPost.pinned == True, JobPost.datetime > now - agelimit),
-                        db.and_(BoardJobPost.pinned == False, JobPost.datetime > now - newlimit)))  # NOQA
-            else:
-                query = query.filter(
-                    db.or_(
-                        db.and_(JobPost.pinned == True, JobPost.datetime > now - agelimit),
-                        db.and_(JobPost.pinned == False, JobPost.datetime > now - newlimit)))  # NOQA
+    if not ageless:
+        if showall:
+            query = query.filter(JobPost.datetime > datetime.utcnow() - agelimit)
         else:
-            query = query.filter(JobPost.datetime > datetime.utcnow() - newlimit)
+            if pinned:
+                if g.board:
+                    query = query.filter(
+                        db.or_(
+                            db.and_(BoardJobPost.pinned == True, JobPost.datetime > now - agelimit),
+                            db.and_(BoardJobPost.pinned == False, JobPost.datetime > now - newlimit)))  # NOQA
+                else:
+                    query = query.filter(
+                        db.or_(
+                            db.and_(JobPost.pinned == True, JobPost.datetime > now - agelimit),
+                            db.and_(JobPost.pinned == False, JobPost.datetime > now - newlimit)))  # NOQA
+            else:
+                query = query.filter(JobPost.datetime > datetime.utcnow() - newlimit)
 
     if pinned:
         if g.board:
@@ -356,7 +360,7 @@ def getposts(basequery=None, pinned=False, showall=False, statuses=None):
         else:
             query = query.order_by(db.desc(JobPost.pinned))
 
-    return query.order_by(db.desc(JobPost.datetime))
+    return query.order_by(db.desc(JobPost.datetime)).limit(limit)
 
 
 def getallposts(order_by=None, desc=False, start=None, limit=None):
@@ -397,7 +401,7 @@ pay_graph_buckets = {
         range(200000, 1000000, 50000) +
         range(1000000, 10000000, 100000) +
         [10000000])
-    }
+}
 pay_graph_buckets['EUR'] = pay_graph_buckets['USD']
 pay_graph_buckets['SGD'] = pay_graph_buckets['USD']
 pay_graph_buckets['GBP'] = pay_graph_buckets['USD']
@@ -604,4 +608,3 @@ def usessl(url):
 @app.context_processor
 def inject_filter_options():
     return dict(job_locations=filter_locations(), job_type_choices=JobType.name_title_pairs(g.board), job_category_choices=JobCategory.name_title_pairs(g.board))
-

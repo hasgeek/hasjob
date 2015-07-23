@@ -16,7 +16,7 @@ class Domain(BaseMixin, db.Model):
     A DNS domain affiliated with a job post.
     """
     __tablename__ = 'domain'
-    #: DNS name of this domain
+    #: DNS name of this domain (domain.tld)
     name = db.Column(db.Unicode(80), nullable=False, unique=True)
     #: Title of the employer at this domain
     title = db.Column(db.Unicode(250), nullable=True)

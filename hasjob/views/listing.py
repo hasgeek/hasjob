@@ -259,6 +259,7 @@ def revealjob(domain, hashid):
         return redirect(post.url_for(), 303)
 
 
+@csrf.exempt
 @app.route('/<domain>/<hashid>/apply', methods=['POST'], subdomain='<subdomain>')
 @app.route('/<domain>/<hashid>/apply', methods=['POST'])
 @app.route('/apply/<hashid>', defaults={'domain': None}, methods=['POST'], subdomain='<subdomain>')
@@ -432,6 +433,7 @@ def view_application(domain, hashid, application):
         response_form=response_form, statuses=statuses, is_siteadmin=lastuser.has_permission('siteadmin'))
 
 
+@csrf.exempt
 @app.route('/<domain>/<hashid>/appl/<application>/process', methods=['POST'], subdomain='<subdomain>')
 @app.route('/<domain>/<hashid>/appl/<application>/process', methods=['POST'])
 @app.route('/apply/<hashid>/<application>', defaults={'domain': None}, methods=['POST'], subdomain='<subdomain>')
@@ -730,6 +732,7 @@ def withdraw(domain, hashid, key):
     return render_template("withdraw.html", post=post, form=form)
 
 
+@csrf.exempt
 @app.route('/<domain>/<hashid>/edit', methods=('GET', 'POST'), defaults={'key': None}, subdomain='<subdomain>')
 @app.route('/<domain>/<hashid>/edit', methods=('GET', 'POST'), defaults={'key': None})
 @app.route('/edit/<hashid>', methods=('GET', 'POST'), defaults={'key': None, 'domain': None}, subdomain='<subdomain>')
@@ -917,6 +920,7 @@ def editjob(hashid, key, domain=None, form=None, validated=False, newpost=None):
     return render_template('postjob.html', form=form, no_email=no_email)
 
 
+@csrf.exempt
 @app.route('/new', methods=('GET', 'POST'), subdomain='<subdomain>')
 @app.route('/new', methods=('GET', 'POST'))
 def newjob():

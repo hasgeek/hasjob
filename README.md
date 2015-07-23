@@ -14,6 +14,11 @@ to install all the requirements listed in `requirements.txt` using
 
     $ pip install -r requirements.txt
 
+If you get an error, try running:
+
+    $ easy_install -U setuptools
+
+
 Next, Copy `settings-sample.py` to `settings.py`, edit as
 necessary, and finish configuration with:
 
