@@ -133,9 +133,13 @@
               <a class="list-group-item" href="{{ post.url_for('edit') }}">
                 <i class="fa fa-fw fa-pencil"></i>&nbsp;&nbsp; Edit this
               </a>
-              {%- if post.is_public() %}
-                <a class="list-group-item" href="{{ post.url_for('withdraw') }}">
-                  <i class="fa fa-fw fa-trash-o"></i>&nbsp;&nbsp; Withdraw this
+              {%- if post.is_closed() or post.is_withdrawn() %}
+                <a class="list-group-item" href="{{ post.url_for('reopen') }}">
+                  <i class="fa fa-fw fa-check"></i>&nbsp;&nbsp; Reopen this
+                </a>
+              {%- elif post.is_public() %}
+                <a class="list-group-item" href="{{ post.url_for('close') }}">
+                  <i class="fa fa-fw fa-times"></i>&nbsp;&nbsp; Close this
                 </a>
               {%- endif %}
             {%- endif %}
@@ -226,7 +230,11 @@
         {% endif %}</div>
       </div>
     </div>
-    {% if not post.is_announcement() %}
+    {%- if post.is_closed() or post.is_withdrawn() %}
+      <div class="section">
+        <h2>Not accepting applications</h2>
+      </div>
+    {% elif not post.is_announcement() %}
       <div class="section" id="apply-info">
         {%- if g.kiosk %}
           <img align="right" src="//chart.googleapis.com/chart?chs=150x150&cht=qr&chl={{ post.url_for(subdomain=none, _external=true) }}&choe=UTF-8"/>

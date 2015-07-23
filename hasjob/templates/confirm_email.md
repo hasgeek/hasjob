@@ -10,10 +10,10 @@ This is a confirmation email for the job you listed at {% if g.board -%} {{ g.bo
 
 Save this email for the next 30 days while the post is active. Use these
 links if you need to edit the post, or if the position has been filled
-and you wish to withdraw it:
+and you wish to close it:
 
 * [Edit job post]({{ post.url_for('edit', _external=true) }})
-* [Withdraw job post]({{ post.url_for('withdraw', _external=true) }})
+* [Close job post]({{ post.url_for('close', _external=true) }})
 
 {% if g.board and g.board.not_root %}[{{ g.board.title }}][board] is powered by Hasjob. {% endif -%}
 

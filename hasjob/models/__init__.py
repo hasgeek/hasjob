@@ -25,11 +25,14 @@ class POSTSTATUS:
     SPAM = 7          # Marked as spam
     MODERATED = 8     # Moderated, needs edit
     ANNOUNCEMENT = 9  # Special announcement
+    CLOSED = 10       # Not accepting applications, but publicly viewable
 
     UNPUBLISHED = (DRAFT, PENDING)
     GONE = (REJECTED, WITHDRAWN, SPAM)
-    LISTED = (CONFIRMED, REVIEWED, ANNOUNCEMENT)
+    LISTED = (CONFIRMED, REVIEWED, ANNOUNCEMENT, CLOSED)
     POSTPENDING = (CONFIRMED, REVIEWED, REJECTED, WITHDRAWN, FLAGGED, SPAM, MODERATED, ANNOUNCEMENT)
+    # Only those job posts which have their status in CLOSEABLE can be closed.
+    CLOSEABLE = (CONFIRMED, REVIEWED, ANNOUNCEMENT, CLOSED, WITHDRAWN)
 
 
 class CURRENCY(LabeledEnum):

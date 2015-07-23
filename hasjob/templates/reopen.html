@@ -1,0 +1,30 @@
+{% extends "sheet.html" %}
+{% from "baseframe/forms.html" import renderfield %}
+{% block title %}{{ post.headline|e }}{% endblock %}
+{% block content %}
+  <div class="sheet">
+    <div class="section first">
+      <h1>Reopen job post?</h1>
+      <h2>{{ post.headline }}</h2>
+      <p>
+        This post is currently closed {%- if post.is_withdrawn() %} and hidden from public view {%- else %}, but publicly viewable{% endif %}.
+      </p>
+      <form method="POST" class="form-horizontal jobpost-left-form">
+        <input type="hidden" name="_charset_"/>
+        {{ reopen_form.hidden_tag() }}
+        <button type="submit" class="btn btn-primary">Reopen job post</button>
+      </form>
+      <form method="POST" class="form-horizontal" action="{{ post.url_for('close') }}" method="post">
+        <input type="hidden" name="_charset_"/>
+        {{ close_form.hidden_tag() }}
+        {%- if post.is_withdrawn() %}
+          <button type="submit" class="btn btn-info">Keep it closed but make it to public</button>
+        {%- else %}
+          {{ close_form.withdraw(checked=True, hidden=True) }}
+          <button type="submit" class="btn btn-danger">Keep it closed and hide it from public view</button>
+        {% endif %}
+        <a class="btn btn-default" href="{{ post.url_for() }}">Cancel</a>
+      </form>
+    </div>
+  </div>
+{% endblock %}
