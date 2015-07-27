@@ -1012,4 +1012,8 @@ def reopen(domain, hashid, key):
         db.session.commit()
         flash("Your job post has been reopened.", "info")
         return redirect(url_for('index'), code=303)
-    return render_template("reopen.html", post=post, reopen_form=reopen_form, close_form=close_form)
+    if post.is_withdrawn():
+        post_status_msg = "This post is currently closed and hidden from public view."
+    else:
+        post_status_msg = "This post is currently closed but publicly viewable."
+    return render_template("reopen.html", post=post, reopen_form=reopen_form, close_form=close_form, post_status_msg=post_status_msg)

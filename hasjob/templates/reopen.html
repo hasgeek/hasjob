@@ -7,7 +7,7 @@
       <h1>Reopen job post?</h1>
       <h2>{{ post.headline }}</h2>
       <p>
-        This post is currently closed {%- if post.is_withdrawn() %} and hidden from public view {%- else %}, but publicly viewable{% endif %}.
+        {{ post_status_msg }}
       </p>
       <form method="POST" class="form-horizontal jobpost-left-form">
         <input type="hidden" name="_charset_"/>
