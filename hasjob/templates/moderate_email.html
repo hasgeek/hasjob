@@ -13,7 +13,7 @@
   	</div>
   </div>
   <p>Hi {{ post.company_name }},</p>
-  <p>This is regarding your job post on Hasjob titled "<a href='{{ post.url_for(_external=true) }}'>{{ post.headline }}</a>".</p>
+  <p>This is regarding your job post on Hasjob titled "<strong><a href='{{ post.url_for(_external=true) }}'>{{ post.headline }}</a></strong>".</p>
   <p>Your post has been temporarily removed by moderator {{ post.reviewer.fullname }}, who left the following comment. Please <a href="{{ post.url_for('edit', _external=true) }}">edit the post</a> and correct the indicated issue. A warning notice will appear on your post until you edit it:</p>
   <hr>
   <p>{{ post.review_comments }}</p>

@@ -574,8 +574,8 @@ def rejectjob(domain, hashid):
             post.status = POSTSTATUS.REJECTED
             msg = Message(subject="About your job post on Hasjob",
                 recipients=[post.email])
-            msg.body = render_template('reject_email.md', post=post)
-            msg.html = email_transform(markdown(msg.body), base_url=request.url_root)
+            msg.html = email_transform(render_template('reject_email.html', post=post), base_url=request.url_root)
+            msg.body = html2text(msg.html)
             mail.send(msg)
         db.session.commit()
         if request.is_xhr:
