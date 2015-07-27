@@ -1,3 +1,6 @@
+{% extends "inc/email_layout_lite.html" %}
+
+{% block content %}
 <div itemscope itemtype="http://schema.org/EmailMessage">
 	<div itemprop="action" itemscope itemtype="http://schema.org/ConfirmAction">
 		<meta itemprop="name" content="Confirm Job Post"/>
@@ -26,3 +29,4 @@ and you wish to withdraw it:</p>
 	<p><a href="{{ g.board.url_for(_external=true) }}">[board]</a>
 {% endif -%}
 <p>If you did not post a job, you may safely ignore this email.</p>
+{% endblock %}
