@@ -133,7 +133,7 @@
               <a class="list-group-item" href="{{ post.url_for('edit') }}">
                 <i class="fa fa-fw fa-pencil"></i>&nbsp;&nbsp; Edit this
               </a>
-              {%- if post.is_closed() or post.is_withdrawn() %}
+              {%- if post.can_reopen() %}
                 <a class="list-group-item" href="{{ post.url_for('reopen') }}">
                   <i class="fa fa-fw fa-check"></i>&nbsp;&nbsp; Reopen this
                 </a>
@@ -230,7 +230,7 @@
         {% endif %}</div>
       </div>
     </div>
-    {%- if post.is_closed() or post.is_withdrawn() %}
+    {%- if post.can_reopen() %}
       <div class="section">
         <h2>Not accepting applications</h2>
       </div>

@@ -231,6 +231,9 @@ class JobPost(BaseMixin, db.Model):
     def pay_type_label(self):
         return PAY_TYPE.get(self.pay_type)
 
+    def can_reopen(self):
+        return self.is_closed() or self.is_withdrawn()
+
     def withdraw(self):
         self.status = POSTSTATUS.WITHDRAWN
 
