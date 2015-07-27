@@ -2,7 +2,6 @@
 
 import bleach
 from datetime import datetime, timedelta
-from markdown import markdown  # FIXME: coaster.gfm is breaking links, so can't use it
 from difflib import SequenceMatcher
 from html2text import html2text
 from premailer import transform as email_transform
