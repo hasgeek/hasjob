@@ -16,7 +16,7 @@
   <p>Hello,</p>
   <p>This is a confirmation email for the job you listed at {% if g.board -%} {{ g.board.title }} {%- else -%} {{ config['SITE_TITLE'] }} {%- endif %}.</p>
   <p><strong>{{ post.headline|e }}</strong></p>
-  <p><a href="{{ post.url_for('confirm-link', _external=true) }}" style="background-color:#428bca; border-radius:3px; padding:5px 10px; text-decoration:none; color:white; border:1px solid #357ebd; white-space:nowrap" bgcolor="#428bca">Confirm job post</a></p>
+  <p><a class="btn" href="{{ post.url_for('confirm-link', _external=true) }}">Confirm job post</a></p>
   <p>Save this email for the next 30 days while the post is active. Use these
   links if you need to edit the post, or if the position has been filled
   and you wish to withdraw it:</p>
