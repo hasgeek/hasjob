@@ -69,7 +69,7 @@ def jobdetail(domain, hashid):
     if post.status in [POSTSTATUS.DRAFT, POSTSTATUS.PENDING]:
         if not ((g.user and post.admin_is(g.user))):
             abort(403)
-    if post.status in POSTSTATUS.GONE:
+    if post.status in POSTSTATUS.GONE and not post.admin_is(g.user):
         abort(410)
     if g.user:
         jobview = UserJobView.get(post, g.user)
@@ -713,22 +713,7 @@ def confirm_email(domain, hashid, key):
 @app.route('/withdraw/<hashid>/<key>', defaults={'domain': None}, methods=('GET', 'POST'))
 def withdraw(domain, hashid, key):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
-    form = forms.WithdrawForm()
-    if not ((key is None and g.user is not None and post.admin_is(g.user)) or (key == post.edit_key)):
-        abort(403)
-    if post.status == POSTSTATUS.WITHDRAWN:
-        flash("Your job post has already been withdrawn", "info")
-        return redirect(url_for('index'), code=303)
-    if post.status not in POSTSTATUS.LISTED:
-        flash("Your post cannot be withdrawn because it is not public", "info")
-        return redirect(url_for('index'), code=303)
-    if form.validate_on_submit():
-        post.status = POSTSTATUS.WITHDRAWN
-        post.closed_datetime = datetime.utcnow()
-        db.session.commit()
-        flash("Your job post has been withdrawn and is no longer available", "info")
-        return redirect(url_for('index'), code=303)
-    return render_template("withdraw.html", post=post, form=form)
+    return redirect(post.url_for('close'), code=303)
 
 
 @csrf.exempt
@@ -972,3 +957,62 @@ def newjob():
     # 2. POST request from main page's Post a Job box
     # 3. POST request from this page, with errors
     return render_template('postjob.html', form=form, no_removelogo=True)
+
+
+@app.route('/<domain>/<hashid>/close', methods=('GET', 'POST'), defaults={'key': None}, subdomain='<subdomain>')
+@app.route('/<domain>/<hashid>/close', methods=('GET', 'POST'), defaults={'key': None})
+@app.route('/close/<hashid>', methods=('GET', 'POST'), defaults={'key': None, 'domain': None}, subdomain='<subdomain>')
+@app.route('/close/<hashid>/<key>', defaults={'domain': None}, methods=('GET', 'POST'), subdomain='<subdomain>')
+@app.route('/close/<hashid>', methods=('GET', 'POST'), defaults={'key': None, 'domain': None})
+@app.route('/close/<hashid>/<key>', defaults={'domain': None}, methods=('GET', 'POST'))
+def close(domain, hashid, key):
+    post = JobPost.query.filter_by(hashid=hashid).first_or_404()
+    if not ((key is None and g.user is not None and post.admin_is(g.user)) or (key == post.edit_key)):
+        abort(403)
+    if post.status not in POSTSTATUS.CLOSEABLE:
+        flash("Your job post can't be closed.", "info")
+        return redirect(url_for('index'), code=303)
+    if request.method == 'GET' and post.status in [POSTSTATUS.CLOSED, POSTSTATUS.WITHDRAWN]:
+        return redirect(post.url_for('reopen'), code=303)
+    form = forms.CloseForm()
+    if form.validate_on_submit():
+        if form.withdraw.data:
+            post.withdraw()
+            msg = "Your job post has been closed and is hidden from public view."
+        else:
+            post.close()
+            msg = "Your job post has been closed, but is publicly available."
+        post.closed_datetime = datetime.utcnow()
+        db.session.commit()
+        flash(msg, "info")
+        return redirect(url_for('index'), code=303)
+    return render_template("close.html", post=post, form=form)
+
+
+@app.route('/<domain>/<hashid>/reopen', methods=('GET', 'POST'), defaults={'key': None}, subdomain='<subdomain>')
+@app.route('/<domain>/<hashid>/reopen', methods=('GET', 'POST'), defaults={'key': None})
+@app.route('/reopen/<hashid>', methods=('GET', 'POST'), defaults={'key': None, 'domain': None}, subdomain='<subdomain>')
+@app.route('/reopen/<hashid>/<key>', defaults={'domain': None}, methods=('GET', 'POST'), subdomain='<subdomain>')
+@app.route('/reopen/<hashid>', methods=('GET', 'POST'), defaults={'key': None, 'domain': None})
+@app.route('/reopen/<hashid>/<key>', defaults={'domain': None}, methods=('GET', 'POST'))
+def reopen(domain, hashid, key):
+    post = JobPost.query.filter_by(hashid=hashid).first_or_404()
+    if not ((key is None and g.user is not None and post.admin_is(g.user)) or (key == post.edit_key)):
+        abort(403)
+    # Only closed or withdrawn posts can be reopened
+    if post.status not in [POSTSTATUS.CLOSED, POSTSTATUS.WITHDRAWN]:
+        flash("Your job post can't be reopened.", "info")
+        return redirect(url_for('index'), code=303)
+    reopen_form = forms.ReopenForm()
+    close_form = forms.CloseForm()
+    if reopen_form.validate_on_submit():
+        post.confirm()
+        post.closed_datetime = datetime.utcnow()
+        db.session.commit()
+        flash("Your job post has been reopened.", "info")
+        return redirect(url_for('index'), code=303)
+    if post.is_withdrawn():
+        post_status_msg = "This post is currently closed and hidden from public view."
+    else:
+        post_status_msg = "This post is currently closed but publicly viewable."
+    return render_template("reopen.html", post=post, reopen_form=reopen_form, close_form=close_form, post_status_msg=post_status_msg)
