@@ -1,4 +1,5 @@
 {% extends "inc/email_layout_lite.html" %}
+
 {% block content %}
 <div itemscope itemtype="http://schema.org/EmailMessage">
   <div itemprop="action" itemscope itemtype="http://schema.org/ViewAction">
@@ -18,9 +19,9 @@
 {{ job_application.message|safe }}
 <hr>
 <p>
-  <a class="btn" href="{{ archive_url }}" target="_blank">Respond&nbsp;to&nbsp;candidate</a>
+  <a class="btn" href="{{ archive_url }}" target="_blank">Respond to candidate</a>
   or
-  <a class="btn" href="{{ archive_url }}" target="_blank">Report&nbsp;this</a>
+  <a class="btn" href="{{ archive_url }}" target="_blank">Report this</a>
 </p>
 <p>
   <strong>Note:</strong> The message above is exactly as the candidate submitted it. We do not accept attachments or reformat documents.

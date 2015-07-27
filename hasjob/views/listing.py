@@ -574,8 +574,8 @@ def rejectjob(domain, hashid):
             post.status = POSTSTATUS.REJECTED
             msg = Message(subject="About your job post on Hasjob",
                 recipients=[post.email])
-            msg.body = render_template("reject_email.md", post=post)
-            msg.html = markdown(msg.body)
+            msg.body = render_template('reject_email.md', post=post)
+            msg.html = email_transform(markdown(msg.body), base_url=request.url_root)
             mail.send(msg)
         db.session.commit()
         if request.is_xhr:
@@ -608,7 +608,7 @@ def moderatejob(domain, hashid):
         post.status = POSTSTATUS.MODERATED
         msg = Message(subject="About your job post on Hasjob",
             recipients=[post.email])
-        msg.html = render_template("moderate_email.html", post=post)
+        msg.html = email_transform(render_template('moderate_email.html', post=post), base_url=request.url_root)
         msg.body = html2text(msg.html)
         mail.send(msg)
         db.session.commit()
@@ -643,7 +643,7 @@ def confirm(domain, hashid):
         post.email_verify_key = random_long_key()
         msg = Message(subject="Confirmation of your job post at Hasjob",
             recipients=[post.email])
-        msg.html = render_template("confirm_email.html", post=post)
+        msg.html = email_transform(render_template('confirm_email.html', post=post), base_url=request.url_root)
         msg.body = html2text(msg.html)
         mail.send(msg)
         post.email_sent = True
