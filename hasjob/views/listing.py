@@ -967,7 +967,7 @@ def close(domain, hashid, key):
         abort(403)
     if post.status not in POSTSTATUS.CLOSEABLE:
         flash("Your job post can't be closed.", "info")
-        return redirect(url_for('index'), code=303)
+        return redirect(post.url_for(), code=303)
     if request.method == 'GET' and post.status in [POSTSTATUS.CLOSED, POSTSTATUS.WITHDRAWN]:
         return redirect(post.url_for('reopen'), code=303)
     form = forms.CloseForm()
@@ -994,7 +994,7 @@ def reopen(domain, hashid, key):
     # Only closed or withdrawn posts can be reopened
     if post.status not in [POSTSTATUS.CLOSED, POSTSTATUS.WITHDRAWN]:
         flash("Your job post can't be reopened.", "info")
-        return redirect(url_for('index'), code=303)
+        return redirect(post.url_for(), code=303)
     reopen_form = forms.ReopenForm()
     close_form = forms.CloseForm()
     if reopen_form.validate_on_submit():
