@@ -713,7 +713,22 @@ def confirm_email(domain, hashid, key):
 @app.route('/withdraw/<hashid>/<key>', defaults={'domain': None}, methods=('GET', 'POST'))
 def withdraw(domain, hashid, key):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
-    return redirect(post.url_for('close'), code=303)
+    form = forms.WithdrawForm()
+    if not ((key is None and g.user is not None and post.admin_is(g.user)) or (key == post.edit_key)):
+        abort(403)
+    if post.status == POSTSTATUS.WITHDRAWN:
+        flash("Your job post has already been withdrawn", "info")
+        return redirect(url_for('index'), code=303)
+    if post.status not in POSTSTATUS.LISTED:
+        flash("Your post cannot be withdrawn because it is not public", "info")
+        return redirect(url_for('index'), code=303)
+    if form.validate_on_submit():
+        post.status = POSTSTATUS.WITHDRAWN
+        post.closed_datetime = datetime.utcnow()
+        db.session.commit()
+        flash("Your job post has been withdrawn and is no longer available", "info")
+        return redirect(url_for('index'), code=303)
+    return render_template("withdraw.html", post=post, form=form)
 
 
 @csrf.exempt
