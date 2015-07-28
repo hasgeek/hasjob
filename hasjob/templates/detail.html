@@ -71,6 +71,20 @@
       {{ post.company_url_domain_zone }}. Please proceed with caution.
     </p>
   </div>
+  {% elif post.is_withdrawn() %}
+  <div class="guide">
+    <p>
+      This job post was withdrawn by its owner. <a href="{{ post.url_for('reopen') }}">Reopen?</a>
+    </p>
+  </div>
+  {% elif post.is_unacceptable() %}
+  <div class="guide">
+    <p>
+      Your post is not in compliance with our <a href="https://hasjob.co/tos">Terms of Service</a> and has been taken down. Your post was reviewed by {{ post.reviewer.fullname }}, who left the following comment:</p>
+      <hr>
+      <p>{{ post.review_comments }}</p>
+    </p>
+  </div>
   {% endif %}
 
   <div itemscope itemtype="http://schema.org/Article" class="sheet">

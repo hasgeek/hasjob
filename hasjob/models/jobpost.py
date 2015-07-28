@@ -225,6 +225,9 @@ class JobPost(BaseMixin, db.Model):
     def is_withdrawn(self):
         return self.status == POSTSTATUS.WITHDRAWN
 
+    def is_unacceptable(self):
+        return self.status in [POSTSTATUS.REJECTED, POSTSTATUS.SPAM]
+
     def is_old(self):
         return self.datetime <= datetime.utcnow() - agelimit
 
