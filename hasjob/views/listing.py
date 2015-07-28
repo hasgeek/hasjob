@@ -713,22 +713,26 @@ def confirm_email(domain, hashid, key):
 @app.route('/withdraw/<hashid>/<key>', defaults={'domain': None}, methods=('GET', 'POST'))
 def withdraw(domain, hashid, key):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
-    form = forms.WithdrawForm()
     if not ((key is None and g.user is not None and post.admin_is(g.user)) or (key == post.edit_key)):
         abort(403)
-    if post.status == POSTSTATUS.WITHDRAWN:
-        flash("Your job post has already been withdrawn", "info")
-        return redirect(url_for('index'), code=303)
-    if post.status not in POSTSTATUS.LISTED:
-        flash("Your post cannot be withdrawn because it is not public", "info")
-        return redirect(url_for('index'), code=303)
+    # TODO: Just redirect to close when key-based login is gone.
+    if post.status not in POSTSTATUS.CLOSEABLE:
+        return redirect(post.url_for(), code=303)
+    if post.is_withdrawn():
+        return redirect(post.url_for(), code=303)
+    form = forms.CloseForm()
     if form.validate_on_submit():
-        post.status = POSTSTATUS.WITHDRAWN
+        if form.withdraw.data:
+            post.withdraw()
+            msg = "Your job post has been closed and is hidden from public view."
+        else:
+            post.close()
+            msg = "Your job post has been closed, but is publicly available."
         post.closed_datetime = datetime.utcnow()
         db.session.commit()
-        flash("Your job post has been withdrawn and is no longer available", "info")
+        flash(msg, "info")
         return redirect(url_for('index'), code=303)
-    return render_template("withdraw.html", post=post, form=form)
+    return render_template("close.html", post=post, form=form)
 
 
 @csrf.exempt
