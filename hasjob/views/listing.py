@@ -978,7 +978,7 @@ def newjob():
 @app.route('/<domain>/<hashid>/close', methods=('GET', 'POST'), defaults={'key': None})
 def close(domain, hashid, key):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
-    if not ((key is None and g.user is not None and post.admin_is(g.user)) or (key == post.edit_key)):
+    if not post.admin_is(g.user):
         abort(403)
     if post.status not in POSTSTATUS.CLOSEABLE:
         flash("Your job post can't be closed.", "info")
@@ -1004,7 +1004,7 @@ def close(domain, hashid, key):
 @app.route('/<domain>/<hashid>/reopen', methods=('GET', 'POST'), defaults={'key': None})
 def reopen(domain, hashid, key):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
-    if not ((key is None and g.user is not None and post.admin_is(g.user)) or (key == post.edit_key)):
+    if not post.admin_is(g.user):
         abort(403)
     # Only closed or withdrawn posts can be reopened
     if post.status not in [POSTSTATUS.CLOSED, POSTSTATUS.WITHDRAWN]:
