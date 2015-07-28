@@ -961,10 +961,6 @@ def newjob():
 
 @app.route('/<domain>/<hashid>/close', methods=('GET', 'POST'), defaults={'key': None}, subdomain='<subdomain>')
 @app.route('/<domain>/<hashid>/close', methods=('GET', 'POST'), defaults={'key': None})
-@app.route('/close/<hashid>', methods=('GET', 'POST'), defaults={'key': None, 'domain': None}, subdomain='<subdomain>')
-@app.route('/close/<hashid>/<key>', defaults={'domain': None}, methods=('GET', 'POST'), subdomain='<subdomain>')
-@app.route('/close/<hashid>', methods=('GET', 'POST'), defaults={'key': None, 'domain': None})
-@app.route('/close/<hashid>/<key>', defaults={'domain': None}, methods=('GET', 'POST'))
 def close(domain, hashid, key):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
     if not ((key is None and g.user is not None and post.admin_is(g.user)) or (key == post.edit_key)):
@@ -991,10 +987,6 @@ def close(domain, hashid, key):
 
 @app.route('/<domain>/<hashid>/reopen', methods=('GET', 'POST'), defaults={'key': None}, subdomain='<subdomain>')
 @app.route('/<domain>/<hashid>/reopen', methods=('GET', 'POST'), defaults={'key': None})
-@app.route('/reopen/<hashid>', methods=('GET', 'POST'), defaults={'key': None, 'domain': None}, subdomain='<subdomain>')
-@app.route('/reopen/<hashid>/<key>', defaults={'domain': None}, methods=('GET', 'POST'), subdomain='<subdomain>')
-@app.route('/reopen/<hashid>', methods=('GET', 'POST'), defaults={'key': None, 'domain': None})
-@app.route('/reopen/<hashid>/<key>', defaults={'domain': None}, methods=('GET', 'POST'))
 def reopen(domain, hashid, key):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
     if not ((key is None and g.user is not None and post.admin_is(g.user)) or (key == post.edit_key)):
