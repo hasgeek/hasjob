@@ -10,6 +10,7 @@ test.db
 error.log
 .coverage
 instance/production.py
+instance/development.py
 packed.js
 packed.css
 baseframe-packed.js
