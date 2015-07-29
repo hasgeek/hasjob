@@ -29,6 +29,31 @@ To run the server in development mode:
 
     $ python runserver.py
 
+### Install and run with Docker
+
+You can alternatively run Hasjob with Docker.
+
+* Install [Docker](https://docs.docker.com/installation/) and [Compose](https://docs.docker.com/compose/install/)
+Next, rename the `instance/development.docker.py` to `development.py`
+
+* Build the images
+
+    ```
+    $ docker-compose build
+    ```
+
+* Initialize the database
+    ```
+    $ docker-compose run web sh
+        web$ python manage.py db create
+        web$ exit
+    ```
+* Start hasjob
+    
+    ```
+    $ docker-compose up
+    ```
+
 WSGI is recommended for production. For Apache: enable `mod_wsgi` and make a
 `VirtualHost` with:
 
