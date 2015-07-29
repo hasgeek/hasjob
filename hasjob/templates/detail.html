@@ -229,7 +229,7 @@
     {% if not post.is_announcement() %}
       <div class="section" id="apply-info">
         {%- if g.kiosk %}
-          <img align="right" src="//chart.googleapis.com/chart?chs=150x150&cht=qr&chl={{ post.url_for(subdomain=none, _external=true) }}&choe=UTF-8"/>
+          <img align="right" src="//chart.googleapis.com/chart?chs=150x150&amp;cht=qr&amp;chl={{ post.url_for(subdomain=none, _external=true) }}&amp;choe=UTF-8"/>
         {%- endif %}
         <h2>Apply for this position
           {%- if not post.pays_cash %}

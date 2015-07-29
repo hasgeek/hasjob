@@ -13,11 +13,23 @@
   {%- if jobtype %}<link rel="alternate" type="application/atom+xml"  title="{{ jobtype.title }} – {{ config['SITE_TITLE']|e }}" href="{{ url_for('feed_by_type', name=jobtype.name) }}" />{% endif -%}
   {%- if jobcategory %}<link rel="alternate" type="application/atom+xml"  title="{{ jobcategory.title }} – {{ config['SITE_TITLE']|e }}" href="{{ url_for('feed_by_category', name=jobcategory.name) }}" />{% endif -%}
   {%- if md5sum %}<link rel="alternate" type="application/atom+xml" title="Jobs at {{ employer_name }} – {{ config['SITE_TITLE'] }}" href="{{ url_for('feed_by_email', md5sum=md5sum) }}" />{% endif -%}
-  {%- if domain %}<link rel="alternate" type="application/atom+xml" title="Jobs at {{ employer_name }} – {{ config['SITE_TITLE'] }}" href="{{ url_for('feed_by_domain', domain=domain) }}" />{% endif -%}
+  {%- if domain %}<link rel="alternate" type="application/atom+xml" title="Jobs at {{ employer_name }} – {{ config['SITE_TITLE'] }}" href="{{ url_for('feed_by_domain', domain=domain.name) }}" />{% endif -%}
   {%- if location %}<link rel="alternate" type="application/atom+xml" title="Jobs in {{ location['use_title'] }} – {{ config['SITE_TITLE'] }}" href="{{ url_for('feed_by_location', location=location['name']) }}" />{% endif -%}
   {%- if pay_graph_data %}<link href="//cdnjs.cloudflare.com/ajax/libs/c3/0.4.10/c3.min.css" rel="stylesheet" />{% endif -%}
   {% endblock %}
-  {% block description %}{% if location and location.description %}{{ location.description|firstline }}{% else %}{{ super() }}{% endif %}{% endblock %}
+  {% block description -%}
+    {%- if location and location.description -%}
+      {{ location.description|firstline }}
+    {%- elif domain -%}
+      {%- if domain.has_profile -%}
+        {{ domain.description|firstline }}
+      {%- else -%}
+        All jobs at {{ domain.title or domain.name }}
+      {%- endif -%}
+    {%- else -%}
+      {{ super() }}
+    {%- endif -%}
+  {%- endblock %}
   {% block canonical_url %}
     {%- if g.board and g.board.not_root and domain %}
       <link rel="canonical" href="{{ domain.url_for(subdomain=none) }}" />
@@ -116,7 +128,7 @@
             {%- endif -%}
             {{ domain.use_title }}</a>
         </li>
-      {% endfor -%}
+      {%- endfor -%}
     {%- endif -%}
 {%- endif -%}
     {%- if grouped %}

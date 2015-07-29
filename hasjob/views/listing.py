@@ -2,7 +2,6 @@
 
 import bleach
 from datetime import datetime, timedelta
-from markdown import markdown  # FIXME: coaster.gfm is breaking links, so can't use it
 from difflib import SequenceMatcher
 from html2text import html2text
 from premailer import transform as email_transform
@@ -259,6 +258,7 @@ def revealjob(domain, hashid):
         return redirect(post.url_for(), 303)
 
 
+@csrf.exempt
 @app.route('/<domain>/<hashid>/apply', methods=['POST'], subdomain='<subdomain>')
 @app.route('/<domain>/<hashid>/apply', methods=['POST'])
 @app.route('/apply/<hashid>', defaults={'domain': None}, methods=['POST'], subdomain='<subdomain>')
@@ -432,6 +432,7 @@ def view_application(domain, hashid, application):
         response_form=response_form, statuses=statuses, is_siteadmin=lastuser.has_permission('siteadmin'))
 
 
+@csrf.exempt
 @app.route('/<domain>/<hashid>/appl/<application>/process', methods=['POST'], subdomain='<subdomain>')
 @app.route('/<domain>/<hashid>/appl/<application>/process', methods=['POST'])
 @app.route('/apply/<hashid>/<application>', defaults={'domain': None}, methods=['POST'], subdomain='<subdomain>')
@@ -572,8 +573,8 @@ def rejectjob(domain, hashid):
             post.status = POSTSTATUS.REJECTED
             msg = Message(subject="About your job post on Hasjob",
                 recipients=[post.email])
-            msg.body = render_template("reject_email.md", post=post)
-            msg.html = markdown(msg.body)
+            msg.html = email_transform(render_template('reject_email.html', post=post), base_url=request.url_root)
+            msg.body = html2text(msg.html)
             mail.send(msg)
         db.session.commit()
         if request.is_xhr:
@@ -606,8 +607,8 @@ def moderatejob(domain, hashid):
         post.status = POSTSTATUS.MODERATED
         msg = Message(subject="About your job post on Hasjob",
             recipients=[post.email])
-        msg.body = render_template("moderate_email.md", post=post)
-        msg.html = markdown(msg.body)
+        msg.html = email_transform(render_template('moderate_email.html', post=post), base_url=request.url_root)
+        msg.body = html2text(msg.html)
         mail.send(msg)
         db.session.commit()
         if request.is_xhr:
@@ -641,8 +642,8 @@ def confirm(domain, hashid):
         post.email_verify_key = random_long_key()
         msg = Message(subject="Confirmation of your job post at Hasjob",
             recipients=[post.email])
-        msg.body = render_template("confirm_email.md", post=post)
-        msg.html = markdown(msg.body)
+        msg.html = email_transform(render_template('confirm_email.html', post=post), base_url=request.url_root)
+        msg.body = html2text(msg.html)
         mail.send(msg)
         post.email_sent = True
         post.status = POSTSTATUS.PENDING
@@ -730,6 +731,7 @@ def withdraw(domain, hashid, key):
     return render_template("withdraw.html", post=post, form=form)
 
 
+@csrf.exempt
 @app.route('/<domain>/<hashid>/edit', methods=('GET', 'POST'), defaults={'key': None}, subdomain='<subdomain>')
 @app.route('/<domain>/<hashid>/edit', methods=('GET', 'POST'), defaults={'key': None})
 @app.route('/edit/<hashid>', methods=('GET', 'POST'), defaults={'key': None, 'domain': None}, subdomain='<subdomain>')
@@ -917,6 +919,7 @@ def editjob(hashid, key, domain=None, form=None, validated=False, newpost=None):
     return render_template('postjob.html', form=form, no_email=no_email)
 
 
+@csrf.exempt
 @app.route('/new', methods=('GET', 'POST'), subdomain='<subdomain>')
 @app.route('/new', methods=('GET', 'POST'))
 def newjob():
