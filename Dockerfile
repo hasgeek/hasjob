@@ -25,5 +25,7 @@ RUN git clone https://github.com/rthalley/dnspython && cd dnspython && python se
 # copy over our code
 ADD . /code/hasjob
 
+WORKDIR /code/hasjob/
+
 EXPOSE 5000
 EXPOSE 5432
