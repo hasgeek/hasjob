@@ -46,6 +46,34 @@ To run the server in development mode:
 
     $ python runserver.py
 
+### Install and run with Docker
+
+You can alternatively run Hasjob with Docker.
+
+* Install [Docker](https://docs.docker.com/installation/) and [Compose](https://docs.docker.com/compose/install/)
+
+* Next, rename the `instance/development.docker.py` to `instance/development.py`
+
+* Build the images
+
+    ```
+    $ docker-compose build
+    ```
+
+* Initialize the database
+    ```
+    $ docker-compose run web sh
+        web$ python manage.py db create
+        web$ exit
+    ```
+* Start the server
+    
+    ```
+    $ docker-compose up
+    ```
+
+* You can edit the server name and Lastuser settings in the `docker-compose.yml` file
+
 If you encounter a problem setting up, please look at existing issue reports
 on GitHub before filing a new issue. This code is the same version used in
 production so there is a very good chance you did something wrong and there
