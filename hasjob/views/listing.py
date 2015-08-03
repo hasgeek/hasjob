@@ -886,7 +886,7 @@ def editjob(hashid, key, domain=None, form=None, validated=False, newpost=None):
     elif request.method == 'POST':
         flash("Please review the indicated issues", category='interactive')
     elif request.method == 'GET':
-        form.populate(post)
+        form.populate_from(post)
     return render_template('postjob.html', form=form, no_email=no_email)
 
 
@@ -928,15 +928,15 @@ def newjob():
 
     # Job Reposting
     if request.method == 'GET' and request.args.get('template'):
-        archived_post = JobPost.get(request.args.get('template'))
+        archived_post = JobPost.get(request.args['template'])
         if not archived_post:
             abort(404)
         if not archived_post.admin_is(g.user):
             abort(403)
         if not archived_post.is_old():
-            flash("This listing is currently active and cannot be posted again.")
+            flash("This post is currently active and cannot be posted again.")
             return redirect(archived_post.url_for(), code=303)
-        form.populate(archived_post)
+        form.populate_from(archived_post)
 
     if request.method == 'POST' and request.form.get('form.id') != 'newheadline' and form.validate():
         # POST request from new job page, with successful validation

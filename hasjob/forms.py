@@ -354,7 +354,7 @@ class ListingForm(forms.Form):
         self.send_signals()
         return success
 
-    def populate(self, post):
+    def populate_from(self, post):
         self.job_headline.data = post.headline
         self.job_headlineb.data = post.headlineb
         self.job_type.data = post.type_id
