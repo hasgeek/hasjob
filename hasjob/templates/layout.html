@@ -134,7 +134,7 @@
   {% if not g.kiosk %}
   {% with links = [] %}
     {%- if g.user and g.user.flags.is_employer_alltime %}
-      {% set links = links + [{'title': "My Posts", 'url': url_for('my_posts')}] %}
+      {% set links = links + [{'title': "My posts", 'url': url_for('my_posts')}] %}
     {%- endif %}
     {%- if g.user and g.user.flags.has_jobpost_unconfirmed_month %}
       {% set links = links + [{'title': "Drafts", 'url': url_for('browse_drafts')}] %}
