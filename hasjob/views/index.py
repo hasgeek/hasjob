@@ -285,12 +285,12 @@ def browse_drafts():
 
 
 @csrf.exempt
-@app.route('/all', methods=['GET', 'POST'], subdomain='<subdomain>')
-@app.route('/all', methods=['GET', 'POST'])
+@app.route('/my', methods=['GET', 'POST'], subdomain='<subdomain>')
+@app.route('/my', methods=['GET', 'POST'])
 @lastuser.requires_login
-def all_posts():
+def my_posts():
     basequery = JobPost.query.filter_by(user=g.user)
-    return index(basequery=basequery, ageless=True, statuses=[status for status in POSTSTATUS.ALL])
+    return index(basequery=basequery, ageless=True, statuses=POSTSTATUS.ALL)
 
 
 @csrf.exempt
