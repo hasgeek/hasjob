@@ -2,6 +2,13 @@
 {% from "baseframe/forms.html" import renderfield, rendersubmit, widgetscripts %}
 {% block title %}List a job{% endblock %}
 {% block content %}
+  {%- if repost %}
+    <div class="guide">
+      <p>
+        You're reposting <a href="{{archived_post.url_for()}}" target="_blank">{{archived_post.headline}}</a>.
+      </p>
+    </div>
+  {%- endif %}
   <div class="sheet">
     <div class="section first">
       <div class="page-header"><h1>

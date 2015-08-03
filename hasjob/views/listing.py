@@ -886,36 +886,7 @@ def editjob(hashid, key, domain=None, form=None, validated=False, newpost=None):
     elif request.method == 'POST':
         flash("Please review the indicated issues", category='interactive')
     elif request.method == 'GET':
-        # Populate form from model
-        form.job_headline.data = post.headline
-        form.job_headlineb.data = post.headlineb
-        form.job_type.data = post.type_id
-        form.job_category.data = post.category_id
-        form.job_location.data = post.location
-        form.job_relocation_assist.data = post.relocation_assist
-        form.job_description.data = post.description
-        form.job_perks.data = True if post.perks else False
-        form.job_perks_description.data = post.perks
-        form.job_how_to_apply.data = post.how_to_apply
-        form.company_name.data = post.company_name
-        form.company_url.data = post.company_url
-        # form.poster_name.data = post.fullname  # Deprecated 2013-11-20
-        form.poster_email.data = post.email
-        form.twitter.data = post.twitter
-        form.hr_contact.data = int(post.hr_contact or False)
-        form.collaborators.data = post.admins
-
-        form.job_pay_type.data = post.pay_type
-        if post.pay_type is None:
-            # This kludge required because WTForms doesn't know how to handle None in forms
-            form.job_pay_type.data = -1
-        form.job_pay_currency.data = post.pay_currency
-        form.job_pay_cash_min.data = post.pay_cash_min
-        form.job_pay_cash_max.data = post.pay_cash_max
-        form.job_pay_equity.data = bool(post.pay_equity_min and post.pay_equity_max)
-        form.job_pay_equity_min.data = post.pay_equity_min
-        form.job_pay_equity_max.data = post.pay_equity_max
-
+        form.populate(post)
     return render_template('postjob.html', form=form, no_email=no_email)
 
 
@@ -924,6 +895,8 @@ def editjob(hashid, key, domain=None, form=None, validated=False, newpost=None):
 @app.route('/new', methods=('GET', 'POST'))
 def newjob():
     form = forms.ListingForm()
+    repost = False
+    archived_post = None
     if not g.user:
         if request.method == 'POST' and request.form.get('form.id') == 'newheadline':
             session['headline'] = form.job_headline.data
@@ -953,6 +926,17 @@ def newjob():
         if g.user:
             # form.poster_name.data = g.user.fullname  # Deprecated 2013-11-20
             form.poster_email.data = g.user.email
+
+    if request.method == 'GET' and request.args.get('template'):
+        archived_post = JobPost.query.filter_by(hashid=request.args.get('template')).first()
+        if not archived_post or not archived_post.admin_is(g.user):
+            abort(403)
+        if not archived_post.is_old():
+            flash("This listing is already active.")
+            return redirect(archived_post.url_for(), code=303)
+        form.populate(archived_post)
+        repost = True
+
     if request.method == 'POST' and request.form.get('form.id') != 'newheadline' and form.validate():
         # POST request from new job page, with successful validation
         # Move it to the editjob page for handling here forward
@@ -971,4 +955,4 @@ def newjob():
     # 1. GET request, page loaded for the first time
     # 2. POST request from main page's Post a Job box
     # 3. POST request from this page, with errors
-    return render_template('postjob.html', form=form, no_removelogo=True)
+    return render_template('postjob.html', form=form, no_removelogo=True, repost=repost, archived_post=archived_post)
