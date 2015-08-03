@@ -290,7 +290,7 @@ def browse_drafts():
 @lastuser.requires_login
 def my_posts():
     basequery = JobPost.query.filter_by(user=g.user)
-    return index(basequery=basequery, ageless=True, statuses=POSTSTATUS.ALL)
+    return index(basequery=basequery, ageless=True, statuses=POSTSTATUS.MY)
 
 
 @csrf.exempt
