@@ -21,7 +21,7 @@ from ..utils import string_to_number
 @app.route('/', methods=['GET', 'POST'], subdomain='<subdomain>')
 @app.route('/', methods=['GET', 'POST'])
 def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
-        location=None, title=None, showall=True, statuses=None, tag=None, batched=True):
+        location=None, title=None, showall=True, statuses=None, tag=None, batched=True, ageless=False):
 
     if basequery is None:
         is_index = True
@@ -101,8 +101,6 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
     if getbool(request.args.get('archive')):
         ageless = True
         data_filters['archive'] = True
-    else:
-        ageless = False
 
     search_domains = None
     if request.args.get('q'):
@@ -284,6 +282,15 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
 def browse_drafts():
     basequery = JobPost.query.filter_by(user=g.user)
     return index(basequery=basequery, statuses=[POSTSTATUS.DRAFT, POSTSTATUS.PENDING])
+
+
+@csrf.exempt
+@app.route('/all', methods=['GET', 'POST'], subdomain='<subdomain>')
+@app.route('/all', methods=['GET', 'POST'])
+@lastuser.requires_login
+def all_posts():
+    basequery = JobPost.query.filter_by(user=g.user)
+    return index(basequery=basequery, ageless=True, statuses=[status for status in POSTSTATUS.ALL])
 
 
 @csrf.exempt
