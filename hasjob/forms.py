@@ -354,6 +354,34 @@ class ListingForm(forms.Form):
         self.send_signals()
         return success
 
+    def populate_from(self, post):
+        self.job_headline.data = post.headline
+        self.job_headlineb.data = post.headlineb
+        self.job_type.data = post.type_id
+        self.job_category.data = post.category_id
+        self.job_location.data = post.location
+        self.job_relocation_assist.data = post.relocation_assist
+        self.job_description.data = post.description
+        self.job_perks.data = True if post.perks else False
+        self.job_perks_description.data = post.perks
+        self.job_how_to_apply.data = post.how_to_apply
+        self.company_name.data = post.company_name
+        self.company_url.data = post.company_url
+        self.poster_email.data = post.email
+        self.twitter.data = post.twitter
+        self.hr_contact.data = int(post.hr_contact or False)
+        self.collaborators.data = post.admins
+        self.job_pay_type.data = post.pay_type
+        if post.pay_type is None:
+            # This kludge required because WTForms doesn't know how to handle None in forms
+            self.job_pay_type.data = -1
+        self.job_pay_currency.data = post.pay_currency
+        self.job_pay_cash_min.data = post.pay_cash_min
+        self.job_pay_cash_max.data = post.pay_cash_max
+        self.job_pay_equity.data = bool(post.pay_equity_min and post.pay_equity_max)
+        self.job_pay_equity_min.data = post.pay_equity_min
+        self.job_pay_equity_max.data = post.pay_equity_max
+
 
 class ApplicationForm(forms.Form):
     apply_email = forms.RadioField("Email", validators=[forms.validators.DataRequired("Pick an email address")],
