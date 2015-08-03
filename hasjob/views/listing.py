@@ -928,7 +928,9 @@ def newjob():
 
     # Job Reposting
     if request.method == 'GET' and request.args.get('template'):
-        archived_post = JobPost.query.filter_by(hashid=request.args.get('template')).first_or_404()
+        archived_post = JobPost.get(request.args.get('template'))
+        if not archived_post:
+            abort(404)
         if not archived_post.admin_is(g.user):
             abort(403)
         if not archived_post.is_old():
