@@ -2,7 +2,7 @@
 {% from "baseframe/forms.html" import renderfield, rendersubmit, widgetscripts %}
 {% block title %}List a job{% endblock %}
 {% block content %}
-  {%- if repost %}
+  {%- if archived_post %}
     <div class="guide">
       <p>
         You're reposting <a href="{{archived_post.url_for()}}" target="_blank">{{archived_post.headline}}</a>.

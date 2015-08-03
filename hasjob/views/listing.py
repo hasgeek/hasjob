@@ -895,7 +895,6 @@ def editjob(hashid, key, domain=None, form=None, validated=False, newpost=None):
 @app.route('/new', methods=('GET', 'POST'))
 def newjob():
     form = forms.ListingForm()
-    repost = False
     archived_post = None
     if not g.user:
         if request.method == 'POST' and request.form.get('form.id') == 'newheadline':
@@ -927,15 +926,15 @@ def newjob():
             # form.poster_name.data = g.user.fullname  # Deprecated 2013-11-20
             form.poster_email.data = g.user.email
 
+    # Job Reposting
     if request.method == 'GET' and request.args.get('template'):
-        archived_post = JobPost.query.filter_by(hashid=request.args.get('template')).first()
-        if not archived_post or not archived_post.admin_is(g.user):
+        archived_post = JobPost.query.filter_by(hashid=request.args.get('template')).first_or_404()
+        if not archived_post.admin_is(g.user):
             abort(403)
         if not archived_post.is_old():
-            flash("This listing is already active.")
+            flash("This listing is currently active and cannot be posted again.")
             return redirect(archived_post.url_for(), code=303)
         form.populate(archived_post)
-        repost = True
 
     if request.method == 'POST' and request.form.get('form.id') != 'newheadline' and form.validate():
         # POST request from new job page, with successful validation
@@ -955,4 +954,4 @@ def newjob():
     # 1. GET request, page loaded for the first time
     # 2. POST request from main page's Post a Job box
     # 3. POST request from this page, with errors
-    return render_template('postjob.html', form=form, no_removelogo=True, repost=repost, archived_post=archived_post)
+    return render_template('postjob.html', form=form, no_removelogo=True, archived_post=archived_post)
