@@ -222,9 +222,6 @@ class JobPost(BaseMixin, db.Model):
     def is_closed(self):
         return self.status == POSTSTATUS.CLOSED
 
-    def is_withdrawn(self):
-        return self.status == POSTSTATUS.WITHDRAWN
-
     def is_unacceptable(self):
         return self.status in [POSTSTATUS.REJECTED, POSTSTATUS.SPAM]
 
@@ -233,9 +230,6 @@ class JobPost(BaseMixin, db.Model):
 
     def pay_type_label(self):
         return PAY_TYPE.get(self.pay_type)
-
-    def can_reopen(self):
-        return self.is_closed() or self.is_withdrawn()
 
     def withdraw(self):
         self.status = POSTSTATUS.WITHDRAWN

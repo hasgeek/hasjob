@@ -472,12 +472,9 @@ class ConfirmForm(forms.Form):
         validators=[forms.validators.DataRequired("You must accept the terms of service to publish this post")])
 
 
-class CloseForm(forms.Form):
-    withdraw = forms.BooleanField("Hide the job post")
-
-
-class ReopenForm(forms.Form):
-    pass
+class WithdrawForm(forms.Form):
+    really_withdraw = forms.BooleanField("Yes, I really want to withdraw the job post",
+        validators=[forms.validators.DataRequired(u"If you don’t want to withdraw the post, just close this page")])
 
 
 class ReportForm(forms.Form):

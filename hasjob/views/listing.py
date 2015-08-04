@@ -11,6 +11,7 @@ from sqlalchemy.orm.exc import StaleDataError
 from flask import abort, flash, g, redirect, render_template, request, url_for, session, Markup, jsonify
 from flask.ext.mail import Message
 from baseframe import cache, csrf
+from baseframe.forms import Form
 from coaster.utils import getbool, get_email_domain, md5sum, base_domain_matches
 from coaster.views import load_model
 from hasjob import app, forms, mail, lastuser
@@ -69,7 +70,7 @@ def jobdetail(domain, hashid):
     if post.status in [POSTSTATUS.DRAFT, POSTSTATUS.PENDING]:
         if not ((g.user and post.admin_is(g.user))):
             abort(403)
-    if post.status in POSTSTATUS.GONE and not post.admin_is(g.user):
+    if post.status in POSTSTATUS.GONE:
         abort(410)
     if g.user:
         jobview = UserJobView.get(post, g.user)
@@ -713,26 +714,22 @@ def confirm_email(domain, hashid, key):
 @app.route('/withdraw/<hashid>/<key>', defaults={'domain': None}, methods=('GET', 'POST'))
 def withdraw(domain, hashid, key):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
+    form = forms.WithdrawForm()
     if not ((key is None and g.user is not None and post.admin_is(g.user)) or (key == post.edit_key)):
         abort(403)
-    # TODO: Just redirect to close when key-based login is gone.
-    if post.status not in POSTSTATUS.CLOSEABLE:
-        return redirect(post.url_for(), code=303)
-    if post.is_withdrawn():
-        return redirect(post.url_for(), code=303)
-    form = forms.CloseForm()
+    if post.status == POSTSTATUS.WITHDRAWN:
+        flash("Your job post has already been withdrawn", "info")
+        return redirect(url_for('index'), code=303)
+    if post.status not in POSTSTATUS.LISTED:
+        flash("Your post cannot be withdrawn because it is not public", "info")
+        return redirect(url_for('index'), code=303)
     if form.validate_on_submit():
-        if form.withdraw.data:
-            post.withdraw()
-            msg = "Your job post has been closed and is hidden from public view."
-        else:
-            post.close()
-            msg = "Your job post has been closed, but is publicly available."
+        post.status = POSTSTATUS.WITHDRAWN
         post.closed_datetime = datetime.utcnow()
         db.session.commit()
-        flash(msg, "info")
+        flash("Your job post has been withdrawn and is no longer available", "info")
         return redirect(url_for('index'), code=303)
-    return render_template("close.html", post=post, form=form)
+    return render_template("withdraw.html", post=post, form=form)
 
 
 @csrf.exempt
@@ -966,26 +963,23 @@ def newjob():
 @app.route('/<domain>/<hashid>/close', methods=('GET', 'POST'), defaults={'key': None}, subdomain='<subdomain>')
 @app.route('/<domain>/<hashid>/close', methods=('GET', 'POST'), defaults={'key': None})
 def close(domain, hashid, key):
-    post = JobPost.query.filter_by(hashid=hashid).first_or_404()
+    post = JobPost.get(hashid)
+    if not post:
+        abort(404)
     if not post.admin_is(g.user):
         abort(403)
-    if post.status not in POSTSTATUS.CLOSEABLE:
+    if request.method == 'GET' and post.is_closed():
+        return redirect(post.url_for('reopen'), code=303)
+    if not post.is_public():
         flash("Your job post can't be closed.", "info")
         return redirect(post.url_for(), code=303)
-    if request.method == 'GET' and post.status in [POSTSTATUS.CLOSED, POSTSTATUS.WITHDRAWN]:
-        return redirect(post.url_for('reopen'), code=303)
-    form = forms.CloseForm()
+    form = Form()
     if form.validate_on_submit():
-        if form.withdraw.data:
-            post.withdraw()
-            msg = "Your job post has been closed and is hidden from public view."
-        else:
-            post.close()
-            msg = "Your job post has been closed, but is publicly available."
+        post.close()
         post.closed_datetime = datetime.utcnow()
         db.session.commit()
-        flash(msg, "info")
-        return redirect(url_for('index'), code=303)
+        flash("Your job post has been closed, but is publicly available.", "info")
+        return redirect(post.url_for(), code=303)
     return render_template("close.html", post=post, form=form)
 
 
@@ -993,22 +987,19 @@ def close(domain, hashid, key):
 @app.route('/<domain>/<hashid>/reopen', methods=('GET', 'POST'), defaults={'key': None})
 def reopen(domain, hashid, key):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
+    if not post:
+        abort(404)
     if not post.admin_is(g.user):
         abort(403)
-    # Only closed or withdrawn posts can be reopened
-    if post.status not in [POSTSTATUS.CLOSED, POSTSTATUS.WITHDRAWN]:
+    # Only closed posts can be reopened
+    if not post.is_closed():
         flash("Your job post can't be reopened.", "info")
         return redirect(post.url_for(), code=303)
-    reopen_form = forms.ReopenForm()
-    close_form = forms.CloseForm()
-    if reopen_form.validate_on_submit():
+    form = Form()
+    if form.validate_on_submit():
         post.confirm()
         post.closed_datetime = datetime.utcnow()
         db.session.commit()
         flash("Your job post has been reopened.", "info")
-        return redirect(url_for('index'), code=303)
-    if post.is_withdrawn():
-        post_status_msg = "This post is currently closed and hidden from public view."
-    else:
-        post_status_msg = "This post is currently closed but publicly viewable."
-    return render_template("reopen.html", post=post, reopen_form=reopen_form, close_form=close_form, post_status_msg=post_status_msg)
+        return redirect(post.url_for(), code=303)
+    return render_template("reopen.html", post=post, form=form)
