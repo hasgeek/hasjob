@@ -4,7 +4,7 @@ from sqlalchemy import event, DDL
 from sqlalchemy.dialects.postgresql import TSVECTOR
 from flask import url_for
 from baseframe.staticdata import webmail_domains
-from . import db, BaseMixin
+from . import db, BaseMixin, POSTSTATUS
 from .user import User
 from .jobpost import JobPost
 
@@ -56,7 +56,7 @@ class Domain(BaseMixin, db.Model):
         """
         if not user:
             return False
-        if JobPost.query.filter_by(domain=self, user=user).notempty():
+        if JobPost.query.filter_by(domain=self, user=user).filter(JobPost.status.in_(POSTSTATUS.POSTPENDING)).notempty():
             return True
         return False
 

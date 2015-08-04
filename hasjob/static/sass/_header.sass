@@ -4,7 +4,7 @@ body
 
 header
   margin-bottom: 0
-  min-height: 36px
+  min-height: 62px
 
   h1
     color: $color-title-has
@@ -30,6 +30,29 @@ header
     background: #ebe7e4
     border-bottom: 1px solid rgba(0,0,0,0.1)
     +box-shadow(0 1px 5px $color-shadow)
+    min-height: 62px
+
+    .hg-header-app-nav
+      max-width: 58%
+      overflow: hidden
+
+      h1 a, h1 a small
+        display: block
+        overflow: hidden
+        text-overflow: ellipsis
+        white-space: nowrap
+
+    .board-caption
+      position: absolute
+      left: 15px
+      right: 15px
+
+    .board-caption h1 a
+      width: 100%
+      overflow: hidden
+      text-overflow: ellipsis
+      white-space: nowrap
+      background-image: none
 
     h1
       margin: 0
@@ -45,9 +68,6 @@ header
 
     .fa
       width: 14px //same as font-size
-
-header.long-title
-  min-height: 72px
 
 #page-header
   border-bottom: none
@@ -156,9 +176,14 @@ header.long-title
 .job-filter-location-search-clear
   cursor: pointer
 
+@media (min-width: 480px)
+  header #hgnav .hg-header-app-nav
+    max-width: 70%
+
 @media (min-width: 768px)
   header
     margin-bottom: 110px
+    min-height: 36px
 
     h1
       font-size: 25px
@@ -167,6 +192,17 @@ header.long-title
       display: inline
 
     #hgnav 
+      min-height: 0
+
+      .hg-header-app-nav
+        max-width: 83%
+
+      .board-caption
+        position: static
+
+      .hg-header-app-nav h1 a small
+        display: inline
+
       .hg-site-nav
         clear: both
         margin: 0
@@ -177,9 +213,6 @@ header.long-title
 
       .hg-site-nav-toggle
         display: none
-
-  header.long-title
-    min-height: 36px
 
   .header-section ul.multiselect-container
     width: 20em
@@ -202,6 +235,9 @@ header.long-title
 @media (min-width: 1200px)
   header
     margin-bottom: 70px
+
+    #hgnav .hg-header-app-nav
+      max-width: 90%
 
   .header-section
     padding-bottom: 4px

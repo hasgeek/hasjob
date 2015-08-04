@@ -1,12 +1,12 @@
 @charset "UTF-8";
 body {
   font-family: "Fira Sans", arial, sans-serif;
-  background: #e8e7e6 url('../img/canvas.jpg?1416495026');
+  background: #e8e7e6 url('../img/canvas.jpg?1425290105');
 }
 
 header {
   margin-bottom: 0;
-  min-height: 36px;
+  min-height: 62px;
 }
 header h1 {
   color: #df5e0e;
@@ -34,6 +34,29 @@ header #hgnav {
   -moz-box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
   -webkit-box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
   box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
+  min-height: 62px;
+}
+header #hgnav .hg-header-app-nav {
+  max-width: 58%;
+  overflow: hidden;
+}
+header #hgnav .hg-header-app-nav h1 a, header #hgnav .hg-header-app-nav h1 a small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+header #hgnav .board-caption {
+  position: absolute;
+  left: 15px;
+  right: 15px;
+}
+header #hgnav .board-caption h1 a {
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background-image: none;
 }
 header #hgnav h1 {
   margin: 0;
@@ -51,10 +74,6 @@ header #hgnav .fa {
   width: 14px;
 }
 
-header.long-title {
-  min-height: 72px;
-}
-
 #page-header {
   border-bottom: none;
 }
@@ -64,7 +83,7 @@ header.long-title {
   overflow: hidden;
   text-align: left;
   text-transform: capitalize;
-  background-image: url('../img/logo-star.png?1424329162');
+  background-image: url('../img/logo-star.png?1425290105');
   background-repeat: no-repeat;
   background-position: 50% 50%;
   width: 170px;
@@ -185,14 +204,32 @@ header.long-title {
   cursor: pointer;
 }
 
+@media (min-width: 480px) {
+  header #hgnav .hg-header-app-nav {
+    max-width: 70%;
+  }
+}
 @media (min-width: 768px) {
   header {
     margin-bottom: 110px;
+    min-height: 36px;
   }
   header h1 {
     font-size: 25px;
   }
   header h1 small {
+    display: inline;
+  }
+  header #hgnav {
+    min-height: 0;
+  }
+  header #hgnav .hg-header-app-nav {
+    max-width: 83%;
+  }
+  header #hgnav .board-caption {
+    position: static;
+  }
+  header #hgnav .hg-header-app-nav h1 a small {
     display: inline;
   }
   header #hgnav .hg-site-nav {
@@ -205,10 +242,6 @@ header.long-title {
   }
   header #hgnav .hg-site-nav-toggle {
     display: none;
-  }
-
-  header.long-title {
-    min-height: 36px;
   }
 
   .header-section ul.multiselect-container {
@@ -236,6 +269,9 @@ header.long-title {
 @media (min-width: 1200px) {
   header {
     margin-bottom: 70px;
+  }
+  header #hgnav .hg-header-app-nav {
+    max-width: 90%;
   }
 
   .header-section {
@@ -275,7 +311,7 @@ header.long-title {
   line-height: 36px;
 }
 #search input[type="text"] {
-  background: white url('../img/search.png?1416495026') 4px center no-repeat;
+  background: white url('../img/search.png?1425290105') 4px center no-repeat;
   padding: 7px 10px 3px 20px;
 }
 #search .btn {
