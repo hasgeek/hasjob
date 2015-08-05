@@ -101,6 +101,7 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
     if getbool(request.args.get('archive')):
         ageless = True
         data_filters['archive'] = True
+        statuses = POSTSTATUS.ARCHIVED
 
     search_domains = None
     if request.args.get('q'):
