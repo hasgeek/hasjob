@@ -10,10 +10,11 @@
         {{ post_status_msg }}
         This post is currently closed but publicly viewable. Reopening the job post will let it resume accepting applications.
       </p>
-      <form method="POST" class="form-horizontal jobpost-left-form">
+      <form method="POST" class="form-horizontal">
         <input type="hidden" name="_charset_"/>
         {{ form.hidden_tag() }}
         <button type="submit" class="btn btn-primary">Reopen job post</button>
+        <a class="btn btn-default" href="{{ post.url_for() }}">Cancel</a>
       </form>
     </div>
   </div>
