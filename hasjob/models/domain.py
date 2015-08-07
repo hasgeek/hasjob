@@ -35,6 +35,8 @@ class Domain(BaseMixin, db.Model):
     banned_by = db.relationship(User)
     #: Reason for banning
     banned_reason = db.Column(db.Unicode(250), nullable=True)
+    #: Jobposts using this domain
+    jobposts = db.relationship(JobPost, lazy='dynamic', backref=db.backref('domain', lazy='joined'))
     #: Search vector
     search_vector = db.Column(TSVECTOR, nullable=True)
 

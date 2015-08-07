@@ -28,7 +28,6 @@ class UserActiveAt(db.Model):
     user_id = db.Column(None, db.ForeignKey('user.id'), nullable=False, primary_key=True, index=True)
     user = db.relationship(User)
     board_id = db.Column(None, db.ForeignKey('board.id'), nullable=True, index=True)
-    board = db.relationship('Board')
 
 
 class AnonUser(BaseMixin, db.Model):

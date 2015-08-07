@@ -7,7 +7,7 @@ from sqlalchemy.orm import defer
 from sqlalchemy.ext.associationproxy import association_proxy
 from coaster.sqlalchemy import make_timestamp_columns
 from . import db, TimestampMixin, BaseNameMixin
-from .user import User
+from .user import User, UserActiveAt
 from .jobpost import JobPost
 from .jobtype import JobType
 from .jobcategory import JobCategory
@@ -136,6 +136,8 @@ class Board(BaseNameMixin, db.Model):
     #: Automatic tagging locations
     locations = db.relationship(BoardLocation, backref='board', cascade='all, delete-orphan')
     geonameids = association_proxy('locations', 'geonameid', creator=lambda l: BoardLocation(geonameid=l))
+    #: Users active on this board
+    users_active_at = db.relationship(UserActiveAt, lazy='dynamic', backref='board')
 
     def __repr__(self):
         return '<Board %s "%s">' % (self.name, self.title)
