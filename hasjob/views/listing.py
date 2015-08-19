@@ -3,7 +3,6 @@
 import bleach
 from datetime import datetime, timedelta
 from difflib import SequenceMatcher
-from html2text import html2text
 from premailer import transform as email_transform
 
 from sqlalchemy.exc import IntegrityError
@@ -11,7 +10,7 @@ from sqlalchemy.orm.exc import StaleDataError
 from flask import abort, flash, g, redirect, render_template, request, url_for, session, Markup, jsonify
 from flask.ext.mail import Message
 from baseframe import cache, csrf
-from coaster.utils import getbool, get_email_domain, md5sum, base_domain_matches
+from coaster.utils import getbool, get_email_domain, md5sum, base_domain_matches, html_to_markdown
 from coaster.views import load_model
 from hasjob import app, forms, mail, lastuser
 from hasjob.models import (
@@ -316,7 +315,7 @@ def applyjob(domain, hashid):
                         post=post, job_application=job_application,
                         archive_url=job_application.url_for(_external=True)),
                     base_url=request.url_root)
-                email_text = html2text(email_html)
+                email_text = html_to_markdown(email_html, text_links=True)
                 flashmsg = "Your application has been sent to the employer"
 
                 msg = Message(subject=u"Job application: {fullname}".format(fullname=job_application.fullname),
@@ -467,7 +466,7 @@ def process_application(domain, hashid, application):
                         post=post, job_application=job_application,
                         archive_url=job_application.url_for(_external=True)),
                     base_url=request.url_root)
-                email_text = html2text(email_html)
+                email_text = html_to_markdown(email_html, text_links=True)
 
                 sender_name = g.user.fullname if post.admin_is(g.user) else post.fullname or post.company_name
                 sender_formatted = u'{sender} (via {site})'.format(
@@ -574,7 +573,7 @@ def rejectjob(domain, hashid):
             msg = Message(subject="About your job post on Hasjob",
                 recipients=[post.email])
             msg.html = email_transform(render_template('reject_email.html', post=post), base_url=request.url_root)
-            msg.body = html2text(msg.html)
+            msg.body = html_to_markdown(msg.html, text_links=True)
             mail.send(msg)
         db.session.commit()
         if request.is_xhr:
@@ -608,7 +607,7 @@ def moderatejob(domain, hashid):
         msg = Message(subject="About your job post on Hasjob",
             recipients=[post.email])
         msg.html = email_transform(render_template('moderate_email.html', post=post), base_url=request.url_root)
-        msg.body = html2text(msg.html)
+        msg.body = html_to_markdown(msg.html, text_links=True)
         mail.send(msg)
         db.session.commit()
         if request.is_xhr:
@@ -643,7 +642,7 @@ def confirm(domain, hashid):
         msg = Message(subject="Confirmation of your job post at Hasjob",
             recipients=[post.email])
         msg.html = email_transform(render_template('confirm_email.html', post=post), base_url=request.url_root)
-        msg.body = html2text(msg.html)
+        msg.body = html_to_markdown(msg.html, text_links=True)
         mail.send(msg)
         post.email_sent = True
         post.status = POSTSTATUS.PENDING
