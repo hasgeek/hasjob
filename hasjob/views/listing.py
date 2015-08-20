@@ -42,7 +42,7 @@ from hasjob.views import ALLOWED_TAGS
 from hasjob.nlp import identify_language
 from hasjob.views.helper import gif1x1, cache_viewcounts, session_jobpost_ab, bgroup
 
-PLAIN_TEXT_LINK_FORMAT = "{text} - {href}"
+PLAIN_TEXT_LINK_FORMAT = "{text} <{href}>"
 
 
 @app.route('/<domain>/<hashid>', methods=('GET', 'POST'), subdomain='<subdomain>')
