@@ -189,6 +189,14 @@ class JobPost(BaseMixin, db.Model):
             return False
         return user == self.user or user in self.admins
 
+    @property
+    def expiry_date(self):
+        return self.datetime + agelimit
+
+    @property
+    def after_expiry_date(self):
+        return self.expiry_date + timedelta(days=1)
+
     def status_label(self):
         if self.status == POSTSTATUS.DRAFT:
             return _("Draft")

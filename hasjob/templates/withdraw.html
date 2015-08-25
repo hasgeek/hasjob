@@ -11,7 +11,7 @@
         Your post will be permanently withdrawn and cannot be made
         available again.
         <strong>You will not be able to re-post this job or a similarly worded job
-        until 30 days have passed.</strong>
+        until {{ post.after_expiry_date|longdate }}.</strong>
       </p>
       <form method="POST" class="form-horizontal">
         <input type="hidden" name="_charset_"/>
