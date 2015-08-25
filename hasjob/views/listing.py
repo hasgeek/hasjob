@@ -961,6 +961,7 @@ def newjob():
     return render_template('postjob.html', form=form, no_removelogo=True, archived_post=archived_post)
 
 
+@csrf.exempt
 @app.route('/<domain>/<hashid>/close', methods=('GET', 'POST'), defaults={'key': None}, subdomain='<subdomain>')
 @app.route('/<domain>/<hashid>/close', methods=('GET', 'POST'), defaults={'key': None})
 def close(domain, hashid, key):
@@ -979,11 +980,11 @@ def close(domain, hashid, key):
         post.close()
         post.closed_datetime = datetime.utcnow()
         db.session.commit()
-        flash("Your job post has been closed, but is publicly available.", "info")
         return redirect(post.url_for(), code=303)
     return render_template("close.html", post=post, form=form)
 
 
+@csrf.exempt
 @app.route('/<domain>/<hashid>/reopen', methods=('GET', 'POST'), defaults={'key': None}, subdomain='<subdomain>')
 @app.route('/<domain>/<hashid>/reopen', methods=('GET', 'POST'), defaults={'key': None})
 def reopen(domain, hashid, key):
@@ -1001,6 +1002,5 @@ def reopen(domain, hashid, key):
         post.confirm()
         post.closed_datetime = datetime.utcnow()
         db.session.commit()
-        flash("Your job post has been reopened.", "info")
         return redirect(post.url_for(), code=303)
     return render_template("reopen.html", post=post, form=form)

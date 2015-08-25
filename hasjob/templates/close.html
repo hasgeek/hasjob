@@ -4,14 +4,16 @@
 {% block content %}
   <div class="sheet">
     <div class="section first">
-      <h1>Close job post?</h1>
+      <h1>Close this job post?</h1>
       <h2>{{ post.headline }}</h2>
       <p>
-        Your job post will not be able to accept applications henceforth, but will still be publicly available. Please confirm that you wish to close this job post.
+        You can stop accepting applications if the position has been filled or otherwise closed.
+        The post will remain visible to anyone visiting with the URL, but they will no longer be
+        able to apply.
       </p>
       <form method="POST" class="form-horizontal">
         {{ form.hidden_tag() }}
-        <button type="submit" class="btn btn-danger">Close job post</button>
+        <button type="submit" class="btn btn-danger">Close</button>
         <a class="btn btn-default" href="{{ post.url_for() }}">Cancel</a>
       </form>
     </div>
