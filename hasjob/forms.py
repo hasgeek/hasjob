@@ -474,7 +474,7 @@ class ConfirmForm(forms.Form):
 
 class WithdrawForm(forms.Form):
     really_withdraw = forms.BooleanField("Yes, I really want to withdraw the job post",
-        validators=[forms.validators.DataRequired(u"If you don’t want to withdraw the post, just close this page")])
+        validators=[forms.validators.DataRequired(u"You must confirm withdrawal")])
 
 
 class ReportForm(forms.Form):

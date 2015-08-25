@@ -71,6 +71,14 @@
       {{ post.company_url_domain_zone }}. Please proceed with caution.
     </p>
   </div>
+  {% elif post.is_unacceptable() %}
+  <div class="guide">
+    <p>
+      Your post is not in compliance with our <a href="https://hasjob.co/tos">Terms of Service</a> and has been taken down. Your post was reviewed by {{ post.reviewer.fullname }}, who left the following comment:</p>
+      <hr>
+      <p>{{ post.review_comments }}</p>
+    </p>
+  </div>
   {% endif %}
 
   <div itemscope itemtype="http://schema.org/Article" class="sheet">
@@ -133,14 +141,21 @@
               <a class="list-group-item" href="{{ post.url_for('edit') }}">
                 <i class="fa fa-fw fa-pencil"></i>&nbsp;&nbsp; Edit this
               </a>
+              {%- if post.is_closed() %}
+                <a class="list-group-item" href="{{ post.url_for('reopen') }}">
+                  <i class="fa fa-fw fa-check"></i>&nbsp;&nbsp; Reopen this
+                </a>
+              {%- elif post.is_public() %}
+                <a class="list-group-item" href="{{ post.url_for('close') }}">
+                  <i class="fa fa-fw fa-times"></i>&nbsp;&nbsp; Close this
+                </a>
+                <a class="list-group-item" href="{{ post.url_for('withdraw') }}">
+                  <i class="fa fa-fw fa-trash-o"></i>&nbsp;&nbsp; Withdraw this
+                </a>
+              {%- endif %}
               {%- if post.is_old() %}
                 <a class="list-group-item" href="{{ url_for('newjob', template=post.hashid) }}">
                   <i class="fa fa-fw fa-refresh"></i>&nbsp;&nbsp; Repost this
-                </a>
-              {%- endif %}
-              {%- if post.is_public() %}
-                <a class="list-group-item" href="{{ post.url_for('withdraw') }}">
-                  <i class="fa fa-fw fa-trash-o"></i>&nbsp;&nbsp; Withdraw this
                 </a>
               {%- endif %}
             {%- endif %}
@@ -231,7 +246,11 @@
         {% endif %}</div>
       </div>
     </div>
-    {% if not post.is_announcement() %}
+    {%- if post.is_closed() %}
+      <div class="section">
+        <h2>No longer accepting applications</h2>
+      </div>
+    {% elif not post.is_announcement() %}
       <div class="section" id="apply-info">
         {%- if g.kiosk %}
           <img align="right" src="//chart.googleapis.com/chart?chs=150x150&amp;cht=qr&amp;chl={{ post.url_for(subdomain=none, _external=true) }}&amp;choe=UTF-8"/>

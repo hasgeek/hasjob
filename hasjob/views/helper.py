@@ -538,16 +538,21 @@ def url_from_ob(ob):
         return url_for('browse_by_category', name=ob.name)
 
 
+def use_timezone():
+    if g and g.user:
+        return g.user.tz
+    else:
+        return timezone(app.config['TIMEZONE'])
+
+
 @app.template_filter('shortdate')
 def shortdate(date):
-    tz = timezone(app.config['TIMEZONE'])
-    return utc.localize(date).astimezone(tz).strftime('%b %e')
+    return utc.localize(date).astimezone(use_timezone()).strftime('%b %e')
 
 
 @app.template_filter('longdate')
 def longdate(date):
-    tz = timezone(app.config['TIMEZONE'])
-    return utc.localize(date).astimezone(tz).strftime('%B %e, %Y')
+    return utc.localize(date).astimezone(use_timezone()).strftime('%B %e, %Y')
 
 
 @app.template_filter('cleanurl')

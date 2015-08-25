@@ -189,6 +189,14 @@ class JobPost(BaseMixin, db.Model):
             return False
         return user == self.user or user in self.admins
 
+    @property
+    def expiry_date(self):
+        return self.datetime + agelimit
+
+    @property
+    def after_expiry_date(self):
+        return self.expiry_date + timedelta(days=1)
+
     def status_label(self):
         if self.status == POSTSTATUS.DRAFT:
             return _("Draft")
@@ -226,11 +234,26 @@ class JobPost(BaseMixin, db.Model):
     def is_new(self):
         return self.datetime >= datetime.utcnow() - newlimit
 
+    def is_closed(self):
+        return self.status == POSTSTATUS.CLOSED
+
+    def is_unacceptable(self):
+        return self.status in [POSTSTATUS.REJECTED, POSTSTATUS.SPAM]
+
     def is_old(self):
         return self.datetime <= datetime.utcnow() - agelimit
 
     def pay_type_label(self):
         return PAY_TYPE.get(self.pay_type)
+
+    def withdraw(self):
+        self.status = POSTSTATUS.WITHDRAWN
+
+    def close(self):
+        self.status = POSTSTATUS.CLOSED
+
+    def confirm(self):
+        self.status = POSTSTATUS.CONFIRMED
 
     def url_for(self, action='view', _external=False, **kwargs):
         if self.status in POSTSTATUS.UNPUBLISHED and action in ('view', 'edit'):
@@ -255,6 +278,10 @@ class JobPost(BaseMixin, db.Model):
             return url_for('editjob', hashid=self.hashid, domain=domain, _external=_external, **kwargs)
         elif action == 'withdraw':
             return url_for('withdraw', hashid=self.hashid, domain=domain, _external=_external, **kwargs)
+        elif action == 'close':
+            return url_for('close', hashid=self.hashid, domain=domain, _external=_external, **kwargs)
+        elif action == 'reopen':
+            return url_for('reopen', hashid=self.hashid, domain=domain, _external=_external, **kwargs)
         elif action == 'moderate':
             return url_for('moderatejob', hashid=self.hashid, domain=domain, _external=_external, **kwargs)
         elif action == 'pin':

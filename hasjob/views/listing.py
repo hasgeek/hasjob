@@ -10,6 +10,7 @@ from sqlalchemy.orm.exc import StaleDataError
 from flask import abort, flash, g, redirect, render_template, request, url_for, session, Markup, jsonify
 from flask.ext.mail import Message
 from baseframe import cache, csrf
+from baseframe.forms import Form
 from coaster.utils import getbool, get_email_domain, md5sum, base_domain_matches, html_to_text
 from coaster.views import load_model
 from hasjob import app, forms, mail, lastuser
@@ -958,3 +959,48 @@ def newjob():
     # 2. POST request from main page's Post a Job box
     # 3. POST request from this page, with errors
     return render_template('postjob.html', form=form, no_removelogo=True, archived_post=archived_post)
+
+
+@csrf.exempt
+@app.route('/<domain>/<hashid>/close', methods=('GET', 'POST'), defaults={'key': None}, subdomain='<subdomain>')
+@app.route('/<domain>/<hashid>/close', methods=('GET', 'POST'), defaults={'key': None})
+def close(domain, hashid, key):
+    post = JobPost.get(hashid)
+    if not post:
+        abort(404)
+    if not post.admin_is(g.user):
+        abort(403)
+    if request.method == 'GET' and post.is_closed():
+        return redirect(post.url_for('reopen'), code=303)
+    if not post.is_public():
+        flash("Your job post can't be closed.", "info")
+        return redirect(post.url_for(), code=303)
+    form = Form()
+    if form.validate_on_submit():
+        post.close()
+        post.closed_datetime = datetime.utcnow()
+        db.session.commit()
+        return redirect(post.url_for(), code=303)
+    return render_template("close.html", post=post, form=form)
+
+
+@csrf.exempt
+@app.route('/<domain>/<hashid>/reopen', methods=('GET', 'POST'), defaults={'key': None}, subdomain='<subdomain>')
+@app.route('/<domain>/<hashid>/reopen', methods=('GET', 'POST'), defaults={'key': None})
+def reopen(domain, hashid, key):
+    post = JobPost.query.filter_by(hashid=hashid).first_or_404()
+    if not post:
+        abort(404)
+    if not post.admin_is(g.user):
+        abort(403)
+    # Only closed posts can be reopened
+    if not post.is_closed():
+        flash("Your job post can't be reopened.", "info")
+        return redirect(post.url_for(), code=303)
+    form = Form()
+    if form.validate_on_submit():
+        post.confirm()
+        post.closed_datetime = datetime.utcnow()
+        db.session.commit()
+        return redirect(post.url_for(), code=303)
+    return render_template("reopen.html", post=post, form=form)
