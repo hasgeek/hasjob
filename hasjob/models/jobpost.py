@@ -8,10 +8,10 @@ from sqlalchemy import event, DDL
 from sqlalchemy.orm import defer
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.dialects.postgresql import TSVECTOR
-from coaster.sqlalchemy import make_timestamp_columns, Query, JsonDict
-from baseframe import cache
-from baseframe.staticdata import webmail_domains
 import tldextract
+from coaster.sqlalchemy import make_timestamp_columns, Query, JsonDict
+from baseframe import cache, _
+from baseframe.staticdata import webmail_domains
 from .. import redis_store
 from . import newlimit, agelimit, db, POSTSTATUS, EMPLOYER_RESPONSE, PAY_TYPE, BaseMixin, TimestampMixin
 from .jobtype import JobType
@@ -108,7 +108,6 @@ class JobPost(BaseMixin, db.Model):
     email = db.Column(db.Unicode(80), nullable=False)
     email_domain = db.Column(db.Unicode(80), nullable=False, index=True)
     domain_id = db.Column(None, db.ForeignKey('domain.id'), nullable=False)
-    domain = db.relationship('Domain', lazy='joined', backref=db.backref('jobposts', lazy='dynamic'))
     md5sum = db.Column(db.String(32), nullable=False, index=True)
 
     # Payment, audit and workflow fields
@@ -189,6 +188,14 @@ class JobPost(BaseMixin, db.Model):
         if user is None:
             return False
         return user == self.user or user in self.admins
+
+    def status_label(self):
+        if self.status == POSTSTATUS.DRAFT:
+            return _("Draft")
+        elif self.status == POSTSTATUS.PENDING:
+            return _("Pending")
+        elif self.is_new():
+            return _("New!")
 
     def is_draft(self):
         return self.status == POSTSTATUS.DRAFT
