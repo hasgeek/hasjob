@@ -14,13 +14,11 @@
       {% if starred is not none %}
         <i class="fa fa-star{% if not starred %}-o{% endif %} pstar" data-id="{{ post.hashid }}"></i>
       {% endif %}
-      {%- if post.is_new() %}
-        <span class="new">New!</span>
-      {%- elif post.is_draft() %}
-        Draft
-      {%- elif post.is_pending() %}
-        Pending
-      {%- endif %}
+      {%- with status_label = post.status_label() -%}
+        {%- if status_label -%}
+          <span class="new">{{ status_label }}</span>
+        {%- endif -%}
+      {%- endwith -%}
     </span>
   {%- if groupedunder %}
     </div>
