@@ -70,7 +70,7 @@ def load_user_data(user):
     g.event_data = {}   # Views can add data to the current pageview event
     g.esession = None
     g.viewcounts = {}
-    g.impressions = {}
+    g.impressions = session.pop('impressions', {})  # Retrieve from cookie session if present there
     g.campaign_views = []
     g.jobpost_viewed = None, None
     g.bgroup = None
