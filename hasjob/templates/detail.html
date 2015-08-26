@@ -222,9 +222,6 @@
                   {%- endif -%}
                 </a>
               {%- endif %}{% endwith -%}
-              {%- if post.headlineb %}{% with ab_views=post.ab_views %}
-                <span class="list-group-item" title="Headline A/B test"><i class="fa fa-fw fa-hand-o-up"></i>&nbsp;&nbsp; {{ ab_views.NA }} NA &middot; {{ ab_views.A }} A &middot; {{ ab_views.B }} B</span>
-              {%- endwith %}{% endif %}
             {%- endif %}
             {%- if is_siteadmin or post.admin_is(g.user) or (g.user and g.user.flags.is_employer_month) %}
               <div class="list-group-item no-border">
@@ -339,6 +336,52 @@
       </div>
     {%- endif %}
   </div>
+  {%- if post.headlineb and (is_siteadmin or post.admin_is(g.user)) %}
+    <div class="post-guide">
+      <h2>A/B test results</h2>
+      <table class="table">
+        <thead>
+          <tr>
+            <th></th>
+            <th><span data-toggle="tooltip" data-placement="bottom" title="No A/B test flag was included">N/A</span></th>
+            <th>A</th>
+            <th>B</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>{% with abi = post.ab_impressions, abv=post.ab_views %}
+          <tr>
+            <th>Impressions</th>
+            <td>{{ abi.NA }}</td>
+            <td>{{ abi.A }}</td>
+            <td>{{ abi.B }}</td>
+            <td>Number of sessions in which the job post was listed</td>
+          </tr>
+          <tr>
+            <th>Conversions</th>
+            <td>{{ abv.C_NA }}</td>
+            <td>{{ abv.C_A }}</td>
+            <td>{{ abv.C_B }}</td>
+            <td>Views from an A/B tested listing</td>
+          </tr>
+          <tr>
+            <th>External</th>
+            <td>{{ abv.E_NA }}</td>
+            <td>{{ abv.E_A }}</td>
+            <td>{{ abv.E_B }}</td>
+            <td>Views from external links with a static A/B group</td>
+          </tr>
+          <tr>
+            <th>Second times</th>
+            <td>{{ abv.X_NA }}</td>
+            <td>{{ abv.X_A }}</td>
+            <td>{{ abv.X_B }}</td>
+            <td>Shown both and only responded the second time</td>
+          </tr>
+        {% endwith %}</tbody>
+      </table>
+    </div>
+  {%- endif %}
 {% endblock %}
 {% block postcontent %}
   {%- if related_posts %}

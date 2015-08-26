@@ -453,17 +453,48 @@ class JobPost(BaseMixin, db.Model):
             redis_store.hdel(cache_key, key)
 
     @cached_property
-    def ab_views(self):
-        na_count = JobViewSession.query.filter_by(jobpost=self, bgroup=None).count()
+    def ab_impressions(self):
+        results = {'NA': 0, 'A': 0, 'B': 0}
         counts = db.session.query(
-            JobViewSession.bgroup.label('bgroup'), db.func.count(JobViewSession.bgroup).label('count')).filter(
-            JobViewSession.jobpost == self, JobViewSession.bgroup != None).group_by(JobViewSession.bgroup)  # NOQA
-        results = {'NA': na_count, 'A': 0, 'B': 0}
+            JobImpression.bgroup.label('bgroup'), db.func.count('*').label('count')).filter(
+            JobImpression.jobpost == self).group_by(JobImpression.bgroup)
         for row in counts:
             if row.bgroup is False:
                 results['A'] = row.count
             elif row.bgroup is True:
                 results['B'] = row.count
+            else:
+                results['NA'] = row.count
+        return results
+
+    @cached_property
+    def ab_views(self):
+        results = {
+            'C_NA': 0, 'C_A': 0, 'C_B': 0,  # Conversions (cointoss=True, crosstoss=False)
+            'E_NA': 0, 'E_A': 0, 'E_B': 0,  # External (cointoss=False, crosstoss=True OR False [do sum])
+            'X_NA': 0, 'X_A': 0, 'X_B': 0,  # Cross toss (cointoss=True, crosstoss=True)
+            }
+        counts = db.session.query(
+            JobViewSession.bgroup.label('bgroup'),
+            JobViewSession.cointoss.label('cointoss'),
+            JobViewSession.crosstoss.label('crosstoss'),
+            db.func.count('*').label('count')
+            ).filter(JobViewSession.jobpost == self
+            ).group_by(JobViewSession.bgroup, JobViewSession.cointoss, JobViewSession.crosstoss)
+
+        for row in counts:
+            if row.cointoss is True and row.crosstoss is False:
+                prefix = 'C'
+            elif row.cointoss is False:
+                prefix = 'E'
+            elif row.cointoss is True and row.crosstoss is True:
+                prefix = 'X'
+            if row.bgroup is False:
+                results[prefix + '_A'] += row.count
+            elif row.bgroup is True:
+                results[prefix + '_B'] += row.count
+            else:
+                results[prefix + '_NA'] += row.count
         return results
 
     @property
@@ -675,8 +706,17 @@ class JobViewSession(TimestampMixin, db.Model):
     #: Job post that was viewed
     jobpost_id = db.Column(None, db.ForeignKey('jobpost.id'), primary_key=True, index=True)
     jobpost = db.relationship(JobPost)
+    #: Related impression
+    impression = db.relationship(JobImpression,
+        primaryjoin='''and_(JobViewSession.event_session_id == foreign(JobImpression.event_session_id),
+            JobViewSession.jobpost_id == foreign(JobImpression.jobpost_id))''',
+        uselist=False, backref='view')
     #: Was this view in the B group of an A/B test? (null = no test conducted)
     bgroup = db.Column(db.Boolean, nullable=True)
+    #: Was the bgroup assigned by coin toss or was it predetermined?
+    cointoss = db.Column(db.Boolean, nullable=False, default=False)
+    #: Does this bgroup NOT match the impression's bgroup?
+    crosstoss = db.Column(db.Boolean, nullable=False, default=False)
 
     @classmethod
     def get(cls, event_session, jobpost):

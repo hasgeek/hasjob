@@ -1,7 +1,7 @@
 @charset "UTF-8";
 body {
   font-family: "Fira Sans", arial, sans-serif;
-  background: #e8e7e6 url('../img/canvas.jpg?1416495026');
+  background: #e8e7e6 url('../img/canvas.jpg?1400098749');
 }
 
 header {
@@ -83,7 +83,7 @@ header #hgnav .fa {
   overflow: hidden;
   text-align: left;
   text-transform: capitalize;
-  background-image: url('../img/logo-star.png?1424329162');
+  background-image: url('../img/logo-star.png?1424602497');
   background-repeat: no-repeat;
   background-position: 50% 50%;
   width: 170px;
@@ -311,7 +311,7 @@ header #hgnav .fa {
   line-height: 36px;
 }
 #search input[type="text"] {
-  background: white url('../img/search.png?1416495026') 4px center no-repeat;
+  background: white url('../img/search.png?1343882941') 4px center no-repeat;
   padding: 7px 10px 3px 20px;
 }
 #search .btn {
@@ -373,7 +373,7 @@ footer .container {
     min-height: 57px;
   }
 }
-.flash, .guide {
+.flash, .guide, .post-guide {
   background: #fff;
   position: relative;
   margin: 0 -15px;
@@ -381,10 +381,10 @@ footer .container {
   border-top: 1px solid #afafaf;
   border-bottom: 1px solid #afafaf;
 }
-.flash h2, .guide h2 {
+.flash h2, .guide h2, .post-guide h2 {
   margin: 0;
 }
-.flash .close, .guide .close {
+.flash .close, .guide .close, .post-guide .close {
   position: absolute;
   top: 2px;
   right: 5px;
@@ -411,7 +411,7 @@ footer .container {
   border-top-color: #afafaf;
 }
 
-/* creates the smaller  triangle */
+/* creates the smaller triangle */
 .flash-interactive:after, .guide:after {
   content: "";
   display: block;
@@ -422,6 +422,31 @@ footer .container {
   height: 0;
   border: 10px solid transparent;
   border-top-color: #fff;
+}
+
+.post-guide:before {
+  content: "";
+  display: block;
+  position: absolute;
+  top: -21px;
+  left: 30px;
+  width: 0;
+  height: 0;
+  border: 10px solid transparent;
+  border-bottom-color: #afafaf;
+}
+
+/* creates the smaller triangle */
+.post-guide:after {
+  content: "";
+  display: block;
+  position: absolute;
+  top: -20px;
+  left: 30px;
+  width: 0;
+  height: 0;
+  border: 10px solid transparent;
+  border-bottom-color: #fff;
 }
 
 h1 {
@@ -519,12 +544,6 @@ h1 small, h2 small, h3 small {
   -webkit-box-shadow: 0 10px 10px -10px rgba(0, 0, 0, 0.1) inset, 10px 0 10px -10px rgba(0, 0, 0, 0.1) inset;
   box-shadow: 0 10px 10px -10px rgba(0, 0, 0, 0.1) inset, 10px 0 10px -10px rgba(0, 0, 0, 0.1) inset;
 }
-.sheet .table th:first-child, .sheet .table td:first-child {
-  padding-left: 0;
-}
-.sheet .table th:last-child, .sheet .table td:last-child {
-  padding-right: 0;
-}
 .sheet .list-group {
   margin: 0 -15px;
   font-size: 80%;
@@ -566,6 +585,20 @@ h1 small, h2 small, h3 small {
 }
 .sheet form {
   margin-bottom: 12px;
+}
+
+.sheet .table, .post-guide .table {
+  margin-bottom: 12px;
+}
+.sheet .table th:first-child, .sheet .table td:first-child, .post-guide .table th:first-child, .post-guide .table td:first-child {
+  padding-left: 0;
+}
+.sheet .table th:last-child, .sheet .table td:last-child, .post-guide .table th:last-child, .post-guide .table td:last-child {
+  padding-right: 0;
+}
+
+.sheet + .post-guide {
+  margin-top: -1px;
 }
 
 .post-company-logo {
@@ -654,7 +687,7 @@ h1 small, h2 small, h3 small {
     margin-bottom: 12px;
   }
 
-  .flash, .guide {
+  .flash, .guide, .post-guide {
     padding: 14px 30px 1px;
     margin: 12px 0 24px;
     border: 1px solid #afafaf;
@@ -666,7 +699,7 @@ h1 small, h2 small, h3 small {
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
   }
 
-  .guide form {
+  .guide form, .post-guide form {
     margin-bottom: 12px;
   }
 
@@ -696,6 +729,10 @@ h1 small, h2 small, h3 small {
     -moz-border-radius: 4px 4px 0 0;
     -webkit-border-radius: 4px;
     border-radius: 4px 4px 0 0;
+  }
+
+  .sheet + .post-guide {
+    margin-top: 0;
   }
 
   .section {
