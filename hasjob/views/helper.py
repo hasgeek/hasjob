@@ -275,11 +275,22 @@ def record_views_and_events(response):
                     jvs = JobViewSession(jobpost=g.jobpost_viewed[0], event_session=g.esession)
                     db.session.add(jvs)
 
-                jvs.bgroup = g.jobpost_viewed[1]
-                try:
-                    db.session.commit()
-                except IntegrityError:
-                    db.session.rollback()
+                    jvs.bgroup = g.jobpost_viewed[1]
+
+                    # Since this is a new view, is there an existing job impression in the same session
+                    # which has a bgroup defined? If yes, this view has an associated coin toss.
+                    # ji = JobImpression.get(jvs.jobpost, jvs.event_session)
+                    ji = jvs.impression
+                    if ji:
+                        jvs.cointoss = True
+                        if ji.bgroup != jvs.bgroup and jvs.bgroup is not None:
+                            jvs.crosstoss = True
+                    else:
+                        jvs.cointoss = False
+                    try:
+                        db.session.commit()
+                    except IntegrityError:
+                        db.session.rollback()
         else:
             g.esession.save_to_cache(session['au'])
             if g.impressions:

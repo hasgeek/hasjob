@@ -1,4 +1,4 @@
-.flash, .guide
+.flash, .guide, .post-guide
   background: $color-sheet
   position: relative
   margin: 0 -15px
@@ -32,7 +32,7 @@
   border: 10px solid transparent
   border-top-color: $color-sheet-border
 
-/* creates the smaller  triangle */
+/* creates the smaller triangle */
 .flash-interactive:after, .guide:after
   content: ""
   display: block // reduce the damage in FF3.0
@@ -43,6 +43,29 @@
   height: 0
   border: 10px solid transparent
   border-top-color: $color-sheet
+
+.post-guide:before
+  content: ""
+  display: block // reduce the damage in FF3.0
+  position: absolute
+  top: -21px // value = - border-top-width - border-bottom-width
+  left: 30px // controls horizontal position 
+  width: 0
+  height: 0
+  border: 10px solid transparent
+  border-bottom-color: $color-sheet-border
+
+/* creates the smaller triangle */
+.post-guide:after
+  content: ""
+  display: block // reduce the damage in FF3.0
+  position: absolute
+  top: -20px // value = - border-top-width - border-bottom-width
+  left: 30px // value = (:before left) + (:before border-left) - (:after border-left)
+  width: 0
+  height: 0
+  border: 10px solid transparent
+  border-bottom-color: $color-sheet
 
 h1
   color: $color-title-has
@@ -119,17 +142,6 @@ h1 small, h2 small, h3 small
   .nav-tabs-top>li:first-child.active>a:hover, .nav-tabs-top>li:first-child.active>a:focus
     +box-shadow(0 10px 10px -10px rgba(0,0,0,0.1) inset, 10px 0 10px -10px rgba(0,0,0,0.1) inset)
 
-
-  .table
-    th:first-child, td:first-child
-      padding-left: 0
-
-    th:last-child, td:last-child
-      padding-right: 0
-
-    // & > thead > tr > th
-    //   border-bottom-width: 1px
-
   .list-group
     margin: 0 -15px
     font-size: 80%
@@ -161,6 +173,22 @@ h1 small, h2 small, h3 small
 
   form
     margin-bottom: 12px
+
+.sheet, .post-guide
+  .table
+    margin-bottom: $body-line-height / 2
+
+    th:first-child, td:first-child
+      padding-left: 0
+
+    th:last-child, td:last-child
+      padding-right: 0
+
+    // & > thead > tr > th
+    //   border-bottom-width: 1px
+
+.sheet + .post-guide
+  margin-top: -1px  // To offset .sheet's border-bottom
 
 .post-company-logo
   text-align: center
@@ -227,14 +255,14 @@ h1 small, h2 small, h3 small
     img
       margin-bottom: $body-line-height / 2
 
-  .flash, .guide
+  .flash, .guide, .post-guide
     padding: 14px 30px 1px
     margin: 12px 0 24px
     border: 1px solid $color-sheet-border
     +border-radius(4px)
     +box-shadow(0 2px 10px $color-shadow)
 
-  .guide
+  .guide, .post-guide
     form
       margin-bottom: 12px
 
@@ -253,6 +281,9 @@ h1 small, h2 small, h3 small
 
       & > li > a
         +border-radius(4px 4px 0 0)
+
+  .sheet + .post-guide
+    margin-top: 0
 
   .section
     padding: 12px 30px 0
