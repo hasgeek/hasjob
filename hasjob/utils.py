@@ -1,5 +1,5 @@
 import re
-from random import randint
+from random import randint, choice
 from coaster import simplify_text
 
 NO_NUM_RE = re.compile('[^0-9]+', re.UNICODE)
@@ -63,7 +63,7 @@ def random_hash_key():
 
 
 def randbool():
-    return bool(randint(0, 1))
+    return choice([True, False])
 
 
 EMAIL_RE = re.compile(r'\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,63}\b', re.I)
