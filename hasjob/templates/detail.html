@@ -424,7 +424,7 @@
       e.preventDefault();
       return false;
     });
-    $('#post-location').tooltip();
+    $('span[data-toggle="tooltip"]').tooltip();
     $(".popup-box").hide();
     $(".popup-box:target").show();
     $("body").click(function() {
