@@ -360,8 +360,8 @@
           <tr>
             <th>Conversions</th>
             <td>{{ abv.C_NA }}</td>
-            <td>{{ abv.C_A }}</td>
-            <td>{{ abv.C_B }}</td>
+            <td>{{ abv.C_A }}{% if abi.A > 0 %} <small>({{ (abv.C_A*100/abi.A)|round(1) }}%)</small>{% endif %}</td>
+            <td>{{ abv.C_B }}{% if abi.B > 0 %} <small>({{ (abv.C_B*100/abi.B)|round(1) }}%)</small>{% endif %}</td>
             <td>Views from an A/B tested listing</td>
           </tr>
           <tr>
