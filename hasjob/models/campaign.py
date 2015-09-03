@@ -514,5 +514,5 @@ class CampaignAnonUserAction(TimestampMixin, db.Model):
         return UserActionFormData(self.data)
 
     @classmethod
-    def get(cls, action, user):
-        return cls.query.get((action.id, user.id))
+    def get(cls, action, anon_user):
+        return cls.query.get((action.id, anon_user.id))

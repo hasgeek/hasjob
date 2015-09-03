@@ -285,9 +285,15 @@ def campaign_action(campaign):
         if not cua:
             cua = CampaignUserAction(action=action, user=g.user)
             db.session.add(cua)
-    else:  # All of the other types require a user (not an anon user; will change when forms are introduced)
-        return render_template('campaign_action_response.html', campaign=campaign,
-            redirect=url_for('login', next=request.referrer, message=u"Please login so we can save your preferences"))
+    else:
+        if g.anon_user and action.type == CAMPAIGN_ACTION.DISMISS:
+            cua = CampaignAnonUserAction.get(action, g.anon_user)
+            if not cua:
+                cua = CampaignAnonUserAction(action=action, anon_user=g.anon_user)
+                db.session.add(cua)
+        else:  # All of the other types require a user (not an anon user; will change when forms are introduced)
+            return render_template('campaign_action_response.html', campaign=campaign,
+                redirect=url_for('login', next=request.referrer, message=u"Please login so we can save your preferences"))
 
     if action.type in (CAMPAIGN_ACTION.RSVP_Y, CAMPAIGN_ACTION.RSVP_N, CAMPAIGN_ACTION.RSVP_M):
         for cua in campaign.useractions(g.user).values():
