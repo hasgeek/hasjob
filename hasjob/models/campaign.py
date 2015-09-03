@@ -498,7 +498,7 @@ class CampaignAnonUserAction(TimestampMixin, db.Model):
     action_id = db.Column(None, db.ForeignKey('campaign_action.id'), primary_key=True)
     action = db.relationship(CampaignAction,
         backref=db.backref('anonuseractions', cascade='all, delete-orphan', lazy='dynamic',
-            order_by='CampaignUserAction.created_at.desc()'))
+            order_by='CampaignAnonUserAction.created_at.desc()'))
     #: User who performed an action
     anon_user_id = db.Column(None, db.ForeignKey('anon_user.id'), nullable=False, primary_key=True, index=True)
     anon_user = db.relationship(AnonUser, backref=db.backref('campaign_useractions', lazy='dynamic'))
