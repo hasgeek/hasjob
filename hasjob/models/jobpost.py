@@ -695,6 +695,10 @@ class JobImpression(TimestampMixin, db.Model):
         # (jobpost_id, event_session_id) primary key order.
         return cls.query.get((jobpost.id, event_session.id))
 
+    @classmethod
+    def get_by_ids(cls, jobpost_id, event_session_id):
+        return cls.query.get((jobpost_id, event_session_id))
+
 
 class JobViewSession(TimestampMixin, db.Model):
     __tablename__ = 'job_view_session'
@@ -721,6 +725,10 @@ class JobViewSession(TimestampMixin, db.Model):
     @classmethod
     def get(cls, event_session, jobpost):
         return cls.query.get((event_session.id, jobpost.id))
+
+    @classmethod
+    def get_by_ids(cls, event_session_id, jobpost_id):
+        return cls.query.get((event_session_id, jobpost_id))
 
 
 class JobApplication(BaseMixin, db.Model):
