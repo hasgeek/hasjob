@@ -479,6 +479,10 @@ h1 small, h2 small, h3 small {
   font-family: inherit !important;
 }
 
+tr > div {
+  display: none;
+}
+
 .list-group-item .badge {
   float: right;
 }

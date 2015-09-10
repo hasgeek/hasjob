@@ -91,6 +91,9 @@ h1 small, h2 small, h3 small
 .c3 svg
   font-family: inherit !important  // !important is required because c3.css is loaded after baseframe assets
 
+tr > div // Fix for ParsleyJS inserting div tags in table rows in the campaign edit page
+  display: none
+
 // --- Sheet ------------------------------------------------------------------
 
 .list-group-item .badge
