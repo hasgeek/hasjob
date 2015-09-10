@@ -660,7 +660,10 @@ class CampaignForm(forms.Form):
         choices=[(None, __("N/A")), (True, __("Yes")), (False, __("No"))])
     flags = forms.RadioMatrixField("Flags", coerce=getbool, fields=Campaign.flag_choices,
         description=__("All selected flags must match the logged in user for the campaign to be shown"),
-        choices=[('None', __("N/A")), ('True', __("True")), ('False', __("False"))])
+        choices=[
+            ('None', __(u"N/A – Don’t target by login status")),
+            ('True', __(u"True – Show to logged in users")),
+            ('False', __(u"False – Show to anonymous users"))])
     content = forms.FormField(CampaignContentForm, __("Campaign content"))
 
     def validate_geonameids(self, field):
