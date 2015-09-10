@@ -1,6 +1,5 @@
 import re
-from random import randint
-from datetime import datetime
+from random import randint, choice
 from coaster import simplify_text
 
 NO_NUM_RE = re.compile('[^0-9]+', re.UNICODE)
@@ -64,7 +63,16 @@ def random_hash_key():
 
 
 def cointoss():
-    return bool(datetime.utcnow().microsecond % 2)
+    """
+    Return True or False at random, attempting to offset any bias from the underlying
+    random number generator using John von Neumann's procedure.
+    """
+    # From https://en.wikipedia.org/wiki/Fair_coin#Fair_results_from_a_biased_coin
+    r1 = r2 = None
+    while r1 == r2:
+        r1 = choice([True, False])
+        r2 = choice([True, False])
+    return r1
 
 
 EMAIL_RE = re.compile(r'\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,63}\b', re.I)
