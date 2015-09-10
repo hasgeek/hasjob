@@ -1,5 +1,6 @@
 import re
-from random import randint, choice
+from random import randint
+from datetime import datetime
 from coaster import simplify_text
 
 NO_NUM_RE = re.compile('[^0-9]+', re.UNICODE)
@@ -62,8 +63,8 @@ def random_hash_key():
     return ('0000' + base36encode(randint(0, 60466175)))[-5:]  # 60466175 is 'zzzzz'
 
 
-def randbool():
-    return choice([True, False])
+def cointoss():
+    return bool(datetime.utcnow().microsecond % 2)
 
 
 EMAIL_RE = re.compile(r'\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,63}\b', re.I)

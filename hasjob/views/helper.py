@@ -21,7 +21,7 @@ from .. import app, redis_store
 from ..models import (agelimit, newlimit, db, JobCategory, JobPost, JobType, POSTSTATUS, BoardJobPost, Tag, JobPostTag,
     Campaign, CampaignView, CampaignAnonView, EventSessionBase, EventSession, UserEventBase, UserEvent, JobImpression,
     JobViewSession, AnonUser, campaign_event_session_table, JobLocation, PAY_TYPE)
-from ..utils import scrubemail, redactemail, randbool
+from ..utils import scrubemail, redactemail, cointoss
 
 
 gif1x1 = 'R0lGODlhAQABAJAAAP8AAAAAACH5BAUQAAAALAAAAAABAAEAAAICBAEAOw=='.decode('base64')
@@ -296,7 +296,7 @@ def session_jobpost_ab():
 
 
 def bgroup(jobpost_ab, post):
-    return jobpost_ab.get(post.id) or randbool() if post.headlineb else None
+    return jobpost_ab.get(post.id) or cointoss() if post.headlineb else None
 
 
 def cache_viewcounts(posts):
