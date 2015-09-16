@@ -26,7 +26,13 @@ the right to make this assignment.
 
 -----
 
-Hasjob runs on [Python][] with the [Flask][] microframework. You will need
+Hasjob runs on [Python][] with the [Flask][] microframework. You can choose to setup your developmenet environment in the following two ways…
+
+### Virutalenv + Pip/easy_install
+
+If you are going to use a computer on which you would work on multiple Python based projects, it is recommended to use [Virtualenv](docs.python-guide.org/en/latest/dev/virtualenvs/) to keep isolated.
+
+You will need
 to install all the requirements listed in `requirements.txt` using
 `easy_install` or `pip`:
 
