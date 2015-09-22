@@ -26,8 +26,47 @@ the right to make this assignment.
 
 -----
 
-Hasjob runs on [Python][] with the [Flask][] microframework. You will need
-to install all the requirements listed in `requirements.txt` using
+### Configuration
+
+Copy `settings-sample.py` to `settings.py`.
+
+### Postgres
+
+Hasjob uses Postgres >9.4 and Redis server for development. To set up a Postgres
+DB:
+
+    $ createuser hasgeek
+    $ createdb -O hasgeek -W hasjob
+
+Edit the `/instance/development.py` to change the variable
+`SQLALCHEMY_DATABASE_URI` to
+`postgres://hasgeek:YOUR_PASSWORD_HERE@localhost:5432/hasjob`.
+
+### Local URLs
+
+Hasjob makes use of subdomains to serve different sub-boards for jobs. To set it
+up:
+
+* Edit `/etc/hosts` file to add the entry, 
+`127.0.0.1   main.hasjob.dev static.main.hasjob.dev`
+* Edit `/instance/development.py` file to change the variable `SERVER_NAME` to
+`(os.environ.get('SERVER_NAME') or 'main.hasjob.dev') + ':5000'`
+
+### Installation
+
+Hasjob runs on [Python][https://www.python.org] with 
+[Flask][http://flask.pocoo.org/] microframework. You can choose to set up your 
+development environment in the following two ways…
+
+#### Virutalenv + Pip/easy_install
+
+If you are going to use a computer on which you would work on multiple Python
+based projects, it is recommended to use 
+[Virtualenv](docs.python-guide.org/en/latest/dev/virtualenvs/) is strongly
+recommended to ensure Hasjob's elaborate and sometimes version-specific
+requirements doesn't clash with anything else.
+                                                              i
+You will need to install all the requirements listed in `requirements.txt` using
 `easy_install` or `pip`:
 
     $ pip install -r requirements.txt
@@ -36,17 +75,17 @@ If you get an error, try running:
 
     $ easy_install -U setuptools
 
-Next, Copy `settings-sample.py` to `settings.py`, edit as
-necessary, and finish configuration with:
+Finish configuration with:
 
     $ python manage.py db create
     $ python manage.py configure
 
-To run the server in development mode:
+Before you run the server in development mode, make sure you have Postgres
+server and Redis server running as well. To start Hasjob:
 
     $ python runserver.py
 
-### Install and run with Docker
+#### Install and run with Docker
 
 You can alternatively run Hasjob with Docker.
 
