@@ -476,7 +476,9 @@ def process_application(domain, hashid, application):
                     site=app.config['SITE_TITLE'])
 
                 if job_application.is_replied():
-                    msg = Message(subject=u"Job response: {headline}".format(headline=post.headline),
+                    msg = Message(
+                        subject=u"{candidate}: {headline}".format(
+                            candidate=job_application.user.fullname, headline=post.headline),
                         sender=(sender_formatted, app.config['MAIL_SENDER']),
                         reply_to=(sender_name, post.email),
                         recipients=[job_application.email],
