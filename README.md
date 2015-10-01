@@ -143,3 +143,8 @@ For Nginx, run website.py under uWSGI and proxy to it:
         uwsgi_param UWSGI_CHDIR /path/to/hasjob/git/repo/folder;
         uwsgi_param UWSGI_MODULE website;
     }
+
+### License
+
+HasJob uses GNU AFFERO GPL license. Please see `license.txt` file in this
+repository.
