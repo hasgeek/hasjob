@@ -18,6 +18,7 @@ baseframe-packed.css
 editor.packed.css
 uploads/
 search/
+venv/
 hasjob/static/gen
 *.sql
 *.gz
