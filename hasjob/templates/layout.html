@@ -147,7 +147,9 @@
 
 {% block messages %}
   {%- for category, msg in get_flashed_messages(with_categories=true) %}
-    <div class="flash flash-{{ category }}"><p>{{ msg }}</p></div>
+    <div class="flash flash-{{ category }}">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <p>{{ msg }}</p></div>
   {%- endfor %}
 {% endblock %}
 
