@@ -240,7 +240,7 @@ def record_views_and_events(response):
                     db.session.commit()
                 except IntegrityError:  # Race condition from parallel requests
                     db.session.rollback()
-            campaign_view_count_update.delay(campaign_id=campaign.id, user_id=g.user.id)
+            campaign_view_count_update.delay(datetime.utcnow(),campaign_id=campaign.id, user_id=g.user.id)
     elif g.anon_user:
         for campaign in g.campaign_views:
             if not CampaignAnonView.exists(campaign, g.anon_user):
@@ -249,7 +249,7 @@ def record_views_and_events(response):
                     db.session.commit()
                 except IntegrityError:  # Race condition from parallel requests
                     db.session.rollback()
-            campaign_view_count_update.delay(campaign_id=campaign.id, anon_user_id=g.anon_user.id)
+            campaign_view_count_update.delay(datetime.utcnow(), campaign_id=campaign.id, anon_user_id=g.anon_user.id)
 
     if g.esession:  # Will be None for anon static requests
         if g.user or g.anon_user:
@@ -267,10 +267,10 @@ def record_views_and_events(response):
                 db.session.rollback()
 
             if g.impressions:
-                save_impressions.delay(g.esession.id, g.impressions.values())
+                save_impressions.delay(datetime.utcnow(), g.esession.id, g.impressions.values())
 
             if g.jobpost_viewed != (None, None):
-                save_jobview.delay(
+                save_jobview.delay(datetime.utcnow(),
                     event_session_id=g.esession.id,
                     jobpost_id=g.jobpost_viewed[0].id,
                     bgroup=g.jobpost_viewed[1])
@@ -431,7 +431,7 @@ def make_pay_graph(currency, posts, rmin=None, rmax=None, minposts=5):
 
 
 @job('hasjob')
-def save_jobview(event_session_id, jobpost_id, bgroup):
+def save_jobview(datetime, event_session_id, jobpost_id, bgroup):
     """
     Save a jobpost view as a background job to ensure this doesn't fire *before* the
     associated save_impressions job. Queue order is important for the cointoss flag
@@ -439,7 +439,7 @@ def save_jobview(event_session_id, jobpost_id, bgroup):
     """
     jvs = JobViewSession.get_by_ids(event_session_id=event_session_id, jobpost_id=jobpost_id)
     if jvs is None:
-        jvs = JobViewSession(event_session_id=event_session_id, jobpost_id=jobpost_id)
+        jvs = JobViewSession(event_session_id=event_session_id, jobpost_id=jobpost_id, datetime=datetime)
         db.session.add(jvs)
 
         jvs.bgroup = bgroup
@@ -458,7 +458,7 @@ def save_jobview(event_session_id, jobpost_id, bgroup):
 
 
 @job('hasjob')
-def save_impressions(session_id, impressions):
+def save_impressions(datetime, session_id, impressions):
     """
     Save impressions against each job and session.
     """
@@ -467,7 +467,7 @@ def save_impressions(session_id, impressions):
             ji = JobImpression.query.get((postid, session_id))
             new_impression = False
             if ji is None:
-                ji = JobImpression(jobpost_id=postid, event_session_id=session_id, pinned=False, bgroup=bgroup)
+                ji = JobImpression(jobpost_id=postid, event_session_id=session_id,datetime=datetime, pinned=False, bgroup=bgroup)
                 db.session.add(ji)
                 new_impression = True
             # Never set pinned=False on an existing JobImpression instance. The pinned status
@@ -496,7 +496,7 @@ def save_impressions(session_id, impressions):
 
 
 @job('hasjob')
-def campaign_view_count_update(campaign_id, user_id=None, anon_user_id=None):
+def campaign_view_count_update(datetime, campaign_id, user_id=None, anon_user_id=None):
     if not user_id and not anon_user_id:
         return
     if user_id:
