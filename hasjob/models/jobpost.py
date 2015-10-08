@@ -678,7 +678,7 @@ class AnonJobView(db.Model):
 
 class JobImpression(TimestampMixin, db.Model):
     __tablename__ = 'job_impression'
-    #: datetime column to log DB Activity
+    #: Datetime when this activity happened (which is likely much before it was written to the database)
     datetime = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
     #: Job post that was impressed
     jobpost_id = db.Column(None, db.ForeignKey('jobpost.id'), primary_key=True)
@@ -705,7 +705,7 @@ class JobImpression(TimestampMixin, db.Model):
 class JobViewSession(TimestampMixin, db.Model):
     __tablename__ = 'job_view_session'
     
-    #: datetime column to log DB Activity
+    #: Datetime when this activity happened (which is likely much before it was written to the database)
     datetime = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
     #: Job post that was impressed
     #: Event session in which jobpost was viewed

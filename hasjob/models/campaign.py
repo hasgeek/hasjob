@@ -383,7 +383,7 @@ class CampaignView(TimestampMixin, db.Model):
     Track users who've viewed a campaign
     """
     __tablename__ = 'campaign_view'
-    #: datetime to log db activity
+    #: Datetime when this activity happened (which is likely much before it was written to the database)
     datetime = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
 
     #: Campaign
@@ -398,7 +398,7 @@ class CampaignView(TimestampMixin, db.Model):
     #: Number of sessions in which the user was shown this (null = unknown)
     #: Updated via a background job
     session_count = db.Column(db.Integer, nullable=False, default=0)
-    
+
     @classmethod
     def get(cls, campaign, user):
         return cls.query.get((campaign.id, user.id))
@@ -417,7 +417,7 @@ class CampaignAnonView(TimestampMixin, db.Model):
     Track anon users who've viewed a campaign
     """
     __tablename__ = 'campaign_anon_view'
-    #: datetime to log db activity
+    #: Datetime when this activity happened (which is likely much before it was written to the database)
     datetime = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
 
     #: Campaign
