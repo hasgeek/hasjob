@@ -15,22 +15,22 @@ import sqlalchemy as sa
 
 
 def upgrade():
-    op.add_column('campaign_anon_view', sa.Column('datetime', sa.DateTime()))
+    op.add_column('campaign_anon_view', sa.Column('datetime', sa.DateTime()), nullable=True)
     op.create_index(op.f('ix_campaign_anon_view_datetime'), 'campaign_anon_view', ['datetime'], unique=False)
-    op.execute('UPDATE "campaign_anon_view" set datetime = created_at')
-    op.alter_column('campaign_anon_view', 'datetime', nullable=True)
-    op.add_column('campaign_view', sa.Column('datetime', sa.DateTime()))
+    op.execute(campaign_anon_view.update().values(datetime=campaign_anon_view.c.created_at)
+    op.alter_column('campaign_anon_view', 'datetime', nullable=False)
+    op.add_column('campaign_view', sa.Column('datetime', sa.DateTime()), nulable=True)
     op.create_index(op.f('ix_campaign_view_datetime'), 'campaign_view', ['datetime'], unique=False)
-    op.execute('UPDATE "campaign_view" set datetime = created_at')
-    op.alter_column('campaign_view', 'datetime', nullable=True)
-    op.add_column('job_impression', sa.Column('datetime', sa.DateTime()))
+    op.execute(campaign_view.update().values(datetime=campaign_view.c.created_at)
+    op.alter_column('campaign_view', 'datetime', nullable=False)
+    op.add_column('job_impression', sa.Column('datetime', sa.DateTime()), nulable=True)
     op.create_index(op.f('ix_job_impression_datetime'), 'job_impression', ['datetime'], unique=False)
-    op.execute('UPDATE "job_impression" set datetime = created_at')
-    op.alter_column('job_impression', 'datetime', nullable=True)
-    op.add_column('job_view_session', sa.Column('datetime', sa.DateTime()))
+    op.execute(job_impression.update().values(datetime=job_impression.c.created_at)
+    op.alter_column('job_impression', 'datetime', nullable=False)
+    op.add_column('job_view_session', sa.Column('datetime', sa.DateTime()), nullable=True)
     op.create_index(op.f('ix_job_view_session_datetime'), 'job_view_session', ['datetime'], unique=False)
-    op.execute('UPDATE "job_view_session" set datetime = created_at')
-    op.alter_column('job_view_session', 'datetime', nullable=True)
+    op.execute(job_view_session.update().values(datetime=job_view_session.c.created_at)
+    op.alter_column('job_view_session', 'datetime', nullable=False)
 
 
 def downgrade():
@@ -42,3 +42,4 @@ def downgrade():
     op.drop_column('campaign_view', 'datetime')
     op.drop_index(op.f('ix_campaign_anon_view_datetime'), table_name='campaign_anon_view')
     op.drop_column('campaign_anon_view', 'datetime')
+

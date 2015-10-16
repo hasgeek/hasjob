@@ -705,7 +705,7 @@ class JobImpression(TimestampMixin, db.Model):
 class JobViewSession(TimestampMixin, db.Model):
     __tablename__ = 'job_view_session'
     
-    #: Datetime when this activity happened (which is likely much before it was written to the database)
+    #: Datetime indicates the time, impression has made
     datetime = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
     #: Job post that was impressed
     #: Event session in which jobpost was viewed
