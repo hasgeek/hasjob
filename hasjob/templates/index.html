@@ -183,6 +183,7 @@
   <script type="text/javascript">
     $(function() {
       $("#loadmore").attr('method', 'POST').ajaxForm({
+        dataType: 'json',
         beforeSubmit: function(formdata, form, options) {
           form.find('button[type="submit"]').prop('disabled', true).addClass('submit-disabled').html('Loading more… <span class="loading">&nbsp;</span>');
           return true;

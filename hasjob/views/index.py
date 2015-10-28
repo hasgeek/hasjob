@@ -4,8 +4,9 @@ from datetime import datetime
 from collections import OrderedDict
 
 from sqlalchemy.exc import ProgrammingError
-from flask import abort, redirect, render_template, request, Response, url_for, g, flash, Markup
+from flask import abort, redirect, render_template, request, Response, url_for, g, flash, Markup, jsonify
 from coaster.utils import getbool, parse_isoformat, for_tsquery
+from coaster.views import render_with
 from baseframe import csrf, _
 
 from .. import app, lastuser
@@ -17,9 +18,78 @@ from ..uploads import uploaded_logos
 from ..utils import string_to_number
 
 
+def stickie_dict(post, url, pinned=False, show_viewcounts=False, show_pay=False,
+        starred=False, is_bgroup=None):
+    result = {
+        'headline': post.headlineb if is_bgroup else post.headline,
+        'url': url,
+        'pinned': pinned,
+        'starred': starred,
+        'date': post.datetime.isoformat() + 'Z',
+        'location': post.location,
+        'parsed_location': post.parsed_location,
+        }
+    if show_viewcounts:
+        result['viewcounts'] = {
+            'listed': post.viewcounts['impressions'],
+            'viewed': post.viewcounts['viewed'],
+            'opened': post.viewcounts['opened'],
+            'applied': post.viewcounts['applied']
+            }
+    if show_pay:
+        result['pay'] = post.viewcounts['pay_label']
+    return result
+
+
+def json_index(data):
+    pinsandposts = data['pinsandposts']
+    grouped = data['grouped']
+    is_siteadmin = data['is_siteadmin']
+    loadmore = data['loadmore']
+
+    result = {
+        'grouped': [],
+        'posts': [],
+        'loadmore': loadmore.isoformat() + 'Z' if loadmore else None
+        }
+    if grouped:
+        for grouping, group in grouped.items():
+            rgroup = {
+                'url': None,
+                'posts': []
+                }
+
+            # First, process the first item to get a URL for the entire group
+            pinned, post, is_bgroup = group[0]
+            if len(group) == 1:
+                rgroup['url'] = post.url_for(b=is_bgroup)
+            elif grouping[0] in ('sd', 'nd'):  # Grouped by domain
+                rgroup['url'] = url_for('browse_by_domain', domain=grouping[1])
+            elif grouping[0] in ('se', 'ne'):  # Grouped by email (webmail user)
+                rgroup['url'] = url_for('browse_by_email', md5sum=grouping[1])
+
+            for pinned, post, is_bgroup in group:
+                rgroup['posts'].append(stickie_dict(
+                    post=post, url=post.url_for(b=is_bgroup), pinned=pinned, is_bgroup=is_bgroup,
+                    show_viewcounts=is_siteadmin or g.user and g.user.flags.is_employer_month,
+                    show_pay=is_siteadmin, starred=g.user and post.id in g.starred_ids
+                    ))
+            result['grouped'].append(rgroup)
+    if pinsandposts:
+        for pinned, post, is_bgroup in pinsandposts:
+            result['posts'].append(stickie_dict(
+                post=post, url=post.url_for(b=is_bgroup), pinned=pinned, is_bgroup=is_bgroup,
+                show_viewcounts=is_siteadmin or g.user and g.user.flags.is_employer_month,
+                show_pay=is_siteadmin, starred=g.user and post.id in g.starred_ids
+                ))
+
+    return jsonify(result)
+
+
 @csrf.exempt
 @app.route('/', methods=['GET', 'POST'], subdomain='<subdomain>')
 @app.route('/', methods=['GET', 'POST'])
+@render_with({'text/html': 'index.html', 'application/json': json_index}, json=False)
 def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
         location=None, title=None, showall=True, statuses=None, tag=None, batched=True, ageless=False):
 
@@ -266,14 +336,15 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
     elif pinsandposts:
         g.impressions = {post.id: (pinflag, post.id, is_bgroup) for pinflag, post, is_bgroup in pinsandposts}
 
-    return render_template('index.html', pinsandposts=pinsandposts, grouped=grouped, now=now,
-                           newlimit=newlimit, jobtype=type, jobcategory=category, title=title,
-                           md5sum=md5sum, domain=domain, employer_name=employer_name,
-                           location=location, showall=showall, tag=tag, is_index=is_index,
-                           header_campaign=header_campaign, loadmore=loadmore,
-                           search_domains=search_domains,
-                           is_siteadmin=lastuser.has_permission('siteadmin'),
-                           pay_graph_data=pay_graph_data)
+    return dict(
+        pinsandposts=pinsandposts, grouped=grouped, now=now,
+        newlimit=newlimit, jobtype=type, jobcategory=category, title=title,
+        md5sum=md5sum, domain=domain, employer_name=employer_name,
+        location=location, showall=showall, tag=tag, is_index=is_index,
+        header_campaign=header_campaign, loadmore=loadmore,
+        search_domains=search_domains,
+        is_siteadmin=lastuser.has_permission('siteadmin'),
+        pay_graph_data=pay_graph_data)
 
 
 @csrf.exempt
