@@ -17,9 +17,9 @@ from ..forms import CampaignForm, CampaignActionForm
 
 def chart_interval_for(campaign, default='hour'):
     interval = default
-    started_at = db.session.query(db.func.min(CampaignView.created_at)).filter(CampaignView.campaign == campaign).first()[0]
+    started_at = db.session.query(db.func.min(CampaignView.datetime)).filter(CampaignView.campaign == campaign).first()[0]
     if started_at:
-        ended_at = db.session.query(db.func.max(CampaignView.created_at)).filter(CampaignView.campaign == campaign).first()[0]
+        ended_at = db.session.query(db.func.max(CampaignView.datetime)).filter(CampaignView.campaign == campaign).first()[0]
         if ended_at - started_at > timedelta(days=7):
             # It's been a week. Show data per day
             interval = 'day'
@@ -165,14 +165,14 @@ def campaign_view_counts(campaign):
     interval = chart_interval_for(campaign)
 
     hourly_views = db.session.query('hour', 'count').from_statement(db.text(
-        '''SELECT date_trunc(:interval, campaign_view.created_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS hour, COUNT(*) AS count FROM campaign_view WHERE campaign_id=:campaign_id GROUP BY hour ORDER BY hour;'''
+        '''SELECT date_trunc(:interval, campaign_view.datetime AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS hour, COUNT(*) AS count FROM campaign_view WHERE campaign_id=:campaign_id GROUP BY hour ORDER BY hour;'''
     )).params(interval=interval, timezone=timezone, campaign_id=campaign.id)
 
     for hour, count in hourly_views:
         viewdict[hour]['_views'] = count
 
     hourly_views = db.session.query('hour', 'count').from_statement(db.text(
-        '''SELECT date_trunc(:interval, campaign_anon_view.created_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS hour, COUNT(*) AS count FROM campaign_anon_view WHERE campaign_id=:campaign_id GROUP BY hour ORDER BY hour;'''
+        '''SELECT date_trunc(:interval, campaign_anon_view.datetime AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS hour, COUNT(*) AS count FROM campaign_anon_view WHERE campaign_id=:campaign_id GROUP BY hour ORDER BY hour;'''
     )).params(interval=interval, timezone=timezone, campaign_id=campaign.id)
 
     for hour, count in hourly_views:
