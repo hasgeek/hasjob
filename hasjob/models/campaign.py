@@ -383,6 +383,9 @@ class CampaignView(TimestampMixin, db.Model):
     Track users who've viewed a campaign
     """
     __tablename__ = 'campaign_view'
+    #: Datetime when this activity happened (which is likely much before it was written to the database)
+    datetime = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
+
     #: Campaign
     campaign_id = db.Column(None, db.ForeignKey('campaign.id'), nullable=False, primary_key=True)
     campaign = db.relationship(Campaign, backref=db.backref('views', lazy='dynamic',
@@ -414,6 +417,9 @@ class CampaignAnonView(TimestampMixin, db.Model):
     Track anon users who've viewed a campaign
     """
     __tablename__ = 'campaign_anon_view'
+    #: Datetime when this activity happened (which is likely much before it was written to the database)
+    datetime = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
+
     #: Campaign
     campaign_id = db.Column(None, db.ForeignKey('campaign.id'), nullable=False, primary_key=True)
     campaign = db.relationship(Campaign, backref=db.backref('anonviews', lazy='dynamic',
