@@ -380,7 +380,7 @@ def gettags(alltime=False):
     query = db.session.query(Tag.name.label('name'), Tag.title.label('title'), Tag.public.label('public'),
         db.func.count(Tag.id).label('count')).join(JobPostTag).join(JobPost).filter(
         JobPost.status.in_(POSTSTATUS.LISTED)).filter(Tag.public == True
-        ).group_by(Tag.id).order_by('count desc')  # NOQA
+        ).group_by(Tag.id).order_by(db.text('count DESC'))  # NOQA
     if not alltime:
         query = query.filter(JobPost.datetime > datetime.utcnow() - agelimit)
     if g.board:
@@ -531,7 +531,7 @@ def filter_locations():
     geonameids = [r.geonameid for r in
         db.session.query(JobLocation.geonameid, db.func.count(JobLocation.geonameid).label('count')
             ).join(JobPost).filter(JobPost.status.in_(POSTSTATUS.LISTED), JobPost.datetime > now - agelimit,
-            JobLocation.primary == True).group_by(JobLocation.geonameid).order_by('count DESC')]  # NOQA
+            JobLocation.primary == True).group_by(JobLocation.geonameid).order_by(db.text('count DESC'))]  # NOQA
     data = location_geodata(geonameids)
     return [(data[geonameid]['name'], data[geonameid]['picker_title']) for geonameid in geonameids]
 
