@@ -135,6 +135,7 @@
   {% with links = [] %}
     {%- if g.user and g.user.flags.is_employer_alltime %}
       {% set links = links + [{'title': "My posts", 'url': url_for('my_posts')}] %}
+      {% set links = links + [{'title': "Credits: " + g.user.credit_balance|string, 'url': url_for('credit_balance')}] %}
     {%- endif %}
     {%- if g.user and g.user.flags.has_jobpost_unconfirmed_month %}
       {% set links = links + [{'title': "Drafts", 'url': url_for('browse_drafts')}] %}

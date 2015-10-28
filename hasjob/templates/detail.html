@@ -141,6 +141,11 @@
               <a class="list-group-item" href="{{ post.url_for('edit') }}">
                 <i class="fa fa-fw fa-pencil"></i>&nbsp;&nbsp; Edit this
               </a>
+              {%- if g.user.credit_balance %}
+                <a class="list-group-item" href="{{ post.url_for('promote') }}">
+                  <i class="fa fa-fw fa-thumb-tack"></i>&nbsp;&nbsp; Promote this
+                </a>
+              {%- endif %}
               {%- if post.is_closed() %}
                 <a class="list-group-item" href="{{ post.url_for('reopen') }}">
                   <i class="fa fa-fw fa-check"></i>&nbsp;&nbsp; Reopen this

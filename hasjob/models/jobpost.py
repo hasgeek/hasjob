@@ -304,6 +304,10 @@ class JobPost(BaseMixin, db.Model):
                 return url_for('browse_by_email', md5sum=self.md5sum, _external=_external, **kwargs)
             else:
                 return url_for('browse_by_domain', domain=self.email_domain, _external=_external, **kwargs)
+        elif action == 'promote':
+            return url_for('promotejob', hashid=self.hashid, domain=domain, _external=_external, **kwargs)
+        elif action == 'bid':
+            return url_for('makebid', hashid=self.hashid, domain=domain, _external=_external, **kwargs)
 
     def permissions(self, user, inherited=None):
         perms = super(JobPost, self).permissions(user, inherited)
@@ -684,10 +688,14 @@ class JobImpression(TimestampMixin, db.Model):
     #: Event session in which it was impressed
     event_session_id = db.Column(None, db.ForeignKey('event_session.id'), primary_key=True, index=True)
     event_session = db.relationship(EventSession)
+    #: Whether it was impressed as a result of a bid
+    bid_id = db.Column(None, db.ForeignKey('bid.id'), nullable=True)
     #: Whether it was pinned at any time in this session
     pinned = db.Column(db.Boolean, nullable=False, default=False)
     #: Was this rendering in the B group of an A/B test? (null = no test conducted)
     bgroup = db.Column(db.Boolean, nullable=True)
+    #: Was this an anonymous impression? (null = historical record; we weren't tracking)
+    not_anon = db.Column(db.Boolean, nullable=True)
 
     @classmethod
     def get(cls, jobpost, event_session):

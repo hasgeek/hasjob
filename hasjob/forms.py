@@ -651,7 +651,7 @@ class CampaignForm(forms.Form):
             "same dates. 0 implies lowest priority"))
     boards = QuerySelectMultipleField(__("Boards"),
         widget=ListWidget(), option_widget=CheckboxInput(),
-        query_factory=lambda: Board.query.order_by('title'), get_label='title',
+        query_factory=lambda: Board.query.order_by('title'), get_label='list_title',
         validators=[forms.validators.Optional()],
         description=__(u"Select the boards this campaign is active on"))
     geonameids = forms.GeonameSelectMultiField("Locations",
@@ -721,3 +721,44 @@ class DomainForm(forms.Form):
         content_css=content_css, validators=[
             forms.validators.AllUrlsValid(invalid_urls=invalid_urls),
             forms.validators.NoObfuscatedEmail(u"Do not include contact information here")])
+
+
+# --- Credits and bid forms ---------------------------------------------------
+
+class GrantCreditsForm(forms.Form):
+    users = forms.UserSelectMultiField(__("Users"),
+        description=__(u"Select the users you’d like to grant credits to"),
+        usermodel=User, lastuser=lastuser)
+    value = forms.IntegerField(__("Credit value"), validators=[forms.validators.DataRequired()])
+    memo = forms.StringField(__("Memo"), validators=[forms.validators.DataRequired()])
+
+    def validate_value(self, field):
+        if field.data == 0:
+            raise forms.ValidationError("Value must be non-zero")
+
+
+class PinBidForm(forms.Form):
+    start_at = forms.DateTimeField(__("Start at"), timezone=lambda: g.user.timezone if g.user else None,
+        description=__("When would you like to start pinning? (Timezone is {timezone})"))
+    end_at = forms.DateTimeField(__("End at"), timezone=lambda: g.user.timezone if g.user else None,
+        description=__("When do you want to take off the pin?"))
+    geonameids = forms.GeonameSelectMultiField("Locations",
+        description=__(u"Optional — Your post will be pinned only for users in matching locations. "
+            u"Use this if you are not interested in targeting candidates in different locations from you. "
+            u"Location matching is on the basis of IP address and is not 100%% accurate. "
+            u"For reference, your current location appears to be {location}"))
+    value = forms.IntegerField(__("Bid value"), default=1,
+        description=__("How many credits per user? A higher value improves your chance of winning. "
+            "If your bid wins, you will only be charged as many credits as the next highest bidder "
+            "(with a floor price of 1 credit)"))
+    load = forms.IntegerField(__("Load credits"),
+        description=__(u"You have {count} credits available. Please specify how many you’d like to commit to this bid. "
+            "Committed credits will not be available for use elsewhere until released from this bid"))
+
+    def validate_start_at(self, field):
+        if field.value < self.post.datetime:
+            field.value = self.post.datetime
+
+    def validate_end_at(self, field):
+        if field.value > self.post.expiry_date:
+            field.value = self.post.expiry_date

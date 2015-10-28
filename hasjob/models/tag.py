@@ -74,7 +74,7 @@ class JobPostTag(TimestampMixin, db.Model):
 
 
 def related_posts(self, limit=12):
-    return db.session.query(JobPost).from_statement(
+    return db.session.query(JobPost).from_statement(db.text(
         '''SELECT jobpost.id, jobpost.hashid, jobpost.datetime, jobpost.headline, jobpost.location,
             jobpost.company_name, jobpost.type_id, jobpost.category_id,
             jobpost.pay_type, jobpost.pay_currency, jobpost.pay_cash_min, jobpost.pay_cash_max,
@@ -87,6 +87,6 @@ def related_posts(self, limit=12):
                 AND jobpost.datetime >= NOW() AT TIME ZONE 'UTC' - INTERVAL '30 days'
                 GROUP BY jobpost_tag.jobpost_id ORDER BY count DESC LIMIT :limit) AS matches, jobpost
             WHERE jobpost.id = matches.jobpost_id;'''
-        ).params(id=self.id, listed=POSTSTATUS.LISTED, limit=limit)
+        )).params(id=self.id, listed=POSTSTATUS.LISTED, limit=limit)
 
 JobPost.related_posts = related_posts

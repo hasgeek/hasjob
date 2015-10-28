@@ -183,11 +183,11 @@ class UserEventBase(object):
     @classmethod
     def new_from_request(cls, request):
         instance = cls()
-        instance.ipaddr = request and request.environ['REMOTE_ADDR'][:45]
-        instance.useragent = request and request.user_agent.string[:250]
-        instance.url = request and request.url[:2038]
-        instance.method = request and request.method[:10]
-        instance.name = request and ('endpoint/' + (request.endpoint or '')[:80])
+        instance.ipaddr = request and unicode(request.environ['REMOTE_ADDR'][:45])
+        instance.useragent = request and unicode(request.user_agent.string[:250])
+        instance.url = request and unicode(request.url[:2038])
+        instance.method = request and unicode(request.method[:10])
+        instance.name = request and (u'endpoint/' + (request.endpoint or u'')[:80])
         return instance
 
     def as_dict(self):
@@ -210,7 +210,7 @@ class UserEvent(UserEventBase, BaseMixin, db.Model):
     url = db.Column(db.Unicode(2038), nullable=True)
     #: Referrer
     referrer = db.Column(db.Unicode(2038), nullable=True,
-        default=lambda: request and ((request.referrer or '')[:2038] or None))
+        default=lambda: request and ((unicode(request.referrer or '')[:2038]) or None))
     #: HTTP Method
     method = db.Column(db.Unicode(10), nullable=True)
     #: Status code

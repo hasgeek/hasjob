@@ -78,3 +78,4 @@ from .domain import *
 from .board import *
 from .flags import *
 from .campaign import *
+from .bid import *

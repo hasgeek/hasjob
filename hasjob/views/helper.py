@@ -126,7 +126,7 @@ def load_user_data(user):
         if 'impressions' in session:
             # Run this in the foreground since we need this later in the request for A/B display consistency.
             # This is most likely being called from the UI-non-blocking sniffle.gif anyway.
-            save_impressions(g.esession.id, session.pop('impressions').values())
+            save_impressions(g.esession.id, session.pop('impressions').values(), not_anon=False)
 
     # We have a user, now look up everything else
 
@@ -267,7 +267,7 @@ def record_views_and_events(response):
                 db.session.rollback()
 
             if g.impressions:
-                save_impressions.delay(g.esession.id, g.impressions.values())
+                save_impressions.delay(g.esession.id, g.impressions.values(), g.esession.user is not None)
 
             if g.jobpost_viewed != (None, None):
                 save_jobview.delay(
@@ -377,7 +377,7 @@ def gettags(alltime=False):
     query = db.session.query(Tag.name.label('name'), Tag.title.label('title'), Tag.public.label('public'),
         db.func.count(Tag.id).label('count')).join(JobPostTag).join(JobPost).filter(
         JobPost.status.in_(POSTSTATUS.LISTED)).filter(Tag.public == True
-        ).group_by(Tag.id).order_by('count desc')  # NOQA
+        ).group_by(Tag.id).order_by(db.text('count DESC'))  # NOQA
     if not alltime:
         query = query.filter(JobPost.datetime > datetime.utcnow() - agelimit)
     if g.board:
@@ -458,7 +458,7 @@ def save_jobview(event_session_id, jobpost_id, bgroup):
 
 
 @job('hasjob')
-def save_impressions(session_id, impressions):
+def save_impressions(session_id, impressions, not_anon=None):
     """
     Save impressions against each job and session.
     """
@@ -467,7 +467,8 @@ def save_impressions(session_id, impressions):
             ji = JobImpression.query.get((postid, session_id))
             new_impression = False
             if ji is None:
-                ji = JobImpression(jobpost_id=postid, event_session_id=session_id, pinned=False, bgroup=bgroup)
+                ji = JobImpression(jobpost_id=postid, event_session_id=session_id, pinned=False, bgroup=bgroup,
+                    not_anon=not_anon)
                 db.session.add(ji)
                 new_impression = True
             # Never set pinned=False on an existing JobImpression instance. The pinned status
@@ -528,7 +529,7 @@ def filter_locations():
     geonameids = [r.geonameid for r in
         db.session.query(JobLocation.geonameid, db.func.count(JobLocation.geonameid).label('count')
             ).join(JobPost).filter(JobPost.status.in_(POSTSTATUS.LISTED), JobPost.datetime > now - agelimit,
-            JobLocation.primary == True).group_by(JobLocation.geonameid).order_by('count DESC')]  # NOQA
+            JobLocation.primary == True).group_by(JobLocation.geonameid).order_by(db.text('count DESC'))]  # NOQA
     data = location_geodata(geonameids)
     return [(data[geonameid]['name'], data[geonameid]['picker_title']) for geonameid in geonameids]
 

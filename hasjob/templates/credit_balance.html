@@ -1,0 +1,44 @@
+{% extends "sheet.html" %}
+{% block content %}
+  <div class="sheet">
+    <div class="section first">
+      <h1>{{ self.title() }}</h1>
+      <p>Log of all credits loaded and spent</p>
+    </div>
+    <div class="section">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>{% trans %}Date{% endtrans %}</th>
+            <th>{% trans %}Memo{% endtrans %}</th>
+            <th class="num">{% trans %}Credit{% endtrans %}</th>
+            <th class="num">{% trans %}Debit{% endtrans %}</th>
+            <th class="num">{% trans %}Balance{% endtrans %}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {%- set line_balance = 0 %}
+          {%- for t in transactions %}
+            {%- set line_balance = line_balance + t.value %}
+            <tr>
+              <td>{{ t.datetime|longdate }}</td>
+              <td>
+                {{ t.memo }}
+                {%- if t.granted_by %}
+                  <small>(by {{ t.granted_by.fullname }})</small>
+                {% endif %}
+              </td>
+              <td class="num">{% if t.value > 0 %}{{ t.value }}{% endif %}</td>
+              <td class="num">{% if t.value < 0 %}{{ - t.value }}{% endif %}</td>
+              <td class="num">{{ line_balance }}</td>
+            </tr>
+          {%- else %}
+            <tr>
+              <td colspan="5"><em>No transactions have been recorded so far</em></td>
+            </tr>
+          {%- endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endblock %}

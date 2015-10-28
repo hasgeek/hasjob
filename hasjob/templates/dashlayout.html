@@ -8,6 +8,7 @@
     <ul class="nav nav-tabs nav-tabs-top">
         <li role="presentation" {%- if request.endpoint == 'admin_dashboard' %} class="active"{% endif %}><a href="{{ url_for('admin_dashboard') }}" role="tab">Current</a></li>
         <li role="presentation" {%- if request.endpoint == 'admin_dashboard_historical' %} class="active"{% endif %}><a href="{{ url_for('admin_dashboard_historical') }}" role="tab">Historical</a></li>
+        <li role="presentation" {%- if request.endpoint.startswith('admin_tools') %} class="active"{% endif %}><a href="{{ url_for('admin_tools') }}" role="tab">Tools</a></li>
     </ul>
 
    {% block tabcontent %}{% endblock %}

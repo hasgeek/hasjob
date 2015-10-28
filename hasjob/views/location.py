@@ -18,7 +18,7 @@ def location_new():
         db.session.query(JobLocation.geonameid, db.func.count(JobLocation.geonameid).label('count')).join(
             JobPost).filter(JobPost.status.in_(POSTSTATUS.LISTED), JobPost.datetime > now - agelimit,
             ~JobLocation.geonameid.in_(db.session.query(Location.id))
-            ).group_by(JobLocation.geonameid).order_by('count DESC').limit(100)])
+            ).group_by(JobLocation.geonameid).order_by(db.text('count DESC')).limit(100)])
     data = location_geodata(geonames.keys())
     for row in data.values():
         geonames[row['geonameid']] = row

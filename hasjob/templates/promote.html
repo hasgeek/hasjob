@@ -1,0 +1,95 @@
+{% extends "sheet.html" %}
+{% from "macros.html" import stickie %}
+{% block title %}Get more visibility for this job post{% endblock %}
+{% block description %}Promote your post by sharing on social media and pinning it on the home page{% endblock %}
+{% block content %}
+  <div class="sheet">
+    <div class="section first">
+      <h1>{{ self.title() }}</h1>
+      <p>{{ self.description() }}</p>
+    </div>
+    <div class="section">
+      <h2>1. Your best candidate may be in your own networks</h2>
+      <p>Share this post on Twitter and Facebook, on both your personal and your organization’s pages. Get your colleagues to share as well. Improve your chances of finding the right candidate.</p>
+
+      <!-- Buttons start here. Copy this ul to your document. -->
+      <ul class="rrssb-buttons clearfix">
+        <li class="rrssb-twitter">
+          <!-- Replace href with your Meta and URL information  -->
+          <a href="http://twitter.com/home?status=Job:%20{{ post.headline|urlquote }}%20{{ post.url_for(_external=true)|urlquote }}"
+          class="popup">
+            <span class="rrssb-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28">
+                <path d="M24.253 8.756C24.69 17.08 18.297 24.182 9.97 24.62c-3.122.162-6.22-.646-8.86-2.32 2.702.18 5.375-.648 7.507-2.32-2.072-.248-3.818-1.662-4.49-3.64.802.13 1.62.077 2.4-.154-2.482-.466-4.312-2.586-4.412-5.11.688.276 1.426.408 2.168.387-2.135-1.65-2.73-4.62-1.394-6.965C5.574 7.816 9.54 9.84 13.802 10.07c-.842-2.738.694-5.64 3.434-6.48 2.018-.624 4.212.043 5.546 1.682 1.186-.213 2.318-.662 3.33-1.317-.386 1.256-1.248 2.312-2.4 2.942 1.048-.106 2.07-.394 3.02-.85-.458 1.182-1.343 2.15-2.48 2.71z"
+                />
+              </svg>
+            </span>
+            <span class="rrssb-text">Twitter</span>
+          </a>
+        </li>
+        <li class="rrssb-facebook">
+          <!--  Replace with your URL. For best results, make sure you page has the proper FB Open Graph tags in header:
+                https://developers.facebook.com/docs/opengraph/howtos/maximizing-distribution-media-content/ -->
+          <a href="https://www.facebook.com/sharer/sharer.php?u={{ post.url_for(_external=true)|urlquote }}" class="popup">
+            <span class="rrssb-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid" width="29" height="29" viewBox="0 0 29 29">
+                <path d="M26.4 0H2.6C1.714 0 0 1.715 0 2.6v23.8c0 .884 1.715 2.6 2.6 2.6h12.393V17.988h-3.996v-3.98h3.997v-3.062c0-3.746 2.835-5.97 6.177-5.97 1.6 0 2.444.173 2.845.226v3.792H21.18c-1.817 0-2.156.9-2.156 2.168v2.847h5.045l-.66 3.978h-4.386V29H26.4c.884 0 2.6-1.716 2.6-2.6V2.6c0-.885-1.716-2.6-2.6-2.6z"
+                class="cls-2" fill-rule="evenodd" />
+              </svg>
+            </span>
+            <span class="rrssb-text">Facebook</span>
+          </a>
+        </li>
+        <li class="rrssb-linkedin">
+          <!-- Replace href with your meta and URL information -->
+          <a href="http://www.linkedin.com/shareArticle?mini=true&amp;url={{ post.url_for(_external=true)|urlquote }}&amp;title={{ post.headline|urlquote }}&amp;summary={{ post.company_name }},%20{{ post.location }},%20{{ post.type.title }},%20{{ post.category.title }}" class="popup">
+            <span class="rrssb-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28">
+                <path d="M25.424 15.887v8.447h-4.896v-7.882c0-1.98-.71-3.33-2.48-3.33-1.354 0-2.158.91-2.514 1.802-.13.315-.162.753-.162 1.194v8.216h-4.9s.067-13.35 0-14.73h4.9v2.087c-.01.017-.023.033-.033.05h.032v-.05c.65-1.002 1.812-2.435 4.414-2.435 3.222 0 5.638 2.106 5.638 6.632zM5.348 2.5c-1.676 0-2.772 1.093-2.772 2.54 0 1.42 1.066 2.538 2.717 2.546h.032c1.71 0 2.77-1.132 2.77-2.546C8.056 3.593 7.02 2.5 5.344 2.5h.005zm-2.48 21.834h4.896V9.604H2.867v14.73z"
+                />
+              </svg>
+            </span>
+            <span class="rrssb-text">LinkedIn</span>
+          </a>
+        </li>
+        <li class="rrssb-googleplus">
+          <!-- Replace href with your meta and URL information.  -->
+          <a href="https://plus.google.com/share?url={{ post.headline|urlquote }}%20{{ post.url_for(_external=true)|urlquote }}" class="popup">
+            <span class="rrssb-icon">
+              <!-- Icon from http://codepen.io/ruandre/pen/howFi -->
+              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 512 512"><path d="M179.7 237.6L179.7 284.2 256.7 284.2C253.6 304.2 233.4 342.9 179.7 342.9 133.4 342.9 95.6 304.4 95.6 257 95.6 209.6 133.4 171.1 179.7 171.1 206.1 171.1 223.7 182.4 233.8 192.1L270.6 156.6C247 134.4 216.4 121 179.7 121 104.7 121 44 181.8 44 257 44 332.2 104.7 393 179.7 393 258 393 310 337.8 310 260.1 310 251.2 309 244.4 307.9 237.6L179.7 237.6 179.7 237.6ZM468 236.7L429.3 236.7 429.3 198 390.7 198 390.7 236.7 352 236.7 352 275.3 390.7 275.3 390.7 314 429.3 314 429.3 275.3 468 275.3"/></svg>
+              </svg>
+            </span>
+            <span class="rrssb-text">Google+</span>
+          </a>
+        </li>
+      </ul>
+      <!-- Buttons end here -->
+
+      <h2>2. Pin this job on Hasjob’s homepage to make it the first thing a candidate sees</h2>
+
+      <div class="row" style="margin-bottom: 12px;"><div class="col-xs-12 col-sm-5 col-md-4">
+        {{ stickie(post, post.url_for(), pinned=true) }}
+      </div></div>
+
+      {%- if g.user.credit_balance <= 0 %}
+        <p>
+          You need a positive credit balance to pin this post. You don’t have any. Please mail {{ config['SUPPORT_EMAIL'] }} for more credits.
+        </p>
+        <p class="button-bar">
+          <a href="mailto:{{ config['SUPPORT_EMAIL'] }}" class="btn btn-info"><i class="fa fa-inr"></i> Buy credits (coming soon)</a>
+        </p>
+      {%- else %}
+        <p>
+          You have {{ g.user.credit_balance }} credits available. You may place a bid to have this job pinned. The top
+          three bids matching target criteria are pinned on the home page for every visitor. You will only be charged
+          for logged in users.
+        </p>
+        <p class="button-bar">
+          <a href="{{ post.url_for('bid') }}" class="btn btn-primary"><i class="fa fa-thumb-tack"></i> Place a bid</a>
+          <a href="mailto:{{ config['SUPPORT_EMAIL'] }}" class="btn btn-info"><i class="fa fa-inr"></i> Buy more credits</a>
+        </p>
+      {%- endif %}
+    </div>
+  </div>
+{% endblock %}

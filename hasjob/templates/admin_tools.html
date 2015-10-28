@@ -1,0 +1,15 @@
+{% extends "dashlayout.html" %}
+{% block title %}Admin tools{% endblock %}
+
+{% block tabcontent %}
+  <div class="section first">
+    <h1>{{ self.title() }}</h1>
+  </div>
+  <div class="section">
+    <div class="list-group">
+      <a href="{{ url_for('admin_tools_grant_credit') }}" class="list-group-item">
+        Grant credits to user
+      </a>
+    </div>
+  </div>
+{% endblock %}
