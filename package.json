@@ -1,0 +1,9 @@
+{
+  "name": "hasjob",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "jsx-loader": "^0.13.2",
+    "webpack": "^1.12.2"
+  }
+}
