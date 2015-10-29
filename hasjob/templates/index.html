@@ -161,6 +161,10 @@
         </li>
       {%- endfor %}
     {%- endif -%}
+
+    <div id="component-container" >
+    </div>
+
     {%- if loadmore -%}
       <form id="loadmore" method="GET" data-appear-top-offset="600">
         <button class="btn btn-default btn-lg" type="submit" name="startdate" value="{{ loadmore.isoformat() }}Z">Load more…</button>
@@ -168,6 +172,8 @@
     {%- endif -%}
 {%- if not request.is_xhr -%}
   </ul>
+
+  
   {%- if not showall -%}
     <div class="flash info">
       <p>
@@ -180,10 +186,11 @@
 {%- endwith %}{%- endblock -%}
 
 {%- macro loadmore_script() -%}
+  <!--
   <script type="text/javascript">
     $(function() {
       $("#loadmore").attr('method', 'POST').ajaxForm({
-        dataType: 'html',
+        dataType: 'json',
         beforeSubmit: function(formdata, form, options) {
           form.find('button[type="submit"]').prop('disabled', true).addClass('submit-disabled').html('Loading more… <span class="loading">&nbsp;</span>');
           return true;
@@ -202,10 +209,12 @@
         element.find('button[type="submit"]').trigger('click');
       });
     });
-  </script>
+  </script>-->
 {%- endmacro -%}
 {%- block footerscripts -%}
 {%- if not request.is_xhr -%}
+<script type="text/javascript" src="{{ url_for('static', filename='js/vendors.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/hasjob.bundle.js') }}"></script>
 <script type="text/javascript">
   //For setting the pay slider
   window.Hasjob.PayFilterParameters = {
@@ -275,6 +284,8 @@
       }
     });
   </script>
+
+
 {%- endif %}
 {%- endif -%} {#- if not request.xhr -#}
 {%- if loadmore -%}
