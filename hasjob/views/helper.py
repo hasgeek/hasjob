@@ -467,7 +467,7 @@ def save_impressions(session_id, impressions, viewed_time):
     """
     with app.test_request_context():
         for pinned, postid, bgroup in impressions:
-            ji = JobImpression.query.get((postid, session_id))
+            ji = JobImpression.get_by_ids(jobpost_id=postid, event_session_id=session_id)
             new_impression = False
             if ji is None:
                 ji = JobImpression(jobpost_id=postid, event_session_id=session_id, datetime=viewed_time, pinned=False, bgroup=bgroup)
