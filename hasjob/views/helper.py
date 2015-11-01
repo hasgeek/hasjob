@@ -491,6 +491,8 @@ def save_impressions(session_id, impressions, viewed_time):
                 # access a class instance method
                 if new_impression:
                     redis_store.hset('hasjob/viewcounts/%d' % postid, 'impressions',
+                        int(redis_store.hget('hasjob/viewcounts/%d' % postid, 'impressions') or 0) + 1)
+                    redis_store.hset('hasjob/viewcounts/%d' % postid, 'impressions',
                         db.session.query(db.func.count(db.func.distinct(EventSession.user_id))).filter(
                             EventSession.user_id != None).join(JobImpression).filter(
                             JobImpression.jobpost_id == postid).first()[0])  # NOQA
