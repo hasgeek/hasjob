@@ -9,17 +9,13 @@ define(
     var JobSnippet = React.createClass({
 
       render: function () {
-        var style = {
-            marginBottom: '30px',
-            verticalAlign: 'top'
-          },
-          options = this.props.options,
-          noOfPosts = options.posts.length;
+        var options = this.props.options;
+        var noOfPosts = options.posts.length;
 
         if(noOfPosts === 1) {
           var post = options.posts[0];
           return(
-            <li className="col-xs-12 col-md-3 col-sm-4" style={style}>
+            <li className="col-xs-12 col-md-3 col-sm-4">
 
               <a className="stickie" href={options.url} rel="bookmark">
                 <span className="annotation top-left">{post.location}</span>

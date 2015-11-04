@@ -11,7 +11,7 @@ define(
         data: postData,
         success: successCallback,
         error: function (httpRequest, status, error) {
-          console.log(error);
+          alert(error);
         }
       });
     };
@@ -24,7 +24,7 @@ define(
         //data: postData,
         success: successCallback,
         error: function (httpRequest, status, error) {
-          console.log(error);
+          alert(error);
         }
       });
     };

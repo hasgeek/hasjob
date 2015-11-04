@@ -3,13 +3,12 @@ define(
     'react',
     'reactDom',
     './job-snippet',
-    './header-bar',
     '../common-functions',
     'jquery',
     'jqueryAppear',
 
   ],
-  function (React, ReactDOM, JobSnippet, HeaderBar, commonFunctions, $) {
+  function (React, ReactDOM, JobSnippet, commonFunctions, $) {
 
     var Hasjob = React.createClass({
       getInitialState: function () {
@@ -18,33 +17,28 @@ define(
           lastDate: '',
         }
       },
-
       loadMorePosts: function () {
+        var postData = {};
+        var successCallback = function (data) {
 
-        var postData = {},
+          var posts = data.grouped;
+          var monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-          successCallback = function (data) {
-
-            var posts = data.grouped,
-              monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
-            for(var i = 0; i < posts.length; i++) { //To convert dates into a readable format
-              for(var j = 0; j < posts[i].posts.length; j++) {
-                posts[i].posts[j].date = new Date(posts[i].posts[j].date);
-                posts[i].posts[j].date = monthNames[posts[i].posts[j].date.getMonth()] + " " + posts[i].posts[j].date.getDate();
-              }
+          for(var i = 0; i < posts.length; i++) { //To convert dates into a readable format
+            for(var j = 0; j < posts[i].posts.length; j++) {
+              posts[i].posts[j].date = new Date(posts[i].posts[j].date);
+              posts[i].posts[j].date = monthNames[posts[i].posts[j].date.getMonth()] + " " + posts[i].posts[j].date.getDate();
             }
+          }
+          this.setState({
+            jobsList: posts,
+            lastDate: data.loadmore
+          });
 
-            this.setState({
-              jobsList: posts,
-              lastDate: data.loadmore
-            });
-
-          }.bind(this);
+        }.bind(this);
 
         commonFunctions.makeAjaxPost('/', postData, successCallback);
       },
-
       componentDidMount: function () {
         var that = this;
         that.loadMorePosts();
@@ -53,9 +47,7 @@ define(
           that.loadMorePosts();
         });
       },
-
       render: function () {
-
         var jobSnippets = this.state.jobsList.map(function (jobDetails, iterator) {
           return <JobSnippet options={jobDetails} key={"snippet"+iterator}/>
         });
@@ -74,7 +66,6 @@ define(
           </div>
         )
       }
-
     });
 
     return Hasjob
