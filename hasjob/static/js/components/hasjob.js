@@ -1,102 +1,83 @@
 define(
-	[
-		'react',
-		'reactDom',
-		'./job-snippet',
-		'./header-bar',
-		'../common-functions',
-		'jquery',
-		'jqueryAppear',
+  [
+    'react',
+    'reactDom',
+    './job-snippet',
+    './header-bar',
+    '../common-functions',
+    'jquery',
+    'jqueryAppear',
 
-	], function(React, ReactDOM, JobSnippet, HeaderBar, commonFunctions, $){
+  ],
+  function (React, ReactDOM, JobSnippet, HeaderBar, commonFunctions, $) {
 
-		var Hasjob = React.createClass({
-			getInitialState: function(){
-				return {
-					jobsList: [],
-					lastDate: '',
-				}
-			},
-			loadMorePosts: function(){
+    var Hasjob = React.createClass({
+      getInitialState: function () {
+        return {
+          jobsList: [],
+          lastDate: '',
+        }
+      },
+      loadMorePosts: function () {
 
-				var postData = {},	
+        var postData = {},
 
-					successCallback = function(data){
-						//console.log(data);
+          successCallback = function (data) {
+            //console.log(data);
 
-						var posts = data.grouped,
-							monthNames = ['Jan', 'Feb', 'Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+            var posts = data.grouped,
+              monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-						for(var i=0;i< posts.length; i++){ //To convert dates into a readable format
-							for(var j=0; j<posts[i].posts.length; j++){
-								posts[i].posts[j].date = new Date(posts[i].posts[j].date);
-								posts[i].posts[j].date = monthNames[posts[i].posts[j].date.getMonth()] + " " + posts[i].posts[j].date.getDate();
-							}
-						}
+            for(var i = 0; i < posts.length; i++) { //To convert dates into a readable format
+              for(var j = 0; j < posts[i].posts.length; j++) {
+                posts[i].posts[j].date = new Date(posts[i].posts[j].date);
+                posts[i].posts[j].date = monthNames[posts[i].posts[j].date.getMonth()] + " " + posts[i].posts[j].date.getDate();
+              }
+            }
 
-						this.setState({
-							jobsList: posts,
-							lastDate: data.loadmore
-						});
+            this.setState({
+              jobsList: posts,
+              lastDate: data.loadmore
+            });
 
-					}.bind(this);
+          }.bind(this);
 
-				commonFunctions.makeAjaxPost('/', postData, successCallback);	
-			},
-			componentDidMount: function(){
-				var that = this;
-				that.loadMorePosts();
-				
-				$("#loadmore").appear().on('appear', function(event, element) {
-				  that.loadMorePosts();
-				});
-			},
-			
-			render: function(){
+        commonFunctions.makeAjaxPost('/', postData, successCallback);
+      },
+      componentDidMount: function () {
+        var that = this;
+        that.loadMorePosts();
 
-				var jobSnippets = this.state.jobsList.map(function (jobDetails, iterator) {
+        $("#loadmore").appear().on('appear', function (event, element) {
+          that.loadMorePosts();
+        });
+      },
 
-					return <JobSnippet options={jobDetails} key={"snippet"+iterator}/>
-				});
+      render: function () {
 
-				return (
+        var jobSnippets = this.state.jobsList.map(function (jobDetails, iterator) {
+          return <JobSnippet options={jobDetails} key={"snippet"+iterator}/>
+        });
 
-					<div>
+        return(
+
+          <div>
 						<ul className="row" id="stickie-area">
 							{jobSnippets}
 						</ul>
 
 						<form id="loadmore" method="GET" dataAppearTopffOset="600">
-						  	<button className="btn btn-default btn-lg" type="submit" name="startdate">
-						  		Load more…
-						  	</button>
+						  <button className="btn btn-default btn-lg" type="submit" name="startdate">
+						  	Load more…
+						  </button>
 						</form>
 					</div>
-						
-				)
-			}	
-			
-		});
 
-		return Hasjob
-	} 
+        )
+      }
+
+    });
+
+    return Hasjob
+  }
 );
-
-/*
-
-	<div id="homepage">
-		<HeaderBar />
-
-		<div className="container" id="main-content">
-			<ul className="row" id="stickie-area">
-				{jobSnippets}
-			</ul>
-
-			<form id="loadmore" method="GET" data-appear-top-offset="600">
-			  	<button className="btn btn-default btn-lg" type="submit" name="startdate">
-			  		Load more…
-			  	</button>
-			</form>
-		</div>	
-	</div>
-*/
