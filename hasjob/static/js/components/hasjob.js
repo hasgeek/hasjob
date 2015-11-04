@@ -20,21 +20,18 @@ define(
       loadMorePosts: function () {
         var postData = {};
         var successCallback = function (data) {
-
           var posts = data.grouped;
           var monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
           for(var i = 0; i < posts.length; i++) { //To convert dates into a readable format
             for(var j = 0; j < posts[i].posts.length; j++) {
               posts[i].posts[j].date = new Date(posts[i].posts[j].date);
               posts[i].posts[j].date = monthNames[posts[i].posts[j].date.getMonth()] + " " + posts[i].posts[j].date.getDate();
             }
-          }
+          }     
           this.setState({
             jobsList: posts,
             lastDate: data.loadmore
           });
-
         }.bind(this);
 
         commonFunctions.makeAjaxPost('/', postData, successCallback);
@@ -42,7 +39,6 @@ define(
       componentDidMount: function () {
         var that = this;
         that.loadMorePosts();
-
         $("#loadmore").appear().on('appear', function (event, element) {
           that.loadMorePosts();
         });

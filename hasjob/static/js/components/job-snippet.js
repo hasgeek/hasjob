@@ -7,7 +7,6 @@ define(
   function (React, ReactDOM, $) {
 
     var JobSnippet = React.createClass({
-
       render: function () {
         var options = this.props.options;
         var noOfPosts = options.posts.length;
@@ -39,7 +38,6 @@ define(
           var nestedPosts = [];
 
           for(var i = 1; i < noOfPosts; i++) {
-
             nestedPosts.push(
               <div className="stickie grouped under" data-href={options.posts[i].url} key={ "snippet"+i}>
                 <span className="annotation top-left">{options.posts[i].location}</span>

@@ -32,10 +32,12 @@ var config = {
     noParse: [
       new RegExp(lib_dir + './hasjob/static/libs/react-with-addons.js')
     ],
-    loaders: [{
-      test: /\.js$/,
-      loader: 'jsx-loader'
-    }]
+    // preLoaders: [
+    //   {test: /\.js$/, loader: "eslint-loader", exclude: /node_modules/}
+    // ],
+    loaders: [
+      {test: /\.js$/, loader: 'jsx-loader'},
+    ]
   }
 };
 
