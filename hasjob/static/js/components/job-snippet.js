@@ -24,18 +24,18 @@ define(
               <a className="stickie" href={options.url} rel="bookmark">
                 <span className="annotation top-left">{post.location}</span>
                 <span className="annotation top-right">
-                {post.date}
-              </span>
+                  {post.date}
+                </span>
                 <span className="headline">{post.headline}</span>
                 <span className="count">
-                <span title="Listed › Viewed › Opened form › Applied">
-                {post.viewcounts.listed+" > "+post.viewcounts.viewed+" > "+post.viewcounts.opened+" > "+post.viewcounts.applied}
-                </span> . {post.pay}</span>
+                  <span title="Listed › Viewed › Opened form › Applied">
+                    {post.viewcounts.listed+" > "+post.viewcounts.viewed+" > "+post.viewcounts.opened+" > "+post.viewcounts.applied}
+                  </span> . {post.pay}</span>
                 <span className="annotation bottom-right">{post.company_name}</span>
                 <span className="annotation bottom-left">
-                  
-                <i className="fa fa-star-o pstar" data-id="kued5"></i>
-              </span>
+                              
+                  <i className="fa fa-star-o pstar" data-id="kued5"></i>
+                </span>
               </a>
             </li>
           )
@@ -45,7 +45,7 @@ define(
           for(var i = 1; i < noOfPosts; i++) {
 
             nestedPosts.push(
-              <div className="stickie grouped under" data-href={options.posts[i].url} key={"snippet"+i}>
+              <div className="stickie grouped under" data-href={options.posts[i].url} key={ "snippet"+i}>
                 <span className="annotation top-left">{options.posts[i].location}</span>
                 <span className="annotation top-right">
                   {options.posts[i].date}
@@ -62,11 +62,9 @@ define(
                 </span>
 
                 <span className="annotation bottom-left">
-
                 {/*<i className="fa fa-star-o pstar" data-id="kvkl8"></i*/}
                 </span>
               </div>
-
             )
           }
 

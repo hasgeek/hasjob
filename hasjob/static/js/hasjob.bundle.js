@@ -81,7 +81,6 @@ webpackJsonp([0],[
 	        });
 
 	        return(
-
 	          React.createElement("div", null, 
 	            React.createElement("ul", {className: "row", id: "stickie-area"}, 
 	              jobSnippets
@@ -93,7 +92,6 @@ webpackJsonp([0],[
 	              )
 	            )
 	          )
-
 	        )
 	      }
 
@@ -131,18 +129,18 @@ webpackJsonp([0],[
 	              React.createElement("a", {className: "stickie", href: options.url, rel: "bookmark"}, 
 	                React.createElement("span", {className: "annotation top-left"}, post.location), 
 	                React.createElement("span", {className: "annotation top-right"}, 
-	                post.date
-	              ), 
+	                  post.date
+	                ), 
 	                React.createElement("span", {className: "headline"}, post.headline), 
 	                React.createElement("span", {className: "count"}, 
-	                React.createElement("span", {title: "Listed › Viewed › Opened form › Applied"}, 
-	                post.viewcounts.listed+" > "+post.viewcounts.viewed+" > "+post.viewcounts.opened+" > "+post.viewcounts.applied
-	                ), " . ", post.pay), 
+	                  React.createElement("span", {title: "Listed › Viewed › Opened form › Applied"}, 
+	                    post.viewcounts.listed+" > "+post.viewcounts.viewed+" > "+post.viewcounts.opened+" > "+post.viewcounts.applied
+	                  ), " . ", post.pay), 
 	                React.createElement("span", {className: "annotation bottom-right"}, post.company_name), 
 	                React.createElement("span", {className: "annotation bottom-left"}, 
-	                  
-	                React.createElement("i", {className: "fa fa-star-o pstar", "data-id": "kued5"})
-	              )
+	                              
+	                  React.createElement("i", {className: "fa fa-star-o pstar", "data-id": "kued5"})
+	                )
 	              )
 	            )
 	          )
@@ -152,7 +150,7 @@ webpackJsonp([0],[
 	          for(var i = 1; i < noOfPosts; i++) {
 
 	            nestedPosts.push(
-	              React.createElement("div", {className: "stickie grouped under", "data-href": options.posts[i].url, key: "snippet"+i}, 
+	              React.createElement("div", {className: "stickie grouped under", "data-href": options.posts[i].url, key:  "snippet"+i}, 
 	                React.createElement("span", {className: "annotation top-left"}, options.posts[i].location), 
 	                React.createElement("span", {className: "annotation top-right"}, 
 	                  options.posts[i].date
@@ -169,11 +167,9 @@ webpackJsonp([0],[
 	                ), 
 
 	                React.createElement("span", {className: "annotation bottom-left"}
-
 	                /*<i className="fa fa-star-o pstar" data-id="kvkl8"></i*/
 	                )
 	              )
-
 	            )
 	          }
 

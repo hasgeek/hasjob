@@ -61,7 +61,6 @@ define(
         });
 
         return(
-
           <div>
             <ul className="row" id="stickie-area">
               {jobSnippets}
@@ -73,7 +72,6 @@ define(
               </button>
             </form>
           </div>
-
         )
       }
 
