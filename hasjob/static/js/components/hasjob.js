@@ -18,12 +18,12 @@ define(
           lastDate: '',
         }
       },
+
       loadMorePosts: function () {
 
         var postData = {},
 
           successCallback = function (data) {
-            //console.log(data);
 
             var posts = data.grouped,
               monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -44,6 +44,7 @@ define(
 
         commonFunctions.makeAjaxPost('/', postData, successCallback);
       },
+
       componentDidMount: function () {
         var that = this;
         that.loadMorePosts();
@@ -62,16 +63,16 @@ define(
         return(
 
           <div>
-						<ul className="row" id="stickie-area">
-							{jobSnippets}
-						</ul>
+            <ul className="row" id="stickie-area">
+              {jobSnippets}
+            </ul>
 
-						<form id="loadmore" method="GET" dataAppearTopffOset="600">
-						  <button className="btn btn-default btn-lg" type="submit" name="startdate">
-						  	Load more…
-						  </button>
-						</form>
-					</div>
+            <form id="loadmore" method="GET" dataAppearTopffOset="600">
+              <button className="btn btn-default btn-lg" type="submit" name="startdate">
+                Load more…
+              </button>
+            </form>
+          </div>
 
         )
       }
