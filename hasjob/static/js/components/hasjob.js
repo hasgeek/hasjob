@@ -36,6 +36,22 @@ define(
 
         commonFunctions.makeAjaxPost('/', postData, successCallback);
       },
+      updateJobList: function(index){
+        var jobsList = JSON.parse(JSON.stringify(this.state.jobsList));
+        var flattenedJobs = [];
+        for(var i=0; i<jobsList[index].posts.length; i++){
+          flattenedJobs[i] = {
+            posts:[jobsList[index].posts[i]]
+          };
+        }
+        jobsList.splice(index, 1); //deletes the nested grouped jobs at the specified index
+        for(var i=0; i<flattenedJobs.length; i++){ //appends the jobs starting from that index
+          jobsList.splice(index+i, 0, flattenedJobs[i])
+        }
+        this.setState({
+          jobsList: jobsList
+        });
+      },
       componentDidMount: function () {
         var that = this;
         that.loadMorePosts();
@@ -44,8 +60,9 @@ define(
         });
       },
       render: function () {
+        var that = this;
         var jobSnippets = this.state.jobsList.map(function (jobDetails, iterator) {
-          return <JobSnippet options={jobDetails} key={"snippet"+iterator}/>
+          return <JobSnippet options={jobDetails} key={"snippet"+iterator} index={iterator} updateJobList={that.updateJobList}/>
         });
 
         return(
