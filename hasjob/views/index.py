@@ -73,7 +73,7 @@ def json_index(data):
             for pinned, post, is_bgroup in group:
                 rgroup['posts'].append(stickie_dict(
                     post=post, url=post.url_for(b=is_bgroup), pinned=pinned, is_bgroup=is_bgroup,
-                    show_viewcounts=is_siteadmin or g.user and g.user.flags.is_employer_month,
+                    show_viewcounts=is_siteadmin or g.user, #and g.user.flags.is_employer_month,
                     show_pay=is_siteadmin, starred=g.user and post.id in g.starred_ids
                     ))
             result['grouped'].append(rgroup)
