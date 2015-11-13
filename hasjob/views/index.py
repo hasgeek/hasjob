@@ -28,8 +28,6 @@ def stickie_dict(post, url, pinned=False, show_viewcounts=False, show_pay=False,
         'date': post.datetime.isoformat() + 'Z',
         'location': post.location,
         'parsed_location': post.parsed_location,
-        'company_name': post.company_name,
-        'company_logo': post.url_for('logo'),
         }
     if show_viewcounts:
         result['viewcounts'] = {
@@ -93,7 +91,8 @@ def json_index(data):
 @app.route('/', methods=['GET', 'POST'])
 @render_with({'text/html': 'index.html', 'application/json': json_index}, json=False)
 def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
-        location=None, title=None, showall=True, statuses=None, tag=None, batched=True, ageless=False):
+        location=None, title=None, showall=True, statuses=None, tag=None, batched=True, ageless=False,
+        pay_graph=None, f_min=None, f_max=None, search_domains=[]):
 
     if basequery is None:
         is_index = True
@@ -108,96 +107,7 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
     if basequery is None:
         basequery = JobPost.query
 
-    # Apply request.args filters
-    data_filters = {}
-    f_types = request.args.getlist('t')
-    while '' in f_types:
-        f_types.remove('')
-    if f_types:
-        data_filters['types'] = f_types
-        basequery = basequery.join(JobType).filter(JobType.name.in_(f_types))
-    f_categories = request.args.getlist('c')
-    while '' in f_categories:
-        f_categories.remove('')
-    if f_categories:
-        data_filters['categories'] = f_categories
-        basequery = basequery.join(JobCategory).filter(JobCategory.name.in_(f_categories))
-    r_locations = request.args.getlist('l')
-    f_locations = []
-    remote_location = getbool(request.args.get('anywhere')) or False
-    for rl in r_locations:
-        if rl == 'anywhere':
-            remote_location = True
-        elif rl.isdigit():
-            f_locations.append(int(rl))
-        elif rl:
-            ld = location_geodata(rl)
-            if ld:
-                f_locations.append(ld['geonameid'])
-    remote_location_query = basequery.filter(JobPost.remote_location == True)  # NOQA
-    locations_query = basequery.join(JobLocation).filter(JobLocation.geonameid.in_(f_locations))
-    if f_locations and remote_location:
-        data_filters['locations'] = f_locations
-        data_filters['anywhere'] = True
-        recency = JobPost.datetime > datetime.utcnow() - agelimit
-        basequery = locations_query.filter(recency).union(remote_location_query.filter(recency))
-    elif f_locations:
-        data_filters['locations'] = f_locations
-        basequery = locations_query
-    elif remote_location:
-        data_filters['anywhere'] = True
-        # Only works as a positive filter: you can't search for jobs that are NOT anywhere
-        basequery = remote_location_query
-    if 'currency' in request.args and request.args['currency'] in CURRENCY.keys():
-        currency = request.args['currency']
-        data_filters['currency'] = currency
-        basequery = basequery.filter(JobPost.pay_currency == currency)
-        pay_graph = currency
-    else:
-        pay_graph = False
-    if getbool(request.args.get('equity')):
-        # Only works as a positive filter: you can't search for jobs that DON'T pay in equity
-        data_filters['equity'] = True
-        basequery = basequery.filter(JobPost.pay_equity_min != None)  # NOQA
-    if 'pmin' in request.args and 'pmax' in request.args:
-        f_min = string_to_number(request.args['pmin'])
-        f_max = string_to_number(request.args['pmax'])
-        if f_min is not None and f_max is not None:
-            data_filters['pay_min'] = f_min
-            data_filters['pay_max'] = f_max
-            basequery = basequery.filter(JobPost.pay_cash_min < f_max, JobPost.pay_cash_max >= f_min)
-    else:
-        f_min = None
-        f_max = None
-
-    if getbool(request.args.get('archive')):
-        ageless = True
-        data_filters['archive'] = True
-        statuses = POSTSTATUS.ARCHIVED
-
-    search_domains = None
-    if request.args.get('q'):
-        q = for_tsquery(request.args['q'])
-        try:
-            # TODO: Can we do syntax validation without a database roundtrip?
-            db.session.query(db.func.to_tsquery(q)).all()
-        except ProgrammingError:
-            db.session.rollback()
-            g.event_data['search_syntax_error'] = (request.args['q'], q)
-            if not request.is_xhr:
-                flash(_(u"Search terms ignored because this didn’t parse: {query}").format(query=q), 'danger')
-        else:
-            # Query's good? Use it.
-            data_filters['query'] = q
-            search_domains = Domain.query.filter(
-                Domain.search_vector.match(q, postgresql_regconfig='english'), Domain.is_banned == False).options(
-                db.load_only('name', 'title', 'logo_url')).all()  # NOQA
-            basequery = basequery.filter(JobPost.search_vector.match(q, postgresql_regconfig='english'))
-
-    if data_filters:
-        g.event_data['filters'] = data_filters
-        showall = True
-        batched = True
+    #... filter code ...
 
     # getposts sets g.board_jobs, used below
     posts = getposts(basequery, pinned=True, showall=showall, statuses=statuses, ageless=ageless).all()
@@ -656,4 +566,103 @@ def logoimage(domain, hashid):
 @app.route('/search', subdomain='<subdomain>')
 @app.route('/search')
 def search():
-    return redirect(url_for('index', **request.args))
+    basequery = JobPost.query
+    # Apply request.args filters
+    data_filters = {}
+    f_types = request.args.getlist('t')
+    statuses = []
+    ageless = False
+    while '' in f_types:
+        f_types.remove('')
+    if f_types:
+        data_filters['types'] = f_types
+        basequery = basequery.join(JobType).filter(JobType.name.in_(f_types))
+    f_categories = request.args.getlist('c')
+    while '' in f_categories:
+        f_categories.remove('')
+    if f_categories:
+        data_filters['categories'] = f_categories
+        basequery = basequery.join(JobCategory).filter(JobCategory.name.in_(f_categories))
+    r_locations = request.args.getlist('l')
+    f_locations = []
+    remote_location = getbool(request.args.get('anywhere')) or False
+    for rl in r_locations:
+        if rl == 'anywhere':
+            remote_location = True
+        elif rl.isdigit():
+            f_locations.append(int(rl))
+        elif rl:
+            ld = location_geodata(rl)
+            if ld:
+                f_locations.append(ld['geonameid'])
+    remote_location_query = basequery.filter(JobPost.remote_location == True)  # NOQA
+    locations_query = basequery.join(JobLocation).filter(JobLocation.geonameid.in_(f_locations))
+    if f_locations and remote_location:
+        data_filters['locations'] = f_locations
+        data_filters['anywhere'] = True
+        recency = JobPost.datetime > datetime.utcnow() - agelimit
+        basequery = locations_query.filter(recency).union(remote_location_query.filter(recency))
+    elif f_locations:
+        data_filters['locations'] = f_locations
+        basequery = locations_query
+    elif remote_location:
+        data_filters['anywhere'] = True
+        # Only works as a positive filter: you can't search for jobs that are NOT anywhere
+        basequery = remote_location_query
+    if 'currency' in request.args and request.args['currency'] in CURRENCY.keys():
+        currency = request.args['currency']
+        data_filters['currency'] = currency
+        basequery = basequery.filter(JobPost.pay_currency == currency)
+        pay_graph = currency
+    else:
+        pay_graph = False
+    if getbool(request.args.get('equity')):
+        # Only works as a positive filter: you can't search for jobs that DON'T pay in equity
+        data_filters['equity'] = True
+        basequery = basequery.filter(JobPost.pay_equity_min != None)  # NOQA
+    if 'pmin' in request.args and 'pmax' in request.args:
+        f_min = string_to_number(request.args['pmin'])
+        f_max = string_to_number(request.args['pmax'])
+        if f_min is not None and f_max is not None:
+            data_filters['pay_min'] = f_min
+            data_filters['pay_max'] = f_max
+            basequery = basequery.filter(JobPost.pay_cash_min < f_max, JobPost.pay_cash_max >= f_min)
+    else:
+        f_min = None
+        f_max = None
+
+    if getbool(request.args.get('archive')):
+        ageless = True
+        data_filters['archive'] = True
+        statuses = POSTSTATUS.ARCHIVED
+
+    search_domains = None
+    if request.args.get('q'):
+        q = for_tsquery(request.args['q'])
+        try:
+            # TODO: Can we do syntax validation without a database roundtrip?
+            db.session.query(db.func.to_tsquery(q)).all()
+        except ProgrammingError:
+            db.session.rollback()
+            g.event_data['search_syntax_error'] = (request.args['q'], q)
+            if not request.is_xhr:
+                flash(_(u"Search terms ignored because this didn’t parse: {query}").format(query=q), 'danger')
+        else:
+            # Query's good? Use it.
+            data_filters['query'] = q
+            search_domains = Domain.query.filter(
+                Domain.search_vector.match(q, postgresql_regconfig='english'), Domain.is_banned == False).options(
+                db.load_only('name', 'title', 'logo_url')).all()  # NOQA
+            basequery = basequery.filter(JobPost.search_vector.match(q, postgresql_regconfig='english'))
+
+    if data_filters:
+        g.event_data['filters'] = data_filters
+        showall = True
+        batched = True
+    if request.is_xhr:
+        result = index(basequery=basequery, showall=showall, batched=batched, search_domains=search_domains, statuses=statuses, ageless=ageless,
+            pay_graph=pay_graph, _render=False)
+        return render_template('_stickie_list.html', **result)
+    else:
+        return index(basequery=basequery, showall=showall, batched=batched, search_domains=search_domains, statuses=statuses, ageless=ageless,
+                    pay_graph=pay_graph)

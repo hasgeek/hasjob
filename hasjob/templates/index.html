@@ -1,4 +1,3 @@
-{%- from "macros.html" import stickie %}
 {%- from "domain.html" import org_profile with context %}
 {% from "baseframe/forms.html" import renderfield, widgetscripts %}
 {%- if not request.is_xhr -%}
@@ -40,170 +39,10 @@
     {%- endif %}
   {% endblock %}
 {% endif %}
-{% block content %}{% with gkiosk=g.kiosk, gboard=g.board, guser=g.user, gstarred_ids=g.starred_ids %}
-{%- if not request.is_xhr -%}
-  {%- if gboard and gboard.not_root %}
-    <div class="flash info">
-      {{ gboard.description|safe }}
-      {%- if gkiosk and g.peopleflow_url %}
-        <p>If you find a job worth applying for here, tap your badge on the reader attached to this kiosk and we’ll send an email connecting you with the employer.</p>
-      {%- endif %}
-    </div>
-  {%- endif %}
-  {%- if location and location.use_title and location.description %}
-    <div class="flash info">
-      <h2>{{ location.use_title }}</h2>
-      {{ location.description }}
-    </div>
-  {%- endif %}
-  {%- if domain and domain.has_profile %}
-    {{ org_profile(domain) }}
-  {%- endif %}
-  {%- if pay_graph_data %}
-    <div class="flash info">
-      <h2>What these jobs pay per annum</h2>
-      <div id="pay-graph"></div>
-    </div>
-  {%- endif %}
-  <ul id="stickie-area" class="row">
-    {%- if jobtype or jobcategory -%}
-      <li class="col-xs-12 col-md-3 col-sm-4">
-        <a href="{{ url_for('index') }}" class="stickie special">
-          You are viewing
-          {% if jobtype %}{{ jobtype.title.lower() }}{% endif %}
-          {% if jobcategory %}{{ jobcategory.title.lower() }}{% endif %}
-          jobs. View all jobs?
-        </a>
-      </li>
-    {%- elif domain -%}
-      {%- if not domain.has_profile %}
-        <li class="col-xs-12 col-md-3 col-sm-4">
-          <a href="{{ url_for('index') }}" class="stickie special">
-            You are viewing jobs at {{ domain.use_title }}. View all jobs?
-          </a>
-        </li>
-      {%- endif -%}
-    {%- elif md5sum -%}
-      <li class="col-xs-12 col-md-3 col-sm-4">
-        <a href="{{ url_for('index') }}" class="stickie special">
-          You are viewing jobs at {{ employer_name }}. View all jobs?
-        </a>
-      </li>
-    {%- elif location -%}
-      <li class="col-xs-12 col-md-3 col-sm-4">
-        <a href="{{ url_for('index') }}" class="stickie special">
-          You are viewing jobs in {{ location['use_title'] }}. View all jobs?<!-- Id: {{ location['geonameid'] }} -->
-        </a>
-      </li>
-    {%- elif tag -%}
-      <li class="col-xs-12 col-md-3 col-sm-4">
-        <a href="{{ url_for('index') }}" class="stickie special">
-          You are viewing jobs tagged “{{ tag.title }}”. View all jobs?
-        </a>
-      </li>
-    {%- else -%}
-      {%- if (not gkiosk) and ((gboard and 'new-job' in gboard.permissions(guser)) or (not gboard)) -%}
-        <li class="col-xs-12 col-md-3 col-sm-4">
-          <form id="newpost" action="{{ url_for('newjob')|usessl }}" method="POST" class="stickie special">
-            <input type="hidden" name="_charset_"/>
-            <input type="hidden" name="form.id" value="newheadline"/>
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-            <label class="annotation top-left" for="newpost_headline">Post a job</label>
-            {%- if gboard and gboard.newjob_headline -%}
-              <textarea id="newpost_headline" name="job_headline" class="form-control" placeholder="{{ gboard.newjob_headline }}"></textarea>
-            {%- else -%}
-              <textarea id="newpost_headline" name="job_headline" class="form-control" placeholder="Pragmatic programmer wanted at outstanding organisation"></textarea>
-            {%- endif -%}
-            <div id="newpost_details" class="jshidden"><input type="submit" class="btn btn-default btn-sm" value="Add details…"/></div>
-          </form>
-        </li>
-      {%- endif -%}
-    {%- endif -%}
-    {%- if search_domains %}
-      {%- for domain in search_domains -%}
-        <li class="col-xs-12 col-md-3 col-sm-4">
-          <a href="{{ domain.url_for() }}" class="stickie org">
-            {%- if domain.logo_url -%}
-              <img src="{{ domain.logo_url }}" alt="Logo"/><br>
-            {%- endif -%}
-            {{ domain.use_title }}</a>
-        </li>
-      {%- endfor -%}
-    {%- endif -%}
-{%- endif -%}
-    {%- if grouped %}
-      {%- for grouping, group in grouped.items() -%}{%- with pinned, post, is_bgroup=group[0] -%}
-        {%- if group|length == 1 -%}
-          <li class="col-xs-12 col-md-3 col-sm-4">
-            {{ stickie(post, post.url_for(b=is_bgroup), pinned, show_viewcounts=is_siteadmin or guser and guser.flags.is_employer_month, show_pay=is_siteadmin, starred=guser and post.id in gstarred_ids, is_bgroup=is_bgroup) }}
-          </li>
-        {%- else -%}
-          <li class="grouped col-xs-12 col-md-3 col-sm-4">
-            {%- if grouping[0] in ['sd', 'nd'] -%}
-              {{ stickie(post, url_for('browse_by_domain', domain=grouping[1]), pinned, dataurl=post.url_for(b=is_bgroup), show_viewcounts=is_siteadmin or guser and guser.flags.is_employer_month, show_pay=is_siteadmin, starred=guser and post.id in gstarred_ids, is_bgroup=is_bgroup) }}
-            {%- elif grouping[0] in ['se', 'ne'] -%}
-              {{ stickie(post, url_for('browse_by_email', md5sum=grouping[1]), pinned, dataurl=post.url_for(b=is_bgroup), show_viewcounts=is_siteadmin or guser and guser.flags.is_employer_month, show_pay=is_siteadmin, starred=guser and post.id in gstarred_ids, is_bgroup=is_bgroup) }}
-            {%- endif -%}
-            {%- for pinned, post, is_bgroup in group[1:] -%}
-              {{ stickie(post, none, false, groupedunder=true, dataurl=post.url_for(b=is_bgroup), show_viewcounts=is_siteadmin or guser and guser.flags.is_employer_month, show_pay=is_siteadmin, starred=guser and post.id in gstarred_ids, is_bgroup=is_bgroup) }}
-            {%- endfor -%}
-          </li>
-        {%- endif %}
-      {%- endwith -%}{%- endfor -%}
-    {%- else %}
-      {%- for pinned, post, is_bgroup in pinsandposts -%}
-        <li class="col-xs-12 col-md-3 col-sm-4">
-          {{ stickie(post, post.url_for(b=is_bgroup), pinned, show_viewcounts=is_siteadmin or guser and guser.flags.is_employer_month, show_pay=is_siteadmin, starred=guser and post.id in gstarred_ids, is_bgroup=is_bgroup) }}
-        </li>
-      {%- else -%}
-        <li class="col-xs-12 col-md-3 col-sm-4">
-          <span class="stickie special">Sorry, no jobs listed.</span>
-        </li>
-      {%- endfor %}
-    {%- endif -%}
-    {%- if loadmore -%}
-      <form id="loadmore" method="GET" data-appear-top-offset="600">
-        <button class="btn btn-default btn-lg" type="submit" name="startdate" value="{{ loadmore.isoformat() }}Z">Load more…</button>
-      </form>
-    {%- endif -%}
-{%- if not request.is_xhr -%}
-  </ul>
-  {%- if not showall -%}
-    <div class="flash info">
-      <p>
-        You are only seeing jobs listed in the last 24 hours. To see everything,
-        <a class="btn btn-primary btn-sm" href="{{ url_for('login') }}">Login with Twitter or Google</a>
-      </p>
-    </div>
-  {%- endif -%}
-{%- endif -%}
-{%- endwith %}{%- endblock -%}
+{% block content %}
+  {%- include '_stickie_list.html' %}
+{%- endblock -%}
 
-{%- macro loadmore_script() -%}
-  <script type="text/javascript">
-    $(function() {
-      $("#loadmore").attr('method', 'POST').ajaxForm({
-        dataType: 'html',
-        beforeSubmit: function(formdata, form, options) {
-          form.find('button[type="submit"]').prop('disabled', true).addClass('submit-disabled').html('Loading more… <span class="loading">&nbsp;</span>');
-          return true;
-        },
-        success: function(responseText, statusText, xhr, form) {
-          target = $("#loadmore").replaceWith(responseText.trim());
-        },
-        error: function(context, xhr, status, errMsg) {
-          var form = $("#loadmore");
-          form.find('button[type="submit"]').prop('disabled', false).removeClass('submit-disabled').html('Load more…');
-          form.find('.loading').addClass('hidden');
-          form.append('<div class="alert alert-danger fade in"><a href="#" class="close" data-dismiss="alert">&times;</a> Could not load more posts. Please try again</div>');
-        }
-      });
-      $("#loadmore").appear().on('appear', function(event, element) {
-        element.find('button[type="submit"]').trigger('click');
-      });
-    });
-  </script>
-{%- endmacro -%}
 {%- block footerscripts -%}
 {%- if not request.is_xhr -%}
 <script type="text/javascript">
@@ -277,7 +116,4 @@
   </script>
 {%- endif %}
 {%- endif -%} {#- if not request.xhr -#}
-{%- if loadmore -%}
-  {{ loadmore_script() }}
-{%- endif -%}
 {% endblock %}

@@ -1,3 +1,4 @@
+
 {%- macro stickie(post, url, pinned, groupedunder=false, dataurl=none, show_viewcounts=false, show_pay=false, starred=none, is_bgroup=none) %}
   {%- if groupedunder %}
     <div class="stickie {%- if post.is_announcement() %} announcement{% endif %} grouped under" {%- if dataurl %} data-href="{{ dataurl }}"{% endif %}>
@@ -26,6 +27,34 @@
     </a>
   {%- endif %}
 {%- endmacro %}
+
+{%- macro loadmore_script() -%}
+  <script type="text/javascript">
+    window.documentReady(function() {
+      $("#loadmore").attr('method', 'POST').ajaxForm({
+        dataType: 'html',
+        beforeSubmit: function(formdata, form, options) {
+          form.find('button[type="submit"]').prop('disabled', true).addClass('submit-disabled').html('Loading more… <span class="loading">&nbsp;</span>');
+          return true;
+        },
+        success: function(responseText, statusText, xhr, form) {
+          console.log(responseText);
+          target = $("#loadmore").replaceWith(responseText.trim());
+        },
+        error: function(context, xhr, status, errMsg) {
+          var form = $("#loadmore");
+          form.find('button[type="submit"]').prop('disabled', false).removeClass('submit-disabled').html('Load more…');
+          form.find('.loading').addClass('hidden');
+          form.append('<div class="alert alert-danger fade in"><a href="#" class="close" data-dismiss="alert">&times;</a> Could not load more posts. Please try again</div>');
+        }
+      });
+      $("#loadmore").appear().on('appear', function(event, element) {
+        console.log('loadmore');
+        element.find('button[type="submit"]').trigger('click');
+      });
+    });
+  </script>
+{%- endmacro -%}
 
 {%- macro joblocation(post) %}
   {%- if post.parsed_location %}
