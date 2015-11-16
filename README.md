@@ -76,8 +76,8 @@ On OS X using the [Postgres App](http://postgresapp.com):
 
 On any Linux distribution:
 
-    $ sudo -u postgres createuser -d hasgeek
-    $ sudo -u postgres createdb -O hasgeek hasjob
+    $ sudo -u postgres createuser -d hasjob
+    $ sudo -u postgres createdb -O hasjob hasjob
 
 Edit `instance/development.py` to set the variable `SQLALCHEMY_DATABASE_URI` to `postgres://hasjob:YOUR_PASSWORD_HERE@localhost:5432/hasjob`.
 
