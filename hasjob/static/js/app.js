@@ -61,20 +61,7 @@ window.Hasjob.JobPost = {
 
 window.Hasjob.StickieList = {
   init: function() {
-    var keywordBasedRefresh;
     var stickieList = this;
-
-    $('.js-handle-filter-change').on('change', function(e){
-      stickieList.refresh();
-    });
-
-    $('.js-handle-keyword-update').on('keyup', function(){
-      if (keywordBasedRefresh) {
-        window.clearTimeout(stickieList.refresh);
-        keywordBasedRefresh = null;
-      }
-      keywordBasedRefresh = window.setTimeout(stickieList.refresh, 500);
-    })
   },
   refresh: function(){
     var sortedFilterParams = window.Hasjob.Filters.formatFilterParams($('#js-job-filters').serializeArray());
@@ -92,9 +79,20 @@ window.Hasjob.StickieList = {
 window.Hasjob.Filters = {
   init: function(){
     var filters = this;
+    var keywordTimeout;
+
     //remove white spaces keyword input value
     $('#job-filters-keywords').on('change',function(){
       $(this).val($(this).val().trim());
+    });
+
+    $('.js-handle-filter-change').on('change', function(e){
+      window.Hasjob.StickieList.refresh();
+    });
+
+    $('.js-handle-keyword-update').on('keyup', function(){
+      window.clearTimeout(keywordTimeout);
+      keywordTimeout = window.setTimeout(window.Hasjob.StickieList.refresh, 500);
     });
 
     $('#job-filters-location').multiselect({
