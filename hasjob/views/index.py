@@ -94,9 +94,6 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
         location=None, title=None, showall=True, statuses=None, tag=None, batched=True, ageless=False,
         paginated=False):
 
-    # if not filtered and set(['q', 'l', 'c', 't', 'pmin', 'pmax', 'currency']).intersection(set(request.args.keys())):
-    #     return redirect(url_for('search', **request.args))
-
     if basequery is None:
         is_index = True
     else:
