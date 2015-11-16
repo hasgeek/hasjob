@@ -174,7 +174,7 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
 
     # Pick a header campaign (only if not kiosk or an XHR reload)
     pay_graph_data = None
-    if not g.kiosk and not request.is_xhr:
+    if not g.kiosk:
         if g.preview_campaign:
             header_campaign = g.preview_campaign
         else:
