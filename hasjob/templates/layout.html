@@ -93,19 +93,19 @@
                 <ul class="dropdown-menu pay-filter-dropdown" role="menu" aria-labelledby="job-filters-pay">
                   <li class="clearfix">
                     <div class="currency-checkbox">
-                      <input type="radio" id="job-filters-na" name="currency" value="NA"></input>
+                      <input type="radio" class='js-handle-filter-change' id="job-filters-na" name="currency" value="NA"></input>
                       <label for="job-filters-na">Any</label>
                     </div>
                     <div class="currency-checkbox">
-                      <input type="radio" id="job-filters-inr" name="currency" value="INR"></input>
+                      <input type="radio" class='js-handle-filter-change' id="job-filters-inr" name="currency" value="INR"></input>
                       <label for="job-filters-inr">INR</label>
                     </div>
                     <div class="currency-checkbox">
-                      <input type="radio" id="job-filters-usd" name="currency" value="USD"></input>
+                      <input type="radio" class='js-handle-filter-change' id="job-filters-usd" name="currency" value="USD"></input>
                       <label for="job-filters-usd">USD</label>
                     </div>
                     <div class="currency-checkbox">
-                      <input type="radio" id="job-filters-eur" name="currency" value="EUR"></input>
+                      <input type="radio" class='js-handle-filter-change' id="job-filters-eur" name="currency" value="EUR"></input>
                       <label for="job-filters-eur">EUR</label>
                     </div>
                   </li>
@@ -118,7 +118,7 @@
                   </li>
                   <li>
                     <label for="job-filters-equity" class="equity-label">
-                      <input type="checkbox" name="equity" id="job-filters-equity" {% if request.args.get('equity') %} checked="checked" {% endif %} value="1"></input> Equity</label>
+                      <input type="checkbox" class='js-handle-filter-change' name="equity" id="job-filters-equity" {% if request.args.get('equity') %} checked="checked" {% endif %} value="1"></input> Equity</label>
                   </li>
                 </ul>
               </div>

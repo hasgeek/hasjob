@@ -78,12 +78,14 @@ window.Hasjob.StickieList = {
   },
   refresh: function(){
     var sortedFilterParams = window.Hasjob.Filters.formatFilterParams($('#js-job-filters').serializeArray());
-    $.ajax('/search' + '?' + $.param(sortedFilterParams), {
+    var searchUrl = '/' + '?' + $.param(sortedFilterParams);
+    $.ajax(searchUrl, {
       type: 'GET',
       success: function(data) {
         $('#main-content').html(data);
       }
     });
+    history.pushState({}, '', searchUrl);
   }
 }
 
@@ -93,19 +95,6 @@ window.Hasjob.Filters = {
     //remove white spaces keyword input value
     $('#job-filters-keywords').on('change',function(){
       $(this).val($(this).val().trim());
-    });
-
-    $('#js-job-filters').on('submit', function(e){
-      // remove currency params from URL if currency is n/a
-      e.preventDefault();
-      var sortedFilterParams = filters.formatFilterParams($(this).serializeArray());
-
-      // only redirect if there are filters applied
-      if (sortedFilterParams.length > 0) {
-        window.location.href = '/search'+ '?' + $.param(sortedFilterParams);
-      } else {
-        window.location.href = '/';
-      }
     });
 
     $('#job-filters-location').multiselect({
@@ -340,6 +329,10 @@ $(function() {
   window.Hasjob.Filters.init();
   window.Hasjob.StickieList.init();
   var filterDropdownClosed = true;
+
+  $(window).on("popstate", function () {
+    window.location.href = window.location.href;
+  });
 
   //Change site button to filter icon
   $('.hg-site-nav-toggle').find('i').removeClass('fa-bars').addClass('fa-search');
