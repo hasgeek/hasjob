@@ -4,7 +4,12 @@
   <div class="row">
     <div class="col-md-10 col-md-offset-1 col-xs-12 col-sm-12">
       {%- for category, msg in get_flashed_messages(with_categories=true) %}
-        <div class="flash flash-{{ category }}"><p>{{ msg }}</p></div>
+      <div class="alert">
+        <div class="flash flash-{{ category }}">
+          <a href="#" class="close" data-dismiss="alert">&times;</a>
+          <p>{{ msg }}</p>
+        </div>
+      </div>
       {%- endfor %}
       <div class="sheet">
         <div class="section first">
