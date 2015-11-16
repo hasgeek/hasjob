@@ -40,7 +40,7 @@
   {% endblock %}
 {% endif %}
 {% block content %}
-  {%- from "macros.html" import stickie, loadmore_script %}
+  {%- from "macros.html" import stickie %}
   {% with gkiosk=g.kiosk, gboard=g.board, guser=g.user, gstarred_ids=g.starred_ids %}
     {%- if gboard and gboard.not_root %}
       <div class="flash info">
@@ -166,7 +166,6 @@
         <form id="loadmore" method="GET" data-appear-top-offset="600">
           <button class="btn btn-default btn-lg" type="submit" name="startdate" value="{{ loadmore.isoformat() }}Z">Load more…</button>
         </form>
-        {{ loadmore_script() }}
       {%- endif -%}
     </ul>
   {%- endwith %}
@@ -180,6 +179,31 @@
   {%- endif -%}
 {%- endblock -%}
 
+{%- macro loadmore_script() -%}
+  <script type="text/javascript">
+    $(function() {
+      $("#loadmore").attr('method', 'POST').ajaxForm({
+        dataType: 'html',
+        beforeSubmit: function(formdata, form, options) {
+          form.find('button[type="submit"]').prop('disabled', true).addClass('submit-disabled').html('Loading more… <span class="loading">&nbsp;</span>');
+          return true;
+        },
+        success: function(responseText, statusText, xhr, form) {
+          target = $("#loadmore").replaceWith(responseText.trim());
+        },
+        error: function(context, xhr, status, errMsg) {
+          var form = $("#loadmore");
+          form.find('button[type="submit"]').prop('disabled', false).removeClass('submit-disabled').html('Load more…');
+          form.find('.loading').addClass('hidden');
+          form.append('<div class="alert alert-danger fade in"><a href="#" class="close" data-dismiss="alert">&times;</a> Could not load more posts. Please try again</div>');
+        }
+      });
+      $("#loadmore").appear().on('appear', function(event, element) {
+        element.find('button[type="submit"]').trigger('click');
+      });
+    });
+  </script>
+{%- endmacro -%}
 {%- block footerscripts -%}
   <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
   <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/c3/0.4.10/c3.min.js"></script>
@@ -251,4 +275,7 @@
       });
     </script>
   {%- endif %}
+  {%- if loadmore -%}
+    {{ loadmore_script() }}
+  {%- endif -%}
 {% endblock %}
