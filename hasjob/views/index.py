@@ -28,6 +28,8 @@ def stickie_dict(post, url, pinned=False, show_viewcounts=False, show_pay=False,
         'date': post.datetime.isoformat() + 'Z',
         'location': post.location,
         'parsed_location': post.parsed_location,
+        'company_name': post.company_name,
+        'company_logo': post.url_for('logo'),
         }
     if show_viewcounts:
         result['viewcounts'] = {
@@ -107,11 +109,9 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
     if basequery is None:
         basequery = JobPost.query
 
-    #... filter code ...
+    # Apply request.args filters
     data_filters = {}
     f_types = request.args.getlist('t')
-    statuses = []
-    ageless = False
     while '' in f_types:
         f_types.remove('')
     if f_types:
