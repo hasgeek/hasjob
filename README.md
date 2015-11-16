@@ -108,10 +108,20 @@ If you are going to use a computer on which you would work on multiple Python ba
 You will need to install all the requirements listed in `requirements.txt` using `easy_install` or `pip`:
 
     $ pip install -r requirements.txt
-
+    
 If you get an error, try running:
 
     $ easy_install -U setuptools
+
+__Note__: If you intend to contribute to HasGeek's libraries such as [Baseframe](http://github.com/hasgeek/baseframe), [Coaster](http://github.com/hasgeek/coaster) and [Flask-Lastuser](http://github.com/hasgeek/flask-lastuser) *along* with Hasjob, then uninstall these installed via requirements.txt and manually set up whichever library you plan to work on.
+
+    $ pip uninstall <insert_library_name> # baseframe, coaster, flask-lastuser
+    
+Clone Baseframe, Coaster and Flask-lastuser and in each of these repositories run:
+
+    $ python setup.py develop
+
+*Why?*: Setting up any of these above libraries independent of Hasjob means you to have to install them every time for your locally installed Hasjob to recognize these changes. The above method of setting up these libraries symlinks the installation back to your cloned repository.
 
 Finish configuration with:
 
