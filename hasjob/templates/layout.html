@@ -127,9 +127,6 @@
               <input id="job-filters-keywords" class="filter-select form-control js-handle-keyword-update" type="text" placeholder="Keywords" name="q" value="{{ request.args.q }}"/>
             </div>
             <div class="submit-filters col-xs-4 col-sm-2 col-md-2">
-              <button id='job-filters-submit' type="submit" class="btn btn-default submit-btn">
-                {% if request.path == '/' %} <span><i class="fa fa-filter"></i>Filter</span>
-                {% else %} <span><i class="fa fa-search"></i>Search</span> {% endif %} </button>
             </div>
             <div class="cancel-filters col-xs-4 visible-xs">
               <button id='job-filters-cancel' class="btn btn-default submit-btn">
