@@ -1,4 +1,3 @@
-
 {%- macro stickie(post, url, pinned, groupedunder=false, dataurl=none, show_viewcounts=false, show_pay=false, starred=none, is_bgroup=none) %}
   {%- if groupedunder %}
     <div class="stickie {%- if post.is_announcement() %} announcement{% endif %} grouped under" {%- if dataurl %} data-href="{{ dataurl }}"{% endif %}>
