@@ -126,7 +126,6 @@ Clone Baseframe, Coaster and Flask-lastuser and in each of these repositories ru
 Finish configuration with:
 
     $ python manage.py db create
-    $ python manage.py configure
 
 Before you run the server in development mode, make sure you have Postgres server and Redis server running as well. To start Hasjob:
 
