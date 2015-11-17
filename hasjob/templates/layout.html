@@ -52,7 +52,8 @@
   {% macro site_nav() %}
     <div class="header-section" id="filter-dropdown">
       <form id="js-job-filters" role="form">
-         <div class="row">
+        {% if 'archive' in request.args %}<input type="hidden" name="archive" value="{{ request.args.archive }}" />{% endif %}
+        <div class="row">
             <div class="filters filters-col1 location-filter col-xs-12 col-sm-4 col-md-3">
               <select id="job-filters-location" name="l" multiple="multiple" class="job-filters-select2 notselect hidden js-handle-filter-change" placeholder="Location">
                 <option value="anywhere" id='job-filters-remote-check' {% if 'anywhere' in request.args.getlist('l') %} selected="selected" {% endif %}>Anywhere/Remote</option>
@@ -122,7 +123,7 @@
                 <span><i class="fa fa-check"></i>Done</span>
               </button>
             </div>
-          </div><!--eof row-->
+        </div><!--eof row-->
       </form>
     </div><!--eof header-section-->
   {% endmacro %}
