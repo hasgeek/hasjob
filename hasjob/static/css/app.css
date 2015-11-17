@@ -1,7 +1,7 @@
 @charset "UTF-8";
 body {
   font-family: "Fira Sans", arial, sans-serif;
-  background: #e8e7e6 url('../img/canvas.jpg?1400098749');
+  background: #e8e7e6 url('../img/canvas.jpg?1416495026');
 }
 
 header {
@@ -83,7 +83,7 @@ header #hgnav .fa {
   overflow: hidden;
   text-align: left;
   text-transform: capitalize;
-  background-image: url('../img/logo-star.png?1424602497');
+  background-image: url('../img/logo-star.png?1424329162');
   background-repeat: no-repeat;
   background-position: 50% 50%;
   width: 170px;
@@ -151,17 +151,6 @@ header #hgnav .fa {
 }
 .filters ul.dropdown-menu {
   max-height: 68vh;
-}
-
-.submit-filters {
-  margin: 1px 10px 5px 0;
-  padding-right: 0;
-  width: auto;
-}
-
-.cancel-filters {
-  margin: 1px 0 5px;
-  padding: 0;
 }
 
 .pay-filter-dropdown {
@@ -286,7 +275,7 @@ header #hgnav .fa {
 
   .filters {
     padding: 0 10px 0 0;
-    width: 18.5%;
+    width: 19.8%;
   }
 
   .filters-col1 {
@@ -298,6 +287,14 @@ header #hgnav .fa {
     padding: 0;
   }
 }
+#nprogress .bar {
+  background: #df5e0e;
+}
+
+#nprogress .peg {
+  box-shadow: 0 0 10px #df5e0e, 0 0 5px #df5e0e;
+}
+
 .input-group-btn > .btn {
   border-bottom: 1px solid #ccc;
 }
@@ -311,7 +308,7 @@ header #hgnav .fa {
   line-height: 36px;
 }
 #search input[type="text"] {
-  background: white url('../img/search.png?1343882941') 4px center no-repeat;
+  background: white url('../img/search.png?1416495026') 4px center no-repeat;
   padding: 7px 10px 3px 20px;
 }
 #search .btn {
