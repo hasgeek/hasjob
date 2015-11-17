@@ -157,8 +157,8 @@ window.Hasjob.Filters = {
       filterDropdownClosed = true;
     });
 
-    //Add Cancel button for dropdown filter in mobile
-    $('#job-filters-cancel').click(function(event) {
+    // Done button for filters on mobile
+    $('#js-mobile-filter-done').click(function(event) {
       event.preventDefault();
       $('#hg-sitenav').collapse('toggle');
       $('body').removeClass('nav-open');
@@ -328,11 +328,13 @@ window.Hasjob.PaySlider.prototype.resetSlider = function(currency) {
 };
 
 $(function() {
-  window.Hasjob.Filters.init();
-  window.Hasjob.StickieList.init();
   var filterDropdownClosed = true;
 
+  window.Hasjob.Filters.init();
+  window.Hasjob.StickieList.init();
+
   $(window).on("popstate", function () {
+    // Force reload
     window.location.href = window.location.href;
   });
 
