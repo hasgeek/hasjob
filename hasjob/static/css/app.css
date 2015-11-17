@@ -298,6 +298,14 @@ header #hgnav .fa {
     padding: 0;
   }
 }
+#nprogress .bar {
+  background: #df5e0e;
+}
+
+#nprogress .peg {
+  box-shadow: 0 0 10px #df5e0e, 0 0 5px #df5e0e;
+}
+
 .input-group-btn > .btn {
   border-bottom: 1px solid #ccc;
 }

@@ -64,12 +64,16 @@ window.Hasjob.StickieList = {
     var stickieList = this;
   },
   refresh: function(){
+    // progress indicator
+    NProgress.configure({ showSpinner: false });
+    NProgress.start();
     var sortedFilterParams = window.Hasjob.Filters.formatFilterParams($('#js-job-filters').serializeArray());
     var searchUrl = '/' + '?' + $.param(sortedFilterParams);
     $.ajax(searchUrl, {
       type: 'GET',
       success: function(data) {
         $('#main-content').html(data);
+        NProgress.done();
       }
     });
     history.pushState({}, '', searchUrl);
