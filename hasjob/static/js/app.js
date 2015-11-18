@@ -68,7 +68,10 @@ window.Hasjob.StickieList = {
     NProgress.configure({ showSpinner: false });
     NProgress.start();
     var sortedFilterParams = window.Hasjob.Filters.formatFilterParams($('#js-job-filters').serializeArray());
-    var searchUrl = '/' + '?' + $.param(sortedFilterParams);
+    var searchUrl = '/';
+    if (sortedFilterParams.length) {
+      searchUrl = '/' + '?' + $.param(sortedFilterParams);
+    }
     $.ajax(searchUrl, {
       type: 'POST',
       headers: {
