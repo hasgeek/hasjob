@@ -37,7 +37,7 @@ window.Hasjob.JobPost = {
     innerTemplate.setAttribute('class', 'stickie');
     innerTemplate.setAttribute('rel', 'bookmark');
     // replaces the group with individual stickies when clicked
-    $('#stickie-area').on('click', 'li.grouped', function(e){
+    $('#main-content').on('click', '#stickie-area li.grouped', function(e){
       e.preventDefault();
       var group = this, parent=group.parentNode;
 
