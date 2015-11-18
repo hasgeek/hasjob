@@ -70,7 +70,10 @@ window.Hasjob.StickieList = {
     var sortedFilterParams = window.Hasjob.Filters.formatFilterParams($('#js-job-filters').serializeArray());
     var searchUrl = '/' + '?' + $.param(sortedFilterParams);
     $.ajax(searchUrl, {
-      type: 'GET',
+      type: 'POST',
+      headers: {
+        'X-PJAX': true
+      },
       success: function(data) {
         $('#main-content').html(data);
         NProgress.done();
@@ -327,16 +330,16 @@ window.Hasjob.PaySlider.prototype.resetSlider = function(currency) {
   this.slider.Link('upper').to($(this.maxField));
 };
 
+$(window).on("popstate", function () {
+  // Force reload
+  window.location.href = window.location.href;
+});
+
 $(function() {
   var filterDropdownClosed = true;
 
   window.Hasjob.Filters.init();
   window.Hasjob.StickieList.init();
-
-  $(window).on("popstate", function () {
-    // Force reload
-    window.location.href = window.location.href;
-  });
 
   //Change site button to filter icon
   $('.hg-site-nav-toggle').find('i').removeClass('fa-bars').addClass('fa-search');
