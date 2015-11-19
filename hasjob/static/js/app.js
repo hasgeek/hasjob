@@ -73,7 +73,7 @@ window.Hasjob.StickieList = {
       searchUrl = '/' + '?' + $.param(sortedFilterParams);
     }
     $.ajax(searchUrl, {
-      type: 'POST',
+      method: 'POST',
       headers: {
         'X-PJAX': true
       },
@@ -83,6 +83,7 @@ window.Hasjob.StickieList = {
       }
     });
     history.pushState({}, '', searchUrl);
+    window.PUSHEDSTATE = true;
   }
 }
 
@@ -333,9 +334,11 @@ window.Hasjob.PaySlider.prototype.resetSlider = function(currency) {
   this.slider.Link('upper').to($(this.maxField));
 };
 
-$(window).on("popstate", function () {
+$(window).on("popstate", function (event) {
   // Force reload
-  window.location.href = window.location.href;
+  if (window.PUSHEDSTATE) {
+    location.reload(true);
+  }
 });
 
 $(function() {
