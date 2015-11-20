@@ -82,8 +82,8 @@ window.Hasjob.StickieList = {
         NProgress.done();
       }
     });
-    history.pushState({}, '', searchUrl);
-    window.PUSHEDSTATE = true;
+    history.replaceState({pushed: true}, '', window.location.href);
+    history.pushState({pushed: true}, '', searchUrl);
   }
 }
 
@@ -334,15 +334,18 @@ window.Hasjob.PaySlider.prototype.resetSlider = function(currency) {
   this.slider.Link('upper').to($(this.maxField));
 };
 
-$(window).on("popstate", function (event) {
-  // Force reload
-  if (window.PUSHEDSTATE) {
-    location.reload(true);
-  }
-});
 
 $(function() {
   var filterDropdownClosed = true;
+
+  $(window).on("popstate", function (event) {
+    if (!event.originalEvent.state.pushed) {
+      return false;
+    } else {
+      // Force reload
+      location.reload(true);
+    }
+  });
 
   window.Hasjob.Filters.init();
   window.Hasjob.StickieList.init();
