@@ -82,8 +82,8 @@ window.Hasjob.StickieList = {
         NProgress.done();
       }
     });
-    history.replaceState({pushed: true}, '', window.location.href);
-    history.pushState({pushed: true}, '', searchUrl);
+    history.replaceState({reloadOnPop: true}, '', window.location.href);
+    history.pushState({reloadOnPop: true}, '', searchUrl);
   }
 }
 
@@ -339,11 +339,10 @@ $(function() {
   var filterDropdownClosed = true;
 
   $(window).on("popstate", function (event) {
-    if (!event.originalEvent.state.pushed) {
-      return false;
-    } else {
-      // Force reload
+    if (event.originalEvent.state && event.originalEvent.state.reloadOnPop) {
       location.reload(true);
+    } else {
+      return false;
     }
   });
 
