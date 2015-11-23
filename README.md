@@ -62,7 +62,7 @@ Hasjob can be used with Docker (recommended) or the harder way with a manual set
 
 Hasjob without Docker requires manual installation of all dependencies.
 
-### Postgres
+### Postgres and Redis
 
 Hasjob requires Postgres >= 9.4 and Redis. To set up a Postgres DB:
 
@@ -97,9 +97,9 @@ Hasjob makes use of subdomains to serve different sub-boards for jobs. To set it
 
 * Edit `instance/development.py` and change `SERVER_NAME` to `'hasjob.dev:5000'`
 
-### Installation
+### Install dependencies
 
-Hasjob runs on [Python](https://www.python.org) with the [Flask](http://flask.pocoo.org/) microframework. You can choose to set up your development environment in the following two ways…
+Hasjob runs on [Python](https://www.python.org) with the [Flask](http://flask.pocoo.org/) microframework.
 
 #### Virutalenv + pip/easy_install
 
@@ -116,7 +116,6 @@ If you get an error, try running:
 Finish configuration with:
 
     $ python manage.py db create
-    $ python manage.py configure
 
 Before you run the server in development mode, make sure you have Postgres server and Redis server running as well. To start Hasjob:
 
@@ -133,7 +132,7 @@ be real bugs.
 WSGI is recommended for production. For Apache: enable `mod_wsgi` and make a
 `VirtualHost` with:
 
-    WSGIScriptAlias / /path/to/website.wsgi
+    WSGIScriptAlias / /path/to/hasjob/git/repo/folder/website.py
 
 For Nginx, run website.py under uWSGI and proxy to it:
 
