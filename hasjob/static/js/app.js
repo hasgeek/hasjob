@@ -3,6 +3,19 @@ window.Hasjob = {};
 // config variables hashmap
 window.Hasjob.Config = {};
 
+window.Hasjob.updateGA = function(){
+  /*
+    Resets the path in the tracker object and updates GA with the current path.
+    To be called after updating the URL with pushState or replaceState.
+    Reference: https://developers.google.com/analytics/devguides/collection/analyticsjs/single-page-applications
+  */
+  if (window.ga) {
+    var path = window.location.href.split(window.location.host)[1];
+    window.ga('set', 'page', path);
+    window.ga('send', 'pageview');
+  }
+}
+
 window.Hasjob.JobPost = {
   handleStarClick: function (e) {
     var starlink = $(this);
@@ -84,6 +97,7 @@ window.Hasjob.StickieList = {
     });
     history.replaceState({reloadOnPop: true}, '', window.location.href);
     history.pushState({reloadOnPop: true}, '', searchUrl);
+    window.Hasjob.updateGA();
   }
 }
 
