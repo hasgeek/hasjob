@@ -92,6 +92,7 @@ window.Hasjob.StickieList = {
       },
       success: function(data) {
         $('#main-content').html(data);
+        window.Hasjob.Filters.refreshFilters(window.Hasjob.FilterTypeOption2);
         NProgress.done();
       }
     });
@@ -218,6 +219,42 @@ window.Hasjob.Filters = {
       }
     }
     return sortedFilterParams;
+  },
+  refreshFilters: function(filterTypesOptions) {
+    $('.js-refresh-' + filterType).next().find('ul').css('visibility', 'visible');
+    $('#js-job-filters').find('li').show();
+    $('#js-job-filters').find('.caret').show();
+
+    Object.keys(filterTypesOptions).forEach(function(filterType) {
+      //Flatten the array and retain only the filter names not title
+      //eg:- "type": [["fulltime", "Full-time employment"], ["contract", "Short-term contract"], ["freelance", "Freelance or consulting"]] -> "type": ["fulltime", "contract", "freelance"]
+      var presentFilterOptions = filterTypesOptions[filterType].map(function(filterNameTitle) {
+        return filterNameTitle[0];
+      });
+
+      //Create an array of all filter names, reading it from the DOM
+      var allFilterOptions = [];
+      $.each($('.js-refresh-' + filterType).next().find('input'), function(index, filterinputfield) {
+        allFilterOptions.push($(filterinputfield).val());
+      });
+
+      //Filter the filter names to be hidden, by comparing with filter options received from server
+      var absentFilterOptions = allFilterOptions.filter(function(filteroption) {
+        if(presentFilterOptions.indexOf(filteroption) === -1) {
+          return true;
+        }
+      });
+
+      absentFilterOptions.forEach(function(filteroption) {
+        $('input[value="' + filteroption + '"]').parents('li').hide();
+      });
+
+      //If all options of filter are hidden, then hide the caret to avoid empty dropdown
+      if(absentFilterOptions.length === allFilterOptions.length) {
+        $('.js-refresh-' + filterType).next().find('ul').css('visibility', 'hidden');
+        $('.js-refresh-' + filterType).next().find('.caret').hide();
+      }
+    });
   }
 }
 
@@ -361,6 +398,7 @@ $(function() {
   });
 
   window.Hasjob.Filters.init();
+  window.Hasjob.Filters.refreshFilters(window.Hasjob.FilterTypeOption1);
   window.Hasjob.StickieList.init();
 
   //Change site button to filter icon

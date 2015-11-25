@@ -209,6 +209,38 @@
 {%- endmacro -%}
 {%- block footerscripts -%}
   <script type="text/javascript">
+
+    //Test filter options data 
+    window.Hasjob.FilterTypeOption1 = {
+      "type": [
+        ["fulltime", "Full-time employment"], 
+        ["contract", "Short-term contract"], 
+        ["freelance", "Freelance or consulting"],
+        ["volunteer", "Volunteer contributor"], 
+        ["partner", "Partner for a venture"]
+      ], 
+      "category": [
+        ["programming", "Programming"], 
+        ["ux", "Interaction Design"], 
+        ["design", "Graphic Design"], 
+        ["testing", "Testing"], 
+        ["sysadmin", "Systems Administration"], 
+        ["business", "Business/Management"], 
+      ], 
+      "locations": []
+    };
+
+    //Test filter option data 
+    window.Hasjob.FilterTypeOption2 = {
+      "type": [
+        ["fulltime", "Full-time employment"], 
+        ["contract", "Short-term contract"], 
+        ["freelance", "Freelance or consulting"]
+      ], 
+      "category": [], 
+      "locations": []
+    };
+
     //For setting the pay slider
     window.Hasjob.PayFilterParameters = {
       'currency': {{ request.args.get('currency') | tojson }},
