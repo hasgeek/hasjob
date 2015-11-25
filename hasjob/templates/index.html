@@ -216,6 +216,10 @@
       'pmax': {{ request.args.get('pmax') | tojson }}
     };
 
+    window.Hasjob.Config.job_locations = {{job_locations | tojson}};
+    window.Hasjob.Config.job_type_choices = {{job_type_choices | tojson}};
+    window.Hasjob.Config.job_category_choices = {{job_category_choices | tojson}};
+
     $(function() {
       $('textarea').autosize();
       $("#newpost_details").hide().removeClass('jshidden');

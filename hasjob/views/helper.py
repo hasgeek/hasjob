@@ -524,15 +524,46 @@ def campaign_view_count_update(campaign_id, user_id=None, anon_user_id=None):
     db.session.commit()
 
 
-@cache.cached(key_prefix='helper/filter_locations', timeout=3600)
-def filter_locations():
+def filter_locations(filtered_categories=[], filtered_types=[]):
     now = datetime.utcnow()
-    geonameids = [r.geonameid for r in
-        db.session.query(JobLocation.geonameid, db.func.count(JobLocation.geonameid).label('count')
+    basequery = db.session.query(JobLocation.geonameid, db.func.count(JobLocation.geonameid).label('count')
             ).join(JobPost).filter(JobPost.status.in_(POSTSTATUS.LISTED), JobPost.datetime > now - agelimit,
-            JobLocation.primary == True).group_by(JobLocation.geonameid).order_by(db.text('count DESC'))]  # NOQA
+            JobLocation.primary == True).group_by(JobLocation.geonameid).order_by(db.text('count DESC'))
+    if filtered_types:
+        job_type_ids_query = db.session.query(JobType.id).filter(JobType.name.in_(filtered_types))
+        basequery = basequery.filter(JobPost.type_id.in_(job_type_ids_query))
+    if filtered_categories:
+        job_category_ids_query = db.session.query(JobCategory.id).filter(JobCategory.name.in_(filtered_categories))
+        basequery = basequery.filter(JobPost.category_id.in_(job_category_ids_query))
+    geonameids = [jobpost_location.geonameid for jobpost_location in basequery]
     data = location_geodata(geonameids)
     return [(data[geonameid]['name'], data[geonameid]['picker_title']) for geonameid in geonameids]
+
+
+def filter_categories(geonameids=[], filtered_types=[]):
+    # TODO : Accept Pay and Keywords as parameters too
+    now = datetime.utcnow()
+    basequery = db.session.query(JobPost.category_id).filter(JobPost.status.in_(POSTSTATUS.LISTED), JobPost.datetime > now - agelimit)
+    if filtered_types:
+        job_type_ids_query = db.session.query(JobType.id).filter(JobType.name.in_(filtered_types))
+        basequery = basequery.filter(JobPost.type_id.in_(job_type_ids_query))
+    if geonameids:
+        basequery = basequery.join(JobLocation).filter(JobLocation.geonameid.in_(geonameids))
+    categories = db.session.query(JobCategory.name, JobCategory.title).filter(JobCategory.id.in_(basequery))
+    return [(c.name, c.title) for c in categories]
+
+
+def filter_types(geonameids=[], filtered_categories=[]):
+    # TODO : Accept Pay and Keywords as parameters too
+    now = datetime.utcnow()
+    basequery = db.session.query(JobPost.type_id).filter(JobPost.status.in_(POSTSTATUS.LISTED), JobPost.datetime > now - agelimit)
+    if filtered_categories:
+        job_category_ids_query = db.session.query(JobCategory.id).filter(JobCategory.name.in_(filtered_categories))
+        basequery = basequery.filter(JobPost.category_id.in_(job_category_ids_query))
+    if geonameids:
+        basequery = basequery.join(JobLocation).filter(JobLocation.geonameid.in_(geonameids))
+    types = db.session.query(JobType.name, JobType.title).filter(JobType.id.in_(basequery))
+    return [(t.name, t.title) for t in types]
 
 
 @cache.memoize(timeout=86400)
@@ -635,4 +666,8 @@ def usessl(url):
 
 @app.context_processor
 def inject_filter_options():
-    return dict(job_locations=filter_locations(), job_type_choices=JobType.name_title_pairs(g.board), job_category_choices=JobCategory.name_title_pairs(g.board))
+    filtered_categories = g.event_data.get('filters', {}).get('categories', [])
+    filtered_types = g.event_data.get('filters', {}).get('types', [])
+    filtered_locations = g.event_data.get('filters', {}).get('locations', [])
+    return dict(job_locations=filter_locations(filtered_categories=filtered_categories, filtered_types=filtered_types),
+     job_type_choices=filter_types(geonameids=filtered_locations, filtered_categories=filtered_categories), job_category_choices=filter_categories(geonameids=filtered_locations, filtered_types=filtered_types))
