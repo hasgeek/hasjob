@@ -36,6 +36,8 @@ from .models import db  # NOQA
 # Configure the app
 def init_for(env):
     coaster.app.init_app(app, env)
+    db.init_app(app)
+    db.app = app
 
     app.geoip = None
     if 'GEOIP_PATH' in app.config:

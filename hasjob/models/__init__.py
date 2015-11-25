@@ -2,14 +2,12 @@
 # flake8: noqa
 
 from datetime import timedelta
-from flask.ext.sqlalchemy import SQLAlchemy
 from coaster import LabeledEnum
+from coaster.db import db
 from coaster.sqlalchemy import (BaseMixin, BaseNameMixin, TimestampMixin, BaseScopedIdMixin,
     BaseScopedNameMixin, CoordinatesMixin, make_timestamp_columns)
 from .. import app
 
-
-db = SQLAlchemy(app)
 agelimit = timedelta(days=30)
 newlimit = timedelta(days=1)
 
