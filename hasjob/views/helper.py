@@ -537,7 +537,8 @@ def filter_locations(filtered_categories=[], filtered_types=[]):
         basequery = basequery.filter(JobPost.category_id.in_(job_category_ids_query))
     geonameids = [jobpost_location.geonameid for jobpost_location in basequery]
     data = location_geodata(geonameids)
-    return [(data[geonameid]['name'], data[geonameid]['picker_title']) for geonameid in geonameids]
+    # return [(data[geonameid]['name'], data[geonameid]['picker_title']) for geonameid in geonameids]
+    return [{'name': data[geonameid]['name'], 'title': data[geonameid]['picker_title']} for geonameid in geonameids]
 
 
 def filter_categories(geonameids=[], filtered_types=[]):
@@ -550,7 +551,7 @@ def filter_categories(geonameids=[], filtered_types=[]):
     if geonameids:
         basequery = basequery.join(JobLocation).filter(JobLocation.geonameid.in_(geonameids))
     categories = db.session.query(JobCategory.name, JobCategory.title).filter(JobCategory.id.in_(basequery))
-    return [(c.name, c.title) for c in categories]
+    return [{'name': c.name, 'title': c.title} for c in categories]
 
 
 def filter_types(geonameids=[], filtered_categories=[]):
@@ -563,7 +564,7 @@ def filter_types(geonameids=[], filtered_categories=[]):
     if geonameids:
         basequery = basequery.join(JobLocation).filter(JobLocation.geonameid.in_(geonameids))
     types = db.session.query(JobType.name, JobType.title).filter(JobType.id.in_(basequery))
-    return [(t.name, t.title) for t in types]
+    return [{'name': t.name, 'title': t.title} for t in types]
 
 
 @cache.memoize(timeout=86400)
