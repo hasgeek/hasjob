@@ -210,12 +210,18 @@
 {%- block footerscripts -%}
   <script type="text/javascript">
 
-    //Test filter options data 
-    window.Hasjob.FilterTypeOption1 = {
+    window.Hasjob.JobFilterChoices = {
+      "locations" : {{ job_locations | tojson }},
+      "type": {{ job_type_choices | tojson}},
+      "category": {{ job_category_choices | tojson}}
+    };
+
+    //Test filter options CurrentJobFilterChoices1data 
+    window.Hasjob.CurrentJobFilterChoices1 = {
       "type": [
         ["fulltime", "Full-time employment"], 
         ["contract", "Short-term contract"], 
-        ["freelance", "Freelance or consulting"],
+        ["freelance", "Freelance or consulting"], 
         ["volunteer", "Volunteer contributor"], 
         ["partner", "Partner for a venture"]
       ], 
@@ -226,12 +232,15 @@
         ["testing", "Testing"], 
         ["sysadmin", "Systems Administration"], 
         ["business", "Business/Management"], 
+        ["edit", "Writer/Editor"], 
+        ["support", "Customer Support"], 
+        ["mobile", "Mobile (iPhone, Android, other)"]
       ], 
       "locations": []
     };
 
     //Test filter option data 
-    window.Hasjob.FilterTypeOption2 = {
+    window.Hasjob.CurrentJobFilterChoices2 = {
       "type": [
         ["fulltime", "Full-time employment"], 
         ["contract", "Short-term contract"], 
