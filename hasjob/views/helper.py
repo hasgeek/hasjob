@@ -442,10 +442,9 @@ def save_jobview(event_session_id, jobpost_id, bgroup, viewed_time):
     """
     jvs = JobViewSession.get_by_ids(event_session_id=event_session_id, jobpost_id=jobpost_id)
     if jvs is None:
-        jvs = JobViewSession(event_session_id=event_session_id, jobpost_id=jobpost_id, datetime=viewed_time)
-        db.session.add(jvs)
-
-        jvs.bgroup = bgroup
+        jvs = JobViewSession(event_session_id=event_session_id, jobpost_id=jobpost_id, datetime=viewed_time,
+            bgroup=bgroup)
+        jvs = db.session().add_and_commit(jvs)
 
         # Since this is a new view, is there an existing job impression in the same session
         # which has a bgroup defined? If yes, this view has an associated coin toss.
