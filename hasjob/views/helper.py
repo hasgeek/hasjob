@@ -237,6 +237,7 @@ def record_views_and_events(response):
     if g.user:
         for campaign in g.campaign_views:
             if not CampaignView.exists(campaign, g.user):
+                db.session.begin_nested()
                 try:
                     db.session.add(CampaignView(campaign=campaign, user=g.user))
                     db.session.commit()
@@ -246,6 +247,7 @@ def record_views_and_events(response):
     elif g.anon_user:
         for campaign in g.campaign_views:
             if not CampaignAnonView.exists(campaign, g.anon_user):
+                db.session.begin_nested()
                 try:
                     db.session.add(CampaignAnonView(campaign=campaign, anon_user=g.anon_user))
                     db.session.commit()
@@ -479,7 +481,7 @@ def save_impressions(session_id, impressions, viewed_time):
                 ji.pinned = True
             if bgroup is not None:
                 ji.bgroup = bgroup
-            # We commit once per impresssion (typically 32+ impressions per request)
+            # We commit once per impression (typically 32+ impressions per request)
             # This is inefficient, but is the only way to handle integrity errors per item
             # from race conditions in the absence of a database-provided UPSERT. This
             # is why this function runs as a background job instead of in-process.
