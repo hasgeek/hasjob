@@ -92,6 +92,7 @@ window.Hasjob.StickieList = {
       },
       success: function(data) {
         $('#main-content').html(data);
+        window.Hasjob.Filters.refreshFilters(window.Hasjob.CurrentJobFilterChoices2);
         NProgress.done();
       }
     });
@@ -218,6 +219,41 @@ window.Hasjob.Filters = {
       }
     }
     return sortedFilterParams;
+  },
+  refreshFilters: function(filterTypesChoices) {
+    $('#js-job-filters').find('ul').css('visibility', 'visible');
+    $('#js-job-filters').find('li').show();
+    $('#js-job-filters').find('.caret').show();
+
+    Object.keys(filterTypesChoices).forEach(function(filterType) {
+      //Flatten the array and retain only the filter names not title
+      //eg:- "type": [["fulltime", "Full-time employment"], ["contract", "Short-term contract"], ["freelance", "Freelance or consulting"]] -> "type": ["fulltime", "contract", "freelance"]
+      var currentFilterChoices = filterTypesChoices[filterType].map(function(filterNameTitle) {
+        return filterNameTitle[0];
+      });
+
+      //Flatten the array and retain only the filter names not title
+      var allFilterChoices = window.Hasjob.JobFilterChoices[filterType].map(function(filterNameTitle) {
+        return filterNameTitle[0];
+      });
+
+      //Array of filter choices to be hidden
+      var absentFilterChoices = allFilterChoices.filter(function(filterChoice) {
+        if(currentFilterChoices.indexOf(filterChoice) === -1) {
+          return true;
+        }
+      });
+
+      absentFilterChoices.forEach(function(filterChoice) {
+        $('input[value="' + filterChoice + '"]').parents('li').hide();
+      });
+
+      //If all choices of a filter type are hidden, then hide the dropdown list
+      if(absentFilterChoices.length === allFilterChoices.length) {
+        $('.js-refresh-' + filterType).next().find('ul').css('visibility', 'hidden');
+        $('.js-refresh-' + filterType).next().find('.caret').hide();
+      }
+    });
   }
 }
 
@@ -361,6 +397,7 @@ $(function() {
   });
 
   window.Hasjob.Filters.init();
+  window.Hasjob.Filters.refreshFilters(window.Hasjob.CurrentJobFilterChoices1);
   window.Hasjob.StickieList.init();
 
   //Change site button to filter icon
