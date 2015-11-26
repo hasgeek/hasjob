@@ -53,8 +53,8 @@
     <div class="header-section" id="filter-dropdown">
       <form id="js-job-filters" role="form">
         {% if 'archive' in request.args %}<input type="hidden" name="archive" value="{{ request.args.archive }}" />{% endif %}
+        <div class="row" id='job-filters-ractive-template'></div><!--eof row-->
         {%- raw %}
-        <div class="row" id='job-filters-ractive-template'>
         <script id='template' type='text/ractive'>
           <div class="filters filters-col1 location-filter col-xs-12 col-sm-4 col-md-3">
             <select id="job-filters-location" name="l" multiple="multiple" class="job-filters-select2 notselect hidden js-handle-filter-change js-refresh-location" placeholder="Location">
@@ -70,7 +70,7 @@
           <div class="filters col-xs-12 col-sm-4 col-md-3">
             <select id="job-filters-type" name="t" multiple="multiple" class="job-filters-select2 notselect hidden js-handle-filter-change js-refresh-type" placeholder="Job Type">
               {{ #jobTypes }}
-                <option value={{ name }}>
+                <option value={{ name }} {{#if t.indexOf(name) > -1}}selected="selected"{{/if}}>
                   {{title}}
                 </option>
               {{/jobTypes}}
@@ -133,7 +133,6 @@
             </button>
           </div>
         </script>
-        </div><!--eof row-->
         {%- endraw %}
       </form>
     </div><!--eof header-section-->
