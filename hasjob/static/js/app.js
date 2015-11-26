@@ -1,7 +1,4 @@
-window.Hasjob = {};
-
-// config variables hashmap
-window.Hasjob.Config = {};
+//window.Hasjob has been declared in layout.html
 
 window.Hasjob.updateGA = function(){
   /*
@@ -92,6 +89,7 @@ window.Hasjob.StickieList = {
       },
       success: function(data) {
         $('#main-content').html(data);
+        window.Hasjob.Filters.refresh();
         NProgress.done();
       }
     });
@@ -103,6 +101,9 @@ window.Hasjob.StickieList = {
 
 window.Hasjob.Filters = {
   render: function(){
+    // To disable debug mode
+    Ractive.DEBUG = false;
+    
     this.ractive = new Ractive({
       // The `el` option can be a node, an ID, or a CSS selector.
       el: 'job-filters-ractive-template',
@@ -253,6 +254,22 @@ window.Hasjob.Filters = {
       }
     }
     return sortedFilterParams;
+  },
+  refresh: function() {
+    this.ractive.set({
+        jobLocations: window.Hasjob.Config.jobLocations,
+        jobTypes: window.Hasjob.Config.jobTypes,
+        jobCategories: window.Hasjob.Config.jobCategories,
+        l: window.Hasjob.Config.l,
+        t: window.Hasjob.Config.t,
+        c: window.Hasjob.Config.t,
+        q: window.Hasjob.Config.q,
+        e: window.Hasjob.Config.equity
+    }).then(function() {
+      $('#job-filters-location').multiselect('rebuild');
+      $('#job-filters-type').multiselect('rebuild');
+      $('#job-filters-category').multiselect('rebuild');
+    });
   }
 }
 

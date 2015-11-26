@@ -217,35 +217,14 @@
       'pmax': {{ request.args.get('pmax') | tojson }}
     };
 
-    window.Hasjob.Config.jobLocations = {{job_locations | tojson}};
-    window.Hasjob.Config.jobTypes = {{job_type_choices | tojson}};
-    window.Hasjob.Config.jobCategories = {{job_category_choices | tojson}};
-    window.Hasjob.Config.l = {{request.args.getlist('l') | tojson}};
-    window.Hasjob.Config.t = {{request.args.getlist('t') | tojson}};
-    window.Hasjob.Config.c = {{request.args.getlist('c') | tojson}};
-    window.Hasjob.Config.q = {{request.args.getlist('q') | tojson}};
-    window.Hasjob.Config.e = {{request.args.get('e') | tojson}};
-
-    if (Hasjob.Filters.ractive) {
-      Hasjob.Filters.ractive.merge('jobTypes', window.Hasjob.Config.jobTypes, {
-        compare: function(item){
-          console.log(item.name);
-          return item.name;
-        }
-      });
-
-      Hasjob.Filters.ractive.merge('jobCategories', window.Hasjob.Config.jobCategories, {
-        compare: function(item){
-          return item.name;
-        }
-      });
-
-      Hasjob.Filters.ractive.merge('jobLocations', window.Hasjob.Config.jobLocations, {
-        compare: function(item){
-          return item.name;
-        }
-      });
-    }
+    window.Hasjob.Config.jobLocations = {{job_locations | tojson}},
+    window.Hasjob.Config.jobTypes = {{job_type_choices | tojson}},
+    window.Hasjob.Config.jobCategories = {{job_category_choices | tojson}},
+    window.Hasjob.Config.l = {{request.args.getlist('l') | tojson}},
+    window.Hasjob.Config.t = {{request.args.getlist('t') | tojson}},
+    window.Hasjob.Config.c = {{request.args.getlist('c') | tojson}},
+    window.Hasjob.Config.q = {{request.args.getlist('q') | tojson}},
+    window.Hasjob.Config.e = {{request.args.get('e') | tojson}}
 
     $(function() {
       $('textarea').autosize();

@@ -34,6 +34,12 @@
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:site" content="@hasjob" />
   {%- endblock %}
+  <script>
+    window.Hasjob = {};
+
+    // config variables hashmap
+    window.Hasjob.Config = {};
+  </script>
 {%- endblock %}
 
 {% block headerbox %}
@@ -53,87 +59,98 @@
     <div class="header-section" id="filter-dropdown">
       <form id="js-job-filters" role="form">
         {% if 'archive' in request.args %}<input type="hidden" name="archive" value="{{ request.args.archive }}" />{% endif %}
-        <div class="row" id='job-filters-ractive-template'></div><!--eof row-->
-        {%- raw %}
-        <script id='template' type='text/ractive'>
-          <div class="filters filters-col1 location-filter col-xs-12 col-sm-4 col-md-3">
-            <select id="job-filters-location" name="l" multiple="multiple" class="job-filters-select2 notselect hidden js-handle-filter-change js-refresh-location" placeholder="Location">
-              <option value="anywhere" id='job-filters-remote-check' {{#if l.indexOf('anywhere') > -1}}selected="selected"{{/if}}>Anywhere/Remote</option>
-              {{ #jobLocations }}
-                <option value={{ name }} {{#if l.indexOf(name) > -1}}selected="selected"{{/if}}>
-                  {{title}}
-                </option>
-              {{/jobLocations}}
-            </select>
-          </div>
-
-          <div class="filters col-xs-12 col-sm-4 col-md-3">
-            <select id="job-filters-type" name="t" multiple="multiple" class="job-filters-select2 notselect hidden js-handle-filter-change js-refresh-type" placeholder="Job Type">
-              {{ #jobTypes }}
-                <option value={{ name }} {{#if t.indexOf(name) > -1}}selected="selected"{{/if}}>
-                  {{title}}
-                </option>
-              {{/jobTypes}}
-            </select>
-          </div>
-          <div class="filters col-xs-12 col-sm-4 col-md-3 category-filter">
-            <select id="job-filters-category" name="c" multiple="multiple" class="job-filters-select2 notselect hidden js-handle-filter-change js-refresh-category" placeholder="Job Category">
-              {{ #jobCategories}}
-                <option value={{ name }} {{#if c.indexOf(name) > -1}}selected="selected"{{/if}}>{{title}}</option>
-              {{/jobCategories}}
-            </select>
-          </div>
-          <div class="filters dropdown col-xs-12 col-sm-4 col-md-3">
-            <div id="job-filters-pay" class="btn-group btn-block no-jshidden">
-              <button type="button" class="btn btn-default dropdown-toggle btn-block" data-toggle="dropdown" aria-expanded="false">
-                <span id="job-filters-pay-text" class="pay-field"></span>
-                <span class="caret"></span>
-              </button>
-              <ul class="dropdown-menu pay-filter-dropdown" role="menu" aria-labelledby="job-filters-pay">
-                <li class="clearfix">
-                  <div class="currency-checkbox">
-                    <input type="radio" class='js-handle-filter-change' id="job-filters-na" name="currency" value="NA" />
-                    <label for="job-filters-na">Any</label>
-                  </div>
-                  <div class="currency-checkbox">
-                    <input type="radio" class='js-handle-filter-change' id="job-filters-inr" name="currency" value="INR" />
-                    <label for="job-filters-inr">INR</label>
-                  </div>
-                  <div class="currency-checkbox">
-                    <input type="radio" class='js-handle-filter-change' id="job-filters-usd" name="currency" value="USD" />
-                    <label for="job-filters-usd">USD</label>
-                  </div>
-                  <div class="currency-checkbox">
-                    <input type="radio" class='js-handle-filter-change' id="job-filters-eur" name="currency" value="EUR" />
-                    <label for="job-filters-eur">EUR</label>
-                  </div>
-                </li>
-                <li class="pay-filter-slider">
-                  <div>
-                    <input type="hidden" name="pmin" id="job-filters-pmin">
-                    <input type="hidden" name="pmax" id="job-filters-pmax">
-                    <div id="pay-slider"></div>
-                  </div>
-                </li>
-                <li>
-                  <label for="job-filters-equity" class="equity-label">
-                    Equity
-                  </label>
-                  <input type="checkbox" class='js-handle-filter-change' name="equity" id="job-filters-equity" {{#if e}} checked="checked" {{/if}} value="1" />
-                </li>
-              </ul>
-            </div>
-          </div>
-          <div class="filters col-xs-12 col-sm-4 col-md-3">
-            <input id="job-filters-keywords" class="filter-select form-control js-handle-keyword-update" type="text" placeholder="Keywords" name="q" value={{q}} />
-          </div>
-          <div class="col-xs-12">
-            <button id='js-mobile-filter-done' class="btn btn-default submit-btn visible-xs">
-              <span><i class="fa fa-check"></i>Done</span>
-            </button>
-          </div>
+        <script>
+          window.Hasjob.Config.jobLocations = {{ job_locations | tojson }};
+          window.Hasjob.Config.jobTypes = {{ job_type_choices | tojson }};
+          window.Hasjob.Config.jobCategories = {{ job_category_choices | tojson }};
+          window.Hasjob.Config.l = {{ request.args.getlist('l') | tojson }};
+          window.Hasjob.Config.t = {{ request.args.getlist('t') | tojson }};
+          window.Hasjob.Config.c = {{ request.args.getlist('c') | tojson }};
+          window.Hasjob.Config.q = {{ request.args.getlist('q') | tojson }};
+          window.Hasjob.Config.e = {{ request.args.get('e') | tojson }};
         </script>
+        <div class="row" id='job-filters-ractive-template'>
+        {%- raw %}
+          <script id='template' type='text/ractive'>
+            <div class="filters filters-col1 location-filter col-xs-12 col-sm-4 col-md-3">
+              <select id="job-filters-location" name="l" multiple="multiple" class="job-filters-select2 notselect hidden js-handle-filter-change js-refresh-location" placeholder="Location">
+                <option value="anywhere" id='job-filters-remote-check' {{#if l.indexOf('anywhere') > -1}}selected="selected"{{/if}}>Anywhere/Remote</option>
+                {{ #jobLocations }}
+                  <option value={{ name }} {{#if l.indexOf(name) > -1}}selected="selected"{{/if}}>
+                    {{title}}
+                  </option>
+                {{/jobLocations}}
+              </select>
+            </div>
+
+            <div class="filters col-xs-12 col-sm-4 col-md-3">
+              <select id="job-filters-type" name="t" multiple="multiple" class="job-filters-select2 notselect hidden js-handle-filter-change js-refresh-type" placeholder="Job Type">
+                {{ #jobTypes }}
+                  <option value={{ name }} {{#if t.indexOf(name) > -1}}selected="selected"{{/if}}>
+                    {{title}}
+                  </option>
+                {{/jobTypes}}
+              </select>
+            </div>
+            <div class="filters col-xs-12 col-sm-4 col-md-3 category-filter">
+              <select id="job-filters-category" name="c" multiple="multiple" class="job-filters-select2 notselect hidden js-handle-filter-change js-refresh-category" placeholder="Job Category">
+                {{ #jobCategories}}
+                  <option value={{ name }} {{#if c.indexOf(name) > -1}}selected="selected"{{/if}}>{{title}}</option>
+                {{/jobCategories}}
+              </select>
+            </div>
+            <div class="filters dropdown col-xs-12 col-sm-4 col-md-3">
+              <div id="job-filters-pay" class="btn-group btn-block no-jshidden">
+                <button type="button" class="btn btn-default dropdown-toggle btn-block" data-toggle="dropdown" aria-expanded="false">
+                  <span id="job-filters-pay-text" class="pay-field"></span>
+                  <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu pay-filter-dropdown" role="menu" aria-labelledby="job-filters-pay">
+                  <li class="clearfix">
+                    <div class="currency-checkbox">
+                      <input type="radio" class='js-handle-filter-change' id="job-filters-na" name="currency" value="NA" />
+                      <label for="job-filters-na">Any</label>
+                    </div>
+                    <div class="currency-checkbox">
+                      <input type="radio" class='js-handle-filter-change' id="job-filters-inr" name="currency" value="INR" />
+                      <label for="job-filters-inr">INR</label>
+                    </div>
+                    <div class="currency-checkbox">
+                      <input type="radio" class='js-handle-filter-change' id="job-filters-usd" name="currency" value="USD" />
+                      <label for="job-filters-usd">USD</label>
+                    </div>
+                    <div class="currency-checkbox">
+                      <input type="radio" class='js-handle-filter-change' id="job-filters-eur" name="currency" value="EUR" />
+                      <label for="job-filters-eur">EUR</label>
+                    </div>
+                  </li>
+                  <li class="pay-filter-slider">
+                    <div>
+                      <input type="hidden" name="pmin" id="job-filters-pmin">
+                      <input type="hidden" name="pmax" id="job-filters-pmax">
+                      <div id="pay-slider"></div>
+                    </div>
+                  </li>
+                  <li>
+                    <label for="job-filters-equity" class="equity-label">
+                      Equity
+                    </label>
+                    <input type="checkbox" class='js-handle-filter-change' name="equity" id="job-filters-equity" {{#if e}} checked="checked" {{/if}} value="1" />
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <div class="filters col-xs-12 col-sm-4 col-md-3">
+              <input id="job-filters-keywords" class="filter-select form-control js-handle-keyword-update" type="text" placeholder="Keywords" name="q" value={{q}} />
+            </div>
+            <div class="col-xs-12">
+              <button id='js-mobile-filter-done' class="btn btn-default submit-btn visible-xs">
+                <span><i class="fa fa-check"></i>Done</span>
+              </button>
+            </div>
+          </script>
         {%- endraw %}
+        </div>
       </form>
     </div><!--eof header-section-->
   {% endmacro %}
