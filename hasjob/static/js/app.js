@@ -1,4 +1,4 @@
-//window.Hasjob has been declared in layout.html
+//window.Hasjob initialized in layout.html
 
 window.Hasjob.updateGA = function(){
   /*
@@ -101,20 +101,10 @@ window.Hasjob.StickieList = {
 
 window.Hasjob.Filters = {
   render: function(){
-    // To disable debug mode
-    Ractive.DEBUG = false;
-    
     this.ractive = new Ractive({
-      // The `el` option can be a node, an ID, or a CSS selector.
       el: 'job-filters-ractive-template',
-
-      // We could pass in a string, but for the sake of convenience
-      // we're passing the ID of the <script> tag above.
       template: '#template',
-
-      // Here, we're passing in some initial data
       data: {
-        // Config should be set by jinja
         jobLocations: window.Hasjob.Config.jobLocations,
         jobTypes: window.Hasjob.Config.jobTypes,
         jobCategories: window.Hasjob.Config.jobCategories,
@@ -402,6 +392,7 @@ window.Hasjob.PaySlider.prototype.resetSlider = function(currency) {
 
 
 $(function() {
+  Ractive.DEBUG = false;
   var filterDropdownClosed = true;
 
   $(window).on("popstate", function (event) {

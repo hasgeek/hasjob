@@ -36,9 +36,17 @@
   {%- endblock %}
   <script>
     window.Hasjob = {};
-
-    // config variables hashmap
-    window.Hasjob.Config = {};
+    // Use Hasjob.Config for server-generated responses
+    window.Hasjob.Config = {
+      jobLocations: {{ job_locations | tojson }},
+      jobTypes: {{ job_type_choices | tojson }},
+      jobCategories: {{ job_category_choices | tojson }},
+      l: {{ request.args.getlist('l') | tojson }},
+      t: {{ request.args.getlist('t') | tojson }},
+      c: {{ request.args.getlist('c') | tojson }},
+      q: {{ request.args.getlist('q') | tojson }},
+      e: {{ request.args.get('e') | tojson }}
+    };
   </script>
 {%- endblock %}
 
@@ -59,16 +67,6 @@
     <div class="header-section" id="filter-dropdown">
       <form id="js-job-filters" role="form">
         {% if 'archive' in request.args %}<input type="hidden" name="archive" value="{{ request.args.archive }}" />{% endif %}
-        <script>
-          window.Hasjob.Config.jobLocations = {{ job_locations | tojson }};
-          window.Hasjob.Config.jobTypes = {{ job_type_choices | tojson }};
-          window.Hasjob.Config.jobCategories = {{ job_category_choices | tojson }};
-          window.Hasjob.Config.l = {{ request.args.getlist('l') | tojson }};
-          window.Hasjob.Config.t = {{ request.args.getlist('t') | tojson }};
-          window.Hasjob.Config.c = {{ request.args.getlist('c') | tojson }};
-          window.Hasjob.Config.q = {{ request.args.getlist('q') | tojson }};
-          window.Hasjob.Config.e = {{ request.args.get('e') | tojson }};
-        </script>
         <div class="row" id='job-filters-ractive-template'>
         {%- raw %}
           <script id='template' type='text/ractive'>
