@@ -90,7 +90,7 @@
                 {{ #jobTypes }}
                   <option value={{ name }} {{#if t.indexOf(name) > -1}}selected="selected"{{/if}}>
                     {{#if available}}
-                      <h3>{{title}}</h3>
+                      <s>{{title}}</s>
                     {{else}}
                       {{title}}
                     {{/if}}
