@@ -75,7 +75,11 @@
                 <option value="anywhere" id='job-filters-remote-check' {{#if l.indexOf('anywhere') > -1}}selected="selected"{{/if}}>Anywhere/Remote</option>
                 {{ #jobLocations }}
                   <option value={{ name }} {{#if l.indexOf(name) > -1}}selected="selected"{{/if}}>
-                    {{title}}
+                    {{#if available}}
+                      <s>{{title}}</s>
+                    {{else}}
+                      {{title}}
+                    {{/if}}
                   </option>
                 {{/jobLocations}}
               </select>
@@ -85,7 +89,11 @@
               <select id="job-filters-type" name="t" multiple="multiple" class="job-filters-select2 notselect hidden js-handle-filter-change js-refresh-type" placeholder="Job Type">
                 {{ #jobTypes }}
                   <option value={{ name }} {{#if t.indexOf(name) > -1}}selected="selected"{{/if}}>
-                    {{title}}
+                    {{#if available}}
+                      <h3>{{title}}</h3>
+                    {{else}}
+                      {{title}}
+                    {{/if}}
                   </option>
                 {{/jobTypes}}
               </select>
@@ -93,7 +101,13 @@
             <div class="filters col-xs-12 col-sm-4 col-md-3 category-filter">
               <select id="job-filters-category" name="c" multiple="multiple" class="job-filters-select2 notselect hidden js-handle-filter-change js-refresh-category" placeholder="Job Category">
                 {{ #jobCategories}}
-                  <option value={{ name }} {{#if c.indexOf(name) > -1}}selected="selected"{{/if}}>{{title}}</option>
+                  <option value={{ name }} {{#if c.indexOf(name) > -1}}selected="selected"{{/if}}>
+                    {{#if available}}
+                      <s>{{title}}</s>
+                    {{else}}
+                      {{title}}
+                    {{/if}}
+                  </option>
                 {{/jobCategories}}
               </select>
             </div>

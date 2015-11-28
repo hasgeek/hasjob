@@ -311,7 +311,7 @@ def cache_viewcounts(posts):
     g.viewcounts = dict(zip(viewcounts_keys, viewcounts_values))
 
 
-def getposts(basequery=None, pinned=False, showall=False, statuses=None, ageless=False, limit=2000):
+def getposts(basequery=None, pinned=False, showall=False, statuses=None, ageless=False, filters=False, limit=2000):
     if ageless:
         pinned = False  # No pinning when browsing archives
     if not statuses:
@@ -351,13 +351,22 @@ def getposts(basequery=None, pinned=False, showall=False, statuses=None, ageless
             else:
                 query = query.filter(JobPost.datetime > datetime.utcnow() - newlimit)
 
+    if filters:
+        filters_query = query.limit(limit)
+        job_type_ids = filters_query.options(db.load_only('type_id')).distinct('type_id').all()
+        job_category_ids = filters_query.options(db.load_only('category_id')).distinct('category_id').all()
+        job_location_geonameids = db.session.query(JobLocation.geonameid).filter(JobLocation.jobpost_id.in_(filters_query.options(db.load_only('id')))).distinct('geonameid').all()
+
     if pinned:
         if g.board:
             query = query.order_by(db.desc(BoardJobPost.pinned))
         else:
             query = query.order_by(db.desc(JobPost.pinned))
 
-    return query.order_by(db.desc(JobPost.datetime)).limit(limit)
+    posts = query.order_by(db.desc(JobPost.datetime)).limit(limit)
+    if filters:
+        return {'job_type_ids': job_type_ids, 'job_category_ids': job_category_ids, 'job_location_geonameids': job_location_geonameids, 'posts': posts}
+    return posts
 
 
 def getallposts(order_by=None, desc=False, start=None, limit=None):
@@ -524,49 +533,6 @@ def campaign_view_count_update(campaign_id, user_id=None, anon_user_id=None):
     db.session.commit()
 
 
-def filter_locations(filtered_categories=[], filtered_types=[]):
-    now = datetime.utcnow()
-    basequery = db.session.query(JobLocation.geonameid, db.func.count(JobLocation.geonameid).label('count')
-            ).join(JobPost).filter(JobPost.status.in_(POSTSTATUS.LISTED), JobPost.datetime > now - agelimit,
-            JobLocation.primary == True).group_by(JobLocation.geonameid).order_by(db.text('count DESC'))
-    if filtered_types:
-        job_type_ids_query = db.session.query(JobType.id).filter(JobType.name.in_(filtered_types))
-        basequery = basequery.filter(JobPost.type_id.in_(job_type_ids_query))
-    if filtered_categories:
-        job_category_ids_query = db.session.query(JobCategory.id).filter(JobCategory.name.in_(filtered_categories))
-        basequery = basequery.filter(JobPost.category_id.in_(job_category_ids_query))
-    geonameids = [jobpost_location.geonameid for jobpost_location in basequery]
-    data = location_geodata(geonameids)
-    # return [(data[geonameid]['name'], data[geonameid]['picker_title']) for geonameid in geonameids]
-    return [{'name': data[geonameid]['name'], 'title': data[geonameid]['picker_title']} for geonameid in geonameids]
-
-
-def filter_categories(geonameids=[], filtered_types=[]):
-    # TODO : Accept Pay and Keywords as parameters too
-    now = datetime.utcnow()
-    basequery = db.session.query(JobPost.category_id).filter(JobPost.status.in_(POSTSTATUS.LISTED), JobPost.datetime > now - agelimit)
-    if filtered_types:
-        job_type_ids_query = db.session.query(JobType.id).filter(JobType.name.in_(filtered_types))
-        basequery = basequery.filter(JobPost.type_id.in_(job_type_ids_query))
-    if geonameids:
-        basequery = basequery.join(JobLocation).filter(JobLocation.geonameid.in_(geonameids))
-    categories = db.session.query(JobCategory.name, JobCategory.title).filter(JobCategory.id.in_(basequery))
-    return [{'name': c.name, 'title': c.title} for c in categories]
-
-
-def filter_types(geonameids=[], filtered_categories=[]):
-    # TODO : Accept Pay and Keywords as parameters too
-    now = datetime.utcnow()
-    basequery = db.session.query(JobPost.type_id).filter(JobPost.status.in_(POSTSTATUS.LISTED), JobPost.datetime > now - agelimit)
-    if filtered_categories:
-        job_category_ids_query = db.session.query(JobCategory.id).filter(JobCategory.name.in_(filtered_categories))
-        basequery = basequery.filter(JobPost.category_id.in_(job_category_ids_query))
-    if geonameids:
-        basequery = basequery.join(JobLocation).filter(JobLocation.geonameid.in_(geonameids))
-    types = db.session.query(JobType.name, JobType.title).filter(JobType.id.in_(basequery))
-    return [{'name': t.name, 'title': t.title} for t in types]
-
-
 @cache.memoize(timeout=86400)
 def location_geodata(location):
     if 'HASCORE_SERVER' in app.config and location:
@@ -665,10 +631,20 @@ def usessl(url):
     return url
 
 
+@cache.cached(key_prefix='helper/filter_locations', timeout=3600)
+def filter_locations():
+    now = datetime.utcnow()
+    geonameids = [r.geonameid for r in
+        db.session.query(JobLocation.geonameid, db.func.count(JobLocation.geonameid).label('count')
+            ).join(JobPost).filter(JobPost.status.in_(POSTSTATUS.LISTED), JobPost.datetime > now - agelimit,
+            JobLocation.primary == True).group_by(JobLocation.geonameid).order_by(db.text('count DESC'))]  # NOQA
+    data = location_geodata(geonameids)
+    return [(geonameid, data[geonameid]['name'], data[geonameid]['picker_title']) for geonameid in geonameids]
+
+
 @app.context_processor
 def inject_filter_options():
-    filtered_categories = g.event_data.get('filters', {}).get('categories', [])
-    filtered_types = g.event_data.get('filters', {}).get('types', [])
-    filtered_locations = g.event_data.get('filters', {}).get('locations', [])
-    return dict(job_locations=filter_locations(filtered_categories=filtered_categories, filtered_types=filtered_types),
-     job_type_choices=filter_types(geonameids=filtered_locations, filtered_categories=filtered_categories), job_category_choices=filter_categories(geonameids=filtered_locations, filtered_types=filtered_types))
+    job_type_choices = [{'name': job_type[1], 'title': job_type[2], 'available': job_type[0] in g.job_type_ids} for job_type in JobType.id_name_title(g.board)]
+    job_category_choices = [{'name': job_category[1], 'title': job_category[2], 'available': job_category[0] in g.job_category_ids} for job_category in JobCategory.id_name_title(g.board)]
+    job_location_choices = [{'name': job_location[1], 'title': job_location[2], 'available': job_location[0] in g.job_location_geonameids} for job_location in filter_locations()]
+    return dict(job_locations=job_location_choices, job_type_choices=job_type_choices, job_category_choices=job_category_choices)
