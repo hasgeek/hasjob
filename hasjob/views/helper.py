@@ -644,7 +644,17 @@ def filter_locations():
 
 @app.context_processor
 def inject_filter_options():
-    job_type_choices = [{'name': job_type[1], 'title': job_type[2], 'available': job_type[0] in g.job_type_ids} for job_type in JobType.id_name_title(g.board)]
-    job_category_choices = [{'name': job_category[1], 'title': job_category[2], 'available': job_category[0] in g.job_category_ids} for job_category in JobCategory.id_name_title(g.board)]
-    job_location_choices = [{'name': job_location[1], 'title': job_location[2], 'available': job_location[0] in g.job_location_geonameids} for job_location in filter_locations()]
-    return dict(job_locations=job_location_choices, job_type_choices=job_type_choices, job_category_choices=job_category_choices)
+    def name_title_available(obj_list, attr):
+        """
+        Returns a list of dicts with name, title and available.
+        available is a flag which is set to True if the given attr
+        is defined on `flask.g` and if the id of an object in obj_list is present in the attr list
+        The attr list is set in index.py.
+        """
+        return [{'name': obj[1], 'title': obj[2],
+                'available': True if not hasattr(g, attr) else obj[0] in getattr(g, attr)}
+                for obj in obj_list]
+
+    return dict(job_locations=name_title_available(filter_locations(), 'job_location_geonameids'),
+                job_type_choices=name_title_available(JobType.id_name_title(g.board), 'job_type_ids'),
+                job_category_choices=name_title_available(JobCategory.id_name_title(g.board), 'job_category_ids'))
