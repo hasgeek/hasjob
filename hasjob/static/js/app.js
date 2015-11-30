@@ -110,7 +110,7 @@ window.Hasjob.Filters = {
         jobCategories: window.Hasjob.Config.jobCategories,
         l: window.Hasjob.Config.l,
         t: window.Hasjob.Config.t,
-        c: window.Hasjob.Config.t,
+        c: window.Hasjob.Config.c,
         q: window.Hasjob.Config.q,
         e: window.Hasjob.Config.equity
       }
@@ -252,7 +252,7 @@ window.Hasjob.Filters = {
         jobCategories: window.Hasjob.Config.jobCategories,
         l: window.Hasjob.Config.l,
         t: window.Hasjob.Config.t,
-        c: window.Hasjob.Config.t,
+        c: window.Hasjob.Config.c,
         q: window.Hasjob.Config.q,
         e: window.Hasjob.Config.equity
     }).then(function() {
