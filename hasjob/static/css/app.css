@@ -243,7 +243,7 @@ header #hgnav .fa {
     right: auto;
   }
 
-  .header-section li.disabled {
+  .header-section li.strike-through {
     text-decoration: line-through;
   }
 }

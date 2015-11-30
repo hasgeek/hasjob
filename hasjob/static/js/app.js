@@ -155,6 +155,11 @@ window.Hasjob.Filters = {
         filter: '<li><div class="input-group input-group-sm"><div class="input-group-addon"><i class="fa fa-search"></i></div><input type="text" class="form-control" id="job-filter-location-search" placeholder="Search">',
         filterClearBtn: '<div class="input-group-addon job-filter-location-search-clear"><i class="fa fa-times"></i></div></div></li>'
       },
+      optionClass: function(element) {
+        if ($(element).hasClass('not-available')) {
+          return 'strike-through';
+        }
+      },
       onDropdownShow: function(event, ui) {
         // stop header filter rollup when dropdown is open
         filterDropdownClosed = false;
@@ -173,6 +178,11 @@ window.Hasjob.Filters = {
       nonSelectedText: 'Job Type',
       numberDisplayed: 1,
       buttonWidth: '100%',
+      optionClass: function(element) {
+        if ($(element).hasClass('not-available')) {
+          return 'strike-through';
+        }
+      },
       onDropdownShow: function(event, ui) {
         // stop header filter rollup when dropdown is open
         filterDropdownClosed = false;
@@ -186,6 +196,11 @@ window.Hasjob.Filters = {
       nonSelectedText: 'Job Category',
       numberDisplayed: 1,
       buttonWidth: '100%',
+      optionClass: function(element) {
+        if ($(element).hasClass('not-available')) {
+          return 'strike-through';
+        }
+      },
       onDropdownShow: function(event, ui) {
         // stop header filter rollup when dropdown is open
         filterDropdownClosed = false;
