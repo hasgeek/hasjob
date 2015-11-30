@@ -354,9 +354,9 @@ def getposts(basequery=None, pinned=False, showall=False, statuses=None, ageless
 
     if filters:
         filters_query = query.limit(limit)
-        job_type_ids = filters_query.options(db.load_only('type_id')).distinct('type_id').all()
-        job_category_ids = filters_query.options(db.load_only('category_id')).distinct('category_id').all()
-        job_location_geonameids = db.session.query(JobLocation.geonameid).filter(JobLocation.jobpost_id.in_(filters_query.options(db.load_only('id')))).distinct('geonameid').all()
+        filtered_typeids = filters_query.options(db.load_only('type_id')).distinct('type_id').all()
+        filtered_categoryids = filters_query.options(db.load_only('category_id')).distinct('category_id').all()
+        filtered_geonameids = db.session.query(JobLocation.geonameid).filter(JobLocation.jobpost_id.in_(filters_query.options(db.load_only('id')))).distinct('geonameid').all()
 
     if pinned:
         if g.board:
@@ -364,9 +364,9 @@ def getposts(basequery=None, pinned=False, showall=False, statuses=None, ageless
         else:
             query = query.order_by(db.desc(JobPost.pinned))
 
-    posts = query.order_by(db.desc(JobPost.datetime)).limit(limit)
+    posts = query.order_by(db.desc(JobPost.datetime))
     if filters:
-        return {'job_type_ids': job_type_ids, 'job_category_ids': job_category_ids, 'job_location_geonameids': job_location_geonameids, 'posts': posts}
+        return {'job_type_ids': filtered_typeids, 'job_category_ids': filtered_categoryids, 'job_location_geonameids': filtered_geonameids, 'posts': posts}
     return posts
 
 
@@ -671,6 +671,6 @@ def filter_categories(filtered_categoryids, board=None):
 
 @app.context_processor
 def inject_filter_options():
-    return dict(job_locations=filter_locations([] if not hasattr(g, 'job_location_geonameids') else g.job_location_geonameids),
-                job_type_choices=filter_types([] if not hasattr(g, 'job_type_ids') else g.job_type_ids, board=g.board),
-                job_category_choices=filter_categories([] if not hasattr(g, 'job_category_ids') else g.job_category_ids, board=g.board))
+    return dict(job_locations=filter_locations([] if not hasattr(g, 'filtered_geonameids') else g.filtered_geonameids),
+                job_type_choices=filter_types([] if not hasattr(g, 'filtered_typeids') else g.filtered_typeids, board=g.board),
+                job_category_choices=filter_categories([] if not hasattr(g, 'filtered_categoryids') else g.filtered_categoryids, board=g.board))
