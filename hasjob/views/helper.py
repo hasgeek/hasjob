@@ -681,6 +681,6 @@ def filter_categories(filtered_categoryids, board=None):
 
 @app.context_processor
 def inject_filter_options():
-    return dict(job_locations=filter_locations([] if not hasattr(g, 'job_location_ids') else g.job_location_ids),
+    return dict(job_locations=filter_locations([] if not hasattr(g, 'job_location_geonameids') else g.job_location_geonameids),
                 job_type_choices=filter_types([] if not hasattr(g, 'job_type_ids') else g.job_type_ids, board=g.board),
                 job_category_choices=filter_categories([] if not hasattr(g, 'job_category_ids') else g.job_category_ids, board=g.board))
