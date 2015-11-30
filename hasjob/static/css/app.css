@@ -1,7 +1,7 @@
 @charset "UTF-8";
 body {
   font-family: "Fira Sans", arial, sans-serif;
-  background: #e8e7e6 url('../img/canvas.jpg?1416495026');
+  background: #e8e7e6 url('../img/canvas.jpg?1425290105');
 }
 
 header {
@@ -83,7 +83,7 @@ header #hgnav .fa {
   overflow: hidden;
   text-align: left;
   text-transform: capitalize;
-  background-image: url('../img/logo-star.png?1424329162');
+  background-image: url('../img/logo-star.png?1425290105');
   background-repeat: no-repeat;
   background-position: 50% 50%;
   width: 170px;
@@ -242,6 +242,10 @@ header #hgnav .fa {
     left: 0;
     right: auto;
   }
+
+  .header-section li.disabled {
+    text-decoration: line-through;
+  }
 }
 @media (min-width: 768px) and (max-width: 991px) {
   .category-filter ul.multiselect-container {
@@ -308,7 +312,7 @@ header #hgnav .fa {
   line-height: 36px;
 }
 #search input[type="text"] {
-  background: white url('../img/search.png?1416495026') 4px center no-repeat;
+  background: white url('../img/search.png?1425290105') 4px center no-repeat;
   padding: 7px 10px 3px 20px;
 }
 #search .btn {
