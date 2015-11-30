@@ -36,26 +36,6 @@ board_users_table = db.Table('board_user', db.Model.metadata,
     )))
 
 
-def jobtype_id_name_title(cls, board=None):
-    if board:
-        return [(ob.id, ob.name, ob.title) for ob in board.types if not ob.private]
-    else:
-        return [(ob.id, ob.name, ob.title) for ob in cls.query.filter_by(private=False, public=True).order_by('seq')]
-
-
-JobType.id_name_title = classmethod(jobtype_id_name_title)
-
-
-def jobcategory_id_name_title(cls, board=None):
-    if board:
-        return [(ob.id, ob.name, ob.title) for ob in board.categories if not ob.private]
-    else:
-        return [(ob.id, ob.name, ob.title) for ob in cls.query.filter_by(private=False, public=True).order_by('seq')]
-
-
-JobCategory.id_name_title = classmethod(jobcategory_id_name_title)
-
-
 class BoardDomain(TimestampMixin, db.Model):
     """
     Domain tag for boards
@@ -110,9 +90,9 @@ class Board(BaseNameMixin, db.Model):
     #: Posting users
     posting_users = db.relationship(User, secondary=board_users_table)
     #: Available job types
-    types = db.relationship(JobType, secondary=board_jobtype_table, order_by=JobType.seq)
+    types = db.relationship(JobType, secondary=board_jobtype_table, order_by=JobType.seq, uselist=False)
     #: Available job categories
-    categories = db.relationship(JobCategory, secondary=board_jobcategory_table, order_by=JobCategory.seq)
+    categories = db.relationship(JobCategory, secondary=board_jobcategory_table, order_by=JobCategory.seq, uselist=False)
 
     #: Automatic tagging domains
     domains = db.relationship(BoardDomain, backref='board', cascade='all, delete-orphan', order_by=BoardDomain.domain)

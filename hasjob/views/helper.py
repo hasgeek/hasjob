@@ -3,6 +3,7 @@
 from os import path
 from datetime import datetime, timedelta
 from urlparse import urljoin
+from collections import namedtuple
 import uuid
 import bleach
 import requests
@@ -631,30 +632,55 @@ def usessl(url):
     return url
 
 
-@cache.cached(key_prefix='helper/filter_locations', timeout=3600)
-def filter_locations():
+def name_title_available(obj_list, attr):
+    """
+    Returns a list of dicts with name, title and available.
+    available is a flag which is set to True if the given attr
+    is defined on `flask.g` and if the id of an object in obj_list is present in the attr list
+    The attr list is set in index.py.
+    """
+    return [{'name': obj.name, 'title': obj.title,
+            'available': True if not hasattr(g, attr) else obj.id in getattr(g, attr)}
+            for obj in obj_list]
+
+
+# TODO @cache.cached(key_prefix='helper/filter_locations', timeout=3600)
+def filter_locations(filtered_geonameids):
     now = datetime.utcnow()
     geonameids = [r.geonameid for r in
         db.session.query(JobLocation.geonameid, db.func.count(JobLocation.geonameid).label('count')
             ).join(JobPost).filter(JobPost.status.in_(POSTSTATUS.LISTED), JobPost.datetime > now - agelimit,
             JobLocation.primary == True).group_by(JobLocation.geonameid).order_by(db.text('count DESC'))]  # NOQA
     data = location_geodata(geonameids)
-    return [(geonameid, data[geonameid]['name'], data[geonameid]['picker_title']) for geonameid in geonameids]
+    return [{'name': data[geonameid]['name'], 'title': data[geonameid]['picker_title'],
+            'available': True if not filtered_geonameids else geonameid in filtered_geonameids}
+            for geonameid in geonameids]
+
+
+# TODO @cache.cached(key_prefix='helper/filter_types', timeout=3600)
+def filter_types(filtered_typeids, board=None):
+    if board:
+        job_types = board.types.query.filter_by(private=False)
+    else:
+        job_types = JobType.query.filter_by(private=False, public=True).order_by('seq')
+    return [{'name': job_type.name, 'title': job_type.title,
+            'available': True if not filtered_typeids else job_type.id in filtered_typeids}
+            for job_type in job_types]
+
+
+# TODO @cache.cached(key_prefix='helper/filter_categories', timeout=3600)
+def filter_categories(filtered_categoryids, board=None):
+    if board:
+        job_categories = board.categories.query.filter_by(private=False)
+    else:
+        job_categories = JobCategory.query.filter_by(private=False, public=True).order_by('seq')
+    return [{'name': job_category.name, 'title': job_category.title,
+            'available': True if not filtered_categoryids else job_category.id in filtered_categoryids}
+            for job_category in job_categories]
 
 
 @app.context_processor
 def inject_filter_options():
-    def name_title_available(obj_list, attr):
-        """
-        Returns a list of dicts with name, title and available.
-        available is a flag which is set to True if the given attr
-        is defined on `flask.g` and if the id of an object in obj_list is present in the attr list
-        The attr list is set in index.py.
-        """
-        return [{'name': obj[1], 'title': obj[2],
-                'available': True if not hasattr(g, attr) else obj[0] in getattr(g, attr)}
-                for obj in obj_list]
-
-    return dict(job_locations=name_title_available(filter_locations(), 'job_location_geonameids'),
-                job_type_choices=name_title_available(JobType.id_name_title(g.board), 'job_type_ids'),
-                job_category_choices=name_title_available(JobCategory.id_name_title(g.board), 'job_category_ids'))
+    return dict(job_locations=filter_locations([] if not hasattr(g, 'job_location_ids') else g.job_location_ids),
+                job_type_choices=filter_types([] if not hasattr(g, 'job_type_ids') else g.job_type_ids, board=g.board),
+                job_category_choices=filter_categories([] if not hasattr(g, 'job_category_ids') else g.job_category_ids, board=g.board))
