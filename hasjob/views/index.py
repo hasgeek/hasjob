@@ -202,13 +202,7 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
         batched = True
 
     # getposts sets g.board_jobs, used below
-    posts_and_filters = getposts(basequery, pinned=True, showall=showall, statuses=statuses, ageless=ageless, filters=True)
-    posts = posts_and_filters['posts'].all()
-
-    # g.filtered_typeids, g.filtered_categoryids and g.filtered_geonameids are used in inject_filter_options in views/helpers.py
-    g.filtered_typeids = [post.type_id for post in posts_and_filters['job_type_ids']]
-    g.filtered_categoryids = [post.category_id for post in posts_and_filters['job_category_ids']]
-    g.filtered_geonameids = [job_location.geonameid for job_location in posts_and_filters['job_location_geonameids']]
+    posts = getposts(basequery, pinned=True, showall=showall, statuses=statuses, ageless=ageless).order_by(db.desc(JobPost.datetime)).limit(2000).all()
 
     # Cache viewcounts (admin view or not)
     cache_viewcounts(posts)

@@ -312,7 +312,7 @@ def cache_viewcounts(posts):
     g.viewcounts = dict(zip(viewcounts_keys, viewcounts_values))
 
 
-def getposts(basequery=None, pinned=False, showall=False, statuses=None, ageless=False, filters=False, limit=2000):
+def getposts(basequery=None, pinned=False, showall=False, statuses=None, ageless=False, limit=2000):
     if ageless:
         pinned = False  # No pinning when browsing archives
     if not statuses:
@@ -352,22 +352,13 @@ def getposts(basequery=None, pinned=False, showall=False, statuses=None, ageless
             else:
                 query = query.filter(JobPost.datetime > datetime.utcnow() - newlimit)
 
-    if filters:
-        filters_query = query.limit(limit)
-        filtered_typeids = filters_query.options(db.load_only('type_id')).distinct('type_id').all()
-        filtered_categoryids = filters_query.options(db.load_only('category_id')).distinct('category_id').all()
-        filtered_geonameids = db.session.query(JobLocation.geonameid).filter(JobLocation.jobpost_id.in_(filters_query.options(db.load_only('id')))).distinct('geonameid').all()
-
     if pinned:
         if g.board:
             query = query.order_by(db.desc(BoardJobPost.pinned))
         else:
             query = query.order_by(db.desc(JobPost.pinned))
 
-    posts = query.order_by(db.desc(JobPost.datetime))
-    if filters:
-        return {'job_type_ids': filtered_typeids, 'job_category_ids': filtered_categoryids, 'job_location_geonameids': filtered_geonameids, 'posts': posts}
-    return posts
+    return query
 
 
 def getallposts(order_by=None, desc=False, start=None, limit=None):
@@ -632,23 +623,49 @@ def usessl(url):
     return url
 
 
+def filter_basequery(basequery, filters, exclude_list=[]):
+    if filters.get('locations') and 'locations' not in exclude_list:
+        basequery = basequery.join(JobLocation).filter(JobLocation.geonameid.in_(filters['locations']))
+    if filters.get('anywhere'):
+        basequery = basequery.filter(JobPost.remote_location == True)
+    if filters.get('categories') and 'categories' not in exclude_list:
+        job_categoryids_query = db.session.query(JobCategory.id).filter(JobCategory.name.in_(filters['categories']))
+        basequery = basequery.filter(JobPost.category_id.in_(job_categoryids_query))
+    if filters.get('types') and 'types' not in exclude_list:
+        job_typeids_query = db.session.query(JobType.id).filter(JobType.name.in_(filters['types']))
+        basequery = basequery.filter(JobPost.type_id.in_(job_typeids_query))
+    if filters.get('pay_min') and filters.get('pay_max') and 'pay' not in exclude_list:
+        basequery = basequery.filter(JobPost.pay_cash_min < filters['pay_max'], JobPost.pay_cash_max >= filters['pay_min']).filter(JobPost.pay_currency == filters.get('currency'))
+    if filters.get('equity') and 'equity' not in exclude_list:
+        basequery = basequery.filter(JobPost.pay_equity_min > 0)
+    if filters.get('query') and 'query' not in exclude_list:
+        basequery = basequery.filter(JobPost.search_vector.match(filters['query'], postgresql_regconfig='english'))
+
+    return basequery
+
+
 # TODO @cache.cached(key_prefix='helper/filter_locations', timeout=3600)
-def filter_locations(filtered_geonameids):
+def filter_locations(filters):
     now = datetime.utcnow()
-    geonameids = [r.geonameid for r in
-        db.session.query(JobLocation.geonameid, db.func.count(JobLocation.geonameid).label('count')
+    basequery = db.session.query(JobLocation.geonameid, db.func.count(JobLocation.geonameid).label('count')
             ).join(JobPost).filter(JobPost.status.in_(POSTSTATUS.LISTED), JobPost.datetime > now - agelimit,
-            JobLocation.primary == True).group_by(JobLocation.geonameid).order_by(db.text('count DESC'))]  # NOQA
+            JobLocation.primary == True).group_by(JobLocation.geonameid).order_by(db.text('count DESC'))
+
+    geonameids = [jobpost_location.geonameid for jobpost_location in basequery]
+    basequery = filter_basequery(basequery, filters, exclude_list=['locations'])
+    filtered_geonameids = [jobpost_location.geonameid for jobpost_location in basequery]
     data = location_geodata(geonameids)
     return [{'name': data[geonameid]['name'], 'title': data[geonameid]['picker_title'],
-            'available': True if not filtered_geonameids else geonameid in filtered_geonameids}
+            'available': False if not filtered_geonameids else geonameid in filtered_geonameids}
             for geonameid in geonameids]
 
 
-# TODO @cache.cached(key_prefix='helper/filter_types', timeout=3600)
-def filter_types(filtered_typeids, board=None):
+# @cache.cached(key_prefix='helper/filter_types', timeout=3600)
+def filter_types(basequery, board, filters):
+    basequery = filter_basequery(basequery, filters, exclude_list=['types'])
+    filtered_typeids = [post.type_id for post in basequery.options(db.load_only('type_id')).distinct('type_id').all()]
     format_job_type = lambda job_type: {'name': job_type.name, 'title': job_type.title,
-                'available': True if not filtered_typeids else job_type.id in filtered_typeids}
+                'available': False if not filtered_typeids else job_type.id in filtered_typeids}
     if board:
         return [format_job_type(job_type)
                 for job_type in board.types if not job_type.private]
@@ -658,9 +675,11 @@ def filter_types(filtered_typeids, board=None):
 
 
 # TODO @cache.cached(key_prefix='helper/filter_categories', timeout=3600)
-def filter_categories(filtered_categoryids, board=None):
+def filter_categories(basequery, board, filters):
+    basequery = filter_basequery(basequery, filters, exclude_list=['categories'])
+    filtered_categoryids = [post.category_id for post in basequery.options(db.load_only('category_id')).distinct('category_id').all()]
     format_job_category = lambda job_category: {'name': job_category.name, 'title': job_category.title,
-                'available': True if not filtered_categoryids else job_category.id in filtered_categoryids}
+        'available': False if not filtered_categoryids else job_category.id in filtered_categoryids}
     if board:
         return [format_job_category(job_category)
                 for job_category in board.categories if not job_category.private]
@@ -671,6 +690,8 @@ def filter_categories(filtered_categoryids, board=None):
 
 @app.context_processor
 def inject_filter_options():
-    return dict(job_locations=filter_locations([] if not hasattr(g, 'filtered_geonameids') else g.filtered_geonameids),
-                job_type_choices=filter_types([] if not hasattr(g, 'filtered_typeids') else g.filtered_typeids, board=g.board),
-                job_category_choices=filter_categories([] if not hasattr(g, 'filtered_categoryids') else g.filtered_categoryids, board=g.board))
+    basequery = getposts(showall=True)
+    filters = g.event_data.get('filters', {})
+    return dict(job_locations=filter_locations(filters),
+                job_type_choices=filter_types(basequery, board=g.board, filters=filters),
+                job_category_choices=filter_categories(basequery, board=g.board, filters=filters))
