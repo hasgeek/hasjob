@@ -74,21 +74,21 @@
               <select id="job-filters-location" name="l" multiple="multiple" class="job-filters-select2 notselect hidden js-handle-filter-change js-refresh-location" placeholder="Location">
                 <option value="anywhere" id='job-filters-remote-check' {{#if l.indexOf('anywhere') > -1}}selected="selected"{{/if}}>Anywhere/Remote</option>
                 {{ #jobLocations }}
-                  <option value={{ name }} {{#if l.indexOf(name) > -1}}selected="selected"{{/if}} {{#if !l.length && !available}}class="not-available"{{/if}}>{{title}}</option>
+                  <option value={{ name }} {{#if l.indexOf(name) > -1}}selected="selected"{{/if}} {{#if !available}}class="not-available"{{/if}}>{{title}}</option>
                 {{/jobLocations}}
               </select>
             </div>
             <div class="filters col-xs-12 col-sm-4 col-md-3">
               <select id="job-filters-type" name="t" multiple="multiple" class="job-filters-select2 notselect hidden js-handle-filter-change js-refresh-type" placeholder="Job Type">
                 {{ #jobTypes }}
-                    <option value={{ name }} {{#if t.indexOf(name) > -1}}selected="selected"{{/if}} {{#if !t.length && !available}}class="not-available"{{/if}}>{{title}}</option>
+                    <option value={{ name }} {{#if t.indexOf(name) > -1}}selected="selected"{{/if}} {{#if !available}}class="not-available"{{/if}}>{{title}}</option>
                 {{/jobTypes}}
               </select>
             </div>
             <div class="filters col-xs-12 col-sm-4 col-md-3 category-filter">
               <select id="job-filters-category" name="c" multiple="multiple" class="job-filters-select2 notselect hidden js-handle-filter-change js-refresh-category" placeholder="Job Category">
                 {{ #jobCategories}}
-                  <option value={{ name }} {{#if c.indexOf(name) > -1}}selected="selected"{{/if}} {{#if !c.length && !available}}class="not-available"{{/if}}>{{title}}</option>
+                  <option value={{ name }} {{#if c.indexOf(name) > -1}}selected="selected"{{/if}} {{#if !available}}class="not-available"{{/if}}>{{title}}</option>
                 {{/jobCategories}}
               </select>
             </div>
