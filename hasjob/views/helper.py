@@ -632,18 +632,6 @@ def usessl(url):
     return url
 
 
-def name_title_available(obj_list, attr):
-    """
-    Returns a list of dicts with name, title and available.
-    available is a flag which is set to True if the given attr
-    is defined on `flask.g` and if the id of an object in obj_list is present in the attr list
-    The attr list is set in index.py.
-    """
-    return [{'name': obj.name, 'title': obj.title,
-            'available': True if not hasattr(g, attr) else obj.id in getattr(g, attr)}
-            for obj in obj_list]
-
-
 # TODO @cache.cached(key_prefix='helper/filter_locations', timeout=3600)
 def filter_locations(filtered_geonameids):
     now = datetime.utcnow()
@@ -659,24 +647,26 @@ def filter_locations(filtered_geonameids):
 
 # TODO @cache.cached(key_prefix='helper/filter_types', timeout=3600)
 def filter_types(filtered_typeids, board=None):
+    format_job_type = lambda job_type: {'name': job_type.name, 'title': job_type.title,
+                'available': True if not filtered_typeids else job_type.id in filtered_typeids}
     if board:
-        job_types = board.types.query.filter_by(private=False)
+        return [format_job_type(job_type)
+                for job_type in board.types if not job_type.private]
     else:
-        job_types = JobType.query.filter_by(private=False, public=True).order_by('seq')
-    return [{'name': job_type.name, 'title': job_type.title,
-            'available': True if not filtered_typeids else job_type.id in filtered_typeids}
-            for job_type in job_types]
+        return [format_job_type(job_type)
+                for job_type in JobType.query.filter_by(private=False, public=True).order_by('seq')]
 
 
 # TODO @cache.cached(key_prefix='helper/filter_categories', timeout=3600)
 def filter_categories(filtered_categoryids, board=None):
+    format_job_category = lambda job_category: {'name': job_category.name, 'title': job_category.title,
+                'available': True if not filtered_categoryids else job_category.id in filtered_categoryids}
     if board:
-        job_categories = board.categories.query.filter_by(private=False)
+        return [format_job_category(job_category)
+                for job_category in board.categories if not job_category.private]
     else:
-        job_categories = JobCategory.query.filter_by(private=False, public=True).order_by('seq')
-    return [{'name': job_category.name, 'title': job_category.title,
-            'available': True if not filtered_categoryids else job_category.id in filtered_categoryids}
-            for job_category in job_categories]
+        return [format_job_category(job_category)
+                for job_category in JobCategory.query.filter_by(private=False, public=True).order_by('seq')]
 
 
 @app.context_processor
