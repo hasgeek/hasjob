@@ -372,7 +372,7 @@ class JobPost(BaseMixin, db.Model):
             if suffix:
                 cash = cash + " " + suffix
 
-        if self.pay_equity_min and self.pay_equity_max:
+        if self.pay_equity_min is not None and self.pay_equity_max is not None:
             if self.pay_equity_min == self.pay_equity_max:
                 equity = str(self.pay_equity_min) + "%"
             else:
