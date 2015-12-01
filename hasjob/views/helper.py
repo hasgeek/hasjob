@@ -3,7 +3,6 @@
 from os import path
 from datetime import datetime, timedelta
 from urlparse import urljoin
-from collections import namedtuple
 import uuid
 import bleach
 import requests
