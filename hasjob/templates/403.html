@@ -11,7 +11,7 @@
       <div id="i40x-message">
         You can’t see that.<br/>
         Access to that page is restricted.<br/>
-        Maybe you’re logged into the wrong account?
+        {% if description %}{{ description }}{% else %}Maybe you’re logged into the wrong account?{% endif %}
       </div>
     </a>
   </div>

@@ -1,7 +1,7 @@
 @charset "UTF-8";
 body {
   font-family: "Fira Sans", arial, sans-serif;
-  background: #e8e7e6 url('../img/canvas.jpg?1416495026');
+  background: #e8e7e6 url('../img/canvas.jpg?1400098749');
 }
 
 header {
@@ -83,7 +83,7 @@ header #hgnav .fa {
   overflow: hidden;
   text-align: left;
   text-transform: capitalize;
-  background-image: url('../img/logo-star.png?1424329162');
+  background-image: url('../img/logo-star.png?1424602497');
   background-repeat: no-repeat;
   background-position: 50% 50%;
   width: 170px;
@@ -308,7 +308,7 @@ header #hgnav .fa {
   line-height: 36px;
 }
 #search input[type="text"] {
-  background: white url('../img/search.png?1416495026') 4px center no-repeat;
+  background: white url('../img/search.png?1343882941') 4px center no-repeat;
   padding: 7px 10px 3px 20px;
 }
 #search .btn {
@@ -1264,6 +1264,7 @@ tr > div {
 #i40x-message {
   font-family: "McLaren", sans-serif;
   color: #816894;
+  max-width: 400px;
 }
 
 /*!
