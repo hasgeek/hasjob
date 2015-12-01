@@ -159,7 +159,7 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
     if getbool(request.args.get('equity')):
         # Only works as a positive filter: you can't search for jobs that DON'T pay in equity
         data_filters['equity'] = True
-        basequery = basequery.filter(JobPost.pay_equity_min > 0.0)  # NOQA
+        basequery = basequery.filter(JobPost.pay_equity_min != None)  # NOQA
     if 'pmin' in request.args and 'pmax' in request.args:
         f_min = string_to_number(request.args['pmin'])
         f_max = string_to_number(request.args['pmax'])
