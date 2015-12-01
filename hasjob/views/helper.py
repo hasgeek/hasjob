@@ -635,9 +635,11 @@ def filter_basequery(basequery, filters, exclude_list=[]):
         job_typeids_query = db.session.query(JobType.id).filter(JobType.name.in_(filters['types']))
         basequery = basequery.filter(JobPost.type_id.in_(job_typeids_query))
     if filters.get('pay_min') and filters.get('pay_max') and 'pay' not in exclude_list:
-        basequery = basequery.filter(JobPost.pay_cash_min < filters['pay_max'], JobPost.pay_cash_max >= filters['pay_min']).filter(JobPost.pay_currency == filters.get('currency'))
+        basequery = basequery.filter(JobPost.pay_cash_min < filters['pay_max'], JobPost.pay_cash_max >= filters['pay_min'])
+    if filters.get('currency'):
+        basequery = basequery.filter(JobPost.pay_currency == filters.get('currency'))
     if filters.get('equity') and 'equity' not in exclude_list:
-        basequery = basequery.filter(JobPost.pay_equity_min > 0)
+        basequery = basequery.filter(JobPost.pay_equity_min > 0.0)
     if filters.get('query') and 'query' not in exclude_list:
         basequery = basequery.filter(JobPost.search_vector.match(filters['query'], postgresql_regconfig='english'))
 
