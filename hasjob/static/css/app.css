@@ -243,8 +243,9 @@ header #hgnav .fa {
     right: auto;
   }
 
-  .header-section li.strike-through {
-    text-decoration: line-through;
+  .header-section li.unavailable label {
+    font-style: italic;
+    color: #888;
   }
 }
 @media (min-width: 768px) and (max-width: 991px) {

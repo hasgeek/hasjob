@@ -120,8 +120,8 @@ window.Hasjob.Filters = {
     var filters = this;
     var keywordTimeout;
     this.render();
-    //Change site button to filter icon
-    // why is this required?
+    this.filterDropdownClosed = true;
+
     $('.hg-site-nav-toggle').find('i').removeClass('fa-bars').addClass('fa-search');
     $('#hg-sitenav').on('shown.bs.collapse', function() {
       $('.hg-site-nav-toggle').find('i').removeClass('fa-search').addClass('fa-close');
@@ -129,7 +129,6 @@ window.Hasjob.Filters = {
     $('#hg-sitenav').on('hidden.bs.collapse', function() {
       $('.hg-site-nav-toggle').find('i').removeClass('fa-close').addClass('fa-search');
     });
-
 
     //remove white spaces keyword input value
     $('#job-filters-keywords').on('change',function(){
@@ -156,16 +155,16 @@ window.Hasjob.Filters = {
         filterClearBtn: '<div class="input-group-addon job-filter-location-search-clear"><i class="fa fa-times"></i></div></div></li>'
       },
       optionClass: function(element) {
-        if ($(element).hasClass('not-available')) {
-          return 'strike-through';
+        if ($(element).hasClass('unavailable')) {
+          return 'unavailable';
         }
       },
       onDropdownShow: function(event, ui) {
         // stop header filter rollup when dropdown is open
-        filterDropdownClosed = false;
+        filters.filterDropdownClosed = false;
       },
       onDropdownHide: function(event, ui) {
-        filterDropdownClosed = true;
+        filters.filterDropdownClosed = true;
       }
     });
 
@@ -179,16 +178,16 @@ window.Hasjob.Filters = {
       numberDisplayed: 1,
       buttonWidth: '100%',
       optionClass: function(element) {
-        if ($(element).hasClass('not-available')) {
-          return 'strike-through';
+        if ($(element).hasClass('unavailable')) {
+          return 'unavailable';
         }
       },
       onDropdownShow: function(event, ui) {
         // stop header filter rollup when dropdown is open
-        filterDropdownClosed = false;
+        filters.filterDropdownClosed = false;
       },
       onDropdownHide: function(event, ui) {
-        filterDropdownClosed = true;
+        filters.filterDropdownClosed = true;
       }
     });
 
@@ -197,26 +196,26 @@ window.Hasjob.Filters = {
       numberDisplayed: 1,
       buttonWidth: '100%',
       optionClass: function(element) {
-        if ($(element).hasClass('not-available')) {
-          return 'strike-through';
+        if ($(element).hasClass('unavailable')) {
+          return 'unavailable';
         }
       },
       onDropdownShow: function(event, ui) {
         // stop header filter rollup when dropdown is open
-        filterDropdownClosed = false;
+        filters.filterDropdownClosed = false;
       },
       onDropdownHide: function(event, ui) {
-        filterDropdownClosed = true;
+        filters.filterDropdownClosed = true;
       }
     });
 
     $('#job-filters-pay').on('shown.bs.dropdown', function() {
       // stop header filter rollup when dropdown is open
-      filterDropdownClosed = false;
+      filters.filterDropdownClosed = false;
     });
 
     $('#job-filters-pay').on('hidden.bs.dropdown', function() {
-      filterDropdownClosed = true;
+      filters.filterDropdownClosed = true;
     });
 
     // Done button for filters on mobile
@@ -408,7 +407,6 @@ window.Hasjob.PaySlider.prototype.resetSlider = function(currency) {
 
 $(function() {
   Ractive.DEBUG = false;
-  var filterDropdownClosed = true;
 
   $(window).on("popstate", function (event) {
     if (event.originalEvent.state && event.originalEvent.state.reloadOnPop) {
@@ -423,7 +421,7 @@ $(function() {
 
   var scrollheight = $('#hgnav').height() - $('#hg-sitenav').height();
   $(window).scroll(function() {
-    if($(window).width() > 767 && filterDropdownClosed) {
+    if($(window).width() > 767 && window.Hasjob.Filters.filterDropdownClosed) {
       if ($(this).scrollTop() > scrollheight) {
         $('.header-section').slideUp();
       }
