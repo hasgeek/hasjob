@@ -1,7 +1,4 @@
-window.Hasjob = {};
-
-// config variables hashmap
-window.Hasjob.Config = {};
+//window.Hasjob initialized in layout.html
 
 window.Hasjob.updateGA = function(){
   /*
@@ -92,6 +89,7 @@ window.Hasjob.StickieList = {
       },
       success: function(data) {
         $('#main-content').html(data);
+        window.Hasjob.Filters.refresh();
         NProgress.done();
       }
     });
@@ -102,9 +100,36 @@ window.Hasjob.StickieList = {
 }
 
 window.Hasjob.Filters = {
+  render: function(){
+    this.ractive = new Ractive({
+      el: 'job-filters-ractive-template',
+      template: '#template',
+      data: {
+        jobLocations: window.Hasjob.Config.jobLocations,
+        jobTypes: window.Hasjob.Config.jobTypes,
+        jobCategories: window.Hasjob.Config.jobCategories,
+        l: window.Hasjob.Config.l,
+        t: window.Hasjob.Config.t,
+        c: window.Hasjob.Config.c,
+        q: window.Hasjob.Config.q,
+        e: window.Hasjob.Config.equity
+      }
+    });
+  },
   init: function(){
     var filters = this;
     var keywordTimeout;
+    this.render();
+    //Change site button to filter icon
+    // why is this required?
+    $('.hg-site-nav-toggle').find('i').removeClass('fa-bars').addClass('fa-search');
+    $('#hg-sitenav').on('shown.bs.collapse', function() {
+      $('.hg-site-nav-toggle').find('i').removeClass('fa-search').addClass('fa-close');
+    });
+    $('#hg-sitenav').on('hidden.bs.collapse', function() {
+      $('.hg-site-nav-toggle').find('i').removeClass('fa-close').addClass('fa-search');
+    });
+
 
     //remove white spaces keyword input value
     $('#job-filters-keywords').on('change',function(){
@@ -130,6 +155,11 @@ window.Hasjob.Filters = {
         filter: '<li><div class="input-group input-group-sm"><div class="input-group-addon"><i class="fa fa-search"></i></div><input type="text" class="form-control" id="job-filter-location-search" placeholder="Search">',
         filterClearBtn: '<div class="input-group-addon job-filter-location-search-clear"><i class="fa fa-times"></i></div></div></li>'
       },
+      optionClass: function(element) {
+        if ($(element).hasClass('not-available')) {
+          return 'strike-through';
+        }
+      },
       onDropdownShow: function(event, ui) {
         // stop header filter rollup when dropdown is open
         filterDropdownClosed = false;
@@ -148,6 +178,11 @@ window.Hasjob.Filters = {
       nonSelectedText: 'Job Type',
       numberDisplayed: 1,
       buttonWidth: '100%',
+      optionClass: function(element) {
+        if ($(element).hasClass('not-available')) {
+          return 'strike-through';
+        }
+      },
       onDropdownShow: function(event, ui) {
         // stop header filter rollup when dropdown is open
         filterDropdownClosed = false;
@@ -161,6 +196,11 @@ window.Hasjob.Filters = {
       nonSelectedText: 'Job Category',
       numberDisplayed: 1,
       buttonWidth: '100%',
+      optionClass: function(element) {
+        if ($(element).hasClass('not-available')) {
+          return 'strike-through';
+        }
+      },
       onDropdownShow: function(event, ui) {
         // stop header filter rollup when dropdown is open
         filterDropdownClosed = false;
@@ -174,6 +214,7 @@ window.Hasjob.Filters = {
       // stop header filter rollup when dropdown is open
       filterDropdownClosed = false;
     });
+
     $('#job-filters-pay').on('hidden.bs.dropdown', function() {
       filterDropdownClosed = true;
     });
@@ -218,6 +259,22 @@ window.Hasjob.Filters = {
       }
     }
     return sortedFilterParams;
+  },
+  refresh: function() {
+    this.ractive.set({
+        jobLocations: window.Hasjob.Config.jobLocations,
+        jobTypes: window.Hasjob.Config.jobTypes,
+        jobCategories: window.Hasjob.Config.jobCategories,
+        l: window.Hasjob.Config.l,
+        t: window.Hasjob.Config.t,
+        c: window.Hasjob.Config.c,
+        q: window.Hasjob.Config.q,
+        e: window.Hasjob.Config.equity
+    }).then(function() {
+      $('#job-filters-location').multiselect('rebuild');
+      $('#job-filters-type').multiselect('rebuild');
+      $('#job-filters-category').multiselect('rebuild');
+    });
   }
 }
 
@@ -350,6 +407,7 @@ window.Hasjob.PaySlider.prototype.resetSlider = function(currency) {
 
 
 $(function() {
+  Ractive.DEBUG = false;
   var filterDropdownClosed = true;
 
   $(window).on("popstate", function (event) {
@@ -362,15 +420,6 @@ $(function() {
 
   window.Hasjob.Filters.init();
   window.Hasjob.StickieList.init();
-
-  //Change site button to filter icon
-  $('.hg-site-nav-toggle').find('i').removeClass('fa-bars').addClass('fa-search');
-  $('#hg-sitenav').on('shown.bs.collapse', function() {
-    $('.hg-site-nav-toggle').find('i').removeClass('fa-search').addClass('fa-close');
-  });
-  $('#hg-sitenav').on('hidden.bs.collapse', function() {
-    $('.hg-site-nav-toggle').find('i').removeClass('fa-close').addClass('fa-search');
-  });
 
   var scrollheight = $('#hgnav').height() - $('#hg-sitenav').height();
   $(window).scroll(function() {
@@ -462,5 +511,4 @@ $(function() {
   setPaySliderVisibility();
   paySlider.resetSlider(getCurrencyVal());
   setPayTextField();
-
 });

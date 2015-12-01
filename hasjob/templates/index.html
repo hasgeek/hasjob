@@ -209,12 +209,22 @@
 {%- endmacro -%}
 {%- block footerscripts -%}
   <script type="text/javascript">
+
     //For setting the pay slider
     window.Hasjob.PayFilterParameters = {
       'currency': {{ request.args.get('currency') | tojson }},
       'pmin': {{ request.args.get('pmin') | tojson }},
       'pmax': {{ request.args.get('pmax') | tojson }}
     };
+
+    window.Hasjob.Config.jobLocations = {{job_locations | tojson}},
+    window.Hasjob.Config.jobTypes = {{job_type_choices | tojson}},
+    window.Hasjob.Config.jobCategories = {{job_category_choices | tojson}},
+    window.Hasjob.Config.l = {{request.args.getlist('l') | tojson}},
+    window.Hasjob.Config.t = {{request.args.getlist('t') | tojson}},
+    window.Hasjob.Config.c = {{request.args.getlist('c') | tojson}},
+    window.Hasjob.Config.q = {{request.args.getlist('q') | tojson}},
+    window.Hasjob.Config.e = {{request.args.get('e') | tojson}}
 
     $(function() {
       $('textarea').autosize();

@@ -159,7 +159,7 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
     if getbool(request.args.get('equity')):
         # Only works as a positive filter: you can't search for jobs that DON'T pay in equity
         data_filters['equity'] = True
-        basequery = basequery.filter(JobPost.pay_equity_min != None)  # NOQA
+        basequery = basequery.filter(JobPost.pay_equity_min > 0.0)  # NOQA
     if 'pmin' in request.args and 'pmax' in request.args:
         f_min = string_to_number(request.args['pmin'])
         f_max = string_to_number(request.args['pmax'])
@@ -182,6 +182,7 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
         try:
             # TODO: Can we do syntax validation without a database roundtrip?
             db.session.query(db.func.to_tsquery(q)).all()
+
         except ProgrammingError:
             db.session.rollback()
             g.event_data['search_syntax_error'] = (request.args['q'], q)
@@ -201,7 +202,7 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
         batched = True
 
     # getposts sets g.board_jobs, used below
-    posts = getposts(basequery, pinned=True, showall=showall, statuses=statuses, ageless=ageless).all()
+    posts = getposts(basequery, pinned=True, showall=showall, statuses=statuses, ageless=ageless).order_by(db.desc(JobPost.datetime)).limit(2000).all()
 
     # Cache viewcounts (admin view or not)
     cache_viewcounts(posts)
