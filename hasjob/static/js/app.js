@@ -103,16 +103,16 @@ window.Hasjob.Filters = {
   render: function(){
     this.ractive = new Ractive({
       el: 'job-filters-ractive-template',
-      template: '#template',
+      template: '#filters-ractive',
       data: {
-        jobLocations: window.Hasjob.Config.jobLocations,
-        jobTypes: window.Hasjob.Config.jobTypes,
-        jobCategories: window.Hasjob.Config.jobCategories,
-        l: window.Hasjob.Config.l,
-        t: window.Hasjob.Config.t,
-        c: window.Hasjob.Config.c,
-        q: window.Hasjob.Config.q,
-        e: window.Hasjob.Config.equity
+        jobLocations: window.Hasjob.Config.jobLocationFilters,
+        jobTypes: window.Hasjob.Config.jobTypeFilters,
+        jobCategories: window.Hasjob.Config.jobCategoryFilters,
+        selectedLocations: window.Hasjob.Config.selectedLocations,
+        selectedTypes: window.Hasjob.Config.selectedTypes,
+        selectedCategories: window.Hasjob.Config.selectedCategories,
+        selectedQuery: window.Hasjob.Config.selectedQuery,
+        selectedEquity: window.Hasjob.Config.selectedEquity
       }
     });
   },
@@ -261,14 +261,14 @@ window.Hasjob.Filters = {
   },
   refresh: function() {
     this.ractive.set({
-        jobLocations: window.Hasjob.Config.jobLocations,
-        jobTypes: window.Hasjob.Config.jobTypes,
-        jobCategories: window.Hasjob.Config.jobCategories,
-        l: window.Hasjob.Config.l,
-        t: window.Hasjob.Config.t,
-        c: window.Hasjob.Config.c,
-        q: window.Hasjob.Config.q,
-        e: window.Hasjob.Config.equity
+      jobLocations: window.Hasjob.Config.jobLocationFilters,
+      jobTypes: window.Hasjob.Config.jobTypeFilters,
+      jobCategories: window.Hasjob.Config.jobCategoryFilters,
+      selectedLocations: window.Hasjob.Config.selectedLocations,
+      selectedTypes: window.Hasjob.Config.selectedTypes,
+      selectedCategories: window.Hasjob.Config.selectedCategories,
+      selectedQuery: window.Hasjob.Config.selectedQuery,
+      selectedEquity: window.Hasjob.Config.equity
     }).then(function() {
       $('#job-filters-location').multiselect('rebuild');
       $('#job-filters-type').multiselect('rebuild');

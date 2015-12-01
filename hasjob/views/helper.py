@@ -695,6 +695,6 @@ def filter_categories(basequery, board, filters):
 def inject_filter_options():
     basequery = getposts(showall=True)
     filters = g.event_data.get('filters', {})
-    return dict(job_locations=filter_locations(filters),
-                job_type_choices=filter_types(basequery, board=g.board, filters=filters),
-                job_category_choices=filter_categories(basequery, board=g.board, filters=filters))
+    return dict(job_location_filters=filter_locations(filters),
+                job_type_filters=filter_types(basequery, board=g.board, filters=filters),
+                job_category_filters=filter_categories(basequery, board=g.board, filters=filters))

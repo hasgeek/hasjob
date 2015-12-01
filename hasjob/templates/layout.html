@@ -35,18 +35,22 @@
     <meta name="twitter:site" content="@hasjob" />
   {%- endblock %}
   <script>
-    window.Hasjob = {};
+    if (typeof window.Hasjob === 'undefined') {
+      window.Hasjob = {};
+    }
     // Use Hasjob.Config for server-generated responses
-    window.Hasjob.Config = {
-      jobLocations: {{ job_locations | tojson }},
-      jobTypes: {{ job_type_choices | tojson }},
-      jobCategories: {{ job_category_choices | tojson }},
-      l: {{ request.args.getlist('l') | tojson }},
-      t: {{ request.args.getlist('t') | tojson }},
-      c: {{ request.args.getlist('c') | tojson }},
-      q: {{ request.args.getlist('q') | tojson }},
-      e: {{ request.args.get('e') | tojson }}
-    };
+    if (typeof window.Hasjob.Config === 'undefined') {
+      window.Hasjob.Config = {
+        jobLocationFilters: {{ job_location_filters | tojson }},
+        jobTypeFilters: {{ job_type_filters | tojson }},
+        jobCategoryFilters: {{ job_category_filters | tojson }},
+        selectedLocations: {{ request.args.getlist('l') | tojson }},
+        selectedTypes: {{ request.args.getlist('t') | tojson }},
+        selectedCategories: {{ request.args.getlist('c') | tojson }},
+        selectedQuery: {{ request.args.getlist('q') | tojson }},
+        selectedEquity: {{ request.args.get('e') | tojson }}
+      };
+    }
   </script>
 {%- endblock %}
 
@@ -69,26 +73,26 @@
         {% if 'archive' in request.args %}<input type="hidden" name="archive" value="{{ request.args.archive }}" />{% endif %}
         <div class="row" id='job-filters-ractive-template'>
         {%- raw %}
-          <script id='template' type='text/ractive'>
+          <script id='filters-ractive' type='text/ractive'>
             <div class="filters filters-col1 location-filter col-xs-12 col-sm-4 col-md-3">
               <select id="job-filters-location" name="l" multiple="multiple" class="job-filters-select2 notselect hidden js-handle-filter-change js-refresh-location" placeholder="Location">
-                <option value="anywhere" id='job-filters-remote-check' {{#if l.indexOf('anywhere') > -1}}selected="selected"{{/if}}>Anywhere/Remote</option>
+                <option value="anywhere" id='job-filters-remote-check' {{#if selectedLocations.indexOf('anywhere') > -1}}selected="selected"{{/if}}>Anywhere/Remote</option>
                 {{ #jobLocations }}
-                  <option value={{ name }} {{#if l.indexOf(name) > -1}}selected="selected"{{/if}} {{#if !available}}class="unavailable"{{/if}}>{{title}}</option>
+                  <option value={{ name }} {{#if selectedLocations.indexOf(name) > -1}}selected="selected"{{/if}} {{#if !available}}class="unavailable"{{/if}}>{{title}}</option>
                 {{/jobLocations}}
               </select>
             </div>
             <div class="filters col-xs-12 col-sm-4 col-md-3">
               <select id="job-filters-type" name="t" multiple="multiple" class="job-filters-select2 notselect hidden js-handle-filter-change js-refresh-type" placeholder="Job Type">
                 {{ #jobTypes }}
-                    <option value={{ name }} {{#if t.indexOf(name) > -1}}selected="selected"{{/if}} {{#if !available}}class="unavailable"{{/if}}>{{title}}</option>
+                    <option value={{ name }} {{#if selectedTypes.indexOf(name) > -1}}selected="selected"{{/if}} {{#if !available}}class="unavailable"{{/if}}>{{title}}</option>
                 {{/jobTypes}}
               </select>
             </div>
             <div class="filters col-xs-12 col-sm-4 col-md-3 category-filter">
               <select id="job-filters-category" name="c" multiple="multiple" class="job-filters-select2 notselect hidden js-handle-filter-change js-refresh-category" placeholder="Job Category">
                 {{ #jobCategories}}
-                  <option value={{ name }} {{#if c.indexOf(name) > -1}}selected="selected"{{/if}} {{#if !available}}class="unavailable"{{/if}}>{{title}}</option>
+                  <option value={{ name }} {{#if selectedCategories.indexOf(name) > -1}}selected="selected"{{/if}} {{#if !available}}class="unavailable"{{/if}}>{{title}}</option>
                 {{/jobCategories}}
               </select>
             </div>
