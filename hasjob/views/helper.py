@@ -313,7 +313,7 @@ def cache_viewcounts(posts):
     g.viewcounts = dict(zip(viewcounts_keys, viewcounts_values))
 
 
-def getposts(basequery=None, pinned=False, showall=False, statuses=None, ageless=False, limit=2000):
+def getposts(basequery=None, pinned=False, showall=False, statuses=None, ageless=False, limit=2000, return_query=False):
     if ageless:
         pinned = False  # No pinning when browsing archives
     if not statuses:
@@ -359,7 +359,9 @@ def getposts(basequery=None, pinned=False, showall=False, statuses=None, ageless
         else:
             query = query.order_by(db.desc(JobPost.pinned))
 
-    return query
+    if return_query:
+        return query
+    return query.order_by(db.desc(JobPost.datetime)).limit(limit)
 
 
 def getallposts(order_by=None, desc=False, start=None, limit=None):
@@ -624,6 +626,13 @@ def usessl(url):
 
 
 def filter_basequery(basequery, filters, exclude_list=[]):
+    """
+    - Accepts a query of type sqlalchemy.Query, and returns a modified query
+    based on the keys in the `filters` object.
+    - The keys accepted in the `filters` object are: `locations`, `anywhere`, `categories`, `types,
+    `pay_min`, `pay_max`, `currency`, `equity` and `query`.
+    - exclude_list is an array of keys that need to be ignored in the `filters` object
+    """
     if filters.get('locations') and 'locations' not in exclude_list:
         basequery = basequery.join(JobLocation).filter(JobLocation.geonameid.in_(filters['locations']))
     if filters.get('anywhere'):
@@ -634,7 +643,7 @@ def filter_basequery(basequery, filters, exclude_list=[]):
     if filters.get('types') and 'types' not in exclude_list:
         job_typeids_query = db.session.query(JobType.id).filter(JobType.name.in_(filters['types']))
         basequery = basequery.filter(JobPost.type_id.in_(job_typeids_query))
-    if filters.get('pay_min') and filters.get('pay_max') and 'pay' not in exclude_list:
+    if filters.get('pay_min') and filters.get('pay_max') and 'pay_min' not in exclude_list:
         basequery = basequery.filter(JobPost.pay_cash_min < filters['pay_max'], JobPost.pay_cash_max >= filters['pay_min'])
     if filters.get('currency'):
         basequery = basequery.filter(JobPost.pay_currency == filters.get('currency'))
@@ -692,8 +701,11 @@ def filter_categories(basequery, board, filters):
 
 @app.context_processor
 def inject_filter_options():
-    basequery = getposts(showall=True)
-    filters = g.event_data.get('filters', {})
-    return dict(job_location_filters=filter_locations(filters),
-                job_type_filters=filter_types(basequery, board=g.board, filters=filters),
-                job_category_filters=filter_categories(basequery, board=g.board, filters=filters))
+    # Don't compute filter choices for paginated results
+    if not g.paginated:
+        basequery = getposts(showall=True, return_query=True)
+        filters = g.event_data.get('filters', {})
+        return dict(job_location_filters=filter_locations(filters),
+                    job_type_filters=filter_types(basequery, board=g.board, filters=filters),
+                    job_category_filters=filter_categories(basequery, board=g.board, filters=filters))
+    return {}

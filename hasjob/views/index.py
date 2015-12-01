@@ -93,9 +93,9 @@ def json_index(data):
 @app.route('/', methods=['GET', 'POST'])
 @render_with({'text/html': 'index.html', 'application/json': json_index}, json=False)
 def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
-        location=None, title=None, showall=True, statuses=None, tag=None, batched=True, ageless=False,
-        paginated=False):
+        location=None, title=None, showall=True, statuses=None, tag=None, batched=True, ageless=False):
 
+    g.paginated = False
     if basequery is None:
         is_index = True
     else:
@@ -182,7 +182,6 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
         try:
             # TODO: Can we do syntax validation without a database roundtrip?
             db.session.query(db.func.to_tsquery(q)).all()
-
         except ProgrammingError:
             db.session.rollback()
             g.event_data['search_syntax_error'] = (request.args['q'], q)
@@ -202,7 +201,7 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
         batched = True
 
     # getposts sets g.board_jobs, used below
-    posts = getposts(basequery, pinned=True, showall=showall, statuses=statuses, ageless=ageless).order_by(db.desc(JobPost.datetime)).limit(2000).all()
+    posts = getposts(basequery, pinned=True, showall=showall, statuses=statuses, ageless=ageless).all()
 
     # Cache viewcounts (admin view or not)
     cache_viewcounts(posts)
@@ -286,7 +285,7 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
         # Figure out where the batch should start from
         startdate = None
         if 'startdate' in request.values:
-            paginated = True
+            g.paginated = True
             try:
                 startdate = parse_isoformat(request.values['startdate'])
             except ValueError:
@@ -349,7 +348,7 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
         header_campaign=header_campaign, loadmore=loadmore,
         search_domains=search_domains,
         is_siteadmin=lastuser.has_permission('siteadmin'),
-        pay_graph_data=pay_graph_data, paginated=paginated)
+        pay_graph_data=pay_graph_data)
 
 
 @csrf.exempt
