@@ -313,7 +313,7 @@ def cache_viewcounts(posts):
     g.viewcounts = dict(zip(viewcounts_keys, viewcounts_values))
 
 
-def getposts(basequery=None, pinned=False, showall=False, statuses=None, ageless=False, limit=2000, return_query=False):
+def getposts(basequery=None, pinned=False, showall=False, statuses=None, ageless=False, limit=2000, order=True):
     if ageless:
         pinned = False  # No pinning when browsing archives
     if not statuses:
@@ -359,7 +359,7 @@ def getposts(basequery=None, pinned=False, showall=False, statuses=None, ageless
         else:
             query = query.order_by(db.desc(JobPost.pinned))
 
-    if return_query:
+    if not order and not limit:
         return query
     return query.order_by(db.desc(JobPost.datetime)).limit(limit)
 
@@ -703,7 +703,7 @@ def filter_categories(basequery, board, filters):
 def inject_filter_options():
     # Don't compute filter choices for paginated results
     if not JobPost.is_paginated(request):
-        basequery = getposts(showall=True, return_query=True)
+        basequery = getposts(showall=True, order=False, limit=False)
         filters = g.event_data.get('filters', {})
         return dict(job_location_filters=filter_locations(filters),
                     job_type_filters=filter_types(basequery, board=g.board, filters=filters),
