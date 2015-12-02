@@ -95,7 +95,6 @@ def json_index(data):
 def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
         location=None, title=None, showall=True, statuses=None, tag=None, batched=True, ageless=False):
 
-    g.paginated = False
     if basequery is None:
         is_index = True
     else:
