@@ -331,7 +331,7 @@ class JobPost(BaseMixin, db.Model):
 
     @property
     def pays_cash(self):
-        if self.pay_type is None:
+        if self.pay_type is None:  # Legacy record from before `pay_type` was mandatory
             return True
         return self.pay_type != PAY_TYPE.NOCASH and self.pay_cash_min is not None and self.pay_cash_max is not None
 

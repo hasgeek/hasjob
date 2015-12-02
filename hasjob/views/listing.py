@@ -640,9 +640,6 @@ def confirm(domain, hashid):
     # We get here if it's (a) POSTSTATUS.UNPUBLISHED and (b) the user is confirmed authorised
     if 'form.id' in request.form and form.validate_on_submit():
         # User has accepted terms of service. Now send email and/or wait for payment
-        # Also (re-)set the verify key, just in case they changed their email
-        # address and are re-verifying
-        post.email_verify_key = random_long_key()
         msg = Message(subject="Confirmation of your job post at Hasjob",
             recipients=[post.email])
         msg.html = email_transform(render_template('confirm_email.html', post=post), base_url=request.url_root)
@@ -676,7 +673,7 @@ def confirm_email(domain, hashid, key):
         return redirect(post.url_for('confirm'), code=302)
     elif post.status == POSTSTATUS.PENDING:
         if key != post.email_verify_key:
-            abort(403)
+            return render_template('403.html', description=u"This link has expired or is malformed. Check if you have received a newer email from us.")
         else:
             if app.config.get('THROTTLE_LIMIT', 0) > 0:
                 post_count = JobPost.query.filter(JobPost.email_domain == post.email_domain).filter(
@@ -850,6 +847,9 @@ def editjob(hashid, key, domain=None, form=None, validated=False, newpost=None):
             # Allow name and email to be set only on non-confirmed posts
             if not no_email:
                 # post.fullname = form.poster_name.data  # Deprecated 2013-11-20
+                if post.email != form.poster_email.data:
+                    # Change the email_verify_key if the email changes
+                    post.email_verify_key = random_long_key()
                 post.email = form.poster_email.data
                 post.email_domain = form_email_domain
                 post.md5sum = md5sum(post.email)
