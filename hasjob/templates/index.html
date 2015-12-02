@@ -62,13 +62,13 @@
     {%- if domain and domain.has_profile %}
       {{ org_profile(domain) }}
     {%- endif %}
-    {%- if pay_graph_data and not g.paginated %}
+    {%- if pay_graph_data and not paginated %}
       <div class="flash info">
         <h2>What these jobs pay per annum</h2>
         <div id="pay-graph"></div>
       </div>
     {%- endif %}
-    {%- if not g.paginated %}
+    {%- if not paginated %}
     <ul id="stickie-area" class="row">
     {%- endif %}
       {%- if jobtype or jobcategory -%}
@@ -107,7 +107,7 @@
           </a>
         </li>
       {%- else -%}
-        {%- if not g.paginated and (not gkiosk) and ((gboard and 'new-job' in gboard.permissions(guser)) or (not gboard)) -%}
+        {%- if not paginated and (not gkiosk) and ((gboard and 'new-job' in gboard.permissions(guser)) or (not gboard)) -%}
           <li class="col-xs-12 col-md-3 col-sm-4">
             <form id="newpost" action="{{ url_for('newjob')|usessl }}" method="POST" class="stickie special">
               <input type="hidden" name="_charset_"/>
@@ -210,7 +210,7 @@
 {%- block footerscripts -%}
   <script type="text/javascript">
 
-    {%- if not g.paginated -%}
+    {%- if not paginated -%}
     //For setting the pay slider
     window.Hasjob.PayFilterParameters = {
       'currency': {{ request.args.get('currency') | tojson }},
@@ -219,7 +219,7 @@
     };
     {%- endif %}
 
-    {%- if request.is_xhr and not g.paginated -%}
+    {%- if request.is_xhr and not paginated -%}
     window.Hasjob.Config.jobLocationFilters = {{job_location_filters | tojson}},
     window.Hasjob.Config.jobTypeFilters = {{job_type_filters | tojson}},
     window.Hasjob.Config.jobCategoryFilters = {{job_category_filters | tojson}},
@@ -245,7 +245,7 @@
       });
     });
   </script>
-  {%- if pay_graph_data and not g.paginated %}
+  {%- if pay_graph_data and not paginated %}
     <script type="text/javascript">
       c3.generate({
         bindto: '#pay-graph',

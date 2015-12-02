@@ -285,7 +285,6 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
         # Figure out where the batch should start from
         startdate = None
         if 'startdate' in request.values:
-            g.paginated = True
             try:
                 startdate = parse_isoformat(request.values['startdate'])
             except ValueError:
@@ -348,7 +347,7 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
         header_campaign=header_campaign, loadmore=loadmore,
         search_domains=search_domains,
         is_siteadmin=lastuser.has_permission('siteadmin'),
-        pay_graph_data=pay_graph_data)
+        pay_graph_data=pay_graph_data, paginated=JobPost.is_paginated(request))
 
 
 @csrf.exempt

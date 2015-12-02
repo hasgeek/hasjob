@@ -702,7 +702,7 @@ def filter_categories(basequery, board, filters):
 @app.context_processor
 def inject_filter_options():
     # Don't compute filter choices for paginated results
-    if not g.paginated:
+    if not JobPost.is_paginated(request):
         basequery = getposts(showall=True, return_query=True)
         filters = g.event_data.get('filters', {})
         return dict(job_location_filters=filter_locations(filters),
