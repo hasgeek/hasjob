@@ -209,12 +209,26 @@
 {%- endmacro -%}
 {%- block footerscripts -%}
   <script type="text/javascript">
+
+    {%- if not paginated -%}
     //For setting the pay slider
     window.Hasjob.PayFilterParameters = {
       'currency': {{ request.args.get('currency') | tojson }},
       'pmin': {{ request.args.get('pmin') | tojson }},
       'pmax': {{ request.args.get('pmax') | tojson }}
     };
+    {%- endif %}
+
+    {%- if request.is_xhr and not paginated -%}
+    window.Hasjob.Config.jobLocationFilters = {{job_location_filters | tojson}},
+    window.Hasjob.Config.jobTypeFilters = {{job_type_filters | tojson}},
+    window.Hasjob.Config.jobCategoryFilters = {{job_category_filters | tojson}},
+    window.Hasjob.Config.selectedLocations = {{request.args.getlist('l') | tojson}},
+    window.Hasjob.Config.selectedTypes = {{request.args.getlist('t') | tojson}},
+    window.Hasjob.Config.selectedCategories = {{request.args.getlist('c') | tojson}},
+    window.Hasjob.Config.selectedQuery = {{request.args.getlist('q') | tojson}},
+    window.Hasjob.Config.selectedEquity = {{request.args.get('e') | tojson}}
+    {%- endif %}
 
     $(function() {
       $('textarea').autosize();

@@ -93,8 +93,7 @@ def json_index(data):
 @app.route('/', methods=['GET', 'POST'])
 @render_with({'text/html': 'index.html', 'application/json': json_index}, json=False)
 def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
-        location=None, title=None, showall=True, statuses=None, tag=None, batched=True, ageless=False,
-        paginated=False):
+        location=None, title=None, showall=True, statuses=None, tag=None, batched=True, ageless=False):
 
     if basequery is None:
         is_index = True
@@ -285,7 +284,6 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
         # Figure out where the batch should start from
         startdate = None
         if 'startdate' in request.values:
-            paginated = True
             try:
                 startdate = parse_isoformat(request.values['startdate'])
             except ValueError:
@@ -348,7 +346,7 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
         header_campaign=header_campaign, loadmore=loadmore,
         search_domains=search_domains,
         is_siteadmin=lastuser.has_permission('siteadmin'),
-        pay_graph_data=pay_graph_data, paginated=paginated)
+        pay_graph_data=pay_graph_data, paginated=JobPost.is_paginated(request))
 
 
 @csrf.exempt
