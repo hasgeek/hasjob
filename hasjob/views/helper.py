@@ -655,7 +655,7 @@ def filter_basequery(basequery, filters, exclude_list=[]):
     return basequery
 
 
-# TODO @cache.cached(key_prefix='helper/filter_locations', timeout=3600)
+@cache.memoize(timeout=3600)
 def filter_locations(filters):
     now = datetime.utcnow()
     basequery = db.session.query(JobLocation.geonameid, db.func.count(JobLocation.geonameid).label('count')
@@ -671,7 +671,7 @@ def filter_locations(filters):
             for geonameid in geonameids]
 
 
-# @cache.cached(key_prefix='helper/filter_types', timeout=3600)
+@cache.memoize(timeout=3600)
 def filter_types(basequery, board, filters):
     basequery = filter_basequery(basequery, filters, exclude_list=['types'])
     filtered_typeids = [post.type_id for post in basequery.options(db.load_only('type_id')).distinct('type_id').all()]
@@ -685,7 +685,7 @@ def filter_types(basequery, board, filters):
                 for job_type in JobType.query.filter_by(private=False, public=True).order_by('seq')]
 
 
-# TODO @cache.cached(key_prefix='helper/filter_categories', timeout=3600)
+@cache.memoize(timeout=3600)
 def filter_categories(basequery, board, filters):
     basequery = filter_basequery(basequery, filters, exclude_list=['categories'])
     filtered_categoryids = [post.category_id for post in basequery.options(db.load_only('category_id')).distinct('category_id').all()]
