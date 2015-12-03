@@ -373,9 +373,7 @@ def my_posts():
 def browse_by_type(name):
     if name == 'all':
         return redirect(url_for('index'))
-    ob = JobType.query.filter_by(name=name).first_or_404()
-    basequery = JobPost.query.filter_by(type_id=ob.id)
-    return index(basequery=basequery, type=ob, title=ob.title)
+    return redirect(url_for('index', t=name), code=301)
 
 
 @csrf.exempt
@@ -405,9 +403,7 @@ def browse_by_domain_legacy(domain):
 def browse_by_category(name):
     if name == 'all':
         return redirect(url_for('index'))
-    ob = JobCategory.query.filter_by(name=name).first_or_404()
-    basequery = JobPost.query.filter_by(category_id=ob.id)
-    return index(basequery=basequery, category=ob, title=ob.title)
+    return redirect(url_for('index', c=name), code=301)
 
 
 @csrf.exempt
@@ -424,26 +420,14 @@ def browse_by_email(md5sum):
 @app.route('/in/<location>', methods=['GET', 'POST'], subdomain='<subdomain>')
 @app.route('/in/<location>', methods=['GET', 'POST'])
 def browse_by_location(location):
-    loc = Location.get(location)
-    if loc:
-        geodata = {'geonameid': loc.id, 'name': loc.name, 'use_title': loc.title, 'description': Markup(loc.description)}
-    else:
-        geodata = location_geodata(location)
-    if not geodata:
-        abort(404)
-    if location != geodata['name']:
-        return redirect(url_for('browse_by_location', location=geodata['name']))
-    basequery = JobPost.query.filter(db.and_(
-        JobLocation.jobpost_id == JobPost.id, JobLocation.geonameid == geodata['geonameid']))
-    return index(basequery=basequery, location=geodata, title=geodata['use_title'])
+    return redirect(url_for('index', l=location), code=301)
 
 
 @csrf.exempt
 @app.route('/in/anywhere', methods=['GET', 'POST'], subdomain='<subdomain>')
 @app.route('/in/anywhere', methods=['GET', 'POST'])
 def browse_by_anywhere():
-    basequery = JobPost.query.filter(JobPost.remote_location == True)  # NOQA
-    return index(basequery=basequery)
+    return redirect(url_for('index', l='anywhere'), code=301)
 
 
 @csrf.exempt
