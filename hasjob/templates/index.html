@@ -219,7 +219,7 @@
     };
     {%- endif %}
 
-    {%- if request.is_xhr and not paginated -%}
+    {%- if request.is_xhr and not paginated and job_location_filters and job_type_filters and job_category_filters -%}
     window.Hasjob.Config.jobLocationFilters = {{job_location_filters | tojson}},
     window.Hasjob.Config.jobTypeFilters = {{job_type_filters | tojson}},
     window.Hasjob.Config.jobCategoryFilters = {{job_category_filters | tojson}},

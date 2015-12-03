@@ -40,6 +40,7 @@
     }
     // Use Hasjob.Config for server-generated responses
     if (typeof window.Hasjob.Config === 'undefined') {
+      {%- if job_location_filters and job_type_filters and job_category_filters -%}
       window.Hasjob.Config = {
         jobLocationFilters: {{ job_location_filters | tojson }},
         jobTypeFilters: {{ job_type_filters | tojson }},
@@ -50,6 +51,7 @@
         selectedQuery: {{ request.args.getlist('q') | tojson }},
         selectedEquity: {{ request.args.get('e') | tojson }}
       };
+      {%- endif %}
     }
   </script>
 {%- endblock %}
