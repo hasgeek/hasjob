@@ -208,6 +208,10 @@
   </script>
 {%- endmacro -%}
 {%- block footerscripts -%}
+  {% from "macros.html" import filters_setup_script %}
+  {%- if request.is_xhr and not paginated -%}
+    {{ filters_setup_script(job_location_filters, job_type_filters, job_category_filters) }}
+  {%- endif %}
   <script type="text/javascript">
 
     {%- if not paginated -%}
@@ -217,17 +221,6 @@
       'pmin': {{ request.args.get('pmin') | tojson }},
       'pmax': {{ request.args.get('pmax') | tojson }}
     };
-    {%- endif %}
-
-    {%- if request.is_xhr and not paginated and job_location_filters and job_type_filters and job_category_filters -%}
-    window.Hasjob.Config.jobLocationFilters = {{job_location_filters | tojson}},
-    window.Hasjob.Config.jobTypeFilters = {{job_type_filters | tojson}},
-    window.Hasjob.Config.jobCategoryFilters = {{job_category_filters | tojson}},
-    window.Hasjob.Config.selectedLocations = {{request.args.getlist('l') | tojson}},
-    window.Hasjob.Config.selectedTypes = {{request.args.getlist('t') | tojson}},
-    window.Hasjob.Config.selectedCategories = {{request.args.getlist('c') | tojson}},
-    window.Hasjob.Config.selectedQuery = {{request.args.getlist('q') | tojson}},
-    window.Hasjob.Config.selectedEquity = {{request.args.get('e') | tojson}}
     {%- endif %}
 
     $(function() {

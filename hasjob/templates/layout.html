@@ -1,6 +1,6 @@
 {% extends "baseframe.html" -%}
 {% from "baseframe/components.html" import hgnav %}
-{% from "macros.html" import campaign_header, campaign_script %}
+{% from "macros.html" import campaign_header, campaign_script, filters_setup_script %}
 
 {% block doctypehtml -%}
 <!DOCTYPE html>
@@ -40,20 +40,12 @@
     }
     // Use Hasjob.Config for server-generated responses
     if (typeof window.Hasjob.Config === 'undefined') {
-      {%- if job_location_filters and job_type_filters and job_category_filters -%}
-      window.Hasjob.Config = {
-        jobLocationFilters: {{ job_location_filters | tojson }},
-        jobTypeFilters: {{ job_type_filters | tojson }},
-        jobCategoryFilters: {{ job_category_filters | tojson }},
-        selectedLocations: {{ request.args.getlist('l') | tojson }},
-        selectedTypes: {{ request.args.getlist('t') | tojson }},
-        selectedCategories: {{ request.args.getlist('c') | tojson }},
-        selectedQuery: {{ request.args.getlist('q') | tojson }},
-        selectedEquity: {{ request.args.get('e') | tojson }}
-      };
-      {%- endif %}
+      window.Hasjob.Config = {}
     }
   </script>
+  {%- if not paginated -%}
+    {{ filters_setup_script(job_location_filters, job_type_filters, job_category_filters) }}
+  {%- endif %}
 {%- endblock %}
 
 {% block headerbox %}

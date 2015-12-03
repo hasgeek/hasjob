@@ -186,3 +186,16 @@
   </script>
   {{ campaign_header_postscript() }}
 {% endmacro %}
+
+{% macro filters_setup_script(job_location_filters, job_type_filters, job_category_filters) %}
+  <script type="text/javascript">
+    window.Hasjob.Config.jobLocationFilters = {{job_location_filters | tojson}},
+    window.Hasjob.Config.jobTypeFilters = {{job_type_filters | tojson}},
+    window.Hasjob.Config.jobCategoryFilters = {{job_category_filters | tojson}},
+    window.Hasjob.Config.selectedLocations = {{request.args.getlist('l') | tojson}},
+    window.Hasjob.Config.selectedTypes = {{request.args.getlist('t') | tojson}},
+    window.Hasjob.Config.selectedCategories = {{request.args.getlist('c') | tojson}},
+    window.Hasjob.Config.selectedQuery = {{request.args.getlist('q') | tojson}},
+    window.Hasjob.Config.selectedEquity = {{request.args.get('e') | tojson}}
+  </script>
+{% endmacro %}
