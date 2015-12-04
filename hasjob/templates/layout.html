@@ -70,7 +70,6 @@
           <script id='filters-ractive' type='text/ractive'>
             <div class="filters filters-col1 location-filter col-xs-12 col-sm-4 col-md-3">
               <select id="job-filters-location" name="l" multiple="multiple" class="job-filters-select2 notselect hidden js-handle-filter-change js-refresh-location" placeholder="Location">
-                <option value="anywhere" id='job-filters-remote-check' {{#if selectedLocations.indexOf('anywhere') > -1}}selected="selected"{{/if}}>Anywhere/Remote</option>
                 {{ #jobLocations }}
                   <option value={{ name }} {{#if selectedLocations.indexOf(name) > -1}}selected="selected"{{/if}} {{#if !available}}class="unavailable"{{/if}}>{{title}}</option>
                 {{/jobLocations}}
