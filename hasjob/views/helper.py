@@ -8,6 +8,7 @@ import bleach
 import requests
 from pytz import utc, timezone
 from urllib import quote, quote_plus
+from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
 from geoip2.errors import AddressNotFoundError
 from flask import Markup, request, url_for, g, session
@@ -633,10 +634,18 @@ def filter_basequery(basequery, filters, exclude_list=[]):
     `pay_min`, `pay_max`, `currency`, `equity` and `query`.
     - exclude_list is an array of keys that need to be ignored in the `filters` object
     """
-    if filters.get('locations') and 'locations' not in exclude_list:
-        basequery = basequery.join(JobLocation).filter(JobLocation.geonameid.in_(filters['locations']))
-    if filters.get('anywhere'):
+    filter_by_location = filters.get('locations') and 'locations' not in exclude_list
+    filter_by_anywhere = filters.get('anywhere') and 'anywhere' not in exclude_list
+    if filter_by_location:
+        job_location_jobpost_ids = db.session.query(JobLocation.jobpost_id).filter(JobLocation.geonameid.in_(filters['locations']))
+
+    if filter_by_location and filter_by_anywhere:
+        basequery = basequery.filter(or_(JobPost.id.in_(job_location_jobpost_ids), JobPost.remote_location == True))
+    elif filter_by_location:
+        basequery = basequery.filter(JobPost.id.in_(job_location_jobpost_ids))
+    elif filter_by_anywhere:
         basequery = basequery.filter(JobPost.remote_location == True)
+
     if filters.get('categories') and 'categories' not in exclude_list:
         job_categoryids_query = db.session.query(JobCategory.id).filter(JobCategory.name.in_(filters['categories']))
         basequery = basequery.filter(JobPost.category_id.in_(job_categoryids_query))
@@ -655,7 +664,7 @@ def filter_basequery(basequery, filters, exclude_list=[]):
     return basequery
 
 
-@cache.memoize(timeout=3600)
+# @cache.memoize(timeout=3600)
 def filter_locations(filters):
     now = datetime.utcnow()
     basequery = db.session.query(JobLocation.geonameid, db.func.count(JobLocation.geonameid).label('count')
@@ -663,15 +672,16 @@ def filter_locations(filters):
             JobLocation.primary == True).group_by(JobLocation.geonameid).order_by(db.text('count DESC'))
 
     geonameids = [jobpost_location.geonameid for jobpost_location in basequery]
-    basequery = filter_basequery(basequery, filters, exclude_list=['locations'])
-    filtered_geonameids = [jobpost_location.geonameid for jobpost_location in basequery]
+    filtered_basequery = filter_basequery(basequery, filters, exclude_list=['locations', 'anywhere'])
+    filtered_geonameids = [jobpost_location.geonameid for jobpost_location in filtered_basequery]
+    remote_location_available = filtered_basequery.filter(JobPost.remote_location == True).count() > 0
     data = location_geodata(geonameids)
-    return [{'name': data[geonameid]['name'], 'title': data[geonameid]['picker_title'],
+    return [{'name': 'anywhere', 'title': 'Anywhere', 'available': remote_location_available}] + [{'name': data[geonameid]['name'], 'title': data[geonameid]['picker_title'],
             'available': False if not filtered_geonameids else geonameid in filtered_geonameids}
             for geonameid in geonameids]
 
 
-@cache.memoize(timeout=3600)
+# @cache.memoize(timeout=3600)
 def filter_types(basequery, board, filters):
     basequery = filter_basequery(basequery, filters, exclude_list=['types'])
     filtered_typeids = [post.type_id for post in basequery.options(db.load_only('type_id')).distinct('type_id').all()]
@@ -685,7 +695,7 @@ def filter_types(basequery, board, filters):
                 for job_type in JobType.query.filter_by(private=False, public=True).order_by('seq')]
 
 
-@cache.memoize(timeout=3600)
+# @cache.memoize(timeout=3600)
 def filter_categories(basequery, board, filters):
     basequery = filter_basequery(basequery, filters, exclude_list=['categories'])
     filtered_categoryids = [post.category_id for post in basequery.options(db.load_only('category_id')).distinct('category_id').all()]
