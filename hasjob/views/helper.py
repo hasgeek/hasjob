@@ -715,7 +715,7 @@ def inject_filter_options():
     if JobPost.is_paginated(request):
         return dict()
     basequery = getposts(showall=True, order=False, limit=False)
-    filters = g.event_data.get('filters', {})
+    filters = g.get('event_data', {}).get('filters', {})
     return dict(job_location_filters=filter_locations(filters),
                 job_type_filters=filter_types(basequery, board=g.board, filters=filters),
                 job_category_filters=filter_categories(basequery, board=g.board, filters=filters))
