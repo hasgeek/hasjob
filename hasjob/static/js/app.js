@@ -1,17 +1,69 @@
 //window.Hasjob initialized in layout.html
 
-window.Hasjob.updateGA = function(){
-  /*
-    Resets the path in the tracker object and updates GA with the current path.
-    To be called after updating the URL with pushState or replaceState.
-    Reference: https://developers.google.com/analytics/devguides/collection/analyticsjs/single-page-applications
-  */
-  if (window.ga) {
-    var path = window.location.href.split(window.location.host)[1];
-    window.ga('set', 'page', path);
-    window.ga('send', 'pageview');
+Hasjob.Util = {
+  isElementVisible: function(id) {
+    /*
+      Checks if an element with the given ID is present in the viewport.
+    */
+    var el = document.getElementById(id);
+    if (el == null || el == undefined) return false;
+    var boundingRect = el.getBoundingClientRect();
+    return boundingRect.top >= 0 && boundingRect.left >= 0 && boundingRect.bottom <= $(window).height() && boundingRect.right <= $(window).width();
+  },
+  updateGA: function(){
+    /*
+      Resets the path in the tracker object and updates GA with the current path.
+      To be called after updating the URL with pushState or replaceState.
+      Reference: https://developers.google.com/analytics/devguides/collection/analyticsjs/single-page-applications
+    */
+    if (window.ga) {
+      var path = window.location.href.split(window.location.host)[1];
+      window.ga('set', 'page', path);
+      window.ga('send', 'pageview');
+    }
   }
 }
+
+window.Hasjob.index = function(){
+  window.Hasjob.Config.Index = {};
+  $(function() {
+    var loadingBatch;
+    var isLoading = function(){
+      return typeof loadingBatch !== 'undefined' && loadingBatch;
+    };
+    var sortedFilterParams = window.Hasjob.Filters.formatFilterParams($('#js-job-filters').serializeArray());
+    var searchUrl = '/';
+    if (sortedFilterParams.length) {
+      searchUrl = '/' + '?' + $.param(sortedFilterParams);
+    }
+    window.setInterval(function(){
+      var loadMore = $("#loadmore");
+      console.log(loadingBatch);
+      if (Hasjob.Util.isElementVisible('loadmore') && (typeof loadingBatch === 'undefined' || !isLoading())){
+        loadingBatch = true;
+        NProgress.configure({ showSpinner: false });
+        NProgress.start();
+        loadMore.find('button[type="submit"]').prop('disabled', true).addClass('submit-disabled').html('Loading more… <span class="loading">&nbsp;</span>');
+
+        $.ajax(searchUrl + '&' + 'startdate=' + loadMore.find('button').val(), {
+          method: 'POST',
+          // data: {'startdate': loadMore.find('button').val()},
+          success: function(data) {
+            loadMore.replaceWith(data.trim());
+            NProgress.done();
+            loadingBatch = false;
+          },
+          error: function(context, xhr, status, errMsg) {
+            loadMore.find('button[type="submit"]').prop('disabled', false).removeClass('submit-disabled').html('Load more…');
+            loadMore.find('.loading').addClass('hidden');
+            loadMore.append('<div class="alert alert-danger fade in"><a href="#" class="close" data-dismiss="alert">&times;</a> Could not load more posts. Please try again</div>');
+          }
+        });
+      }
+    }, 500);
+  });
+}
+
 
 window.Hasjob.JobPost = {
   handleStarClick: function (e) {
@@ -95,7 +147,7 @@ window.Hasjob.StickieList = {
     });
     history.replaceState({reloadOnPop: true}, '', window.location.href);
     history.pushState({reloadOnPop: true}, '', searchUrl);
-    window.Hasjob.updateGA();
+    window.Hasjob.Util.updateGA();
   }
 }
 

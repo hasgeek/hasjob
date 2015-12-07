@@ -182,39 +182,14 @@
   {%- endif -%}
 {%- endblock -%}
 
-{%- macro loadmore_script() -%}
-  <script type="text/javascript">
-    $(function() {
-      $("#loadmore").attr('method', 'POST').ajaxForm({
-        dataType: 'html',
-        beforeSubmit: function(formdata, form, options) {
-          form.find('button[type="submit"]').prop('disabled', true).addClass('submit-disabled').html('Loading more… <span class="loading">&nbsp;</span>');
-          return true;
-        },
-        success: function(responseText, statusText, xhr, form) {
-          target = $("#loadmore").replaceWith(responseText.trim());
-        },
-        error: function(context, xhr, status, errMsg) {
-          var form = $("#loadmore");
-          form.find('button[type="submit"]').prop('disabled', false).removeClass('submit-disabled').html('Load more…');
-          form.find('.loading').addClass('hidden');
-          form.append('<div class="alert alert-danger fade in"><a href="#" class="close" data-dismiss="alert">&times;</a> Could not load more posts. Please try again</div>');
-        }
-      });
-      $("#loadmore").appear().on('appear', function(event, element) {
-        element.find('button[type="submit"]').trigger('click');
-      });
-    });
-  </script>
-{%- endmacro -%}
 {%- block footerscripts -%}
   {% from "macros.html" import filters_setup_script %}
   {%- if request.is_xhr and not paginated -%}
     {{ filters_setup_script(job_location_filters, job_type_filters, job_category_filters) }}
   {%- endif %}
   <script type="text/javascript">
-
     {%- if not paginated -%}
+    window.Hasjob.index();
     //For setting the pay slider
     window.Hasjob.PayFilterParameters = {
       'currency': {{ request.args.get('currency') | tojson }},
@@ -283,7 +258,4 @@
       });
     </script>
   {%- endif %}
-  {%- if loadmore -%}
-    {{ loadmore_script() }}
-  {%- endif -%}
 {% endblock %}
