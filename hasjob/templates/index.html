@@ -163,7 +163,7 @@
           <li class="col-xs-12 col-md-3 col-sm-4">
             <span class="stickie special">Sorry, no jobs listed.</span>
           </li>
-        {%- endfor %}
+        {%- endfor -%}
       {%- endif -%}
     {%- if not paginated %}
     </ul>
@@ -173,9 +173,9 @@
       {%- raw %}
       <script id='loadmore-ractive' type='text/ractive'>
         {{#if loadingBatch}}
-          <a id="loadmore-trigger" disabled="disabled" href="{{nextPagePath}}" class="btn btn-default btn-lg" name="startdate">Loading more…<span class="loading">&nbsp;</span></a>
+          <a id="loadmore-trigger" disabled="disabled" href="javascript:void(0);" class="btn btn-default btn-lg" name="startdate">Loading more…<span class="loading">&nbsp;</span></a>
         {{else}}
-          <a id="loadmore-trigger" href="{{nextPagePath}}" class="btn btn-default btn-lg" name="startdate">Load more…</a>
+          <a id="loadmore-trigger" href="javascript:void(0);" class="btn btn-default btn-lg" name="startdate">Load more…</a>
         {{/if}}
         {{#if error}}
           <div class="alert alert-danger fade in"><a href="#" class="close" data-dismiss="alert">&times;</a> Could not load more posts. Please try again</div>
@@ -196,13 +196,25 @@
 {%- endblock -%}
 
 {%- block footerscripts -%}
-  {%- if loadmore and paginated %}
-    <script type="text/javascript">
-      window.Hasjob.Loadmore.update({
-        nextPagePath: '{{request.path + '?' + 'startdate=' + loadmore.isoformat() + 'Z' + '&' + request.query_string if loadmore else False}}'
-      });
+  {%- if loadmore -%}
+    {%- if not paginated -%}
+      <script type="text/javascript">
+        $(function() {
+          window.Hasjob.Loadmore.init({
+            timestamp: '{{loadmore.isoformat()}}Z'
+          });
+        });
+      </script>
+    {%- else -%}
+      <script type="text/javascript">
+        $(function() {
+          window.Hasjob.Loadmore.update({
+            timestamp: '{{loadmore.isoformat()}}Z'
+          });
+        });
     </script>
-  {%- endif %}
+    {%- endif -%}
+  {%- endif -%}
   {%- if not paginated -%}
     {% from "macros.html" import filters_setup_script %}
     {%- if request.is_xhr -%}
@@ -210,9 +222,6 @@
     {%- endif %}
     <script type="text/javascript">
       $(function() {
-        window.Hasjob.Loadmore.init({
-          nextPagePath: '{{request.path + '?' + 'startdate=' + loadmore.isoformat() + 'Z' + '&' + request.query_string if loadmore else False}}'
-        });
         //For setting the pay slider
         window.Hasjob.PayFilterParameters = {
           'currency': {{ request.args.get('currency') | tojson }},

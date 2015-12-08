@@ -6,7 +6,7 @@ Hasjob.Util = {
       Checks if an element with the given ID is present in the viewport.
     */
     var el = document.getElementById(id);
-    if (el == null || el == undefined) return false;
+    if (el === null || el === undefined) return false;
     var boundingRect = el.getBoundingClientRect();
     return boundingRect.top >= 0 && boundingRect.left >= 0 && boundingRect.bottom <= $(window).height() && boundingRect.right <= $(window).width();
   },
@@ -22,45 +22,53 @@ Hasjob.Util = {
       window.ga('send', 'pageview');
     }
   }
-}
+};
 
 window.Hasjob.Loadmore = {
+  urlFor: function(timestamp){
+    var params = window.Hasjob.Filters.paramsToUrl();
+    if (params) {
+      return '/?' + 'startdate=' + timestamp + '&' + params;
+    } else {
+      return '/?' + 'startdate=' + timestamp;
+    }
+  },
   init: function(config){
     var loadmore = this;
 
-    $(function() {
-      loadmore.ractive = new Ractive({
-        el: 'loadmore',
-        template: '#loadmore-ractive',
-        data: {
-          error: false,
-          loadingBatch: false,
-          nextPagePath: config.nextPagePath
-        }
-      });
-
-      var paginatePosts = function(){
-        if (Hasjob.Util.isElementVisible('loadmore') && !loadmore.ractive.get('loadingBatch')){
-          loadmore.ractive.set('loadingBatch', true);
-          $.ajax(loadmore.ractive.get('nextPagePath'), {
-            success: function(data) {
-              // $(data.trim()).insertBefore('#loadmore');
-              console.log(data.trim());
-              $('#stickie-area').append(data.trim());
-              loadmore.ractive.set('loadingBatch', false);
-              loadmore.ractive.set('error', false);
-            },
-            error: function(context, xhr, status, errMsg) {
-              loadmore.ractive.set('error', true);
-            }
-          });
-        }
+    var paginatePosts = function(){
+      if (Hasjob.Util.isElementVisible('loadmore') && !loadmore.ractive.get('loadingBatch')){
+        loadmore.ractive.set('loadingBatch', true);
+        $.ajax(loadmore.urlFor(loadmore.ractive.get('timestamp')), {
+          success: function(data) {
+            console.log(data.trim());
+            $('#stickie-area').append(data.trim());
+            loadmore.ractive.set('loadingBatch', false);
+            loadmore.ractive.set('error', false);
+          },
+          error: function(context, xhr, status, errMsg) {
+            loadmore.ractive.set('error', true);
+            loadmore.ractive.set('loadingBatch', false);
+          }
+        });
       }
-      window.setInterval(paginatePosts, 500);
+    };
+
+    loadmore.ractive = new Ractive({
+      el: 'loadmore',
+      template: '#loadmore-ractive',
+      data: {
+        error: false,
+        loadingBatch: false,
+        timestamp: config.timestamp
+      }
     });
+
+    window.setInterval(paginatePosts, 500);
   },
   update: function(config){
-    this.ractive.set('nextPagePath', config.nextPagePath);
+    var loadmore = this;
+    this.ractive.set('timestamp', config.timestamp);
   }
 }
 
@@ -128,11 +136,7 @@ window.Hasjob.StickieList = {
     // progress indicator
     NProgress.configure({ showSpinner: false });
     NProgress.start();
-    var sortedFilterParams = window.Hasjob.Filters.formatFilterParams($('#js-job-filters').serializeArray());
-    var searchUrl = '/';
-    if (sortedFilterParams.length) {
-      searchUrl = '/' + '?' + $.param(sortedFilterParams);
-    }
+    var searchUrl = '/?' + window.Hasjob.Filters.paramsToUrl();
     $.ajax(searchUrl, {
       method: 'POST',
       headers: {
@@ -166,6 +170,14 @@ window.Hasjob.Filters = {
         selectedEquity: window.Hasjob.Config.selectedEquity
       }
     });
+  },
+  paramsToUrl: function(){
+    var sortedFilterParams = this.formatFilterParams($('#js-job-filters').serializeArray());
+    if (sortedFilterParams.length) {
+      return $.param(sortedFilterParams);
+    } else {
+      return '';
+    }
   },
   init: function(){
     var filters = this;
@@ -287,13 +299,14 @@ window.Hasjob.Filters = {
   },
   formatFilterParams: function(formParams){
     var sortedFilterParams = [];
+    var currencyVal = '';
     for (var fpIndex=0; fpIndex < formParams.length; fpIndex++) {
       // set value to empty string if currency is n/a
       if (formParams[fpIndex].name === 'currency') {
         if (formParams[fpIndex].value.toLowerCase() === 'na') {
           formParams[fpIndex].value = "";
         }
-        var currencyVal = formParams[fpIndex].value;
+        currencyVal = formParams[fpIndex].value;
       }
       // format pmin and pmax based on currency value
       if (formParams[fpIndex].name === 'pmin' || formParams[fpIndex].name === 'pmax') {
@@ -366,7 +379,7 @@ window.Hasjob.Currency.prefix = function(currency){
     'eur': '€',
     'gbp': '£'
   };
-  if (currency == undefined || currency.toLowerCase() == 'na') {
+  if (currency === undefined || currency.toLowerCase() == 'na') {
     return currencyMap['default'];
   } else {
     return currencyMap[currency.toLowerCase()];
