@@ -165,12 +165,25 @@
           </li>
         {%- endfor %}
       {%- endif -%}
-      {%- if loadmore -%}
-        <form id="loadmore" method="GET" data-appear-top-offset="600">
-          <button class="btn btn-default btn-lg" type="submit" name="startdate" value="{{ loadmore.isoformat() }}Z">Load more…</button>
-        </form>
-      {%- endif -%}
+    {%- if not paginated %}
     </ul>
+    {%- endif %}
+    {%- if loadmore and not paginated -%}
+      <div class="row" id='loadmore'>
+      {%- raw %}
+      <script id='loadmore-ractive' type='text/ractive'>
+        {{#if loadingBatch}}
+          <a id="loadmore-trigger" disabled="disabled" href="{{nextPagePath}}" class="btn btn-default btn-lg" name="startdate">Loading more…<span class="loading">&nbsp;</span></a>
+        {{else}}
+          <a id="loadmore-trigger" href="{{nextPagePath}}" class="btn btn-default btn-lg" name="startdate">Load more…</a>
+        {{/if}}
+        {{#if error}}
+          <div class="alert alert-danger fade in"><a href="#" class="close" data-dismiss="alert">&times;</a> Could not load more posts. Please try again</div>
+        {{/if}}
+      </script>
+      {%- endraw %}
+      </div>
+    {%- endif -%}
   {%- endwith %}
   {%- if not showall -%}
     <div class="flash info">
@@ -183,36 +196,44 @@
 {%- endblock -%}
 
 {%- block footerscripts -%}
-  {% from "macros.html" import filters_setup_script %}
-  {%- if request.is_xhr and not paginated -%}
-    {{ filters_setup_script(job_location_filters, job_type_filters, job_category_filters) }}
-  {%- endif %}
-  <script type="text/javascript">
-    {%- if not paginated -%}
-    window.Hasjob.index();
-    //For setting the pay slider
-    window.Hasjob.PayFilterParameters = {
-      'currency': {{ request.args.get('currency') | tojson }},
-      'pmin': {{ request.args.get('pmin') | tojson }},
-      'pmax': {{ request.args.get('pmax') | tojson }}
-    };
-    {%- endif %}
-
-    $(function() {
-      $('textarea').autosize();
-      $("#newpost_details").hide().removeClass('jshidden');
-      $("#newpost_headline").focus(function() {
-        $("#newpost_details").slideDown();
-      }).keypress(function(event) {
-        if(event.which == '13') {
-          $(this).closest("form").submit();
-          return false;
-        }
-      }).blur(function() {
-        $(this).val($(this).val().replace(/(\r\n|\n|\r)/gm," ").replace(/\s+/g," "));
+  {%- if loadmore and paginated %}
+    <script type="text/javascript">
+      window.Hasjob.Loadmore.update({
+        nextPagePath: '{{request.path + '?' + 'startdate=' + loadmore.isoformat() + 'Z' + '&' + request.query_string if loadmore else False}}'
       });
-    });
-  </script>
+    </script>
+  {%- endif %}
+  {%- if not paginated -%}
+    {% from "macros.html" import filters_setup_script %}
+    {%- if request.is_xhr -%}
+      {{ filters_setup_script(job_location_filters, job_type_filters, job_category_filters) }}
+    {%- endif %}
+    <script type="text/javascript">
+      $(function() {
+        window.Hasjob.Loadmore.init({
+          nextPagePath: '{{request.path + '?' + 'startdate=' + loadmore.isoformat() + 'Z' + '&' + request.query_string if loadmore else False}}'
+        });
+        //For setting the pay slider
+        window.Hasjob.PayFilterParameters = {
+          'currency': {{ request.args.get('currency') | tojson }},
+          'pmin': {{ request.args.get('pmin') | tojson }},
+          'pmax': {{ request.args.get('pmax') | tojson }}
+        };
+        $('textarea').autosize();
+        $("#newpost_details").hide().removeClass('jshidden');
+        $("#newpost_headline").focus(function() {
+          $("#newpost_details").slideDown();
+        }).keypress(function(event) {
+          if(event.which == '13') {
+            $(this).closest("form").submit();
+            return false;
+          }
+        }).blur(function() {
+          $(this).val($(this).val().replace(/(\r\n|\n|\r)/gm," ").replace(/\s+/g," "));
+        });
+      });
+    </script>
+  {%- endif %}
   {%- if pay_graph_data and not paginated %}
     <script type="text/javascript">
       c3.generate({

@@ -24,46 +24,45 @@ Hasjob.Util = {
   }
 }
 
-window.Hasjob.index = function(){
-  window.Hasjob.Config.Index = {};
-  $(function() {
-    var loadingBatch;
-    var isLoading = function(){
-      return typeof loadingBatch !== 'undefined' && loadingBatch;
-    };
-    var sortedFilterParams = window.Hasjob.Filters.formatFilterParams($('#js-job-filters').serializeArray());
-    var searchUrl = '/';
-    if (sortedFilterParams.length) {
-      searchUrl = '/' + '?' + $.param(sortedFilterParams);
-    }
-    window.setInterval(function(){
-      var loadMore = $("#loadmore");
-      console.log(loadingBatch);
-      if (Hasjob.Util.isElementVisible('loadmore') && (typeof loadingBatch === 'undefined' || !isLoading())){
-        loadingBatch = true;
-        NProgress.configure({ showSpinner: false });
-        NProgress.start();
-        loadMore.find('button[type="submit"]').prop('disabled', true).addClass('submit-disabled').html('Loading more… <span class="loading">&nbsp;</span>');
+window.Hasjob.Loadmore = {
+  init: function(config){
+    var loadmore = this;
 
-        $.ajax(searchUrl + '&' + 'startdate=' + loadMore.find('button').val(), {
-          method: 'POST',
-          // data: {'startdate': loadMore.find('button').val()},
-          success: function(data) {
-            loadMore.replaceWith(data.trim());
-            NProgress.done();
-            loadingBatch = false;
-          },
-          error: function(context, xhr, status, errMsg) {
-            loadMore.find('button[type="submit"]').prop('disabled', false).removeClass('submit-disabled').html('Load more…');
-            loadMore.find('.loading').addClass('hidden');
-            loadMore.append('<div class="alert alert-danger fade in"><a href="#" class="close" data-dismiss="alert">&times;</a> Could not load more posts. Please try again</div>');
-          }
-        });
+    $(function() {
+      loadmore.ractive = new Ractive({
+        el: 'loadmore',
+        template: '#loadmore-ractive',
+        data: {
+          error: false,
+          loadingBatch: false,
+          nextPagePath: config.nextPagePath
+        }
+      });
+
+      var paginatePosts = function(){
+        if (Hasjob.Util.isElementVisible('loadmore') && !loadmore.ractive.get('loadingBatch')){
+          loadmore.ractive.set('loadingBatch', true);
+          $.ajax(loadmore.ractive.get('nextPagePath'), {
+            success: function(data) {
+              // $(data.trim()).insertBefore('#loadmore');
+              console.log(data.trim());
+              $('#stickie-area').append(data.trim());
+              loadmore.ractive.set('loadingBatch', false);
+              loadmore.ractive.set('error', false);
+            },
+            error: function(context, xhr, status, errMsg) {
+              loadmore.ractive.set('error', true);
+            }
+          });
+        }
       }
-    }, 500);
-  });
+      window.setInterval(paginatePosts, 500);
+    });
+  },
+  update: function(config){
+    this.ractive.set('nextPagePath', config.nextPagePath);
+  }
 }
-
 
 window.Hasjob.JobPost = {
   handleStarClick: function (e) {
