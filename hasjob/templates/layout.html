@@ -40,7 +40,9 @@
     }
     // Use Hasjob.Config for server-generated responses
     if (typeof window.Hasjob.Config === 'undefined') {
-      window.Hasjob.Config = {}
+      window.Hasjob.Config = {
+        baseURL: "/"
+      }
     }
   </script>
   {%- if not paginated -%}

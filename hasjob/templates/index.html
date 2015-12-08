@@ -135,7 +135,7 @@
           </li>
         {%- endfor -%}
       {%- endif -%}
-      {%- if grouped %}
+      {%- if grouped -%}
         {%- for grouping, group in grouped.items() -%}{%- with pinned, post, is_bgroup=group[0] -%}
           {%- if group|length == 1 -%}
             <li class="col-xs-12 col-md-3 col-sm-4">
@@ -152,7 +152,7 @@
                 {{ stickie(post, none, false, groupedunder=true, dataurl=post.url_for(b=is_bgroup), show_viewcounts=is_siteadmin or guser and guser.flags.is_employer_month, show_pay=is_siteadmin, starred=guser and post.id in gstarred_ids, is_bgroup=is_bgroup) }}
               {%- endfor -%}
             </li>
-          {%- endif %}
+          {%- endif -%}
         {%- endwith -%}{%- endfor -%}
       {%- else %}
         {%- for pinned, post, is_bgroup in pinsandposts -%}
@@ -165,20 +165,22 @@
           </li>
         {%- endfor -%}
       {%- endif -%}
-    {%- if not paginated %}
+    {%- if not paginated -%}
     </ul>
-    {%- endif %}
+    {%- endif -%}
     {%- if loadmore and not paginated -%}
       <div class="row" id='loadmore'>
       {%- raw %}
       <script id='loadmore-ractive' type='text/ractive'>
-        {{#if loadingBatch}}
-          <a id="loadmore-trigger" disabled="disabled" href="javascript:void(0);" class="btn btn-default btn-lg" name="startdate">Loading more…<span class="loading">&nbsp;</span></a>
-        {{else}}
-          <a id="loadmore-trigger" href="javascript:void(0);" class="btn btn-default btn-lg" name="startdate">Load more…</a>
-        {{/if}}
-        {{#if error}}
-          <div class="alert alert-danger fade in"><a href="#" class="close" data-dismiss="alert">&times;</a> Could not load more posts. Please try again</div>
+        {{#if paginate}}
+          {{#if loading}}
+            <a disabled="disabled" href="javascript:void(0);" class="btn btn-default btn-lg" name="startdate">Loading more…<span class="loading">&nbsp;</span></a>
+          {{else}}
+            <a href="javascript:void(0);" class="btn btn-default btn-lg" name="startdate">Load more…</a>
+          {{/if}}
+          {{#if error}}
+            <div class="alert alert-danger fade in"><a href="#" class="close" data-dismiss="alert">&times;</a> Could not load more posts. Please try again.</div>
+          {{/if}}
         {{/if}}
       </script>
       {%- endraw %}
@@ -196,25 +198,27 @@
 {%- endblock -%}
 
 {%- block footerscripts -%}
-  {%- if loadmore -%}
-    {%- if not paginated -%}
-      <script type="text/javascript">
-        $(function() {
-          window.Hasjob.Loadmore.init({
-            timestamp: '{{loadmore.isoformat()}}Z'
+  <script type="text/javascript">
+    $(function(){
+      {%- if loadmore -%}
+        {%- if not paginated -%}
+          window.Hasjob.StickieList.init({
+            timestamp: '{{loadmore.isoformat()}}Z',
+            paginate: true
           });
-        });
-      </script>
-    {%- else -%}
-      <script type="text/javascript">
-        $(function() {
-          window.Hasjob.Loadmore.update({
-            timestamp: '{{loadmore.isoformat()}}Z'
+        {%- else -%}
+          window.Hasjob.StickieList.paginate({
+            timestamp: '{{loadmore.isoformat()}}Z',
+            paginate: true
           });
-        });
-    </script>
-    {%- endif -%}
-  {%- endif -%}
+        {%- endif -%}
+      {%- else -%}
+          window.Hasjob.StickieList.init({
+            paginate: false
+          });
+      {%- endif -%}
+    });
+  </script>
   {%- if not paginated -%}
     {% from "macros.html" import filters_setup_script %}
     {%- if request.is_xhr -%}

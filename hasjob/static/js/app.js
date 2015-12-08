@@ -24,54 +24,6 @@ Hasjob.Util = {
   }
 };
 
-window.Hasjob.Loadmore = {
-  urlFor: function(timestamp){
-    var params = window.Hasjob.Filters.paramsToUrl();
-    if (params) {
-      return '/?' + 'startdate=' + timestamp + '&' + params;
-    } else {
-      return '/?' + 'startdate=' + timestamp;
-    }
-  },
-  init: function(config){
-    var loadmore = this;
-
-    var paginatePosts = function(){
-      if (Hasjob.Util.isElementVisible('loadmore') && !loadmore.ractive.get('loadingBatch')){
-        loadmore.ractive.set('loadingBatch', true);
-        $.ajax(loadmore.urlFor(loadmore.ractive.get('timestamp')), {
-          success: function(data) {
-            console.log(data.trim());
-            $('#stickie-area').append(data.trim());
-            loadmore.ractive.set('loadingBatch', false);
-            loadmore.ractive.set('error', false);
-          },
-          error: function(context, xhr, status, errMsg) {
-            loadmore.ractive.set('error', true);
-            loadmore.ractive.set('loadingBatch', false);
-          }
-        });
-      }
-    };
-
-    loadmore.ractive = new Ractive({
-      el: 'loadmore',
-      template: '#loadmore-ractive',
-      data: {
-        error: false,
-        loadingBatch: false,
-        timestamp: config.timestamp
-      }
-    });
-
-    window.setInterval(paginatePosts, 500);
-  },
-  update: function(config){
-    var loadmore = this;
-    this.ractive.set('timestamp', config.timestamp);
-  }
-}
-
 window.Hasjob.JobPost = {
   handleStarClick: function (e) {
     var starlink = $(this);
@@ -129,14 +81,61 @@ window.Hasjob.JobPost = {
 };
 
 window.Hasjob.StickieList = {
-  init: function() {
-    var stickieList = this;
+  urlFor: function(timestamp){
+    var params = window.Hasjob.Filters.toParam();
+    var url = window.Hasjob.Config.baseURL + '?' + 'startdate=' + timestamp;
+    if (params !== '') {
+      return url + '&' + params;
+    }
+    return url;
+  },
+  init: function(config){
+    var stickielist = this;
+
+    if (config.paginate) {
+      stickielist.loadmore = new Ractive({
+        el: 'loadmore',
+        template: '#loadmore-ractive',
+        data: {
+          error: false,
+          loading: false,
+          timestamp: config.timestamp,
+          paginate: config.paginate
+        }
+      });
+
+      var shouldPaginate = function(){
+        return stickielist.loadmore.get('paginate') && Hasjob.Util.isElementVisible('loadmore') && !stickielist.loadmore.get('loading');
+      };
+
+      var paginatePosts = function(){
+        if (shouldPaginate()){
+          stickielist.loadmore.set('loading', true);
+          $.ajax(stickielist.urlFor(stickielist.loadmore.get('timestamp')), {
+            success: function(data) {
+              $('ul#stickie-area').append(data.trim());
+              stickielist.loadmore.set('loading', false);
+              stickielist.loadmore.set('error', false);
+            },
+            error: function(context, xhr, status, errMsg) {
+              stickielist.loadmore.set('error', true);
+              stickielist.loadmore.set('loading', false);
+            }
+          });
+        }
+      };
+      window.setInterval(paginatePosts, 500);
+    }
+  },
+  paginate: function(config){
+    this.loadmore.set('timestamp', config.timestamp);
+    this.loadmore.set('paginate', config.paginate);
   },
   refresh: function(){
     // progress indicator
     NProgress.configure({ showSpinner: false });
     NProgress.start();
-    var searchUrl = '/?' + window.Hasjob.Filters.paramsToUrl();
+    var searchUrl = window.Hasjob.Config.baseURL + '?' + window.Hasjob.Filters.toParam();
     $.ajax(searchUrl, {
       method: 'POST',
       headers: {
@@ -152,11 +151,22 @@ window.Hasjob.StickieList = {
     history.pushState({reloadOnPop: true}, '', searchUrl);
     window.Hasjob.Util.updateGA();
   }
-}
+};
 
 window.Hasjob.Filters = {
-  render: function(){
-    this.ractive = new Ractive({
+  toParam: function(){
+    var sortedFilterParams = this.formatFilterParams($('#js-job-filters').serializeArray());
+    if (sortedFilterParams.length) {
+      return $.param(sortedFilterParams);
+    } else {
+      return '';
+    }
+  },
+  init: function(){
+    var filters = this;
+    var keywordTimeout;
+
+    filters.ractive = new Ractive({
       el: 'job-filters-ractive-template',
       template: '#filters-ractive',
       data: {
@@ -170,20 +180,7 @@ window.Hasjob.Filters = {
         selectedEquity: window.Hasjob.Config.selectedEquity
       }
     });
-  },
-  paramsToUrl: function(){
-    var sortedFilterParams = this.formatFilterParams($('#js-job-filters').serializeArray());
-    if (sortedFilterParams.length) {
-      return $.param(sortedFilterParams);
-    } else {
-      return '';
-    }
-  },
-  init: function(){
-    var filters = this;
-    var keywordTimeout;
-    this.render();
-    this.filterDropdownClosed = true;
+    filters.filterDropdownClosed = true;
 
     $('.hg-site-nav-toggle').find('i').removeClass('fa-bars').addClass('fa-search');
     $('#hg-sitenav').on('shown.bs.collapse', function() {
@@ -339,7 +336,7 @@ window.Hasjob.Filters = {
       $('#job-filters-category').multiselect('rebuild');
     });
   }
-}
+};
 
 window.Hasjob.PaySlider = function(options){
   this.selector = options.selector;
@@ -414,7 +411,7 @@ window.Hasjob.Currency.wNumbFormat = function(currency) {
       thousand: thousand,
       prefix: prefix,
       edit: encoder
-    })
+    });
   }
   return format;
 };
@@ -481,7 +478,6 @@ $(function() {
   });
 
   window.Hasjob.Filters.init();
-  window.Hasjob.StickieList.init();
 
   var scrollheight = $('#hgnav').height() - $('#hg-sitenav').height();
   $(window).scroll(function() {
