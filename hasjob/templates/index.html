@@ -178,14 +178,15 @@
           <div class="row" id='loadmore'>
             {%- raw %}
             <script id='loadmore-ractive' type='text/ractive'>
-              {{#if url !== ''}}
-                {{#if loading}}
-                  <a disabled="disabled" href="javascript:void(0);" class="btn btn-default btn-lg" name="startdate">Loading more…<span class="loading">&nbsp;</span></a>
-                {{else}}
-                  <a href="javascript:void(0);" class="btn btn-default btn-lg" name="startdate">Load more…</a>
-                {{/if}}
-                {{#if error}}
-                  <div class="alert alert-danger fade in"><a href="#" class="close" data-dismiss="alert">&times;</a> Could not load more posts. Please try again.</div>
+              {{#if error}}
+                <div class="alert alert-danger fade in"><a href="#" class="close" data-dismiss="alert">&times;</a> Could not load more posts. Please try again.</div>
+              {{ else }}
+                {{#if url !== ''}}
+                  {{#if loading}}
+                    <a disabled="disabled" href="javascript:void(0);" class="btn btn-default btn-lg" name="startdate">Loading more…<span class="loading">&nbsp;</span></a>
+                  {{else}}
+                    <a href="javascript:void(0);" class="btn btn-default btn-lg" name="startdate">Load more…</a>
+                  {{/if}}
                 {{/if}}
               {{/if}}
             </script>
