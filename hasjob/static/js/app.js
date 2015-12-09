@@ -86,45 +86,55 @@ window.Hasjob.StickieList = {
   },
   loadmore: function(config){
     var stickielist = this;
-    if (!Hasjob.StickieList.hasOwnProperty('loadmoreRactive')) {
-      stickielist.loadmoreRactive = new Ractive({
-        el: 'loadmore',
-        template: '#loadmore-ractive',
-        data: {
-          error: false,
-          loading: false,
-          url: config.url
-        }
-      });
-
-      var shouldLoad = function(){
-        return (
-          stickielist.loadmoreRactive.get('url') !== '' &&
-          Hasjob.Util.isElementVisible('loadmore') &&
-          !stickielist.loadmoreRactive.get('loading')
-        );
-      };
-
-      var load = function(){
-        if (shouldLoad()){
-          stickielist.loadmoreRactive.set('loading', true);
-          $.ajax(stickielist.loadmoreRactive.get('url'), {
-            success: function(data) {
-              $('ul#stickie-area').append(data.trim());
-              stickielist.loadmoreRactive.set('loading', false);
-              stickielist.loadmoreRactive.set('error', false);
-            },
-            error: function(context, xhr, status, errMsg) {
-              stickielist.loadmoreRactive.set('error', true);
-              stickielist.loadmoreRactive.set('loading', false);
-            }
-          });
-        }
-      };
-      window.setInterval(load, 500);
+    if (!config.enable) {
+      // Hide template
+      this.loadmoreRactive.set('url', '');
     } else {
-      this.loadmoreRactive.set('url', config.url);
+      if (!config.paginated) {
+        // Initial render
+        stickielist.loadmoreRactive = new Ractive({
+          el: 'loadmore',
+          template: '#loadmore-ractive',
+          data: {
+            error: false,
+            loading: false,
+            url: config.url
+          }
+        });
+
+        var shouldLoad = function(){
+          return (
+            stickielist.loadmoreRactive.get('url') !== '' &&
+            Hasjob.Util.isElementVisible('loadmore') &&
+            !stickielist.loadmoreRactive.get('loading')
+          );
+        };
+
+        var load = function(){
+          if (shouldLoad()){
+            stickielist.loadmoreRactive.set('loading', true);
+            $.ajax(stickielist.loadmoreRactive.get('url'), {
+              success: function(data) {
+                $('ul#stickie-area').append(data.trim());
+                stickielist.loadmoreRactive.set('loading', false);
+                stickielist.loadmoreRactive.set('error', false);
+              },
+              error: function(context, xhr, status, errMsg) {
+                stickielist.loadmoreRactive.set('error', true);
+                stickielist.loadmoreRactive.set('loading', false);
+              }
+            });
+          }
+        };
+        window.setInterval(load, 500);
+      } else {
+        // Update rendered template
+        this.loadmoreRactive.set('url', config.url);
+      }
     }
+  },
+  update: function(config){
+    this.loadmoreRactive.set('url', config.url);
   },
   refresh: function(){
     // progress indicator

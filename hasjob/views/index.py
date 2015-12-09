@@ -338,14 +338,17 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
     elif pinsandposts:
         g.impressions = {post.id: (pinflag, post.id, is_bgroup) for pinflag, post, is_bgroup in pinsandposts}
 
-    loadmore = loadmore.isoformat() + 'Z' if loadmore else None
+    query_params = dict(request.args)
+    if loadmore:
+        query_params.update({'startdate': loadmore.isoformat() + 'Z'})
+
     return dict(
         pinsandposts=pinsandposts, grouped=grouped, now=now,
         newlimit=newlimit, jobtype=type, jobcategory=category, title=title,
         md5sum=md5sum, domain=domain, employer_name=employer_name,
         location=location, showall=showall, tag=tag, is_index=is_index,
         header_campaign=header_campaign, loadmore=loadmore,
-        search_domains=search_domains,
+        search_domains=search_domains, query_params=query_params,
         is_siteadmin=lastuser.has_permission('siteadmin'),
         pay_graph_data=pay_graph_data, paginated=JobPost.is_paginated(request))
 

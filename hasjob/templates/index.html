@@ -171,7 +171,7 @@
     {%- if loadmore -%}
         <noscript>
           <div class="row text-center">
-            <a href="{{url_for('index', **format_args(loadmore)) | safe}}" class="btn btn-default btn-lg" name="startdate">Load more…</a>
+            <a href="{{url_for('index', **query_params) | safe}}" class="btn btn-default btn-lg" name="startdate">Load more…</a>
           </div>
         </noscript>
         {%- if not paginated -%}
@@ -207,15 +207,18 @@
 {%- block footerscripts -%}
   <script type="text/javascript">
     $(function(){
-      {%- if loadmore -%}
+      var loadmore = {{loadmore | tojson}};
+      var paginated = {{paginated | tojson}};
+      var loadmoreURL = "{{url_for('index', **query_params) | safe}}";
+      if (loadmore){
         window.Hasjob.StickieList.loadmore({
-          url: "{{url_for('index', **format_args(loadmore)) | safe}}"
+          url: loadmoreURL,
+          enable: true,
+          paginated: paginated
         });
-      {%- else -%}
-        window.Hasjob.StickieList.loadmore({
-          url: ''
-        });
-      {%- endif -%}
+      } else if (paginated) {
+        window.Hasjob.StickieList.loadmore({enable: false});
+      }
     });
   </script>
   {%- if not paginated -%}

@@ -719,14 +719,3 @@ def inject_filter_options():
     return dict(job_location_filters=filter_locations(filters),
                 job_type_filters=filter_types(basequery, board=g.board, filters=filters),
                 job_category_filters=filter_categories(basequery, board=g.board, filters=filters))
-
-
-@app.context_processor
-def format_args():
-    def inner(loadmore):
-        if not loadmore:
-            return loadmore
-        args = dict(request.args)
-        args.update({'startdate': loadmore})
-        return args
-    return dict(format_args=inner)
