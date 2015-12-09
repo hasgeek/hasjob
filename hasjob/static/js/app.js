@@ -36,7 +36,6 @@ window.Hasjob.JobPost = {
         }
       }
     });
-    e.preventDefault();
     return false;
   },
   handleGroupClick: function(){
@@ -64,7 +63,6 @@ window.Hasjob.JobPost = {
       }
 
       parent.removeChild(group);
-      $(".pstar").off().click(window.Hasjob.JobPost.handleStarClick);
     });
   }
 };
@@ -432,7 +430,7 @@ $(function() {
   });
 
   window.Hasjob.JobPost.handleGroupClick();
-  $('.pstar').off().click(window.Hasjob.JobPost.handleStarClick);
+  $('#main-content').on('click', '.pstar', window.Hasjob.JobPost.handleStarClick);
 
   var getCurrencyVal = function() {
     return $("input[type='radio'][name='currency']:checked").val();

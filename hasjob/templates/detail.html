@@ -420,9 +420,10 @@
   });
   $(function() {
     $('.sidebar-pstar').click(function(e) {
-      $('.sidebar-pstar .pstar').click();
+      if(e.target == this || $(e.target).is('.pstar-caption')) {
+        $(this).find('.pstar').trigger('click');
+      }
       e.preventDefault();
-      return false;
     });
     $('span[data-toggle="tooltip"]').tooltip();
     $(".popup-box").hide();
