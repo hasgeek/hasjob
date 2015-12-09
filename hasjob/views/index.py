@@ -338,6 +338,7 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
     elif pinsandposts:
         g.impressions = {post.id: (pinflag, post.id, is_bgroup) for pinflag, post, is_bgroup in pinsandposts}
 
+    loadmore = loadmore.isoformat() + 'Z' if loadmore else None
     return dict(
         pinsandposts=pinsandposts, grouped=grouped, now=now,
         newlimit=newlimit, jobtype=type, jobcategory=category, title=title,

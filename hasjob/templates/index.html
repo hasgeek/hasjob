@@ -168,23 +168,30 @@
     {%- if not paginated -%}
     </ul>
     {%- endif -%}
-    {%- if loadmore and not paginated -%}
-      <div class="row" id='loadmore'>
-      {%- raw %}
-      <script id='loadmore-ractive' type='text/ractive'>
-        {{#if paginate}}
-          {{#if loading}}
-            <a disabled="disabled" href="javascript:void(0);" class="btn btn-default btn-lg" name="startdate">Loading more…<span class="loading">&nbsp;</span></a>
-          {{else}}
-            <a href="javascript:void(0);" class="btn btn-default btn-lg" name="startdate">Load more…</a>
-          {{/if}}
-          {{#if error}}
-            <div class="alert alert-danger fade in"><a href="#" class="close" data-dismiss="alert">&times;</a> Could not load more posts. Please try again.</div>
-          {{/if}}
-        {{/if}}
-      </script>
-      {%- endraw %}
-      </div>
+    {%- if loadmore -%}
+        <noscript>
+          <div class="row text-center">
+            <a href="{{url_for('index', **format_args(loadmore)) | safe}}" class="btn btn-default btn-lg" name="startdate">Load more…</a>
+          </div>
+        </noscript>
+        {%- if not paginated -%}
+          <div class="row" id='loadmore'>
+            {%- raw %}
+            <script id='loadmore-ractive' type='text/ractive'>
+              {{#if url !== ''}}
+                {{#if loading}}
+                  <a disabled="disabled" href="javascript:void(0);" class="btn btn-default btn-lg" name="startdate">Loading more…<span class="loading">&nbsp;</span></a>
+                {{else}}
+                  <a href="javascript:void(0);" class="btn btn-default btn-lg" name="startdate">Load more…</a>
+                {{/if}}
+                {{#if error}}
+                  <div class="alert alert-danger fade in"><a href="#" class="close" data-dismiss="alert">&times;</a> Could not load more posts. Please try again.</div>
+                {{/if}}
+              {{/if}}
+            </script>
+            {%- endraw %}
+          </div>
+        {%- endif -%}
     {%- endif -%}
   {%- endwith %}
   {%- if not showall -%}
@@ -201,21 +208,13 @@
   <script type="text/javascript">
     $(function(){
       {%- if loadmore -%}
-        {%- if not paginated -%}
-          window.Hasjob.StickieList.init({
-            timestamp: '{{loadmore.isoformat()}}Z',
-            paginate: true
-          });
-        {%- else -%}
-          window.Hasjob.StickieList.paginate({
-            timestamp: '{{loadmore.isoformat()}}Z',
-            paginate: true
-          });
-        {%- endif -%}
+        window.Hasjob.StickieList.loadmore({
+          url: "{{url_for('index', **format_args(loadmore)) | safe}}"
+        });
       {%- else -%}
-          window.Hasjob.StickieList.init({
-            paginate: false
-          });
+        window.Hasjob.StickieList.loadmore({
+          url: ''
+        });
       {%- endif -%}
     });
   </script>

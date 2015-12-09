@@ -81,55 +81,50 @@ window.Hasjob.JobPost = {
 };
 
 window.Hasjob.StickieList = {
-  urlFor: function(timestamp){
-    var params = window.Hasjob.Filters.toParam();
-    var url = window.Hasjob.Config.baseURL + '?' + 'startdate=' + timestamp;
-    if (params !== '') {
-      return url + '&' + params;
-    }
-    return url;
-  },
   init: function(config){
     var stickielist = this;
-
-    if (config.paginate) {
-      stickielist.loadmore = new Ractive({
+  },
+  loadmore: function(config){
+    var stickielist = this;
+    if (!Hasjob.StickieList.hasOwnProperty('loadmoreRactive')) {
+      stickielist.loadmoreRactive = new Ractive({
         el: 'loadmore',
         template: '#loadmore-ractive',
         data: {
           error: false,
           loading: false,
-          timestamp: config.timestamp,
-          paginate: config.paginate
+          url: config.url
         }
       });
 
-      var shouldPaginate = function(){
-        return stickielist.loadmore.get('paginate') && Hasjob.Util.isElementVisible('loadmore') && !stickielist.loadmore.get('loading');
+      var shouldLoad = function(){
+        return (
+          stickielist.loadmoreRactive.get('url') !== '' &&
+          Hasjob.Util.isElementVisible('loadmore') &&
+          !stickielist.loadmoreRactive.get('loading')
+        );
       };
 
-      var paginatePosts = function(){
-        if (shouldPaginate()){
-          stickielist.loadmore.set('loading', true);
-          $.ajax(stickielist.urlFor(stickielist.loadmore.get('timestamp')), {
+      var load = function(){
+        if (shouldLoad()){
+          stickielist.loadmoreRactive.set('loading', true);
+          $.ajax(stickielist.loadmoreRactive.get('url'), {
             success: function(data) {
               $('ul#stickie-area').append(data.trim());
-              stickielist.loadmore.set('loading', false);
-              stickielist.loadmore.set('error', false);
+              stickielist.loadmoreRactive.set('loading', false);
+              stickielist.loadmoreRactive.set('error', false);
             },
             error: function(context, xhr, status, errMsg) {
-              stickielist.loadmore.set('error', true);
-              stickielist.loadmore.set('loading', false);
+              stickielist.loadmoreRactive.set('error', true);
+              stickielist.loadmoreRactive.set('loading', false);
             }
           });
         }
       };
-      window.setInterval(paginatePosts, 500);
+      window.setInterval(load, 500);
+    } else {
+      this.loadmoreRactive.set('url', config.url);
     }
-  },
-  paginate: function(config){
-    this.loadmore.set('timestamp', config.timestamp);
-    this.loadmore.set('paginate', config.paginate);
   },
   refresh: function(){
     // progress indicator
