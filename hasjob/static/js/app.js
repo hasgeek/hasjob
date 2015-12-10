@@ -81,7 +81,7 @@ window.Hasjob.JobPost = {
 };
 
 window.Hasjob.StickieList = {
-  init: function(config){
+  init: function(){
     var stickielist = this;
   },
   loadmore: function(config){
@@ -132,9 +132,6 @@ window.Hasjob.StickieList = {
         this.loadmoreRactive.set('url', config.url);
       }
     }
-  },
-  update: function(config){
-    this.loadmoreRactive.set('url', config.url);
   },
   refresh: function(){
     // progress indicator

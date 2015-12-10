@@ -99,7 +99,6 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
         is_index = True
     else:
         is_index = False
-
     now = datetime.utcnow()
     if basequery is None and not (g.user or g.kiosk or (g.board and not g.board.require_login)):
         showall = False
@@ -338,7 +337,7 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
     elif pinsandposts:
         g.impressions = {post.id: (pinflag, post.id, is_bgroup) for pinflag, post, is_bgroup in pinsandposts}
 
-    query_params = dict(request.args)
+    query_params = request.args.to_dict(flat=False)
     if loadmore:
         query_params.update({'startdate': loadmore.isoformat() + 'Z'})
 
