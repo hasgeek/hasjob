@@ -1,15 +1,6 @@
 //window.Hasjob initialized in layout.html
 
 Hasjob.Util = {
-  isElementVisible: function(id) {
-    /*
-      Checks if an element with the given ID is present in the viewport.
-    */
-    var el = document.getElementById(id);
-    if (el === null || el === undefined) return false;
-    var boundingRect = el.getBoundingClientRect();
-    return boundingRect.top >= 0 && boundingRect.left >= 0 && boundingRect.bottom <= $(window).height() && boundingRect.right <= $(window).width();
-  },
   updateGA: function(){
     /*
       Resets the path in the tracker object and updates GA with the current path.
@@ -86,9 +77,36 @@ window.Hasjob.StickieList = {
   },
   loadmore: function(config){
     var stickielist = this;
+
+    var shouldLoad = function(){
+      return (
+        stickielist.loadmoreRactive.get('enable') &&
+        !stickielist.loadmoreRactive.get('loading')
+      );
+    };
+
+    var load = function(){
+      if (shouldLoad()){
+        stickielist.loadmoreRactive.set('loading', true);
+        $.ajax(stickielist.loadmoreRactive.get('url'), {
+          success: function(data) {
+            $('ul#stickie-area').append(data.trim());
+            stickielist.loadmoreRactive.set('loading', false);
+            stickielist.loadmoreRactive.set('error', false);
+          },
+          error: function() {
+            stickielist.loadmoreRactive.set('error', true);
+            stickielist.loadmoreRactive.set('loading', false);
+            // window.clearInterval(stickielist.loader);
+          }
+        });
+      }
+    };
+
     if (!config.enable) {
       // Hide template
-      this.loadmoreRactive.set('url', '');
+      this.loadmoreRactive.set('enable', config.enable);
+      // window.clearInterval(stickielist.loader);
     } else {
       if (!config.paginated) {
         // Initial render
@@ -98,35 +116,18 @@ window.Hasjob.StickieList = {
           data: {
             error: false,
             loading: false,
-            url: config.url
+            url: config.url,
+            enable: config.enable
           }
         });
 
-        var shouldLoad = function(){
-          return (
-            stickielist.loadmoreRactive.get('url') !== '' &&
-            Hasjob.Util.isElementVisible('loadmore') &&
-            !stickielist.loadmoreRactive.get('loading')
-          );
-        };
+        stickielist.loadmoreRactive.on( 'forceload', function ( event ) {
+          load();
+        });
 
-        var load = function(){
-          if (shouldLoad()){
-            stickielist.loadmoreRactive.set('loading', true);
-            $.ajax(stickielist.loadmoreRactive.get('url'), {
-              success: function(data) {
-                $('ul#stickie-area').append(data.trim());
-                stickielist.loadmoreRactive.set('loading', false);
-                stickielist.loadmoreRactive.set('error', false);
-              },
-              error: function(context, xhr, status, errMsg) {
-                stickielist.loadmoreRactive.set('error', true);
-                stickielist.loadmoreRactive.set('loading', false);
-              }
-            });
-          }
-        };
-        window.setInterval(load, 500);
+        $("#loadmore").appear().on('appear', function(event, element) {
+          load();
+        });
       } else {
         // Update rendered template
         this.loadmoreRactive.set('url', config.url);
