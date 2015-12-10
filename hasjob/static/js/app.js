@@ -138,7 +138,11 @@ window.Hasjob.StickieList = {
     // progress indicator
     NProgress.configure({ showSpinner: false });
     NProgress.start();
-    var searchUrl = window.Hasjob.Config.baseURL + '?' + window.Hasjob.Filters.toParam();
+    var filterParams = window.Hasjob.Filters.toParam();
+    var searchUrl = window.Hasjob.Config.baseURL;
+    if (filterParams.length) {
+      var searchUrl = window.Hasjob.Config.baseURL + '?' + window.Hasjob.Filters.toParam();
+    }
     $.ajax(searchUrl, {
       method: 'POST',
       headers: {
