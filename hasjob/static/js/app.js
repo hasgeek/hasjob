@@ -97,7 +97,6 @@ window.Hasjob.StickieList = {
           error: function() {
             stickielist.loadmoreRactive.set('error', true);
             stickielist.loadmoreRactive.set('loading', false);
-            // window.clearInterval(stickielist.loader);
           }
         });
       }
@@ -106,7 +105,6 @@ window.Hasjob.StickieList = {
     if (!config.enable) {
       // Hide template
       this.loadmoreRactive.set('enable', config.enable);
-      // window.clearInterval(stickielist.loader);
     } else {
       if (!config.paginated) {
         // Initial render
