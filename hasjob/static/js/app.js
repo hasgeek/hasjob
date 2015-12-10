@@ -119,7 +119,7 @@ window.Hasjob.StickieList = {
           }
         });
 
-        stickielist.loadmoreRactive.on( 'forceload', function ( event ) {
+        stickielist.loadmoreRactive.on('forceload', function(event) {
           load();
         });
 
