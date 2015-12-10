@@ -421,7 +421,7 @@
   $(function() {
     $('.sidebar-pstar').click(function(e) {
       if(e.target == this || $(e.target).is('.pstar-caption')) {
-        $(this).find('.pstar').trigger('click');
+        window.Hasjob.JobPost.handleStarClick.call(this.getElementsByClassName('pstar')[0]);
       }
       e.preventDefault();
     });
