@@ -99,7 +99,6 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
         is_index = True
     else:
         is_index = False
-
     now = datetime.utcnow()
     if basequery is None and not (g.user or g.kiosk or (g.board and not g.board.require_login)):
         showall = False
@@ -294,16 +293,24 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
         else:
             batchsize = 32
 
+        # list of posts that were pinned at the time of first load
+        pinned_hashids = request.args.getlist('ph')
         # Depending on the display mechanism (grouped or ungrouped), extract the batch
         if grouped:
             if not startdate:
                 startindex = 0
+                for row in grouped.values():
+                    # break when a non-pinned post is encountered
+                    if (not row[0][0]):
+                        break
+                    else:
+                        pinned_hashids.append(row[0][1].hashid)
             else:
                 # Loop through group looking for start of next batch. See below to understand the
                 # nesting structure of 'grouped'
                 for startindex, row in enumerate(grouped.values()):
-                    # Skip examination of pinned listings (having row[0][0] = True)
-                    if (not row[0][0]) and row[0][1].datetime < startdate:
+                    # Skip pinned posts when looking for starting index
+                    if (row[0][1].hashid not in pinned_hashids and row[0][1].datetime < startdate):
                         break
 
             batch = grouped.items()[startindex:startindex + batchsize]
@@ -319,10 +326,16 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
         elif pinsandposts:
             if not startdate:
                 startindex = 0
+                for row in pinsandposts:
+                    # break when a non-pinned post is encountered
+                    if not row[0]:
+                        break
+                    else:
+                        pinned_hashids.append(row[1].hashid)
             else:
                 for startindex, row in enumerate(pinsandposts):
                     # Skip pinned posts when looking for starting index
-                    if (not row[0]) and row[1].datetime < startdate:
+                    if (row[1].hashid not in pinned_hashids and row[1].datetime < startdate):
                         break
 
             batch = pinsandposts[startindex:startindex + batchsize]
@@ -330,7 +343,6 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
                 # batch = [(pinned, post), ...]
                 loadmore = batch[-1][1].datetime
             pinsandposts = batch
-
     if grouped:
         g.impressions = {post.id: (pinflag, post.id, is_bgroup)
             for group in grouped.itervalues()
@@ -338,13 +350,16 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
     elif pinsandposts:
         g.impressions = {post.id: (pinflag, post.id, is_bgroup) for pinflag, post, is_bgroup in pinsandposts}
 
+    query_params = request.args.to_dict(flat=False)
+    if loadmore:
+        query_params.update({'startdate': loadmore.isoformat() + 'Z', 'ph': pinned_hashids})
     return dict(
         pinsandposts=pinsandposts, grouped=grouped, now=now,
         newlimit=newlimit, jobtype=type, jobcategory=category, title=title,
         md5sum=md5sum, domain=domain, employer_name=employer_name,
         location=location, showall=showall, tag=tag, is_index=is_index,
         header_campaign=header_campaign, loadmore=loadmore,
-        search_domains=search_domains,
+        search_domains=search_domains, query_params=query_params,
         is_siteadmin=lastuser.has_permission('siteadmin'),
         pay_graph_data=pay_graph_data, paginated=JobPost.is_paginated(request))
 
