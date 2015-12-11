@@ -135,7 +135,7 @@
           </li>
         {%- endfor -%}
       {%- endif -%}
-      {%- if grouped %}
+      {%- if grouped -%}
         {%- for grouping, group in grouped.items() -%}{%- with pinned, post, is_bgroup=group[0] -%}
           {%- if group|length == 1 -%}
             <li class="col-xs-12 col-md-3 col-sm-4">
@@ -152,7 +152,7 @@
                 {{ stickie(post, none, false, groupedunder=true, dataurl=post.url_for(b=is_bgroup), show_viewcounts=is_siteadmin or guser and guser.flags.is_employer_month, show_pay=is_siteadmin, starred=guser and post.id in gstarred_ids, is_bgroup=is_bgroup) }}
               {%- endfor -%}
             </li>
-          {%- endif %}
+          {%- endif -%}
         {%- endwith -%}{%- endfor -%}
       {%- else %}
         {%- for pinned, post, is_bgroup in pinsandposts -%}
@@ -163,14 +163,36 @@
           <li class="col-xs-12 col-md-3 col-sm-4">
             <span class="stickie special">Sorry, no jobs listed.</span>
           </li>
-        {%- endfor %}
+        {%- endfor -%}
       {%- endif -%}
-      {%- if loadmore -%}
-        <form id="loadmore" method="GET" data-appear-top-offset="600">
-          <button class="btn btn-default btn-lg" type="submit" name="startdate" value="{{ loadmore.isoformat() }}Z">Load more…</button>
-        </form>
-      {%- endif -%}
+    {%- if not paginated -%}
     </ul>
+    {%- endif -%}
+    {%- if loadmore -%}
+        <noscript>
+          <div class="row text-center">
+            <a href="{{url_for('index', **query_params) | safe}}" class="btn btn-default btn-lg" name="startdate">Load more…</a>
+          </div>
+        </noscript>
+        {%- if not paginated -%}
+          <div class="row" id='loadmore'>
+            {%- raw %}
+            <script id='loadmore-ractive' type='text/ractive'>
+              {{#if enable}}
+                {{#if error}}
+                  <div class="alert alert-danger fade in"><a href="#" class="close" data-dismiss="alert">&times;</a> Could not load more posts. Please try again.</div>
+                {{/if}}
+                {{#if loading}}
+                  <a disabled="disabled" href="javascript:void(0);" class="btn btn-default btn-lg" name="startdate">Loading more…<span class="loading">&nbsp;</span></a>
+                {{else}}
+                  <a href="javascript:void(0);" class="btn btn-default btn-lg" name="startdate" on-click="forceload">Load more…</a>
+                {{/if}}
+              {{/if}}
+            </script>
+            {%- endraw %}
+          </div>
+        {%- endif -%}
+    {%- endif -%}
   {%- endwith %}
   {%- if not showall -%}
     <div class="flash info">
@@ -182,62 +204,51 @@
   {%- endif -%}
 {%- endblock -%}
 
-{%- macro loadmore_script() -%}
-  <script type="text/javascript">
-    $(function() {
-      $("#loadmore").attr('method', 'POST').ajaxForm({
-        dataType: 'html',
-        beforeSubmit: function(formdata, form, options) {
-          form.find('button[type="submit"]').prop('disabled', true).addClass('submit-disabled').html('Loading more… <span class="loading">&nbsp;</span>');
-          return true;
-        },
-        success: function(responseText, statusText, xhr, form) {
-          target = $("#loadmore").replaceWith(responseText.trim());
-        },
-        error: function(context, xhr, status, errMsg) {
-          var form = $("#loadmore");
-          form.find('button[type="submit"]').prop('disabled', false).removeClass('submit-disabled').html('Load more…');
-          form.find('.loading').addClass('hidden');
-          form.append('<div class="alert alert-danger fade in"><a href="#" class="close" data-dismiss="alert">&times;</a> Could not load more posts. Please try again</div>');
-        }
-      });
-      $("#loadmore").appear().on('appear', function(event, element) {
-        element.find('button[type="submit"]').trigger('click');
-      });
-    });
-  </script>
-{%- endmacro -%}
 {%- block footerscripts -%}
-  {% from "macros.html" import filters_setup_script %}
-  {%- if request.is_xhr and not paginated -%}
-    {{ filters_setup_script(job_location_filters, job_type_filters, job_category_filters) }}
-  {%- endif %}
   <script type="text/javascript">
-
-    {%- if not paginated -%}
-    //For setting the pay slider
-    window.Hasjob.PayFilterParameters = {
-      'currency': {{ request.args.get('currency') | tojson }},
-      'pmin': {{ request.args.get('pmin') | tojson }},
-      'pmax': {{ request.args.get('pmax') | tojson }}
-    };
-    {%- endif %}
-
-    $(function() {
-      $('textarea').autosize();
-      $("#newpost_details").hide().removeClass('jshidden');
-      $("#newpost_headline").focus(function() {
-        $("#newpost_details").slideDown();
-      }).keypress(function(event) {
-        if(event.which == '13') {
-          $(this).closest("form").submit();
-          return false;
-        }
-      }).blur(function() {
-        $(this).val($(this).val().replace(/(\r\n|\n|\r)/gm," ").replace(/\s+/g," "));
-      });
+    $(function(){
+      var loadmore = {{loadmore | tojson}};
+      var paginated = {{paginated | tojson}};
+      var loadmoreURL = "{{url_for('index', **query_params) | safe}}";
+      if (loadmore){
+        window.Hasjob.StickieList.loadmore({
+          url: loadmoreURL,
+          enable: true,
+          paginated: paginated
+        });
+      } else {
+        window.Hasjob.StickieList.loadmore({enable: false});
+      }
     });
   </script>
+  {%- if not paginated -%}
+    {% from "macros.html" import filters_setup_script %}
+    {%- if request.is_xhr -%}
+      {{ filters_setup_script(job_location_filters, job_type_filters, job_category_filters) }}
+    {%- endif %}
+    <script type="text/javascript">
+      $(function() {
+        //For setting the pay slider
+        window.Hasjob.PayFilterParameters = {
+          'currency': {{ request.args.get('currency') | tojson }},
+          'pmin': {{ request.args.get('pmin') | tojson }},
+          'pmax': {{ request.args.get('pmax') | tojson }}
+        };
+        $('textarea').autosize();
+        $("#newpost_details").hide().removeClass('jshidden');
+        $("#newpost_headline").focus(function() {
+          $("#newpost_details").slideDown();
+        }).keypress(function(event) {
+          if(event.which == '13') {
+            $(this).closest("form").submit();
+            return false;
+          }
+        }).blur(function() {
+          $(this).val($(this).val().replace(/(\r\n|\n|\r)/gm," ").replace(/\s+/g," "));
+        });
+      });
+    </script>
+  {%- endif %}
   {%- if pay_graph_data and not paginated %}
     <script type="text/javascript">
       c3.generate({
@@ -283,7 +294,4 @@
       });
     </script>
   {%- endif %}
-  {%- if loadmore -%}
-    {{ loadmore_script() }}
-  {%- endif -%}
 {% endblock %}

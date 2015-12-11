@@ -1,17 +1,19 @@
 //window.Hasjob initialized in layout.html
 
-window.Hasjob.updateGA = function(){
-  /*
-    Resets the path in the tracker object and updates GA with the current path.
-    To be called after updating the URL with pushState or replaceState.
-    Reference: https://developers.google.com/analytics/devguides/collection/analyticsjs/single-page-applications
-  */
-  if (window.ga) {
-    var path = window.location.href.split(window.location.host)[1];
-    window.ga('set', 'page', path);
-    window.ga('send', 'pageview');
+Hasjob.Util = {
+  updateGA: function(){
+    /*
+      Resets the path in the tracker object and updates GA with the current path.
+      To be called after updating the URL with pushState or replaceState.
+      Reference: https://developers.google.com/analytics/devguides/collection/analyticsjs/single-page-applications
+    */
+    if (window.ga) {
+      var path = window.location.href.split(window.location.host)[1];
+      window.ga('set', 'page', path);
+      window.ga('send', 'pageview');
+    }
   }
-}
+};
 
 window.Hasjob.JobPost = {
   handleStarClick: function (e) {
@@ -68,17 +70,74 @@ window.Hasjob.JobPost = {
 };
 
 window.Hasjob.StickieList = {
-  init: function() {
-    var stickieList = this;
+  init: function(){
+    var stickielist = this;
+  },
+  loadmore: function(config){
+    var stickielist = this;
+
+    var shouldLoad = function(){
+      return (
+        stickielist.loadmoreRactive.get('enable') &&
+        !stickielist.loadmoreRactive.get('loading')
+      );
+    };
+
+    var load = function(){
+      if (shouldLoad()){
+        stickielist.loadmoreRactive.set('loading', true);
+        $.ajax(stickielist.loadmoreRactive.get('url'), {
+          success: function(data) {
+            $('ul#stickie-area').append(data.trim());
+            stickielist.loadmoreRactive.set('loading', false);
+            stickielist.loadmoreRactive.set('error', false);
+          },
+          error: function() {
+            stickielist.loadmoreRactive.set('error', true);
+            stickielist.loadmoreRactive.set('loading', false);
+          }
+        });
+      }
+    };
+
+    if (!config.enable) {
+      // Hide template
+      this.loadmoreRactive.set('enable', config.enable);
+    } else {
+      if (!config.paginated) {
+        // Initial render
+        stickielist.loadmoreRactive = new Ractive({
+          el: 'loadmore',
+          template: '#loadmore-ractive',
+          data: {
+            error: false,
+            loading: false,
+            url: config.url,
+            enable: config.enable
+          }
+        });
+
+        stickielist.loadmoreRactive.on('forceload', function(event) {
+          load();
+        });
+
+        $("#loadmore").appear().on('appear', function(event, element) {
+          load();
+        });
+      } else {
+        // Update rendered template
+        this.loadmoreRactive.set('url', config.url);
+      }
+    }
   },
   refresh: function(){
     // progress indicator
     NProgress.configure({ showSpinner: false });
     NProgress.start();
-    var sortedFilterParams = window.Hasjob.Filters.formatFilterParams($('#js-job-filters').serializeArray());
-    var searchUrl = '/';
-    if (sortedFilterParams.length) {
-      searchUrl = '/' + '?' + $.param(sortedFilterParams);
+    var filterParams = window.Hasjob.Filters.toParam();
+    var searchUrl = window.Hasjob.Config.baseURL;
+    if (filterParams.length) {
+      var searchUrl = window.Hasjob.Config.baseURL + '?' + window.Hasjob.Filters.toParam();
     }
     $.ajax(searchUrl, {
       method: 'POST',
@@ -93,13 +152,24 @@ window.Hasjob.StickieList = {
     });
     history.replaceState({reloadOnPop: true}, '', window.location.href);
     history.pushState({reloadOnPop: true}, '', searchUrl);
-    window.Hasjob.updateGA();
+    window.Hasjob.Util.updateGA();
   }
-}
+};
 
 window.Hasjob.Filters = {
-  render: function(){
-    this.ractive = new Ractive({
+  toParam: function(){
+    var sortedFilterParams = this.formatFilterParams($('#js-job-filters').serializeArray());
+    if (sortedFilterParams.length) {
+      return $.param(sortedFilterParams);
+    } else {
+      return '';
+    }
+  },
+  init: function(){
+    var filters = this;
+    var keywordTimeout;
+
+    filters.ractive = new Ractive({
       el: 'job-filters-ractive-template',
       template: '#filters-ractive',
       data: {
@@ -113,12 +183,7 @@ window.Hasjob.Filters = {
         selectedEquity: window.Hasjob.Config.selectedEquity
       }
     });
-  },
-  init: function(){
-    var filters = this;
-    var keywordTimeout;
-    this.render();
-    this.filterDropdownClosed = true;
+    filters.filterDropdownClosed = true;
 
     $('.hg-site-nav-toggle').find('i').removeClass('fa-bars').addClass('fa-search');
     $('#hg-sitenav').on('shown.bs.collapse', function() {
@@ -234,13 +299,14 @@ window.Hasjob.Filters = {
   },
   formatFilterParams: function(formParams){
     var sortedFilterParams = [];
+    var currencyVal = '';
     for (var fpIndex=0; fpIndex < formParams.length; fpIndex++) {
       // set value to empty string if currency is n/a
       if (formParams[fpIndex].name === 'currency') {
         if (formParams[fpIndex].value.toLowerCase() === 'na') {
           formParams[fpIndex].value = "";
         }
-        var currencyVal = formParams[fpIndex].value;
+        currencyVal = formParams[fpIndex].value;
       }
       // format pmin and pmax based on currency value
       if (formParams[fpIndex].name === 'pmin' || formParams[fpIndex].name === 'pmax') {
@@ -273,7 +339,7 @@ window.Hasjob.Filters = {
       $('#job-filters-category').multiselect('rebuild');
     });
   }
-}
+};
 
 window.Hasjob.PaySlider = function(options){
   this.selector = options.selector;
@@ -313,7 +379,7 @@ window.Hasjob.Currency.prefix = function(currency){
     'eur': '€',
     'gbp': '£'
   };
-  if (currency == undefined || currency.toLowerCase() == 'na') {
+  if (currency === undefined || currency.toLowerCase() == 'na') {
     return currencyMap['default'];
   } else {
     return currencyMap[currency.toLowerCase()];
@@ -348,7 +414,7 @@ window.Hasjob.Currency.wNumbFormat = function(currency) {
       thousand: thousand,
       prefix: prefix,
       edit: encoder
-    })
+    });
   }
   return format;
 };
@@ -415,7 +481,6 @@ $(function() {
   });
 
   window.Hasjob.Filters.init();
-  window.Hasjob.StickieList.init();
 
   var scrollheight = $('#hgnav').height() - $('#hg-sitenav').height();
   $(window).scroll(function() {
