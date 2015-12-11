@@ -420,10 +420,8 @@
   });
   $(function() {
     $('.sidebar-pstar').click(function(e) {
-      if(e.target == this || $(e.target).is('.pstar-caption')) {
-        window.Hasjob.JobPost.handleStarClick.call(this.getElementsByClassName('pstar')[0]);
-      }
-      e.preventDefault();
+      window.Hasjob.JobPost.handleStarClick.call(this.getElementsByClassName('pstar')[0]);
+      return false;
     });
     $('span[data-toggle="tooltip"]').tooltip();
     $(".popup-box").hide();
