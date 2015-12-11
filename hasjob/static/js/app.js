@@ -102,7 +102,9 @@ window.Hasjob.StickieList = {
 
     if (!config.enable) {
       // Hide template
-      this.loadmoreRactive.set('enable', config.enable);
+      if (this.hasOwnProperty('loadmoreRactive')){
+        this.loadmoreRactive.set('enable', config.enable);
+      }
     } else {
       if (!config.paginated) {
         // Initial render
