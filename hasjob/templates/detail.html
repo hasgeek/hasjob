@@ -97,8 +97,8 @@
         <div class="col-md-3">{% if not g.kiosk %}
           <div class="list-group">
             {%- if g.user %}
-              <a class="list-group-item sidebar-pstar" href="#">
-                <i class="fa fa-fw fa-star{% if post not in g.user.starred_jobs %}-o{% endif %} pstar"
+              <a class="list-group-item pstar" href="#">
+                <i class="fa fa-fw fa-star{% if post not in g.user.starred_jobs %}-o{% endif %}"
                    data-id="{{ post.hashid }}"></i>
                 &nbsp;&nbsp; <span class="pstar-caption">{% if post not in g.user.starred_jobs %}Bookmark this{% else %}Bookmarked{% endif %}</span>
               </a>
@@ -419,10 +419,6 @@
     });
   });
   $(function() {
-    $('.sidebar-pstar').click(function(e) {
-      window.Hasjob.JobPost.handleStarClick.call(this.getElementsByClassName('pstar')[0]);
-      return false;
-    });
     $('span[data-toggle="tooltip"]').tooltip();
     $(".popup-box").hide();
     $(".popup-box:target").show();
