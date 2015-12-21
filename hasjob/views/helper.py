@@ -15,6 +15,7 @@ from flask import Markup, request, url_for, g, session
 from flask.ext.rq import job
 from flask.ext.lastuser import signal_user_looked_up
 
+from coaster.sqlalchemy import failsafe_add
 from baseframe import cache
 from baseframe.signals import form_validation_error, form_validation_success
 
@@ -449,7 +450,7 @@ def save_jobview(event_session_id, jobpost_id, bgroup, viewed_time):
     if jvs is None:
         jvs = JobViewSession(event_session_id=event_session_id, jobpost_id=jobpost_id, datetime=viewed_time,
             bgroup=bgroup)
-        jvs = db.session().add_and_commit(jvs)
+        jvs = failsafe_add(db.session, jvs, event_session_id=event_session_id, jobpost_id=jobpost_id)
 
         # Since this is a new view, is there an existing job impression in the same session
         # which has a bgroup defined? If yes, this view has an associated coin toss.
