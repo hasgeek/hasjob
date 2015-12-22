@@ -107,7 +107,7 @@
           </a>
         </li>
       {%- else -%}
-        {%- if not paginated and (not gkiosk) and ((gboard and 'new-job' in gboard.permissions(guser)) or (not gboard)) -%}
+        {%- if newpost and not paginated and (not gkiosk) and ((gboard and 'new-job' in gboard.permissions(guser)) or (not gboard)) -%}
           <li class="col-xs-12 col-md-3 col-sm-4">
             <form id="newpost" action="{{ url_for('newjob')|usessl }}" method="POST" class="stickie special">
               <input type="hidden" name="_charset_"/>
