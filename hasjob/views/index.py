@@ -387,8 +387,7 @@ def my_posts():
 @app.route('/applied')
 @lastuser.requires_login
 def applied():
-    basequery = JobPost.query.join(JobApplication)\
-        .filter(JobApplication.user == g.user)
+    basequery = JobPost.query.join(JobApplication).filter(JobApplication.user == g.user)
     return index(basequery=basequery, ageless=True, statuses=POSTSTATUS.ARCHIVED, newpost=False)
 
 
