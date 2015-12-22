@@ -388,7 +388,7 @@ def my_posts():
 @lastuser.requires_login
 def applied():
     basequery = JobPost.query.join(JobApplication)\
-        .filter(JobApplication.id.in_([application.id for application in g.user.applications]))
+        .filter(JobApplication.user == g.user)
     return index(basequery=basequery, ageless=True, statuses=POSTSTATUS.ARCHIVED, newpost=False)
 
 

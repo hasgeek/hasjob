@@ -746,7 +746,7 @@ class JobApplication(BaseMixin, db.Model):
     hashid = db.Column(db.String(40), nullable=False, unique=True)
     #: User who applied for this post
     user_id = db.Column(None, db.ForeignKey('user.id'), nullable=True, index=True)  # TODO: add unique=True
-    user = db.relationship(User, foreign_keys=user_id, backref="applications")
+    user = db.relationship(User, foreign_keys=user_id)
     #: Full name of the user (as it was at the time of the application)
     fullname = db.Column(db.Unicode(250), nullable=False)
     #: Job post they applied to
