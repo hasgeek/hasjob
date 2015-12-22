@@ -383,10 +383,10 @@ def my_posts():
 
 
 @csrf.exempt
-@app.route('/applied_to', subdomain='<subdomain>')
-@app.route('/applied_to')
+@app.route('/applied', subdomain='<subdomain>')
+@app.route('/applied')
 @lastuser.requires_login
-def applied_to():
+def applied():
     basequery = JobPost.query.join(JobApplication)\
         .filter(JobApplication.id.in_([application.id for application in g.user.applications]))
     return index(basequery=basequery, ageless=True, statuses=POSTSTATUS.ARCHIVED, newpost=False)

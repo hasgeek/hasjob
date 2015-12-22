@@ -148,7 +148,7 @@
   {% if not g.kiosk %}
   {% with links = [] %}
     {%- if g.user and g.user.flags.is_candidate_alltime %}
-      {% set links = links + [{'title': "Jobs applied to", 'url': url_for('applied_to')}] %}
+      {% set links = links + [{'title': "Applied jobs", 'url': url_for('applied')}] %}
     {%- endif %}
     {%- if g.user and g.user.flags.is_employer_alltime %}
       {% set links = links + [{'title': "My posts", 'url': url_for('my_posts')}] %}
