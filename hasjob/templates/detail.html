@@ -295,16 +295,6 @@
           {#- This form must be part of the page (even if hidden) in kiosk mode, so remember that if we ever remove it pre-reveal #}
           {% include "inc/applyform.html" %}
         </div>
-      {%- elif job_application %}
-        <div class="section">
-          <h3>You have applied for this position</h3>
-          <p>
-            <strong>Name:</strong> {{ job_application.fullname }}<br>
-            <strong>Email:</strong> {{ job_application.email }}<br>
-            <strong>Phone:</strong> {{ job_application.phone }}
-          </p>
-          {{ job_application.message|safe }}
-        </div>
       {%- endif %}
       {%- if post.hr_contact is not none %}{# Don't display notice on old posts #}
         <div class="section" id="recruiter-notice">
@@ -324,6 +314,17 @@
         <p>
           This is a special announcement from {{ post.company_name }}
         </p>
+      </div>
+    {%- endif %}
+    {%- if job_application %}
+      <div class="section">
+        <h3>You have applied for this position</h3>
+        <p>
+          <strong>Name:</strong> {{ job_application.fullname }}<br>
+          <strong>Email:</strong> {{ job_application.email }}<br>
+          <strong>Phone:</strong> {{ job_application.phone }}
+        </p>
+        {{ job_application.message|safe }}
       </div>
     {%- endif %}
     {%- if is_siteadmin %}
