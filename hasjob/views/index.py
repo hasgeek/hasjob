@@ -11,7 +11,7 @@ from baseframe import csrf, _
 
 from .. import app, lastuser
 from ..models import (db, JobCategory, JobPost, JobType, POSTSTATUS, newlimit, agelimit, JobLocation,
-    Domain, Location, Tag, JobPostTag, Campaign, CAMPAIGN_POSITION, CURRENCY)
+    Domain, Location, Tag, JobPostTag, Campaign, CAMPAIGN_POSITION, CURRENCY, JobApplication)
 from ..views.helper import (getposts, getallposts, gettags, location_geodata, cache_viewcounts, session_jobpost_ab,
     bgroup, make_pay_graph)
 from ..uploads import uploaded_logos
@@ -93,7 +93,7 @@ def json_index(data):
 @app.route('/', methods=['GET', 'POST'])
 @render_with({'text/html': 'index.html', 'application/json': json_index}, json=False)
 def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
-        location=None, title=None, showall=True, statuses=None, tag=None, batched=True, ageless=False):
+        location=None, title=None, showall=True, statuses=None, tag=None, batched=True, ageless=False, newpost=True):
 
     if basequery is None:
         is_index = True
@@ -361,7 +361,7 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
         header_campaign=header_campaign, loadmore=loadmore,
         search_domains=search_domains, query_params=query_params,
         is_siteadmin=lastuser.has_permission('siteadmin'),
-        pay_graph_data=pay_graph_data, paginated=JobPost.is_paginated(request))
+        pay_graph_data=pay_graph_data, paginated=JobPost.is_paginated(request), newpost=newpost)
 
 
 @csrf.exempt
@@ -380,6 +380,15 @@ def browse_drafts():
 def my_posts():
     basequery = JobPost.query.filter_by(user=g.user)
     return index(basequery=basequery, ageless=True, statuses=POSTSTATUS.MY)
+
+
+@csrf.exempt
+@app.route('/applied', subdomain='<subdomain>')
+@app.route('/applied')
+@lastuser.requires_login
+def applied():
+    basequery = JobPost.query.join(JobApplication).filter(JobApplication.user == g.user)
+    return index(basequery=basequery, ageless=True, statuses=POSTSTATUS.ARCHIVED, newpost=False)
 
 
 @csrf.exempt
