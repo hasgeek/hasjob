@@ -16,30 +16,31 @@ Hasjob.Util = {
 };
 
 window.Hasjob.JobPost = {
-  handleStarClick: function (e) {
-    var starlink = $(this);
-    var csrf_token = $("meta[name='csrf-token']").attr('content');
-    starlink.addClass('fa-spin');
-    $.ajax('/star/' + $(this).data('id'), {
-      type: 'POST',
-      data: {
-        csrf_token: csrf_token
-      },
-      dataType: 'json',
-      complete: function() {
-        starlink.removeClass('fa-spin');
-      },
-      success: function(data) {
-        // FIXME: Move user-facing text somewhere i18n capable:
-        if (data.is_starred === true) {
-          starlink.removeClass('fa-star-o').addClass('fa-star').parent().find('.pstar-caption').html("Bookmarked");
-        } else {
-          starlink.removeClass('fa-star').addClass('fa-star-o').parent().find('.pstar-caption').html("Bookmark this");
+  handleStarClick: function () {
+    $('#main-content').on('click', '.pstar', function(e) {
+      var starlink = $(this).find('i');
+      var csrf_token = $('meta[name="csrf-token"]').attr('content');
+      starlink.addClass('fa-spin');
+      $.ajax('/star/' + starlink.data('id'), {
+        type: 'POST',
+        data: {
+          csrf_token: csrf_token
+        },
+        dataType: 'json',
+        complete: function() {
+          starlink.removeClass('fa-spin');
+        },
+        success: function(data) {
+          // FIXME: Move user-facing text somewhere i18n capable:
+          if (data.is_starred === true) {
+            starlink.removeClass('fa-star-o').addClass('fa-star').parent().find('.pstar-caption').html("Bookmarked");
+          } else {
+            starlink.removeClass('fa-star').addClass('fa-star-o').parent().find('.pstar-caption').html("Bookmark this");
+          }
         }
-      }
+      });
+      return false;
     });
-    e.preventDefault();
-    return false;
   },
   handleGroupClick: function(){
     var outerTemplate = document.createElement('li');
@@ -66,7 +67,6 @@ window.Hasjob.JobPost = {
       }
 
       parent.removeChild(group);
-      $(".pstar").off().click(window.Hasjob.JobPost.handleStarClick);
     });
   }
 };
@@ -498,8 +498,8 @@ $(function() {
     }
   });
 
+  window.Hasjob.JobPost.handleStarClick();
   window.Hasjob.JobPost.handleGroupClick();
-  $('.pstar').off().click(window.Hasjob.JobPost.handleStarClick);
 
   var getCurrencyVal = function() {
     return $("input[type='radio'][name='currency']:checked").val();

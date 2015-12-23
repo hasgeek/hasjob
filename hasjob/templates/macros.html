@@ -12,7 +12,7 @@
     <span class="annotation bottom-right">{{ post.company_name }}</span>
     <span class="annotation bottom-left">
       {% if starred is not none %}
-        <i class="fa fa-star{% if not starred %}-o{% endif %} pstar" data-id="{{ post.hashid }}"></i>
+        <span class="pstar"><i class="fa fa-star{% if not starred %}-o{% endif %}" data-id="{{ post.hashid }}"></i></span>
       {% endif %}
       {%- with status_label = post.status_label() -%}
         {%- if status_label -%}
