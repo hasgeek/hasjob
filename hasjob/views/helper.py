@@ -15,6 +15,7 @@ from flask import Markup, request, url_for, g, session
 from flask.ext.rq import job
 from flask.ext.lastuser import signal_user_looked_up
 
+from coaster.sqlalchemy import failsafe_add
 from baseframe import cache
 from baseframe.signals import form_validation_error, form_validation_success
 
@@ -449,7 +450,7 @@ def save_jobview(event_session_id, jobpost_id, bgroup, viewed_time):
     if jvs is None:
         jvs = JobViewSession(event_session_id=event_session_id, jobpost_id=jobpost_id, datetime=viewed_time,
             bgroup=bgroup)
-        jvs = db.session().add_and_commit(jvs)
+        jvs = failsafe_add(db.session, jvs, event_session_id=event_session_id, jobpost_id=jobpost_id)
 
         # Since this is a new view, is there an existing job impression in the same session
         # which has a bgroup defined? If yes, this view has an associated coin toss.
@@ -640,11 +641,11 @@ def filter_basequery(basequery, filters, exclude_list=[]):
         job_location_jobpost_ids = db.session.query(JobLocation.jobpost_id).filter(JobLocation.geonameid.in_(filters['locations']))
 
     if filter_by_location and filter_by_anywhere:
-        basequery = basequery.filter(or_(JobPost.id.in_(job_location_jobpost_ids), JobPost.remote_location == True))
+        basequery = basequery.filter(or_(JobPost.id.in_(job_location_jobpost_ids), JobPost.remote_location == True))  # NOQA
     elif filter_by_location:
         basequery = basequery.filter(JobPost.id.in_(job_location_jobpost_ids))
     elif filter_by_anywhere:
-        basequery = basequery.filter(JobPost.remote_location == True)
+        basequery = basequery.filter(JobPost.remote_location == True)  # NOQA
 
     if filters.get('categories') and 'categories' not in exclude_list:
         job_categoryids_query = db.session.query(JobCategory.id).filter(JobCategory.name.in_(filters['categories']))
@@ -657,7 +658,7 @@ def filter_basequery(basequery, filters, exclude_list=[]):
     if filters.get('currency'):
         basequery = basequery.filter(JobPost.pay_currency == filters.get('currency'))
     if filters.get('equity') and 'equity' not in exclude_list:
-        basequery = basequery.filter(JobPost.pay_equity_min != None)
+        basequery = basequery.filter(JobPost.pay_equity_min != None)  # NOQA
     if filters.get('query') and 'query' not in exclude_list:
         basequery = basequery.filter(JobPost.search_vector.match(filters['query'], postgresql_regconfig='english'))
 
@@ -668,13 +669,13 @@ def filter_basequery(basequery, filters, exclude_list=[]):
 def filter_locations(filters):
     now = datetime.utcnow()
     basequery = db.session.query(JobLocation.geonameid, db.func.count(JobLocation.geonameid).label('count')
-            ).join(JobPost).filter(JobPost.status.in_(POSTSTATUS.LISTED), JobPost.datetime > now - agelimit,
-            JobLocation.primary == True).group_by(JobLocation.geonameid).order_by(db.text('count DESC'))
+        ).join(JobPost).filter(JobPost.status.in_(POSTSTATUS.LISTED), JobPost.datetime > now - agelimit,
+        JobLocation.primary == True).group_by(JobLocation.geonameid).order_by(db.text('count DESC'))  # NOQA
 
     geonameids = [jobpost_location.geonameid for jobpost_location in basequery]
     filtered_basequery = filter_basequery(basequery, filters, exclude_list=['locations', 'anywhere'])
     filtered_geonameids = [jobpost_location.geonameid for jobpost_location in filtered_basequery]
-    remote_location_available = filtered_basequery.filter(JobPost.remote_location == True).count() > 0
+    remote_location_available = filtered_basequery.filter(JobPost.remote_location == True).count() > 0  # NOQA
     data = location_geodata(geonameids)
     return [{'name': 'anywhere', 'title': 'Anywhere', 'available': remote_location_available}] + [{'name': data[geonameid]['name'], 'title': data[geonameid]['picker_title'],
             'available': False if not filtered_geonameids else geonameid in filtered_geonameids}
@@ -685,7 +686,9 @@ def filter_locations(filters):
 def filter_types(basequery, board, filters):
     basequery = filter_basequery(basequery, filters, exclude_list=['types'])
     filtered_typeids = [post.type_id for post in basequery.options(db.load_only('type_id')).distinct('type_id').all()]
-    format_job_type = lambda job_type: {'name': job_type.name, 'title': job_type.title,
+
+    def format_job_type(job_type):
+        return {'name': job_type.name, 'title': job_type.title,
                 'available': False if not filtered_typeids else job_type.id in filtered_typeids}
     if board:
         return [format_job_type(job_type)
@@ -699,7 +702,9 @@ def filter_types(basequery, board, filters):
 def filter_categories(basequery, board, filters):
     basequery = filter_basequery(basequery, filters, exclude_list=['categories'])
     filtered_categoryids = [post.category_id for post in basequery.options(db.load_only('category_id')).distinct('category_id').all()]
-    format_job_category = lambda job_category: {'name': job_category.name, 'title': job_category.title,
+
+    def format_job_category(job_category):
+        return {'name': job_category.name, 'title': job_category.title,
         'available': False if not filtered_categoryids else job_category.id in filtered_categoryids}
     if board:
         return [format_job_category(job_category)

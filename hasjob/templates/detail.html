@@ -97,8 +97,8 @@
         <div class="col-md-3">{% if not g.kiosk %}
           <div class="list-group">
             {%- if g.user %}
-              <a class="list-group-item sidebar-pstar" href="#">
-                <i class="fa fa-fw fa-star{% if post not in g.user.starred_jobs %}-o{% endif %} pstar"
+              <a class="list-group-item pstar" href="#">
+                <i class="fa fa-fw fa-star{% if post not in g.user.starred_jobs %}-o{% endif %}"
                    data-id="{{ post.hashid }}"></i>
                 &nbsp;&nbsp; <span class="pstar-caption">{% if post not in g.user.starred_jobs %}Bookmark this{% else %}Bookmarked{% endif %}</span>
               </a>
@@ -295,16 +295,6 @@
           {#- This form must be part of the page (even if hidden) in kiosk mode, so remember that if we ever remove it pre-reveal #}
           {% include "inc/applyform.html" %}
         </div>
-      {%- elif job_application %}
-        <div class="section">
-          <h3>You have applied for this position</h3>
-          <p>
-            <strong>Name:</strong> {{ job_application.fullname }}<br>
-            <strong>Email:</strong> {{ job_application.email }}<br>
-            <strong>Phone:</strong> {{ job_application.phone }}
-          </p>
-          {{ job_application.message|safe }}
-        </div>
       {%- endif %}
       {%- if post.hr_contact is not none %}{# Don't display notice on old posts #}
         <div class="section" id="recruiter-notice">
@@ -324,6 +314,17 @@
         <p>
           This is a special announcement from {{ post.company_name }}
         </p>
+      </div>
+    {%- endif %}
+    {%- if job_application %}
+      <div class="section">
+        <h3>You have applied for this position</h3>
+        <p>
+          <strong>Name:</strong> {{ job_application.fullname }}<br>
+          <strong>Email:</strong> {{ job_application.email }}<br>
+          <strong>Phone:</strong> {{ job_application.phone }}
+        </p>
+        {{ job_application.message|safe }}
       </div>
     {%- endif %}
     {%- if is_siteadmin %}
@@ -419,11 +420,6 @@
     });
   });
   $(function() {
-    $('.sidebar-pstar').click(function(e) {
-      $('.sidebar-pstar .pstar').click();
-      e.preventDefault();
-      return false;
-    });
     $('span[data-toggle="tooltip"]').tooltip();
     $(".popup-box").hide();
     $(".popup-box:target").show();
