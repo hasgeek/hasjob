@@ -1,7 +1,7 @@
 @charset "UTF-8";
 body {
   font-family: "Fira Sans", arial, sans-serif;
-  background: #e8e7e6 url('../img/canvas.jpg?1425290105');
+  background: #e8e7e6 url('../img/canvas.jpg?1416495026');
 }
 
 header {
@@ -35,6 +35,14 @@ header #hgnav {
   -webkit-box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
   box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
   min-height: 62px;
+}
+header #hgnav .btn-post-job {
+  background-color: #816894;
+  border-color: #816894;
+  margin-top: 6px;
+  margin-right: 4px;
+  padding: 0 15px;
+  color: #fff;
 }
 header #hgnav .hg-header-app-nav {
   max-width: 58%;
@@ -83,7 +91,7 @@ header #hgnav .fa {
   overflow: hidden;
   text-align: left;
   text-transform: capitalize;
-  background-image: url('../img/logo-star.png?1425290105');
+  background-image: url('../img/logo-star.png?1424329162');
   background-repeat: no-repeat;
   background-position: 50% 50%;
   width: 170px;
@@ -313,7 +321,7 @@ header #hgnav .fa {
   line-height: 36px;
 }
 #search input[type="text"] {
-  background: white url('../img/search.png?1425290105') 4px center no-repeat;
+  background: white url('../img/search.png?1416495026') 4px center no-repeat;
   padding: 7px 10px 3px 20px;
 }
 #search .btn {

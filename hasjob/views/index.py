@@ -93,7 +93,7 @@ def json_index(data):
 @app.route('/', methods=['GET', 'POST'])
 @render_with({'text/html': 'index.html', 'application/json': json_index}, json=False)
 def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
-        location=None, title=None, showall=True, statuses=None, tag=None, batched=True, ageless=False, newpost=True):
+        location=None, title=None, showall=True, statuses=None, tag=None, batched=True, ageless=False, newpost=False):
 
     if basequery is None:
         is_index = True
@@ -388,7 +388,7 @@ def my_posts():
 @lastuser.requires_login
 def applied():
     basequery = JobPost.query.join(JobApplication).filter(JobApplication.user == g.user)
-    return index(basequery=basequery, ageless=True, statuses=POSTSTATUS.ARCHIVED, newpost=False)
+    return index(basequery=basequery, ageless=True, statuses=POSTSTATUS.ARCHIVED)
 
 
 @csrf.exempt
