@@ -71,16 +71,7 @@
     {%- if not paginated %}
     <ul id="stickie-area" class="row">
     {%- endif %}
-      {%- if jobtype or jobcategory -%}
-        <li class="col-xs-12 col-md-3 col-sm-4">
-          <a href="{{ url_for('index') }}" class="stickie special">
-            You are viewing
-            {% if jobtype %}{{ jobtype.title.lower() }}{% endif %}
-            {% if jobcategory %}{{ jobcategory.title.lower() }}{% endif %}
-            jobs. View all jobs?
-          </a>
-        </li>
-      {%- elif domain -%}
+      {%- if domain -%}
         {%- if not domain.has_profile %}
           <li class="col-xs-12 col-md-3 col-sm-4">
             <a href="{{ url_for('index') }}" class="stickie special">
@@ -94,35 +85,6 @@
             You are viewing jobs at {{ employer_name }}. View all jobs?
           </a>
         </li>
-      {%- elif location -%}
-        <li class="col-xs-12 col-md-3 col-sm-4">
-          <a href="{{ url_for('index') }}" class="stickie special">
-            You are viewing jobs in {{ location['use_title'] }}. View all jobs?<!-- Id: {{ location['geonameid'] }} -->
-          </a>
-        </li>
-      {%- elif tag -%}
-        <li class="col-xs-12 col-md-3 col-sm-4">
-          <a href="{{ url_for('index') }}" class="stickie special">
-            You are viewing jobs tagged “{{ tag.title }}”. View all jobs?
-          </a>
-        </li>
-      {%- else -%}
-        {%- if newpost and not paginated and (not gkiosk) and ((gboard and 'new-job' in gboard.permissions(guser)) or (not gboard)) -%}
-          <li class="col-xs-12 col-md-3 col-sm-4">
-            <form id="newpost" action="{{ url_for('newjob')|usessl }}" method="POST" class="stickie special">
-              <input type="hidden" name="_charset_"/>
-              <input type="hidden" name="form.id" value="newheadline"/>
-              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-              <label class="annotation top-left" for="newpost_headline">Post a job</label>
-              {%- if gboard and gboard.newjob_headline -%}
-                <textarea id="newpost_headline" name="job_headline" class="form-control" placeholder="{{ gboard.newjob_headline }}"></textarea>
-              {%- else -%}
-                <textarea id="newpost_headline" name="job_headline" class="form-control" placeholder="Pragmatic programmer wanted at outstanding organisation"></textarea>
-              {%- endif -%}
-              <div id="newpost_details" class="jshidden"><input type="submit" class="btn btn-default btn-sm" value="Add details…"/></div>
-            </form>
-          </li>
-        {%- endif -%}
       {%- endif -%}
       {%- if search_domains %}
         {%- for domain in search_domains -%}
