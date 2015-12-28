@@ -92,7 +92,7 @@ def json_index(data):
 @app.route('/', methods=['GET', 'POST'], subdomain='<subdomain>')
 @app.route('/', methods=['GET', 'POST'])
 @render_with({'text/html': 'index.html', 'application/json': json_index}, json=False)
-def index(basequery=None, md5sum=None, domain=None, title=None, showall=True, statuses=None, batched=True, ageless=False):
+def index(basequery=None, md5sum=None, tag=None, domain=None, title=None, showall=True, statuses=None, batched=True, ageless=False):
 
     if basequery is None:
         is_index = True
@@ -351,7 +351,7 @@ def index(basequery=None, md5sum=None, domain=None, title=None, showall=True, st
         query_params.update({'startdate': loadmore.isoformat() + 'Z', 'ph': pinned_hashids})
     return dict(
         pinsandposts=pinsandposts, grouped=grouped, now=now,
-        newlimit=newlimit, jobtype=type, title=title,
+        newlimit=newlimit, title=title,
         md5sum=md5sum, domain=domain, employer_name=employer_name,
         showall=showall, is_index=is_index,
         header_campaign=header_campaign, loadmore=loadmore,
