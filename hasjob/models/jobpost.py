@@ -52,9 +52,13 @@ starred_job_table = db.Table('starred_job', db.Model.metadata,
 
 
 def starred_job_ids(user, agelimit):
-    return [r[0] for r in db.session.query(starred_job_table.c.jobpost_id).filter(
-        starred_job_table.c.user_id == user.id,
-        starred_job_table.c.created_at > datetime.utcnow() - agelimit)]
+    if agelimit:
+        return [r[0] for r in db.session.query(starred_job_table.c.jobpost_id).filter(
+            starred_job_table.c.user_id == user.id,
+            starred_job_table.c.created_at > datetime.utcnow() - agelimit)]
+    else:
+        return [r[0] for r in db.session.query(starred_job_table.c.jobpost_id).filter(
+            starred_job_table.c.user_id == user.id)]
 
 
 User.starred_job_ids = starred_job_ids
