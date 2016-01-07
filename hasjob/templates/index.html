@@ -1,9 +1,10 @@
 {%- from "domain.html" import org_profile with context %}
 {% from "baseframe/forms.html" import renderfield, widgetscripts %}
+{%- macro pagetitle() %}{% if title %}{{ title }} &mdash; {% endif %}{% if g.board %}{{ g.board.title }}{% else %}{{ config['SITE_TITLE'] }}{% endif %}{%- endmacro %}
 {%- if not request.is_xhr -%}
   {% extends "layout.html" %}
   {% block titletags -%}
-    <title>{% block title %}{% if title %}{{ title }} &mdash; {% endif %}{% if g.board %}{{ g.board.title }}{% else %}{{ config['SITE_TITLE'] }}{% endif %}{% endblock %}</title>
+    <title>{% block title %}{{ pagetitle() }}{% endblock %}</title>
     <meta name="DC.title" content="{{ self.title() }}" />
     <meta property="og:title" content="{{ self.title() }}" />
   {%- endblock %}
@@ -225,6 +226,11 @@
     {% from "macros.html" import filters_setup_script %}
     {%- if request.is_xhr -%}
       {{ filters_setup_script(job_location_filters, job_type_filters, job_category_filters) }}
+      <script type="text/javascript">
+        // This is a temporary fix that is needed until browsers start recognizing the 'title'
+        // parameter for pushState and replaceState
+        document.title = "{{ pagetitle() }}";
+      </script>
     {%- endif %}
     <script type="text/javascript">
       $(function() {
