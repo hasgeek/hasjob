@@ -2,12 +2,6 @@ body
   font-family: $font-default
   background: #e8e7e6 image-url("canvas.jpg")
 
-body.filter-open
-  overflow-y: hidden
-
-  #main-content, footer
-    opacity: 0.7
-
 header
   margin-bottom: 0
   min-height: 62px
@@ -65,21 +59,21 @@ header
     
     .hg-site-nav
       position: fixed
-      top: 35px
+      top: 61px
       bottom: 0
       left: -100%
-      width: 85%
+      width: 110%
       margin: 0
       max-height: 100%
-      background: #ebe7e4
-      -webkit-transition: left .25s ease-out
-      -moz-transition: left .25s ease-out
-      -ms-transition: left .25s ease-out
-      -o-transition: left .25s ease-out
-      transition: left .25s ease-out
+      -webkit-transition: left .15s ease-out
+      -moz-transition: left .15s ease-out
+      -ms-transition: left .15s ease-out
+      -o-transition: left .15s ease-out
+      transition: left .15s ease-out
 
     .hg-site-nav.active
-      left: 0
+      left: -15px
+      background-color: rgba(0, 0, 0, 0.3)
 
     .fa
       width: 14px //same as font-size
@@ -91,7 +85,10 @@ header
   +replace-text-with-dimensions('logo-star.png')
 
 .header-section
-  padding: 10px 0 5px
+  width: 85%
+  background: #ebe7e4
+  padding: 10px 15px 5px 15px
+  height: 100%
 
   label
     font-weight: normal
@@ -221,17 +218,21 @@ header
       .hg-site-nav-toggle
         display: none
 
-  .header-section ul.multiselect-container
-    width: 20em
+      .header-section
+        width: 100%
+        padding: 10px 0 15px
 
-  .header-section .pay-filter-dropdown
-    width: 135%
-    left: 0
-    right: auto
+        ul.multiselect-container
+          width: 20em
 
-.header-section li.unavailable label
-  font-style: italic
-  color: #888
+        .pay-filter-dropdown
+          width: 135%
+          left: 0
+          right: auto
+
+        li.unavailable label
+          font-style: italic
+          color: #888
 
 @media (min-width: 768px) and (max-width: 991px)
   .category-filter ul.multiselect-container

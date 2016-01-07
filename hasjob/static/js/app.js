@@ -196,15 +196,11 @@ window.Hasjob.Filters = {
           filters.menuOpen = true;
           $('#hg-sitenav').addClass('active');
           $('.hg-site-nav-toggle').find('i').removeClass('fa-search').addClass('fa-close');
-          $('body').delay(50).queue(function(){
-            $(this).addClass('filter-open').dequeue();
-          });
         }
         else {
           filters.menuOpen = false;
           $('#hg-sitenav').removeClass('active');
           $('.hg-site-nav-toggle').find('i').removeClass('fa-close').addClass('fa-search');
-          $('body').removeClass('filter-open');
         }
     }
 
