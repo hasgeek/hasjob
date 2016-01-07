@@ -188,13 +188,45 @@ window.Hasjob.Filters = {
       }
     });
     filters.filterDropdownClosed = true;
+    filters.menuOpen = false;
 
     $('.hg-site-nav-toggle').find('i').removeClass('fa-bars').addClass('fa-search');
-    $('#hg-sitenav').on('shown.bs.collapse', function() {
-      $('.hg-site-nav-toggle').find('i').removeClass('fa-search').addClass('fa-close');
+    var filtermenuToggle = function (action) {
+        if(action) {
+          filters.menuOpen = true;
+          $('#hg-sitenav').addClass('active');
+          $('.hg-site-nav-toggle').find('i').removeClass('fa-search').addClass('fa-close');
+          $('body').delay(50).queue(function(){
+            $(this).addClass('filter-open').dequeue();
+          });
+        }
+        else {
+          filters.menuOpen = false;
+          $('#hg-sitenav').removeClass('active');
+          $('.hg-site-nav-toggle').find('i').removeClass('fa-close').addClass('fa-search');
+          $('body').removeClass('filter-open');
+        }
+    }
+
+    $('.hg-site-nav-toggle').click(function(event) {
+        event.preventDefault();
+        if(filters.menuOpen) {
+          filtermenuToggle(false);
+        }
+        else {
+          filtermenuToggle(true);
+        }
     });
-    $('#hg-sitenav').on('hidden.bs.collapse', function() {
-      $('.hg-site-nav-toggle').find('i').removeClass('fa-close').addClass('fa-search');
+
+    var hammertime = new Hammer(document.body);
+    hammertime.on('swipe', function(ev) {
+        //swipe direction left to right
+        if(ev.direction === 4 && !filters.menuOpen) {
+          filtermenuToggle(true);
+        }
+        else if(ev.direction === 2 && filters.menuOpen) {
+          filtermenuToggle(false);
+        }
     });
 
     //remove white spaces keyword input value
@@ -288,16 +320,14 @@ window.Hasjob.Filters = {
     // Done button for filters on mobile
     $('#js-mobile-filter-done').click(function(event) {
       event.preventDefault();
-      $('#hg-sitenav').collapse('toggle');
-      $('body').removeClass('nav-open');
+      filtermenuToggle(false);
     });
 
     //On pressing ESC, close the filter dropdown if menu is open.
     $(document).keydown(function(event) {
-      if (event.keyCode === 27 && $('#hg-sitenav').hasClass('in')) {
+      if (event.keyCode === 27 && filters.menuOpen) {
         event.preventDefault();
-        $('#hg-sitenav').collapse('toggle');
-        $('body').removeClass('nav-open');
+        filtermenuToggle(false);
       }
     });
   },

@@ -4,6 +4,13 @@ body {
   background: #e8e7e6 url('../img/canvas.jpg?1425290105');
 }
 
+body.filter-open {
+  overflow-y: hidden;
+}
+body.filter-open #main-content, body.filter-open footer {
+  opacity: 0.7;
+}
+
 header {
   margin-bottom: 0;
   min-height: 62px;
@@ -65,10 +72,19 @@ header #hgnav .hg-site-nav {
   position: fixed;
   top: 35px;
   bottom: 0;
-  left: 0;
+  left: -100%;
+  width: 85%;
   margin: 0;
   max-height: 100%;
   background: #ebe7e4;
+  -webkit-transition: left 0.25s ease-out;
+  -moz-transition: left 0.25s ease-out;
+  -ms-transition: left 0.25s ease-out;
+  -o-transition: left 0.25s ease-out;
+  transition: left 0.25s ease-out;
+}
+header #hgnav .hg-site-nav.active {
+  left: 0;
 }
 header #hgnav .fa {
   width: 14px;
@@ -226,6 +242,7 @@ header #hgnav .fa {
     margin: 0;
     position: relative;
     top: 0;
+    left: 0;
     width: 100%;
     max-height: auto;
   }

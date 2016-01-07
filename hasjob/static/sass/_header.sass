@@ -2,6 +2,12 @@ body
   font-family: $font-default
   background: #e8e7e6 image-url("canvas.jpg")
 
+body.filter-open
+  overflow-y: hidden
+
+  #main-content, footer
+    opacity: 0.7
+
 header
   margin-bottom: 0
   min-height: 62px
@@ -61,10 +67,19 @@ header
       position: fixed
       top: 35px
       bottom: 0
-      left: 0
+      left: -100%
+      width: 85%
       margin: 0
       max-height: 100%
       background: #ebe7e4
+      -webkit-transition: left .25s ease-out
+      -moz-transition: left .25s ease-out
+      -ms-transition: left .25s ease-out
+      -o-transition: left .25s ease-out
+      transition: left .25s ease-out
+
+    .hg-site-nav.active
+      left: 0
 
     .fa
       width: 14px //same as font-size
@@ -199,6 +214,7 @@ header
         margin: 0
         position: relative
         top: 0
+        left: 0
         width: 100%
         max-height: auto
 

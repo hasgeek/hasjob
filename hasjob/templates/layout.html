@@ -156,7 +156,7 @@
     {%- if g.user and g.user.flags.has_jobpost_unconfirmed_month %}
       {% set links = links + [{'title': "Drafts", 'url': url_for('browse_drafts')}] %}
     {%- endif %}
-    {{ hgnav(site_title=site_title(), site_nav=site_nav(), links=links) }}
+    {{ hgnav(site_title=site_title(), site_nav=site_nav(), site_nav_class="jobfilter", links=links) }}
   {% endwith %}
   {%- endif %}
 </header>
