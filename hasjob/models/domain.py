@@ -52,6 +52,10 @@ class Domain(BaseMixin, db.Model):
     def has_profile(self):
         return bool(self.title and self.description)
 
+    def post_with_logo(self):
+        """ Returns the first post with a company logo """
+        return self.jobposts.filter(JobPost.company_logo != None).first()
+
     def editor_is(self, user):
         """
         Is this user authorized to edit this domain?

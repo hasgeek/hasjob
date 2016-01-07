@@ -12,18 +12,68 @@
                 <img itemprop="image" alt="Logo" src="{{ domain.logo_url }}"/>
               </div>
               <div class="col-xs-12 col-sm-9 col-sm-pull-3">
+          {%- elif domain.post_with_logo() %}
+            <div class="row">
+              <div class="img-container col-xs-12 col-sm-3 col-sm-push-9 post-company-logo">
+                <img itemprop="image" alt="Logo" src="{{ domain.post_with_logo().url_for('logo', _external=true) }}"/>
+              </div>
+              <div class="col-xs-12 col-sm-9 col-sm-pull-3">
           {%- endif %}
           <h1>{{ domain.use_title }}</h1>
           {%- if domain.legal_title %}
             <p class="post-date">{{ domain.legal_title }}</p>
           {%- endif %}
-          {%- if domain.logo_url %}
+          {%- if domain.logo_url or domain.post_with_logo() %}
               </div>
             </div>
           {%- endif %}
         </div>
         <div class="section">
-          {{ domain.description|safe }}
+          {%- if domain.description %}
+            {{ domain.description|safe }}
+          {%- else %}
+            <p>
+              <a href="//{{ domain.name }}" target="_blank" rel="nofollow">{{ domain.name|cleanurl }}</a>
+            </p>
+          {%- endif %}
+        </div>
+         {%- if domain.editor_is(g.user) %}
+        <div class="section">
+          <p>
+           <a href="{{ domain.url_for('edit') }}">Edit this card</a>
+          </p>
+        </div>
+        {%- endif %}
+      </div>
+    </div>
+  </div>
+{% endmacro %}
+
+
+{% macro md5sum_profile(md5sum) %}
+  {%- set post = md5sum | post_from_md5sum %}
+  {%- set avatar = post.user | avatar_url %}
+  <div class="row">
+    <div class="col-md-10 col-md-offset-1 col-xs-12 col-sm-12">
+      <div itemscope itemtype="http://schema.org/Article" class="sheet">
+        <div class="section first">
+          {%- if avatar %}
+            <div class="row">
+              <div class="img-container col-xs-12 col-sm-3 col-sm-push-9 post-company-logo">
+                <img itemprop="image" alt="Logo" src="{{ avatar }}"/>
+              </div>
+              <div class="col-xs-12 col-sm-9 col-sm-pull-3">
+          {%- endif %}
+          <h1>{{ post.user.fullname }}</h1>
+          {%- if avatar %}
+              </div>
+            </div>
+          {%- endif %}
+        </div>
+        <div class="section">
+          <p>
+            <a href="//{{ post.company_url }}" target="_blank" rel="nofollow">{{ post.user.fullname }}</a>
+          </p>
         </div>
       </div>
     </div>
