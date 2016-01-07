@@ -192,37 +192,37 @@ window.Hasjob.Filters = {
 
     $('.hg-site-nav-toggle').find('i').removeClass('fa-bars').addClass('fa-search');
     var filtermenuToggle = function (action) {
-        if(action) {
-          filters.menuOpen = true;
-          $('#hg-sitenav').addClass('active');
-          $('.hg-site-nav-toggle').find('i').removeClass('fa-search').addClass('fa-close');
-        }
-        else {
-          filters.menuOpen = false;
-          $('#hg-sitenav').removeClass('active');
-          $('.hg-site-nav-toggle').find('i').removeClass('fa-close').addClass('fa-search');
-        }
+      if (action) {
+        filters.menuOpen = true;
+        $('#hg-sitenav').addClass('active');
+        $('.hg-site-nav-toggle').find('i').removeClass('fa-search').addClass('fa-close');
+      }
+      else {
+        filters.menuOpen = false;
+        $('#hg-sitenav').removeClass('active');
+        $('.hg-site-nav-toggle').find('i').removeClass('fa-close').addClass('fa-search');
+      }
     }
 
     $('.hg-site-nav-toggle').click(function(event) {
-        event.preventDefault();
-        if(filters.menuOpen) {
-          filtermenuToggle(false);
-        }
-        else {
-          filtermenuToggle(true);
-        }
+      event.preventDefault();
+      if (filters.menuOpen) {
+        filtermenuToggle(false);
+      }
+      else {
+        filtermenuToggle(true);
+      }
     });
 
     var hammertime = new Hammer(document.body);
     hammertime.on('swipe', function(ev) {
-        //swipe direction left to right
-        if(ev.direction === 4 && !filters.menuOpen) {
-          filtermenuToggle(true);
-        }
-        else if(ev.direction === 2 && filters.menuOpen) {
-          filtermenuToggle(false);
-        }
+      //swipe direction left to right
+      if (ev.direction === 4 && !filters.menuOpen) {
+        filtermenuToggle(true);
+      }
+      else if (ev.direction === 2 && filters.menuOpen) {
+        filtermenuToggle(false);
+      }
     });
 
     //remove white spaces keyword input value
