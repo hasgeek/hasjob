@@ -210,7 +210,7 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
         employer_name = u'a single employer'
 
     if g.user:
-        g.starred_ids = set(g.user.starred_job_ids(agelimit))
+        g.starred_ids = set(g.user.starred_job_ids(agelimit if not ageless else None))
     else:
         g.starred_ids = set()
 
