@@ -20,7 +20,7 @@ from .user import User, AnonUser, EventSession
 from ..utils import random_long_key, random_hash_key
 
 __all__ = ['JobPost', 'JobLocation', 'UserJobView', 'AnonJobView', 'JobImpression', 'JobApplication',
-    'JobViewSession', 'unique_hash', 'viewstats_by_id_qhour', 'viewstats_by_id_hour', 'viewstats_by_id_day']
+    'JobViewSession', 'unique_hash', 'viewstats_by_id_qhour', 'viewstats_by_id_hour', 'viewstats_by_id_day', 'starred_job_table']
 
 
 def number_format(number, suffix):
