@@ -188,25 +188,28 @@ window.Hasjob.Filters = {
       }
     });
     filters.filterDropdownClosed = true;
-    filters.menuOpen = false;
+    filters.toggleButtonRactive = new Ractive({
+      el: 'hg-site-nav-toggle',
+      template: '#filters-togglebutton-ractive',
+      data: {
+        filtersMenuOpen: false
+      }
+    });
 
-    $('.hg-site-nav-toggle').find('i').removeClass('fa-bars').addClass('fa-search');
     var filtermenuToggle = function (action) {
       if (action) {
-        filters.menuOpen = true;
         $('#hg-sitenav').addClass('active');
-        $('.hg-site-nav-toggle').find('i').removeClass('fa-search').addClass('fa-close');
+        filters.toggleButtonRactive.set('filtersMenuOpen', true);
       }
       else {
-        filters.menuOpen = false;
         $('#hg-sitenav').removeClass('active');
-        $('.hg-site-nav-toggle').find('i').removeClass('fa-close').addClass('fa-search');
+        filters.toggleButtonRactive.set('filtersMenuOpen', false);
       }
     }
 
-    $('.hg-site-nav-toggle').click(function(event) {
+    $('#hg-site-nav-toggle').click(function(event) {
       event.preventDefault();
-      if (filters.menuOpen) {
+      if (filters.toggleButtonRactive.get('filtersMenuOpen')) {
         filtermenuToggle(false);
       }
       else {
@@ -214,13 +217,13 @@ window.Hasjob.Filters = {
       }
     });
 
-    var hammertime = new Hammer(document.body);
-    hammertime.on('swipe', function(ev) {
+    var hammer = new Hammer(document.body);
+    hammer.on('swipe', function(ev) {
       //swipe direction left to right
-      if (ev.direction === 4 && !filters.menuOpen) {
+      if (ev.direction === 4 && !filters.toggleButtonRactive.get('filtersMenuOpen')) {
         filtermenuToggle(true);
       }
-      else if (ev.direction === 2 && filters.menuOpen) {
+      else if (ev.direction === 2 && filters.toggleButtonRactive.get('filtersMenuOpen')) {
         filtermenuToggle(false);
       }
     });
@@ -321,7 +324,7 @@ window.Hasjob.Filters = {
 
     //On pressing ESC, close the filter dropdown if menu is open.
     $(document).keydown(function(event) {
-      if (event.keyCode === 27 && filters.menuOpen) {
+      if (event.keyCode === 27 && filters.toggleButtonRactive.get('filtersMenuOpen')) {
         event.preventDefault();
         filtermenuToggle(false);
       }

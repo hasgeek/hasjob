@@ -76,7 +76,7 @@ header #hgnav .hg-site-nav {
   transition: left 0.15s ease-out;
 }
 header #hgnav .hg-site-nav.active {
-  left: -15px;
+  left: 0;
   background-color: rgba(0, 0, 0, 0.3);
 }
 header #hgnav .fa {
@@ -242,7 +242,7 @@ header #hgnav .fa {
     width: 100%;
     max-height: auto;
   }
-  header #hgnav .hg-site-nav-toggle {
+  header #hgnav #hg-site-nav-toggle {
     display: none;
   }
   header #hgnav .header-section {
