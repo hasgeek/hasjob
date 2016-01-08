@@ -28,21 +28,19 @@
             </div>
           {%- endif %}
         </div>
-        <div class="section">
-          {%- if domain.description %}
+        {%- if domain.description %}
+          <div class="section">
             {{ domain.description|safe }}
-          {%- else %}
+          </div>
+        {%- else %}
+          <br>
+        {%- endif %}
+        {%- if domain.editor_is(g.user) %}
+          <div class="section">
             <p>
-              <a href="//{{ domain.name }}" target="_blank" rel="nofollow">{{ domain.name|cleanurl }}</a>
+              <a class='btn btn-md btn-primary' href="{{ domain.url_for('edit') }}">Edit this card</a>
             </p>
-          {%- endif %}
-        </div>
-         {%- if domain.editor_is(g.user) %}
-        <div class="section">
-          <p>
-           <a href="{{ domain.url_for('edit') }}">Edit this card</a>
-          </p>
-        </div>
+          </div>
         {%- endif %}
       </div>
     </div>
@@ -69,11 +67,6 @@
               </div>
             </div>
           {%- endif %}
-        </div>
-        <div class="section">
-          <p>
-            <a href="//{{ post.company_url }}" target="_blank" rel="nofollow">{{ post.user.fullname }}</a>
-          </p>
         </div>
       </div>
     </div>
