@@ -1,4 +1,4 @@
-{%- from "domain.html" import org_profile with context %}
+{%- from "domain.html" import org_profile, md5sum_profile with context %}
 {% from "baseframe/forms.html" import renderfield, widgetscripts %}
 {%- macro pagetitle() %}{% if title %}{{ title }} &mdash; {% endif %}{% if g.board %}{{ g.board.title }}{% else %}{{ config['SITE_TITLE'] }}{% endif %}{%- endmacro %}
 {%- if not request.is_xhr -%}
@@ -20,6 +20,7 @@
   <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/c3/0.4.10/c3.min.js"></script>
 
   {% endblock %}
+
   {% block description -%}
     {%- if location and location.description -%}
       {{ location.description|firstline }}
@@ -60,8 +61,10 @@
         {{ location.description }}
       </div>
     {%- endif %}
-    {%- if domain and domain.has_profile %}
+    {%- if domain %}
       {{ org_profile(domain) }}
+    {%- elif md5sum %}
+      {{ md5sum_profile(md5sum) }}
     {%- endif %}
     {%- if pay_graph_data and not paginated %}
       <div class="flash info">
@@ -72,70 +75,6 @@
     {%- if not paginated %}
     <ul id="stickie-area" class="row">
     {%- endif %}
-      {%- if jobtype or jobcategory -%}
-        <li class="col-xs-12 col-md-3 col-sm-4">
-          <a href="{{ url_for('index') }}" class="stickie special">
-            You are viewing
-            {% if jobtype %}{{ jobtype.title.lower() }}{% endif %}
-            {% if jobcategory %}{{ jobcategory.title.lower() }}{% endif %}
-            jobs. View all jobs?
-          </a>
-        </li>
-      {%- elif domain -%}
-        {%- if not domain.has_profile %}
-          <li class="col-xs-12 col-md-3 col-sm-4">
-            <a href="{{ url_for('index') }}" class="stickie special">
-              You are viewing jobs at {{ domain.use_title }}. View all jobs?
-            </a>
-          </li>
-        {%- endif -%}
-      {%- elif md5sum -%}
-        <li class="col-xs-12 col-md-3 col-sm-4">
-          <a href="{{ url_for('index') }}" class="stickie special">
-            You are viewing jobs at {{ employer_name }}. View all jobs?
-          </a>
-        </li>
-      {%- elif location -%}
-        <li class="col-xs-12 col-md-3 col-sm-4">
-          <a href="{{ url_for('index') }}" class="stickie special">
-            You are viewing jobs in {{ location['use_title'] }}. View all jobs?<!-- Id: {{ location['geonameid'] }} -->
-          </a>
-        </li>
-      {%- elif tag -%}
-        <li class="col-xs-12 col-md-3 col-sm-4">
-          <a href="{{ url_for('index') }}" class="stickie special">
-            You are viewing jobs tagged “{{ tag.title }}”. View all jobs?
-          </a>
-        </li>
-      {%- else -%}
-        {%- if newpost and not paginated and (not gkiosk) and ((gboard and 'new-job' in gboard.permissions(guser)) or (not gboard)) -%}
-          <li class="col-xs-12 col-md-3 col-sm-4">
-            <form id="newpost" action="{{ url_for('newjob')|usessl }}" method="POST" class="stickie special">
-              <input type="hidden" name="_charset_"/>
-              <input type="hidden" name="form.id" value="newheadline"/>
-              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-              <label class="annotation top-left" for="newpost_headline">Post a job</label>
-              {%- if gboard and gboard.newjob_headline -%}
-                <textarea id="newpost_headline" name="job_headline" class="form-control" placeholder="{{ gboard.newjob_headline }}"></textarea>
-              {%- else -%}
-                <textarea id="newpost_headline" name="job_headline" class="form-control" placeholder="Pragmatic programmer wanted at outstanding organisation"></textarea>
-              {%- endif -%}
-              <div id="newpost_details" class="jshidden"><input type="submit" class="btn btn-default btn-sm" value="Add details…"/></div>
-            </form>
-          </li>
-        {%- endif -%}
-      {%- endif -%}
-      {%- if search_domains %}
-        {%- for domain in search_domains -%}
-          <li class="col-xs-12 col-md-3 col-sm-4">
-            <a href="{{ domain.url_for() }}" class="stickie org">
-              {%- if domain.logo_url -%}
-                <img src="{{ domain.logo_url }}" alt="Logo"/><br>
-              {%- endif -%}
-              {{ domain.use_title }}</a>
-          </li>
-        {%- endfor -%}
-      {%- endif -%}
       {%- if grouped -%}
         {%- for grouping, group in grouped.items() -%}{%- with pinned, post, is_bgroup=group[0] -%}
           {%- if group|length == 1 -%}
