@@ -177,6 +177,7 @@ window.Hasjob.Filters = {
       el: 'job-filters-ractive-template',
       template: '#filters-ractive',
       data: {
+        jobsArchive: window.Hasjob.Config.jobsArchive,
         jobLocations: window.Hasjob.Config.jobLocationFilters,
         jobTypes: window.Hasjob.Config.jobTypeFilters,
         jobCategories: window.Hasjob.Config.jobCategoryFilters,
@@ -184,49 +185,19 @@ window.Hasjob.Filters = {
         selectedTypes: window.Hasjob.Config.selectedTypes,
         selectedCategories: window.Hasjob.Config.selectedCategories,
         selectedQuery: window.Hasjob.Config.selectedQuery,
-        selectedEquity: window.Hasjob.Config.selectedEquity
+        selectedEquity: window.Hasjob.Config.selectedEquity,
+        filtersMenuOpen: false
+      },
+      filtersMenuShow: function() {
+        filters.ractive.set('filtersMenuOpen', true);
+      },
+      filtersMenuHide: function() {
+        filters.ractive.set('filtersMenuOpen', false);
       }
     });
     filters.filterDropdownClosed = true;
-    filters.toggleButtonRactive = new Ractive({
-      el: 'hg-site-nav-toggle',
-      template: '#filters-togglebutton-ractive',
-      data: {
-        filtersMenuOpen: false
-      }
-    });
-
-    var filtermenuToggle = function (action) {
-      if (action) {
-        $('#hg-sitenav').addClass('active');
-        filters.toggleButtonRactive.set('filtersMenuOpen', true);
-      }
-      else {
-        $('#hg-sitenav').removeClass('active');
-        filters.toggleButtonRactive.set('filtersMenuOpen', false);
-      }
-    }
-
-    $('#hg-site-nav-toggle').click(function(event) {
-      event.preventDefault();
-      if (filters.toggleButtonRactive.get('filtersMenuOpen')) {
-        filtermenuToggle(false);
-      }
-      else {
-        filtermenuToggle(true);
-      }
-    });
-
-    var hammer = new Hammer(document.body);
-    hammer.on('swipe', function(ev) {
-      //swipe direction left to right
-      if (ev.direction === 4 && !filters.toggleButtonRactive.get('filtersMenuOpen')) {
-        filtermenuToggle(true);
-      }
-      else if (ev.direction === 2 && filters.toggleButtonRactive.get('filtersMenuOpen')) {
-        filtermenuToggle(false);
-      }
-    });
+    filters.slidingMenu = $(window).width() < 768;
+    filters.menuHeight = $('#hgnav').height() - $('#hg-sitenav').height();
 
     //remove white spaces keyword input value
     $('#job-filters-keywords').on('change',function(){
@@ -316,17 +287,76 @@ window.Hasjob.Filters = {
       filters.filterDropdownClosed = true;
     });
 
+    filters.ButtonRactive = new Ractive({
+      el: 'hg-site-nav-toggle',
+      template: '#filters-button-ractive',
+      data: {
+        isOpen: false,
+        disabled: false
+      },
+      filterMenuOpen: function() {
+        filters.ButtonRactive.set('isOpen', true);
+        filters.ractive.filtersMenuShow();
+      },
+      filterMenuClose: function() {
+        filters.ButtonRactive.set('isOpen', false);
+        filters.ractive.filtersMenuHide();
+      },
+      dispatch: function(action) {
+        switch(action) {
+          case 'click':
+            if (filters.ButtonRactive.get('isOpen')) {
+              filters.ButtonRactive.filterMenuClose();
+            }
+            else {
+              filters.ButtonRactive.filterMenuOpen();
+            }
+            break;
+          case 'swipeRight':
+            if (!filters.ButtonRactive.get('isOpen')) {
+              filters.ButtonRactive.filterMenuOpen();
+            }
+            break;
+          case 'swipeLeft':
+            if (filters.ButtonRactive.get('isOpen')) {
+              filters.ButtonRactive.filterMenuClose();
+            }
+            break;
+        }
+      }
+    });
+
+    //Search icon on mobile to open/close filters menu
+    $('#hg-site-nav-toggle').click(function(event) {
+      event.preventDefault();
+      filters.ButtonRactive.dispatch('click');
+    });
+
+    //Swipe to open/close filters menu
+    var hammer = new Hammer(document.body);
+    hammer.on('swipe', function(event) {
+      if (filters.slidingMenu) {
+        if (event.direction === 4) {
+          filters.ButtonRactive.dispatch('swipeRight');
+        }
+        else if (event.direction === 2) {
+          filters.ButtonRactive.dispatch('swipeLeft');
+        }
+        event.gesture.preventDefault();
+      }
+    });
+
     // Done button for filters on mobile
     $('#js-mobile-filter-done').click(function(event) {
       event.preventDefault();
-      filtermenuToggle(false);
+      filters.ButtonRactive.dispatch('click');
     });
 
-    //On pressing ESC, close the filter dropdown if menu is open.
+    //On pressing ESC, close the filters menu
     $(document).keydown(function(event) {
-      if (event.keyCode === 27 && filters.toggleButtonRactive.get('filtersMenuOpen')) {
+      if (event.keyCode === 27) {
         event.preventDefault();
-        filtermenuToggle(false);
+        filters.ButtonRactive.dispatch('click');
       }
     });
   },
@@ -358,6 +388,7 @@ window.Hasjob.Filters = {
   },
   refresh: function() {
     this.ractive.set({
+      jobsArchive: window.Hasjob.Config.jobsArchive,
       jobLocations: window.Hasjob.Config.jobLocationFilters,
       jobTypes: window.Hasjob.Config.jobTypeFilters,
       jobCategories: window.Hasjob.Config.jobCategoryFilters,
@@ -515,10 +546,21 @@ $(function() {
 
   window.Hasjob.Filters.init();
 
-  var scrollheight = $('#hgnav').height() - $('#hg-sitenav').height();
+  $(window).resize(function() {
+    if ($(window).width() < 768) {
+      window.Hasjob.Filters.slidingMenu = true;
+      // Incase filters menu has been slided up on page scroll
+      $('.header-section').show();
+    }
+    else {
+      window.Hasjob.Filters.slidingMenu = false;
+      window.Hasjob.Filters.menuHeight = $('#hgnav').height() - $('#hg-sitenav').height();
+    }
+  });
+
   $(window).scroll(function() {
-    if($(window).width() > 767 && window.Hasjob.Filters.filterDropdownClosed) {
-      if ($(this).scrollTop() > scrollheight) {
+    if(!window.Hasjob.Filters.slidingMenu && window.Hasjob.Filters.filterDropdownClosed) {
+      if ($(this).scrollTop() > window.Hasjob.Filters.menuHeight) {
         $('.header-section').slideUp();
       }
       else{

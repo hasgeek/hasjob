@@ -60,7 +60,7 @@ header
     .hg-site-nav
       position: fixed
       top: 61px
-      bottom: 0
+      min-height: 100vh
       left: -100%
       width: 110%
       margin: 0
@@ -74,6 +74,7 @@ header
     .hg-site-nav.active
       left: 0
       background-color: rgba(0, 0, 0, 0.3)
+      z-index: 9999
 
     .fa
       width: 14px //same as font-size
@@ -88,7 +89,7 @@ header
   width: 85%
   background: #ebe7e4
   padding: 10px 15px 5px 15px
-  height: 100%
+  min-height: 100vh
 
   label
     font-weight: normal
@@ -213,7 +214,7 @@ header
         top: 0
         left: 0
         width: 100%
-        max-height: auto
+        min-height: auto
 
       #hg-site-nav-toggle
         display: none
@@ -221,6 +222,7 @@ header
       .header-section
         width: 100%
         padding: 10px 0 15px
+        min-height: auto
 
         ul.multiselect-container
           width: 20em
