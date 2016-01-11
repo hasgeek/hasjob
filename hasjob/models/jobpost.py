@@ -20,7 +20,7 @@ from .user import User, AnonUser, EventSession
 from ..utils import random_long_key, random_hash_key
 
 __all__ = ['JobPost', 'JobLocation', 'UserJobView', 'AnonJobView', 'JobImpression', 'JobApplication',
-    'JobViewSession', 'unique_hash', 'viewstats_by_id_qhour', 'viewstats_by_id_hour', 'viewstats_by_id_day']
+    'JobViewSession', 'unique_hash', 'viewstats_by_id_qhour', 'viewstats_by_id_hour', 'viewstats_by_id_day', 'starred_job_table']
 
 
 def number_format(number, suffix):
@@ -52,9 +52,13 @@ starred_job_table = db.Table('starred_job', db.Model.metadata,
 
 
 def starred_job_ids(user, agelimit):
-    return [r[0] for r in db.session.query(starred_job_table.c.jobpost_id).filter(
-        starred_job_table.c.user_id == user.id,
-        starred_job_table.c.created_at > datetime.utcnow() - agelimit)]
+    if agelimit:
+        return [r[0] for r in db.session.query(starred_job_table.c.jobpost_id).filter(
+            starred_job_table.c.user_id == user.id,
+            starred_job_table.c.created_at > datetime.utcnow() - agelimit)]
+    else:
+        return [r[0] for r in db.session.query(starred_job_table.c.jobpost_id).filter(
+            starred_job_table.c.user_id == user.id)]
 
 
 User.starred_job_ids = starred_job_ids
