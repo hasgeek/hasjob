@@ -291,8 +291,7 @@ window.Hasjob.Filters = {
       el: 'hg-site-nav-toggle',
       template: '#filters-button-ractive',
       data: {
-        isOpen: false,
-        disabled: false
+        isOpen: false
       },
       filterMenuOpen: function() {
         filters.ButtonRactive.set('isOpen', true);
