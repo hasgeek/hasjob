@@ -78,7 +78,6 @@ header #hgnav .hg-site-nav {
 header #hgnav .hg-site-nav.active {
   left: 0;
   background-color: rgba(0, 0, 0, 0.3);
-  z-index: 9999;
 }
 header #hgnav .fa {
   width: 14px;
