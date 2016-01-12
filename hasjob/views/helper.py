@@ -627,12 +627,6 @@ def usessl(url):
     return url
 
 
-@app.template_filter('post_from_md5sum')
-def post_from_md5sum(md5sum):
-    """ Return a job post from a given md5sum hash """
-    return JobPost.query.filter(JobPost.md5sum == md5sum).first()
-
-
 def filter_basequery(basequery, filters, exclude_list=[]):
     """
     - Accepts a query of type sqlalchemy.Query, and returns a modified query

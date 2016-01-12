@@ -1,4 +1,4 @@
-{%- from "domain.html" import org_profile, md5sum_profile with context %}
+{%- from "domain.html" import org_profile, user_profile with context %}
 {% from "baseframe/forms.html" import renderfield, widgetscripts %}
 {%- macro pagetitle() %}{% if title %}{{ title }} &mdash; {% endif %}{% if g.board %}{{ g.board.title }}{% else %}{{ config['SITE_TITLE'] }}{% endif %}{%- endmacro %}
 {%- if not request.is_xhr -%}
@@ -64,7 +64,9 @@
     {%- if domain %}
       {{ org_profile(domain) }}
     {%- elif md5sum %}
-      {{ md5sum_profile(md5sum) }}
+      {%- if template_vars['jobpost_user'] %}
+        {{ user_profile(template_vars['jobpost_user']) }}
+      {%- endif %}
     {%- endif %}
     {%- if pay_graph_data and not paginated %}
       <div class="flash info">

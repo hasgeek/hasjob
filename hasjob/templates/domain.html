@@ -6,16 +6,10 @@
           <li role="presentation" class="active"><a href="{{ domain.url_for() }}" role="tab">Profile</a></li>
         </ul>-#}
         <div class="section first">
-          {%- if domain.logo_url %}
+          {%- if domain.get_logo_url %}
             <div class="row">
               <div class="img-container col-xs-12 col-sm-3 col-sm-push-9 post-company-logo">
-                <img itemprop="image" alt="Logo" src="{{ domain.logo_url }}"/>
-              </div>
-              <div class="col-xs-12 col-sm-9 col-sm-pull-3">
-          {%- elif domain.post_with_logo() %}
-            <div class="row">
-              <div class="img-container col-xs-12 col-sm-3 col-sm-push-9 post-company-logo">
-                <img itemprop="image" alt="Logo" src="{{ domain.post_with_logo().url_for('logo', _external=true) }}"/>
+                <img itemprop="image" alt="Logo" src="{{ domain.get_logo_url }}"/>
               </div>
               <div class="col-xs-12 col-sm-9 col-sm-pull-3">
           {%- endif %}
@@ -23,7 +17,7 @@
           {%- if domain.legal_title %}
             <p class="post-date">{{ domain.legal_title }}</p>
           {%- endif %}
-          {%- if domain.logo_url or domain.post_with_logo() %}
+          {%- if domain.get_logo_url %}
               </div>
             </div>
           {%- endif %}
@@ -48,8 +42,8 @@
 {% endmacro %}
 
 
-{% macro md5sum_profile(md5sum) %}
-  {%- with post = md5sum | post_from_md5sum, avatar = post.user | avatar_url %}
+{% macro user_profile(user) %}
+  {%- with avatar = user | avatar_url %}
     <div class="row">
       <div class="col-md-10 col-md-offset-1 col-xs-12 col-sm-12">
         <div itemscope itemtype="http://schema.org/Article" class="sheet">
@@ -61,7 +55,7 @@
                 </div>
                 <div class="col-xs-12 col-sm-9 col-sm-pull-3">
             {%- endif %}
-            <h1>{{ post.user.fullname }}</h1>
+            <h1>{{ user.fullname }}</h1>
             {%- if avatar %}
                 </div>
               </div>

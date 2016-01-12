@@ -92,7 +92,7 @@ def json_index(data):
 @app.route('/', methods=['GET', 'POST'], subdomain='<subdomain>')
 @app.route('/', methods=['GET', 'POST'])
 @render_with({'text/html': 'index.html', 'application/json': json_index}, json=False)
-def index(basequery=None, md5sum=None, tag=None, domain=None, title=None, showall=True, statuses=None, batched=True, ageless=False):
+def index(basequery=None, md5sum=None, tag=None, domain=None, title=None, showall=True, statuses=None, batched=True, ageless=False, template_vars={}):
 
     if basequery is None:
         is_index = True
@@ -357,7 +357,7 @@ def index(basequery=None, md5sum=None, tag=None, domain=None, title=None, showal
         header_campaign=header_campaign, loadmore=loadmore,
         search_domains=search_domains, query_params=query_params,
         is_siteadmin=lastuser.has_permission('siteadmin'),
-        pay_graph_data=pay_graph_data, paginated=JobPost.is_paginated(request))
+        pay_graph_data=pay_graph_data, paginated=JobPost.is_paginated(request), template_vars=template_vars)
 
 
 @csrf.exempt
@@ -442,7 +442,10 @@ def browse_by_email(md5sum):
     if not md5sum:
         abort(404)
     basequery = JobPost.query.filter_by(md5sum=md5sum)
-    return index(basequery=basequery, md5sum=md5sum, showall=True)
+    if not basequery.count():
+        abort(404)
+    jobpost_user = basequery.first().user
+    return index(basequery=basequery, md5sum=md5sum, showall=True, template_vars={'jobpost_user': jobpost_user})
 
 
 @csrf.exempt
@@ -526,6 +529,8 @@ def feed_by_email(md5sum):
     if not md5sum:
         abort(404)
     basequery = JobPost.query.filter_by(md5sum=md5sum)
+    if not basequery.count():
+        abort(404)
     return feed(basequery=basequery, md5sum=md5sum)
 
 
