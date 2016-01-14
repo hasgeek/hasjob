@@ -934,19 +934,20 @@ def newjob():
             return redirect(archived_post.url_for(), code=303)
         form.populate_from(archived_post)
 
-    if form.validate_on_submit():
-        # POST request from new job page, with successful validation
-        # Move it to the editjob page for handling here forward
-        newpost = {
-            'hashid': unique_hash(JobPost),
-            'ipaddr': request.environ['REMOTE_ADDR'],
-            'useragent': request.user_agent.string,
-            'user': g.user
-            }
-        return editjob(hashid=None, key=None, form=form, validated=True, newpost=newpost)
-    else:
-        # POST request from new job page, with errors
-        flash("Please review the indicated issues", category='interactive')
+    if request.method == 'POST':
+        if form.validate():
+            # POST request from new job page, with successful validation
+            # Move it to the editjob page for handling here forward
+            newpost = {
+                'hashid': unique_hash(JobPost),
+                'ipaddr': request.environ['REMOTE_ADDR'],
+                'useragent': request.user_agent.string,
+                'user': g.user
+                }
+            return editjob(hashid=None, key=None, form=form, validated=True, newpost=newpost)
+        else:
+            # POST request from new job page, with errors
+            flash("Please review the indicated issues", category='interactive')
 
     # Render page. Execution reaches here under three conditions:
     # 1. GET request, page loaded for the first time
