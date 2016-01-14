@@ -36,6 +36,18 @@ header #hgnav {
   box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
   min-height: 62px;
 }
+header #hgnav .btn-post-job {
+  background-color: #816894;
+  border-color: #816894;
+  border-bottom: 2px solid #554562;
+  margin-top: 6px;
+  margin-right: 4px;
+  padding: 0 15px;
+  color: #fff;
+}
+header #hgnav .btn-post-job:hover {
+  background-color: #725c83;
+}
 header #hgnav .hg-header-app-nav {
   max-width: 58%;
   overflow: hidden;
