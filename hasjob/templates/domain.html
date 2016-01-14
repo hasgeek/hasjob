@@ -6,10 +6,10 @@
           <li role="presentation" class="active"><a href="{{ domain.url_for() }}" role="tab">Profile</a></li>
         </ul>-#}
         <div class="section first">
-          {%- if domain.logo_url %}
+          {%- if domain.effective_logo_url %}
             <div class="row">
               <div class="img-container col-xs-12 col-sm-3 col-sm-push-9 post-company-logo">
-                <img itemprop="image" alt="Logo" src="{{ domain.logo_url }}"/>
+                <img itemprop="image" alt="Logo" src="{{ domain.effective_logo_url }}"/>
               </div>
               <div class="col-xs-12 col-sm-9 col-sm-pull-3">
           {%- endif %}
@@ -17,15 +17,52 @@
           {%- if domain.legal_title %}
             <p class="post-date">{{ domain.legal_title }}</p>
           {%- endif %}
-          {%- if domain.logo_url %}
+          {%- if domain.effective_logo_url %}
               </div>
             </div>
           {%- endif %}
         </div>
-        <div class="section">
-          {{ domain.description|safe }}
-        </div>
+        {%- if domain.description %}
+          <div class="section">
+            {{ domain.description|safe }}
+          </div>
+        {%- else %}
+          <br>
+        {%- endif %}
+        {%- if domain.editor_is(g.user) %}
+          <div class="section">
+            <p>
+              <a class='btn btn-md btn-primary' href="{{ domain.url_for('edit') }}">Edit this card</a>
+            </p>
+          </div>
+        {%- endif %}
       </div>
     </div>
   </div>
+{% endmacro %}
+
+
+{% macro user_profile(user) %}
+  {%- with avatar = user | avatar_url %}
+    <div class="row">
+      <div class="col-md-10 col-md-offset-1 col-xs-12 col-sm-12">
+        <div itemscope itemtype="http://schema.org/Article" class="sheet">
+          <div class="section first">
+            {%- if avatar %}
+              <div class="row">
+                <div class="img-container col-xs-12 col-sm-3 col-sm-push-9 post-company-logo">
+                  <img itemprop="image" alt="Logo" src="{{ avatar }}"/>
+                </div>
+                <div class="col-xs-12 col-sm-9 col-sm-pull-3">
+            {%- endif %}
+            <h1>{{ user.fullname }}</h1>
+            {%- if avatar %}
+                </div>
+              </div>
+            {%- endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  {%- endwith %}
 {% endmacro %}

@@ -92,8 +92,7 @@ def json_index(data):
 @app.route('/', methods=['GET', 'POST'], subdomain='<subdomain>')
 @app.route('/', methods=['GET', 'POST'])
 @render_with({'text/html': 'index.html', 'application/json': json_index}, json=False)
-def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
-        location=None, title=None, showall=True, statuses=None, tag=None, batched=True, ageless=False, newpost=True):
+def index(basequery=None, md5sum=None, tag=None, domain=None, title=None, showall=True, statuses=None, batched=True, ageless=False, template_vars={}):
 
     if basequery is None:
         is_index = True
@@ -267,10 +266,7 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
         if g.preview_campaign:
             header_campaign = g.preview_campaign
         else:
-            if location:
-                geonameids = g.user_geonameids + [location['geonameid']]
-            else:
-                geonameids = g.user_geonameids
+            geonameids = g.user_geonameids + f_locations
             header_campaign = Campaign.for_context(CAMPAIGN_POSITION.HEADER, board=g.board, user=g.user,
                 anon_user=g.anon_user, geonameids=geonameids)
         if pay_graph:
@@ -355,13 +351,13 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
         query_params.update({'startdate': loadmore.isoformat() + 'Z', 'ph': pinned_hashids})
     return dict(
         pinsandposts=pinsandposts, grouped=grouped, now=now,
-        newlimit=newlimit, jobtype=type, jobcategory=category, title=title,
+        newlimit=newlimit, title=title,
         md5sum=md5sum, domain=domain, employer_name=employer_name,
-        location=location, showall=showall, tag=tag, is_index=is_index,
+        showall=showall, is_index=is_index,
         header_campaign=header_campaign, loadmore=loadmore,
         search_domains=search_domains, query_params=query_params,
         is_siteadmin=lastuser.has_permission('siteadmin'),
-        pay_graph_data=pay_graph_data, paginated=JobPost.is_paginated(request), newpost=newpost)
+        pay_graph_data=pay_graph_data, paginated=JobPost.is_paginated(request), template_vars=template_vars)
 
 
 @csrf.exempt
@@ -388,7 +384,7 @@ def my_posts():
 @lastuser.requires_login
 def bookmarks():
     basequery = JobPost.query.join(starred_job_table).filter(starred_job_table.c.user_id == g.user.id)
-    return index(basequery=basequery, ageless=True, statuses=POSTSTATUS.ARCHIVED, newpost=False)
+    return index(basequery=basequery, ageless=True, statuses=POSTSTATUS.ARCHIVED)
 
 
 @csrf.exempt
@@ -397,7 +393,7 @@ def bookmarks():
 @lastuser.requires_login
 def applied():
     basequery = JobPost.query.join(JobApplication).filter(JobApplication.user == g.user)
-    return index(basequery=basequery, ageless=True, statuses=POSTSTATUS.ARCHIVED, newpost=False)
+    return index(basequery=basequery, ageless=True, statuses=POSTSTATUS.ARCHIVED)
 
 
 @csrf.exempt
@@ -446,7 +442,10 @@ def browse_by_email(md5sum):
     if not md5sum:
         abort(404)
     basequery = JobPost.query.filter_by(md5sum=md5sum)
-    return index(basequery=basequery, md5sum=md5sum, showall=True)
+    if basequery.isempty():
+        abort(404)
+    jobpost_user = basequery.first().user
+    return index(basequery=basequery, md5sum=md5sum, showall=True, template_vars={'jobpost_user': jobpost_user})
 
 
 @csrf.exempt
@@ -530,6 +529,8 @@ def feed_by_email(md5sum):
     if not md5sum:
         abort(404)
     basequery = JobPost.query.filter_by(md5sum=md5sum)
+    if basequery.isempty():
+        abort(404)
     return feed(basequery=basequery, md5sum=md5sum)
 
 

@@ -146,7 +146,7 @@
     </div><!--eof header-section-->
   {% endmacro %}
   {% if not g.kiosk %}
-  {% with user_links = [] %}
+  {% with site_links=[], user_links = [] %}
     {%- if g.user and g.user.flags.is_candidate_alltime %}
       {% set user_links = user_links + [{'title': "Applied jobs", 'url': url_for('applied')}] %}
     {%- endif %}
@@ -159,7 +159,10 @@
     {%- if g.user and g.user.flags.has_jobpost_unconfirmed_month %}
       {% set user_links = user_links + [{'title': "Drafts", 'url': url_for('browse_drafts')}] %}
     {%- endif %}
-    {{ hgnav(site_title=site_title(), site_nav=site_nav(), user_links=links) }}
+    {%- if g.user and request.path != url_for('newjob') %}
+      {% set site_links = site_links + [{'title': "Post a job", 'url': url_for('newjob')|usessl, 'class': 'btn btn-sm btn-post-job'}] %}
+    {%- endif %}
+    {{ hgnav(site_title=site_title(), site_nav=site_nav(), site_links=site_links, user_links=user_links) }}
   {% endwith %}
   {%- endif %}
 </header>
