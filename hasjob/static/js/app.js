@@ -15,6 +15,24 @@ Hasjob.Util = {
   }
 };
 
+window.Hasjob.Body = {
+  init: function() {
+    var body = this;
+    var hammer = new Hammer(document.body);
+
+    body.ractive = new Ractive();
+
+    hammer.on('swipe', function(event) {
+      if (event.direction === 4) {
+        body.ractive.fire('swipeRight');
+      }
+      else if (event.direction === 2) {
+        body.ractive.fire('swipeLeft');
+      }
+    });
+  }
+}
+
 window.Hasjob.JobPost = {
   handleStarClick: function () {
     $('#main-content').on('click', '.pstar', function(e) {
@@ -186,18 +204,42 @@ window.Hasjob.Filters = {
         selectedCategories: window.Hasjob.Config.selectedCategories,
         selectedQuery: window.Hasjob.Config.selectedQuery,
         selectedEquity: window.Hasjob.Config.selectedEquity,
-        filtersMenuOpen: false
+        sidebarOn: false
       },
       filtersMenuShow: function() {
-        filters.ractive.set('filtersMenuOpen', true);
+        filters.ractive.set('sidebarOn', true);
       },
       filtersMenuHide: function() {
-        filters.ractive.set('filtersMenuOpen', false);
+        filters.ractive.set('sidebarOn', false);
       }
     });
+
     filters.filterDropdownClosed = true;
     filters.slidingMenu = $(window).width() < 768;
     filters.menuHeight = $('#hgnav').height() - $('#hg-sitenav').height();
+
+    $(window).resize(function() {
+      if ($(window).width() < 768) {
+        filters.slidingMenu = true;
+        // Incase filters menu has been slided up on page scroll
+        $('.header-section').show();
+      }
+      else {
+        filters.slidingMenu = false;
+        filters.menuHeight = $('#hgnav').height() - $('#hg-sitenav').height();
+      }
+    });
+
+    $(window).scroll(function() {
+      if(!window.Hasjob.Filters.slidingMenu && window.Hasjob.Filters.filterDropdownClosed) {
+        if ($(this).scrollTop() > window.Hasjob.Filters.menuHeight) {
+          $('.header-section').slideUp();
+        }
+        else{
+          $('.header-section').slideDown();
+        }
+      }
+    });
 
     //remove white spaces keyword input value
     $('#job-filters-keywords').on('change',function(){
@@ -291,71 +333,52 @@ window.Hasjob.Filters = {
       el: 'hg-site-nav-toggle',
       template: '#filters-button-ractive',
       data: {
-        isOpen: false
+        sidebarOn: false
       },
       filterMenuOpen: function() {
-        filters.ButtonRactive.set('isOpen', true);
+        this.set('sidebarOn', true);
         filters.ractive.filtersMenuShow();
       },
       filterMenuClose: function() {
-        filters.ButtonRactive.set('isOpen', false);
+        this.set('sidebarOn', false);
         filters.ractive.filtersMenuHide();
-      },
-      dispatch: function(action) {
-        switch(action) {
-          case 'click':
-            if (filters.ButtonRactive.get('isOpen')) {
-              filters.ButtonRactive.filterMenuClose();
-            }
-            else {
-              filters.ButtonRactive.filterMenuOpen();
-            }
-            break;
-          case 'swipeRight':
-            if (!filters.ButtonRactive.get('isOpen')) {
-              filters.ButtonRactive.filterMenuOpen();
-            }
-            break;
-          case 'swipeLeft':
-            if (filters.ButtonRactive.get('isOpen')) {
-              filters.ButtonRactive.filterMenuClose();
-            }
-            break;
-        }
       }
     });
 
     //Search icon on mobile to open/close filters menu
     $('#hg-site-nav-toggle').click(function(event) {
       event.preventDefault();
-      filters.ButtonRactive.dispatch('click');
-    });
-
-    //Swipe to open/close filters menu
-    var hammer = new Hammer(document.body);
-    hammer.on('swipe', function(event) {
-      if (filters.slidingMenu) {
-        if (event.direction === 4) {
-          filters.ButtonRactive.dispatch('swipeRight');
-        }
-        else if (event.direction === 2) {
-          filters.ButtonRactive.dispatch('swipeLeft');
-        }
-        event.gesture.preventDefault();
+      if (filters.ButtonRactive.get('sidebarOn')) {
+        filters.ButtonRactive.filterMenuClose();
+      }
+      else {
+        filters.ButtonRactive.filterMenuOpen();
       }
     });
 
     // Done button for filters on mobile
     $('#js-mobile-filter-done').click(function(event) {
       event.preventDefault();
-      filters.ButtonRactive.dispatch('click');
+      filters.ButtonRactive.filterMenuClose();
     });
 
     //On pressing ESC, close the filters menu
     $(document).keydown(function(event) {
-      if (event.keyCode === 27) {
+      if (event.keyCode === 27 && filters.ButtonRactive.get('sidebarOn')) {
         event.preventDefault();
-        filters.ButtonRactive.dispatch('click');
+        filters.ButtonRactive.filterMenuClose();
+      }
+    });
+
+    window.Hasjob.Body.ractive.on('swipeRight', function() {
+      if (window.Hasjob.Filters.slidingMenu && !filters.ButtonRactive.get('sidebarOn')) {
+        filters.ButtonRactive.filterMenuOpen();
+      }
+    });
+
+    window.Hasjob.Body.ractive.on('swipeLeft', function() {
+      if (window.Hasjob.Filters.slidingMenu && filters.ButtonRactive.get('sidebarOn')) {
+        filters.ButtonRactive.filterMenuClose();
       }
     });
   },
@@ -531,7 +554,6 @@ window.Hasjob.PaySlider.prototype.resetSlider = function(currency) {
   this.slider.Link('upper').to($(this.maxField));
 };
 
-
 $(function() {
   Ractive.DEBUG = false;
 
@@ -543,31 +565,8 @@ $(function() {
     }
   });
 
+  window.Hasjob.Body.init();
   window.Hasjob.Filters.init();
-
-  $(window).resize(function() {
-    if ($(window).width() < 768) {
-      window.Hasjob.Filters.slidingMenu = true;
-      // Incase filters menu has been slided up on page scroll
-      $('.header-section').show();
-    }
-    else {
-      window.Hasjob.Filters.slidingMenu = false;
-      window.Hasjob.Filters.menuHeight = $('#hgnav').height() - $('#hg-sitenav').height();
-    }
-  });
-
-  $(window).scroll(function() {
-    if(!window.Hasjob.Filters.slidingMenu && window.Hasjob.Filters.filterDropdownClosed) {
-      if ($(this).scrollTop() > window.Hasjob.Filters.menuHeight) {
-        $('.header-section').slideUp();
-      }
-      else{
-        $('.header-section').slideDown();
-      }
-    }
-  });
-
   window.Hasjob.JobPost.handleStarClick();
   window.Hasjob.JobPost.handleGroupClick();
 
