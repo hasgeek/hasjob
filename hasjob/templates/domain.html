@@ -6,10 +6,10 @@
           <li role="presentation" class="active"><a href="{{ domain.url_for() }}" role="tab">Profile</a></li>
         </ul>-#}
         <div class="section first">
-          {%- if domain.get_logo_url %}
+          {%- if domain.effective_logo_url %}
             <div class="row">
               <div class="img-container col-xs-12 col-sm-3 col-sm-push-9 post-company-logo">
-                <img itemprop="image" alt="Logo" src="{{ domain.get_logo_url }}"/>
+                <img itemprop="image" alt="Logo" src="{{ domain.effective_logo_url }}"/>
               </div>
               <div class="col-xs-12 col-sm-9 col-sm-pull-3">
           {%- endif %}
@@ -17,7 +17,7 @@
           {%- if domain.legal_title %}
             <p class="post-date">{{ domain.legal_title }}</p>
           {%- endif %}
-          {%- if domain.get_logo_url %}
+          {%- if domain.effective_logo_url %}
               </div>
             </div>
           {%- endif %}

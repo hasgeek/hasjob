@@ -54,12 +54,13 @@ class Domain(BaseMixin, db.Model):
         return bool(self.title and self.description)
 
     @cached_property
-    def get_logo_url(self):
-        """Returns logo_url if present, else returns the logo from its most recent job post"""
+    def effective_logo_url(self):
+        """Returns logo_url if present,
+        else returns the logo from its most recent job post"""
         if self.logo_url:
             return self.logo_url
         else:
-            post = self.jobposts.filter(JobPost.company_logo != None).order_by("datetime desc").first()  # NOQA
+            post = self.jobposts.filter(JobPost.company_logo != None, JobPost.status.in_(POSTSTATUS.ARCHIVED)).order_by("datetime desc").first()  # NOQA
             return post.url_for('logo', _external=True) if post else None
 
     def editor_is(self, user):
