@@ -55,8 +55,10 @@ class Domain(BaseMixin, db.Model):
 
     @cached_property
     def effective_logo_url(self):
-        """Returns logo_url if present,
-        else returns the logo from its most recent job post"""
+        """
+        Returns logo_url if present,
+        else returns the logo from its most recent job post
+        """
         if self.logo_url:
             return self.logo_url
         else:
