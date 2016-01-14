@@ -141,7 +141,7 @@ window.Hasjob.StickieList = {
     var filterParams = window.Hasjob.Filters.toParam();
     var searchUrl = window.Hasjob.Config.baseURL;
     if (filterParams.length) {
-      var searchUrl = window.Hasjob.Config.baseURL + '?' + window.Hasjob.Filters.toParam();
+      searchUrl = window.Hasjob.Config.baseURL + '?' + window.Hasjob.Filters.toParam();
     }
     $.ajax(searchUrl, {
       method: 'POST',
@@ -348,7 +348,7 @@ window.Hasjob.Filters = {
 window.Hasjob.PaySlider = function(options){
   this.selector = options.selector;
   this.slider = null;
-  this.start = options.start,
+  this.start = options.start;
   this.end = options.end;
   this.minField = options.minField;
   this.maxField = options.maxField;
