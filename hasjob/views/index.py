@@ -11,7 +11,7 @@ from baseframe import csrf, _
 
 from .. import app, lastuser
 from ..models import (db, JobCategory, JobPost, JobType, POSTSTATUS, newlimit, agelimit, JobLocation,
-    Domain, Location, Tag, JobPostTag, Campaign, CAMPAIGN_POSITION, CURRENCY, JobApplication)
+    Domain, Location, Tag, JobPostTag, Campaign, CAMPAIGN_POSITION, CURRENCY, JobApplication, starred_job_table)
 from ..views.helper import (getposts, getallposts, gettags, location_geodata, cache_viewcounts, session_jobpost_ab,
     bgroup, make_pay_graph)
 from ..uploads import uploaded_logos
@@ -210,7 +210,7 @@ def index(basequery=None, type=None, category=None, md5sum=None, domain=None,
         employer_name = u'a single employer'
 
     if g.user:
-        g.starred_ids = set(g.user.starred_job_ids(agelimit))
+        g.starred_ids = set(g.user.starred_job_ids(agelimit if not ageless else None))
     else:
         g.starred_ids = set()
 
@@ -380,6 +380,15 @@ def browse_drafts():
 def my_posts():
     basequery = JobPost.query.filter_by(user=g.user)
     return index(basequery=basequery, ageless=True, statuses=POSTSTATUS.MY)
+
+
+@csrf.exempt
+@app.route('/bookmarks', subdomain='<subdomain>')
+@app.route('/bookmarks')
+@lastuser.requires_login
+def bookmarks():
+    basequery = JobPost.query.join(starred_job_table).filter(starred_job_table.c.user_id == g.user.id)
+    return index(basequery=basequery, ageless=True, statuses=POSTSTATUS.ARCHIVED, newpost=False)
 
 
 @csrf.exempt
