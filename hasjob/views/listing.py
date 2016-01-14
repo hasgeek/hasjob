@@ -944,7 +944,7 @@ def newjob():
             'user': g.user
             }
         return editjob(hashid=None, key=None, form=form, validated=True, newpost=newpost)
-    else:
+    elif form.errors:
         # POST request from new job page, with errors
         flash("Please review the indicated issues", category='interactive')
 
