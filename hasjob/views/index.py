@@ -384,7 +384,7 @@ def my_posts():
 @lastuser.requires_login
 def bookmarks():
     basequery = JobPost.query.join(starred_job_table).filter(starred_job_table.c.user_id == g.user.id)
-    return index(basequery=basequery, ageless=True, statuses=POSTSTATUS.ARCHIVED, newpost=False)
+    return index(basequery=basequery, ageless=True, statuses=POSTSTATUS.ARCHIVED)
 
 
 @csrf.exempt
