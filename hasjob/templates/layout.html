@@ -146,20 +146,20 @@
     </div><!--eof header-section-->
   {% endmacro %}
   {% if not g.kiosk %}
-  {% with links = [] %}
+  {% with user_links = [] %}
     {%- if g.user and g.user.flags.is_candidate_alltime %}
-      {% set links = links + [{'title': "Applied jobs", 'url': url_for('applied')}] %}
+      {% set user_links = user_links + [{'title': "Applied jobs", 'url': url_for('applied')}] %}
     {%- endif %}
     {%- if g.user %}
-      {% set links = links + [{'title': "Bookmarks", 'url': url_for('bookmarks')}] %}
+      {% set user_links = user_links + [{'title': "Bookmarks", 'url': url_for('bookmarks')}] %}
     {%- endif %}
     {%- if g.user and g.user.flags.is_employer_alltime %}
-      {% set links = links + [{'title': "My posts", 'url': url_for('my_posts')}] %}
+      {% set user_links = user_links + [{'title': "My posts", 'url': url_for('my_posts')}] %}
     {%- endif %}
     {%- if g.user and g.user.flags.has_jobpost_unconfirmed_month %}
-      {% set links = links + [{'title': "Drafts", 'url': url_for('browse_drafts')}] %}
+      {% set user_links = user_links + [{'title': "Drafts", 'url': url_for('browse_drafts')}] %}
     {%- endif %}
-    {{ hgnav(site_title=site_title(), site_nav=site_nav(), links=links) }}
+    {{ hgnav(site_title=site_title(), site_nav=site_nav(), user_links=links) }}
   {% endwith %}
   {%- endif %}
 </header>
