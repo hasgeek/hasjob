@@ -900,8 +900,6 @@ def newjob():
     form = forms.ListingForm()
     archived_post = None
     if not g.user:
-        if request.method == 'POST' and request.form.get('form.id') == 'newheadline':
-            session['headline'] = form.job_headline.data
         return redirect(url_for('login', next=url_for('newjob'),
             message=u"Hasjob now requires you to login before posting a job. Please login as yourself."
                 u" We'll add details about your company later"))
@@ -909,11 +907,6 @@ def newjob():
         if g.user.blocked:
             flash("Your account has been blocked from posting jobs", category='info')
             return redirect(url_for('index'), code=303)
-        if 'headline' in session:
-            if request.method == 'GET':
-                form.job_headline.data = session.pop('headline')
-            else:
-                session.pop('headline')
 
     if g.board:
         if 'new-job' not in g.board.permissions(g.user):
@@ -924,7 +917,7 @@ def newjob():
     form.job_type.choices = JobType.choices(g.board)
     form.job_category.choices = JobCategory.choices(g.board)
 
-    if request.method == 'GET' or (request.method == 'POST' and request.form.get('form.id') == 'newheadline'):
+    if request.method == 'GET':
         if g.user:
             # form.poster_name.data = g.user.fullname  # Deprecated 2013-11-20
             form.poster_email.data = g.user.email
@@ -941,7 +934,7 @@ def newjob():
             return redirect(archived_post.url_for(), code=303)
         form.populate_from(archived_post)
 
-    if request.method == 'POST' and request.form.get('form.id') != 'newheadline' and form.validate():
+    if form.validate_on_submit():
         # POST request from new job page, with successful validation
         # Move it to the editjob page for handling here forward
         newpost = {
@@ -951,14 +944,13 @@ def newjob():
             'user': g.user
             }
         return editjob(hashid=None, key=None, form=form, validated=True, newpost=newpost)
-    elif request.method == 'POST' and request.form.get('form.id') != 'newheadline':
+    else:
         # POST request from new job page, with errors
         flash("Please review the indicated issues", category='interactive')
 
     # Render page. Execution reaches here under three conditions:
     # 1. GET request, page loaded for the first time
-    # 2. POST request from main page's Post a Job box
-    # 3. POST request from this page, with errors
+    # 2. POST request from this page, with errors
     return render_template('postjob.html', form=form, no_removelogo=True, archived_post=archived_post)
 
 

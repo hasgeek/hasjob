@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from werkzeug import cached_property
 from sqlalchemy import event, DDL
 from sqlalchemy.dialects.postgresql import TSVECTOR
 from flask import url_for
@@ -51,6 +52,18 @@ class Domain(BaseMixin, db.Model):
     @property
     def has_profile(self):
         return bool(self.title and self.description)
+
+    @cached_property
+    def effective_logo_url(self):
+        """
+        Returns logo_url if present,
+        else returns the logo from its most recent job post
+        """
+        if self.logo_url:
+            return self.logo_url
+        else:
+            post = self.jobposts.filter(JobPost.company_logo != None, JobPost.status.in_(POSTSTATUS.ARCHIVED)).order_by("datetime desc").first()  # NOQA
+            return post.url_for('logo', _external=True) if post else None
 
     def editor_is(self, user):
         """
