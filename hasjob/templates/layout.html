@@ -181,7 +181,7 @@
     {%- if g.user and request.path != url_for('newjob') %}
       {% set site_links = site_links + [{'title': "Post a job", 'url': url_for('newjob')|usessl, 'class': 'btn btn-sm btn-post-job'}] %}
     {%- endif %}
-    {{ hgnav(site_title=site_title(), site_nav=site_nav(), site_links=site_links, user_links=user_links) }}
+    {{ hgnav(site_title=site_title(), site_nav_button=site_nav_button(), site_nav=site_nav(), site_links=site_links, user_links=user_links) }}
   {% endwith %}
   {%- endif %}
 </header>

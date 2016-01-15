@@ -190,6 +190,10 @@ window.Hasjob.Filters = {
   init: function(){
     var filters = this;
     var keywordTimeout;
+    var slidingMenu = $(window).width() < 768;
+    var filterDropdownClosed = true;
+    var filterMenuHeight = $('#hgnav').height() - $('#hg-sitenav').height();
+    var pageScrolled = false;
 
     filters.ractive = new Ractive({
       el: 'job-filters-ractive-template',
@@ -214,30 +218,35 @@ window.Hasjob.Filters = {
       }
     });
 
-    filters.filterDropdownClosed = true;
-    filters.slidingMenu = $(window).width() < 768;
-    filters.menuHeight = $('#hgnav').height() - $('#hg-sitenav').height();
-
-    $(window).resize(function() {
-      if ($(window).width() < 768) {
-        filters.slidingMenu = true;
-        // Incase filters menu has been slided up on page scroll
-        $('.header-section').show();
-      }
-      else {
-        filters.slidingMenu = false;
-        filters.menuHeight = $('#hgnav').height() - $('#hg-sitenav').height();
+    $(window).scroll(function() {
+      if (!slidingMenu) {
+        pageScrolled = true;
       }
     });
 
-    $(window).scroll(function() {
-      if(!window.Hasjob.Filters.slidingMenu && window.Hasjob.Filters.filterDropdownClosed) {
-        if ($(this).scrollTop() > window.Hasjob.Filters.menuHeight) {
-          $('.header-section').slideUp();
+    setInterval(function() {
+      if (pageScrolled) {
+        pageScrolled = false;
+        if(filterDropdownClosed) {
+          if ($(window).scrollTop() > filterMenuHeight) {
+            $('#hg-sitenav').slideUp();
+          }
+          else {
+            $('#hg-sitenav').slideDown();
+          }
         }
-        else{
-          $('.header-section').slideDown();
-        }
+      }
+    }, 250);
+
+    $(window).resize(function() {
+      if ($(window).width() < 768) {
+        slidingMenu = true;
+        // Incase filters menu has been slided up on page scroll
+        $('#hg-sitenav').show();
+      }
+      else {
+        slidingMenu = false;
+        menuHeight = $('#hgnav').height() - $('#hg-sitenav').height();
       }
     });
 
@@ -272,10 +281,10 @@ window.Hasjob.Filters = {
       },
       onDropdownShow: function(event, ui) {
         // stop header filter rollup when dropdown is open
-        filters.filterDropdownClosed = false;
+        filterDropdownClosed = false;
       },
       onDropdownHide: function(event, ui) {
-        filters.filterDropdownClosed = true;
+        filterDropdownClosed = true;
       }
     });
 
@@ -295,10 +304,10 @@ window.Hasjob.Filters = {
       },
       onDropdownShow: function(event, ui) {
         // stop header filter rollup when dropdown is open
-        filters.filterDropdownClosed = false;
+        filterDropdownClosed = false;
       },
       onDropdownHide: function(event, ui) {
-        filters.filterDropdownClosed = true;
+        filterDropdownClosed = true;
       }
     });
 
@@ -313,20 +322,20 @@ window.Hasjob.Filters = {
       },
       onDropdownShow: function(event, ui) {
         // stop header filter rollup when dropdown is open
-        filters.filterDropdownClosed = false;
+        filterDropdownClosed = false;
       },
       onDropdownHide: function(event, ui) {
-        filters.filterDropdownClosed = true;
+        filterDropdownClosed = true;
       }
     });
 
     $('#job-filters-pay').on('shown.bs.dropdown', function() {
       // stop header filter rollup when dropdown is open
-      filters.filterDropdownClosed = false;
+      filterDropdownClosed = false;
     });
 
     $('#job-filters-pay').on('hidden.bs.dropdown', function() {
-      filters.filterDropdownClosed = true;
+      filterDropdownClosed = true;
     });
 
     filters.ButtonRactive = new Ractive({
@@ -342,43 +351,44 @@ window.Hasjob.Filters = {
       filterMenuClose: function() {
         this.set('sidebarOn', false);
         filters.ractive.filtersMenuHide();
-      }
-    });
+      },
+      oncomplete: function() {
+        //Search icon on mobile to open/close filters menu
+        $('#hg-site-nav-toggle').click(function(event) {
+          event.preventDefault();
+          if (filters.ButtonRactive.get('sidebarOn')) {
+            filters.ButtonRactive.filterMenuClose();
+          }
+          else {
+            filters.ButtonRactive.filterMenuOpen();
+          }
+        });
 
-    //Search icon on mobile to open/close filters menu
-    $('#hg-site-nav-toggle').click(function(event) {
-      event.preventDefault();
-      if (filters.ButtonRactive.get('sidebarOn')) {
-        filters.ButtonRactive.filterMenuClose();
-      }
-      else {
-        filters.ButtonRactive.filterMenuOpen();
-      }
-    });
+        // Done button for filters on mobile
+        $('#js-mobile-filter-done').click(function(event) {
+          event.preventDefault();
+          filters.ButtonRactive.filterMenuClose();
+        });
 
-    // Done button for filters on mobile
-    $('#js-mobile-filter-done').click(function(event) {
-      event.preventDefault();
-      filters.ButtonRactive.filterMenuClose();
-    });
+        //On pressing ESC, close the filters menu
+        $(document).keydown(function(event) {
+          if (event.keyCode === 27 && filters.ButtonRactive.get('sidebarOn')) {
+            event.preventDefault();
+            filters.ButtonRactive.filterMenuClose();
+          }
+        });
 
-    //On pressing ESC, close the filters menu
-    $(document).keydown(function(event) {
-      if (event.keyCode === 27 && filters.ButtonRactive.get('sidebarOn')) {
-        event.preventDefault();
-        filters.ButtonRactive.filterMenuClose();
-      }
-    });
+        window.Hasjob.Body.ractive.on('swipeRight', function() {
+          if (slidingMenu && !filters.ButtonRactive.get('sidebarOn')) {
+            filters.ButtonRactive.filterMenuOpen();
+          }
+        });
 
-    window.Hasjob.Body.ractive.on('swipeRight', function() {
-      if (window.Hasjob.Filters.slidingMenu && !filters.ButtonRactive.get('sidebarOn')) {
-        filters.ButtonRactive.filterMenuOpen();
-      }
-    });
-
-    window.Hasjob.Body.ractive.on('swipeLeft', function() {
-      if (window.Hasjob.Filters.slidingMenu && filters.ButtonRactive.get('sidebarOn')) {
-        filters.ButtonRactive.filterMenuClose();
+        window.Hasjob.Body.ractive.on('swipeLeft', function() {
+          if (slidingMenu && filters.ButtonRactive.get('sidebarOn')) {
+            filters.ButtonRactive.filterMenuClose();
+          }
+        });
       }
     });
   },
