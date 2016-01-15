@@ -193,7 +193,7 @@ window.Hasjob.Filters = {
     var slidingMenu = $(window).width() < 768;
     var filterDropdownClosed = true;
     var filterMenuHeight = $('#hgnav').height() - $('#hg-sitenav').height();
-    var pageScrolled = false;
+    var pageScrollTimerId;
 
     filters.ractive = new Ractive({
       el: 'job-filters-ractive-template',
@@ -218,16 +218,9 @@ window.Hasjob.Filters = {
       }
     });
 
-    $(window).scroll(function() {
-      if (!slidingMenu) {
-        pageScrolled = true;
-      }
-    });
-
-    setInterval(function() {
-      if (pageScrolled) {
-        pageScrolled = false;
-        if(filterDropdownClosed) {
+    var pageScrollTimer = function() {
+      return setInterval(function() {
+        if (filterDropdownClosed) {
           if ($(window).scrollTop() > filterMenuHeight) {
             $('#hg-sitenav').slideUp();
           }
@@ -235,18 +228,30 @@ window.Hasjob.Filters = {
             $('#hg-sitenav').slideDown();
           }
         }
-      }
-    }, 250);
+      }, 250);
+    }
+
+    //Initial pageScrollTimer being set.
+    if ($(window).width() > 767) {
+      pageScrollTimerId = pageScrollTimer();
+    }
 
     $(window).resize(function() {
       if ($(window).width() < 768) {
         slidingMenu = true;
         // Incase filters menu has been slided up on page scroll
         $('#hg-sitenav').show();
+        if(pageScrollTimerId) {
+          clearInterval(pageScrollTimerId);
+          pageScrollTimerId = 0;
+        }
       }
       else {
         slidingMenu = false;
-        menuHeight = $('#hgnav').height() - $('#hg-sitenav').height();
+        filterMenuHeight = $('#hgnav').height() - $('#hg-sitenav').height();
+        if(!pageScrollTimerId) {
+          pageScrollTimerId = pageScrollTimer();
+        }
       }
     });
 
