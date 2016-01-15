@@ -159,8 +159,12 @@
     {%- if g.user and g.user.flags.has_jobpost_unconfirmed_month %}
       {% set user_links = user_links + [{'title': "Drafts", 'url': url_for('browse_drafts')}] %}
     {%- endif %}
-    {%- if g.user and request.path != url_for('newjob') %}
-      {% set site_links = site_links + [{'title': "Post a job", 'url': url_for('newjob')|usessl, 'class': 'btn btn-sm btn-post-job'}] %}
+    {%- if request.path != url_for('newjob') %}
+      {%- if g.user %}
+        {% set site_links = site_links + [{'title': "Post a job", 'url': url_for('newjob')|usessl, 'class': 'btn btn-sm btn-post-job'}] %}
+      {%- else %}
+        {% set site_links = site_links + [{'title': "Post a job", 'url': url_for('newjob')|usessl, 'class': 'btn btn-sm btn-post-job hidden-xs'}] %}
+      {%- endif %}
     {%- endif %}
     {{ hgnav(site_title=site_title(), site_nav=site_nav(), site_links=site_links, user_links=user_links) }}
   {% endwith %}
