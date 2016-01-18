@@ -190,8 +190,8 @@ window.Hasjob.Filters = {
   init: function(){
     var filters = this;
     var keywordTimeout;
-    var slidingMenu = $(window).width() < 768;
-    var filterDropdownClosed = true;
+    var isSlidingMenu = $(window).width() < 768;
+    var isFilterDropdownClosed = true;
     var filterMenuHeight = $('#hgnav').height() - $('#hg-sitenav').height();
     var pageScrollTimerId;
 
@@ -220,7 +220,7 @@ window.Hasjob.Filters = {
 
     var pageScrollTimer = function() {
       return setInterval(function() {
-        if (filterDropdownClosed) {
+        if (isFilterDropdownClosed) {
           if ($(window).scrollTop() > filterMenuHeight) {
             $('#hg-sitenav').slideUp();
           }
@@ -238,7 +238,7 @@ window.Hasjob.Filters = {
 
     $(window).resize(function() {
       if ($(window).width() < 768) {
-        slidingMenu = true;
+        isSlidingMenu = true;
         // Incase filters menu has been slided up on page scroll
         $('#hg-sitenav').show();
         if(pageScrollTimerId) {
@@ -247,7 +247,7 @@ window.Hasjob.Filters = {
         }
       }
       else {
-        slidingMenu = false;
+        isSlidingMenu = false;
         filterMenuHeight = $('#hgnav').height() - $('#hg-sitenav').height();
         if(!pageScrollTimerId) {
           pageScrollTimerId = pageScrollTimer();
@@ -286,10 +286,10 @@ window.Hasjob.Filters = {
       },
       onDropdownShow: function(event, ui) {
         // stop header filter rollup when dropdown is open
-        filterDropdownClosed = false;
+        isFilterDropdownClosed = false;
       },
       onDropdownHide: function(event, ui) {
-        filterDropdownClosed = true;
+        isFilterDropdownClosed = true;
       }
     });
 
@@ -309,10 +309,10 @@ window.Hasjob.Filters = {
       },
       onDropdownShow: function(event, ui) {
         // stop header filter rollup when dropdown is open
-        filterDropdownClosed = false;
+        isFilterDropdownClosed = false;
       },
       onDropdownHide: function(event, ui) {
-        filterDropdownClosed = true;
+        isFilterDropdownClosed = true;
       }
     });
 
@@ -327,20 +327,20 @@ window.Hasjob.Filters = {
       },
       onDropdownShow: function(event, ui) {
         // stop header filter rollup when dropdown is open
-        filterDropdownClosed = false;
+        isFilterDropdownClosed = false;
       },
       onDropdownHide: function(event, ui) {
-        filterDropdownClosed = true;
+        isFilterDropdownClosed = true;
       }
     });
 
     $('#job-filters-pay').on('shown.bs.dropdown', function() {
       // stop header filter rollup when dropdown is open
-      filterDropdownClosed = false;
+      isFilterDropdownClosed = false;
     });
 
     $('#job-filters-pay').on('hidden.bs.dropdown', function() {
-      filterDropdownClosed = true;
+      isFilterDropdownClosed = true;
     });
 
     filters.ButtonRactive = new Ractive({
@@ -384,13 +384,13 @@ window.Hasjob.Filters = {
         });
 
         window.Hasjob.Body.ractive.on('swipeRight', function() {
-          if (slidingMenu && !filters.ButtonRactive.get('sidebarOn')) {
+          if (isSlidingMenu && !filters.ButtonRactive.get('sidebarOn')) {
             filters.ButtonRactive.filterMenuOpen();
           }
         });
 
         window.Hasjob.Body.ractive.on('swipeLeft', function() {
-          if (slidingMenu && filters.ButtonRactive.get('sidebarOn')) {
+          if (isSlidingMenu && filters.ButtonRactive.get('sidebarOn')) {
             filters.ButtonRactive.filterMenuClose();
           }
         });
