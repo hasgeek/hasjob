@@ -210,10 +210,10 @@ window.Hasjob.Filters = {
         selectedEquity: window.Hasjob.Config.selectedEquity,
         sidebarOn: false
       },
-      filtersMenuShow: function() {
+      showSidebar: function() {
         filters.ractive.set('sidebarOn', true);
       },
-      filtersMenuHide: function() {
+      hideSidebar: function() {
         filters.ractive.set('sidebarOn', false);
       }
     });
@@ -243,6 +243,7 @@ window.Hasjob.Filters = {
         $('#hg-sitenav').show();
         if(pageScrollTimerId) {
           clearInterval(pageScrollTimerId);
+          //pageScrollTimerId is set to 0 to indicate the timer has been stopped
           pageScrollTimerId = 0;
         }
       }
@@ -349,49 +350,49 @@ window.Hasjob.Filters = {
       data: {
         sidebarOn: false
       },
-      filterMenuOpen: function() {
+      showSidebar: function() {
         this.set('sidebarOn', true);
-        filters.ractive.filtersMenuShow();
+        filters.ractive.showSidebar();
       },
-      filterMenuClose: function() {
+      hideSidebar: function() {
         this.set('sidebarOn', false);
-        filters.ractive.filtersMenuHide();
+        filters.ractive.hideSidebar();
       },
       oncomplete: function() {
         //Search icon on mobile to open/close filters menu
         $('#hg-site-nav-toggle').click(function(event) {
           event.preventDefault();
           if (filters.ButtonRactive.get('sidebarOn')) {
-            filters.ButtonRactive.filterMenuClose();
+            filters.ButtonRactive.hideSidebar();
           }
           else {
-            filters.ButtonRactive.filterMenuOpen();
+            filters.ButtonRactive.showSidebar();
           }
         });
 
         // Done button for filters on mobile
         $('#js-mobile-filter-done').click(function(event) {
           event.preventDefault();
-          filters.ButtonRactive.filterMenuClose();
+          filters.ButtonRactive.hideSidebar();
         });
 
         //On pressing ESC, close the filters menu
         $(document).keydown(function(event) {
-          if (event.keyCode === 27 && filters.ButtonRactive.get('sidebarOn')) {
+          if (event.keyCode === 27) {
             event.preventDefault();
-            filters.ButtonRactive.filterMenuClose();
+            filters.ButtonRactive.hideSidebar();
           }
         });
 
         window.Hasjob.Body.ractive.on('swipeRight', function() {
           if (isSlidingMenu && !filters.ButtonRactive.get('sidebarOn')) {
-            filters.ButtonRactive.filterMenuOpen();
+            filters.ButtonRactive.showSidebar();
           }
         });
 
         window.Hasjob.Body.ractive.on('swipeLeft', function() {
           if (isSlidingMenu && filters.ButtonRactive.get('sidebarOn')) {
-            filters.ButtonRactive.filterMenuClose();
+            filters.ButtonRactive.hideSidebar();
           }
         });
       }
