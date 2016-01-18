@@ -75,12 +75,21 @@ header #hgnav h1 {
 }
 header #hgnav .hg-site-nav {
   position: fixed;
-  top: 35px;
-  bottom: 0;
-  left: 0;
+  top: 61px;
+  min-height: 100vh;
+  left: -120%;
+  width: 110%;
   margin: 0;
   max-height: 100%;
-  background: #ebe7e4;
+  -webkit-transition: left 0.15s ease-out;
+  -moz-transition: left 0.15s ease-out;
+  -ms-transition: left 0.15s ease-out;
+  -o-transition: left 0.15s ease-out;
+  transition: left 0.15s ease-out;
+}
+header #hgnav .hg-site-nav.active {
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.3);
 }
 header #hgnav .fa {
   width: 14px;
@@ -103,7 +112,10 @@ header #hgnav .fa {
 }
 
 .header-section {
-  padding: 10px 0 5px;
+  width: 85%;
+  background: #ebe7e4;
+  padding: 10px 15px 5px 15px;
+  min-height: 100vh;
 }
 .header-section label {
   font-weight: normal;
@@ -238,28 +250,31 @@ header #hgnav .fa {
     margin: 0;
     position: relative;
     top: 0;
+    left: 0;
     width: 100%;
-    max-height: auto;
+    min-height: 0;
   }
-  header #hgnav .hg-site-nav-toggle {
+  header #hgnav #hg-site-nav-toggle {
     display: none;
   }
-
-  .header-section ul.multiselect-container {
+  header #hgnav .header-section {
+    width: 100%;
+    padding: 10px 0 5px;
+    min-height: 0;
+  }
+  header #hgnav .header-section ul.multiselect-container {
     width: 20em;
   }
-
-  .header-section .pay-filter-dropdown {
+  header #hgnav .header-section .pay-filter-dropdown {
     width: 190%;
     left: 0;
     right: auto;
   }
+  header #hgnav .header-section li.unavailable label {
+    font-style: italic;
+    color: #888;
+  }
 }
-.header-section li.unavailable label {
-  font-style: italic;
-  color: #888;
-}
-
 @media (min-width: 768px) and (max-width: 991px) {
   .category-filter ul.multiselect-container {
     right: 0;

@@ -121,6 +121,16 @@ Before you run the server in development mode, make sure you have Postgres serve
 
     $ python runserver.py
 
+## Testing
+
+Tests are written in [CasperJS](http://casperjs.org/).
+
+You need to [install CasperJS](http://docs.casperjs.org/en/latest/installation.html), which needs Python 2.6 (or greater) and [PhantomJS](http://phantomjs.org/) installed.
+
+Edit the top few lines of test file `tests/test_job_post.js` with the URL, username and password.
+
+Run the test with `casperjs test tests/test_job_post.js`.
+
 ## Other notes
 
 If you encounter a problem setting up, please look at existing issue reports
