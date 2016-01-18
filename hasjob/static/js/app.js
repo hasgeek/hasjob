@@ -31,7 +31,7 @@ window.Hasjob.Body = {
       }
     });
   }
-}
+};
 
 window.Hasjob.JobPost = {
   handleStarClick: function () {
@@ -229,7 +229,7 @@ window.Hasjob.Filters = {
           }
         }
       }, 250);
-    }
+    };
 
     //Initial pageScrollTimer being set.
     if ($(window).width() > 767) {
