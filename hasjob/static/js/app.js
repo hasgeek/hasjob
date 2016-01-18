@@ -15,6 +15,24 @@ Hasjob.Util = {
   }
 };
 
+window.Hasjob.Body = {
+  init: function() {
+    var body = this;
+    var hammer = new Hammer(document.body);
+
+    body.ractive = new Ractive();
+
+    hammer.on('swipe', function(event) {
+      if (event.direction === 4) {
+        body.ractive.fire('swipeRight');
+      }
+      else if (event.direction === 2) {
+        body.ractive.fire('swipeLeft');
+      }
+    });
+  }
+};
+
 window.Hasjob.JobPost = {
   handleStarClick: function () {
     $('#main-content').on('click', '.pstar', function(e) {
@@ -172,11 +190,16 @@ window.Hasjob.Filters = {
   init: function(){
     var filters = this;
     var keywordTimeout;
+    var isSlidingMenu = $(window).width() < 768;
+    var isFilterDropdownClosed = true;
+    var filterMenuHeight = $('#hgnav').height() - $('#hg-sitenav').height();
+    var pageScrollTimerId;
 
     filters.ractive = new Ractive({
       el: 'job-filters-ractive-template',
       template: '#filters-ractive',
       data: {
+        jobsArchive: window.Hasjob.Config.jobsArchive,
         jobLocations: window.Hasjob.Config.jobLocationFilters,
         jobTypes: window.Hasjob.Config.jobTypeFilters,
         jobCategories: window.Hasjob.Config.jobCategoryFilters,
@@ -184,17 +207,53 @@ window.Hasjob.Filters = {
         selectedTypes: window.Hasjob.Config.selectedTypes,
         selectedCategories: window.Hasjob.Config.selectedCategories,
         selectedQuery: window.Hasjob.Config.selectedQuery,
-        selectedEquity: window.Hasjob.Config.selectedEquity
+        selectedEquity: window.Hasjob.Config.selectedEquity,
+        sidebarOn: false
+      },
+      showSidebar: function() {
+        filters.ractive.set('sidebarOn', true);
+      },
+      hideSidebar: function() {
+        filters.ractive.set('sidebarOn', false);
       }
     });
-    filters.filterDropdownClosed = true;
 
-    $('.hg-site-nav-toggle').find('i').removeClass('fa-bars').addClass('fa-search');
-    $('#hg-sitenav').on('shown.bs.collapse', function() {
-      $('.hg-site-nav-toggle').find('i').removeClass('fa-search').addClass('fa-close');
-    });
-    $('#hg-sitenav').on('hidden.bs.collapse', function() {
-      $('.hg-site-nav-toggle').find('i').removeClass('fa-close').addClass('fa-search');
+    var pageScrollTimer = function() {
+      return setInterval(function() {
+        if (isFilterDropdownClosed) {
+          if ($(window).scrollTop() > filterMenuHeight) {
+            $('#hg-sitenav').slideUp();
+          }
+          else {
+            $('#hg-sitenav').slideDown();
+          }
+        }
+      }, 250);
+    };
+
+    //Initial pageScrollTimer being set.
+    if ($(window).width() > 767) {
+      pageScrollTimerId = pageScrollTimer();
+    }
+
+    $(window).resize(function() {
+      if ($(window).width() < 768) {
+        isSlidingMenu = true;
+        // Incase filters menu has been slided up on page scroll
+        $('#hg-sitenav').show();
+        if(pageScrollTimerId) {
+          clearInterval(pageScrollTimerId);
+          //pageScrollTimerId is set to 0 to indicate the timer has been stopped
+          pageScrollTimerId = 0;
+        }
+      }
+      else {
+        isSlidingMenu = false;
+        filterMenuHeight = $('#hgnav').height() - $('#hg-sitenav').height();
+        if(!pageScrollTimerId) {
+          pageScrollTimerId = pageScrollTimer();
+        }
+      }
     });
 
     //remove white spaces keyword input value
@@ -228,10 +287,10 @@ window.Hasjob.Filters = {
       },
       onDropdownShow: function(event, ui) {
         // stop header filter rollup when dropdown is open
-        filters.filterDropdownClosed = false;
+        isFilterDropdownClosed = false;
       },
       onDropdownHide: function(event, ui) {
-        filters.filterDropdownClosed = true;
+        isFilterDropdownClosed = true;
       }
     });
 
@@ -251,10 +310,10 @@ window.Hasjob.Filters = {
       },
       onDropdownShow: function(event, ui) {
         // stop header filter rollup when dropdown is open
-        filters.filterDropdownClosed = false;
+        isFilterDropdownClosed = false;
       },
       onDropdownHide: function(event, ui) {
-        filters.filterDropdownClosed = true;
+        isFilterDropdownClosed = true;
       }
     });
 
@@ -269,35 +328,73 @@ window.Hasjob.Filters = {
       },
       onDropdownShow: function(event, ui) {
         // stop header filter rollup when dropdown is open
-        filters.filterDropdownClosed = false;
+        isFilterDropdownClosed = false;
       },
       onDropdownHide: function(event, ui) {
-        filters.filterDropdownClosed = true;
+        isFilterDropdownClosed = true;
       }
     });
 
     $('#job-filters-pay').on('shown.bs.dropdown', function() {
       // stop header filter rollup when dropdown is open
-      filters.filterDropdownClosed = false;
+      isFilterDropdownClosed = false;
     });
 
     $('#job-filters-pay').on('hidden.bs.dropdown', function() {
-      filters.filterDropdownClosed = true;
+      isFilterDropdownClosed = true;
     });
 
-    // Done button for filters on mobile
-    $('#js-mobile-filter-done').click(function(event) {
-      event.preventDefault();
-      $('#hg-sitenav').collapse('toggle');
-      $('body').removeClass('nav-open');
-    });
+    filters.ButtonRactive = new Ractive({
+      el: 'hg-site-nav-toggle',
+      template: '#filters-button-ractive',
+      data: {
+        sidebarOn: false
+      },
+      showSidebar: function() {
+        this.set('sidebarOn', true);
+        filters.ractive.showSidebar();
+      },
+      hideSidebar: function() {
+        this.set('sidebarOn', false);
+        filters.ractive.hideSidebar();
+      },
+      oncomplete: function() {
+        //Search icon on mobile to open/close filters menu
+        $('#hg-site-nav-toggle').click(function(event) {
+          event.preventDefault();
+          if (filters.ButtonRactive.get('sidebarOn')) {
+            filters.ButtonRactive.hideSidebar();
+          }
+          else {
+            filters.ButtonRactive.showSidebar();
+          }
+        });
 
-    //On pressing ESC, close the filter dropdown if menu is open.
-    $(document).keydown(function(event) {
-      if (event.keyCode === 27 && $('#hg-sitenav').hasClass('in')) {
-        event.preventDefault();
-        $('#hg-sitenav').collapse('toggle');
-        $('body').removeClass('nav-open');
+        // Done button for filters on mobile
+        $('#js-mobile-filter-done').click(function(event) {
+          event.preventDefault();
+          filters.ButtonRactive.hideSidebar();
+        });
+
+        //On pressing ESC, close the filters menu
+        $(document).keydown(function(event) {
+          if (event.keyCode === 27) {
+            event.preventDefault();
+            filters.ButtonRactive.hideSidebar();
+          }
+        });
+
+        window.Hasjob.Body.ractive.on('swipeRight', function() {
+          if (isSlidingMenu && !filters.ButtonRactive.get('sidebarOn')) {
+            filters.ButtonRactive.showSidebar();
+          }
+        });
+
+        window.Hasjob.Body.ractive.on('swipeLeft', function() {
+          if (isSlidingMenu && filters.ButtonRactive.get('sidebarOn')) {
+            filters.ButtonRactive.hideSidebar();
+          }
+        });
       }
     });
   },
@@ -329,6 +426,7 @@ window.Hasjob.Filters = {
   },
   refresh: function() {
     this.ractive.set({
+      jobsArchive: window.Hasjob.Config.jobsArchive,
       jobLocations: window.Hasjob.Config.jobLocationFilters,
       jobTypes: window.Hasjob.Config.jobTypeFilters,
       jobCategories: window.Hasjob.Config.jobCategoryFilters,
@@ -472,7 +570,6 @@ window.Hasjob.PaySlider.prototype.resetSlider = function(currency) {
   this.slider.Link('upper').to($(this.maxField));
 };
 
-
 $(function() {
   Ractive.DEBUG = false;
 
@@ -484,20 +581,8 @@ $(function() {
     }
   });
 
+  window.Hasjob.Body.init();
   window.Hasjob.Filters.init();
-
-  var scrollheight = $('#hgnav').height() - $('#hg-sitenav').height();
-  $(window).scroll(function() {
-    if($(window).width() > 767 && window.Hasjob.Filters.filterDropdownClosed) {
-      if ($(this).scrollTop() > scrollheight) {
-        $('.header-section').slideUp();
-      }
-      else{
-        $('.header-section').slideDown();
-      }
-    }
-  });
-
   window.Hasjob.JobPost.handleStarClick();
   window.Hasjob.JobPost.handleGroupClick();
 

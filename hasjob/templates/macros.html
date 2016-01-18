@@ -189,6 +189,7 @@
 
 {% macro filters_setup_script(job_location_filters, job_type_filters, job_category_filters) %}
   <script type="text/javascript">
+    window.Hasjob.Config.jobsArchive = {{request.args.get('archive') | tojson}},
     window.Hasjob.Config.jobLocationFilters = {{job_location_filters | tojson}},
     window.Hasjob.Config.jobTypeFilters = {{job_type_filters | tojson}},
     window.Hasjob.Config.jobCategoryFilters = {{job_category_filters | tojson}},
