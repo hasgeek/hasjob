@@ -18,7 +18,11 @@ Hasjob.Util = {
 window.Hasjob.Body = {
   init: function() {
     var body = this;
-    var hammer = new Hammer(document.body);
+    var hammer = Hammer(document.body, {
+      cssProps: {
+        userSelect: true
+      }
+    });
 
     body.ractive = new Ractive();
 
