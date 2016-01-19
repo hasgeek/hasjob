@@ -252,7 +252,7 @@ header #hgnav .fa {
     top: 0;
     left: 0;
     width: 100%;
-    min-height: auto;
+    min-height: 0;
   }
   header #hgnav #hg-site-nav-toggle {
     display: none;
@@ -260,7 +260,7 @@ header #hgnav .fa {
   header #hgnav .header-section {
     width: 100%;
     padding: 10px 0 5px;
-    min-height: auto;
+    min-height: 0;
   }
   header #hgnav .header-section ul.multiselect-container {
     width: 20em;
