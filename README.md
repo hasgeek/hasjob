@@ -3,7 +3,7 @@ Hasjob
 
 Code for Hasjob, HasGeek's job board at https://hasjob.co/
 
-Copyright © 2010-2015 by HasGeek
+Copyright © 2010-2016 by HasGeek
 
 Hasjob's code is open source under the AGPL v3 license (see LICENSE.txt),
 but the name 'Hasjob' and the distinctive appearance of the job board are
