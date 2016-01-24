@@ -49,7 +49,8 @@ header #hgnav .btn-post-job:hover {
   background-color: #725c83;
 }
 header #hgnav .hg-header-app-nav {
-  max-width: 58%;
+  max-width: 34%;
+  padding-right: 10px;
   overflow: hidden;
 }
 header #hgnav .hg-header-app-nav h1 a, header #hgnav .hg-header-app-nav h1 a small {
@@ -237,7 +238,7 @@ header #hgnav .fa {
     min-height: 0;
   }
   header #hgnav .hg-header-app-nav {
-    max-width: 83%;
+    max-width: 75%;
   }
   header #hgnav .board-caption {
     position: static;
@@ -292,7 +293,7 @@ header #hgnav .fa {
     margin-bottom: 70px;
   }
   header #hgnav .hg-header-app-nav {
-    max-width: 90%;
+    max-width: 85%;
   }
 
   .header-section {
