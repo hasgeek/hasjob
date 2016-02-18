@@ -125,7 +125,7 @@
                   <div class="alert alert-danger fade in"><a href="#" class="close" data-dismiss="alert">&times;</a> Could not load more posts. Please try again.</div>
                 {{/if}}
                 {{#if loading}}
-                  <a disabled="disabled" href="javascript:void(0);" class="btn btn-default btn-lg" name="startdate">Loading more…<span class="loading">&nbsp;</span></a>
+                  <a href="javascript:void(0);" class="btn btn-default btn-lg disabled" name="startdate">Loading more…<span class="loading">&nbsp;</span></a>
                 {{else}}
                   <a href="javascript:void(0);" class="btn btn-default btn-lg" name="startdate" on-click="forceload">Load more…</a>
                 {{/if}}
