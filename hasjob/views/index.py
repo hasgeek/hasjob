@@ -4,7 +4,7 @@ from datetime import datetime
 from collections import OrderedDict
 
 from sqlalchemy.exc import ProgrammingError
-from flask import abort, redirect, render_template, request, Response, url_for, g, flash, Markup, jsonify
+from flask import abort, redirect, render_template, request, Response, url_for, g, flash, jsonify
 from coaster.utils import getbool, parse_isoformat, for_tsquery
 from coaster.views import render_with
 from baseframe import csrf, _
@@ -499,8 +499,21 @@ def feed(basequery=None, type=None, category=None, md5sum=None, domain=None, loc
             title = posts[0].company_name
     else:
         updated = datetime.utcnow().isoformat() + 'Z'
-    return Response(render_template('feed.xml', posts=posts, updated=updated, title=title),
+    return Response(render_template('feed-atom.xml', posts=posts, updated=updated, title=title),
         content_type='application/atom+xml; charset=utf-8')
+
+
+@app.route('/feed/indeed', subdomain='<subdomain>')
+@app.route('/feed/indeed')
+def feed_indeed():
+    title = "All jobs"
+    posts = list(getposts(None, showall=True))
+    if posts:  # Can't do this unless posts is a list
+        updated = posts[0].datetime.isoformat() + 'Z'
+    else:
+        updated = datetime.utcnow().isoformat() + 'Z'
+    return Response(render_template('feed-indeed.xml', posts=posts, updated=updated, title=title),
+        content_type='textxml; charset=utf-8')
 
 
 @app.route('/type/<name>/feed', subdomain='<subdomain>')
