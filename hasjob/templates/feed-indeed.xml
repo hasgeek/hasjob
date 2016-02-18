@@ -8,7 +8,7 @@
     <title>{{ post.headline|cdata }}</title>
     <date>{{ (post.datetime.isoformat()+'Z')|cdata }}</date>
     <referencenumber>{{ post.hashid|cdata }}</referencenumber>
-    <url>{{ post.url_for(subdomain=none, _external=true) }}</url>
+    <url>{{ post.url_for(subdomain=none, _external=true)|cdata }}</url>
     <company>{{ post.company_name|cdata }}</company>
   {%- if post.location_city %}
     <city>{{ post.location_city|cdata }}</city>
