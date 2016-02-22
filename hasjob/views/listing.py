@@ -45,6 +45,7 @@ from hasjob.nlp import identify_language
 from hasjob.views.helper import gif1x1, cache_viewcounts, session_jobpost_ab, bgroup
 
 
+@csrf.exempt
 @app.route('/<domain>/<hashid>', methods=('GET', 'POST'), subdomain='<subdomain>')
 @app.route('/<domain>/<hashid>', methods=('GET', 'POST'))
 @app.route('/view/<hashid>', defaults={'domain': None}, methods=('GET', 'POST'), subdomain='<subdomain>')
@@ -52,7 +53,7 @@ from hasjob.views.helper import gif1x1, cache_viewcounts, session_jobpost_ab, bg
 def jobdetail(domain, hashid):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
 
-    # If we're on a board (that's now 'www') and this post isn't on this board,
+    # If we're on a board (that's not 'www') and this post isn't on this board,
     # redirect to (a) the first board it is on, or (b) on the root domain (which may
     # be the 'www' board, which is why we don't bother to redirect if we're currently
     # in the 'www' board)
@@ -67,7 +68,7 @@ def jobdetail(domain, hashid):
     if post.status not in POSTSTATUS.UNPUBLISHED and post.email_domain != domain:
         return redirect(post.url_for(), code=301)
 
-    if post.status in [POSTSTATUS.DRAFT, POSTSTATUS.PENDING]:
+    if post.status in POSTSTATUS.UNPUBLISHED:
         if not ((g.user and post.admin_is(g.user))):
             abort(403)
     if post.status in POSTSTATUS.GONE:
