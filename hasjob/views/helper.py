@@ -215,7 +215,7 @@ def record_views_and_events(response):
         g.event_data['missing_in_context'] = missing_in_context
 
     # Now log whatever needs to be logged
-    if response and response.status_code in (301, 302, 303, 307, 308):
+    if response.status_code in (301, 302, 303, 307, 308):
         g.event_data['location'] = response.headers.get('Location')
 
     # TODO: Consider moving this to a background job
@@ -262,7 +262,7 @@ def record_views_and_events(response):
             ue = UserEvent.new_from_request(request)
         else:
             ue = UserEventBase.new_from_request(request)
-        ue.status_code = response.status_code if response else None
+        ue.status_code = response.status_code
         ue.data = g.event_data or None
         g.esession.events.append(ue)
 
