@@ -67,14 +67,14 @@ class EventSessionBase(object):
     def new_from_request(cls, request):
         instance = cls()
         instance.created_at = datetime.utcnow()
-        instance.referrer = request.referrer[:2083] if request.referrer else None
-        instance.utm_source = request.args.get('utm_source', '')[:250] or None
-        instance.utm_medium = request.args.get('utm_medium', '')[:250] or None
-        instance.utm_term = request.args.get('utm_term', '')[:250] or None
-        instance.utm_content = request.args.get('utm_content', '')[:250] or None
-        instance.utm_id = request.args.get('utm_id', '')[:250] or None
-        instance.utm_campaign = request.args.get('utm_campaign', '')[:250] or None
-        instance.gclid = request.args.get('gclid', '')[:250] or None
+        instance.referrer = unicode(request.referrer[:2083]) if request.referrer else None
+        instance.utm_source = request.args.get('utm_source', u'')[:250] or None
+        instance.utm_medium = request.args.get('utm_medium', u'')[:250] or None
+        instance.utm_term = request.args.get('utm_term', u'')[:250] or None
+        instance.utm_content = request.args.get('utm_content', u'')[:250] or None
+        instance.utm_id = request.args.get('utm_id', u'')[:250] or None
+        instance.utm_campaign = request.args.get('utm_campaign', u'')[:250] or None
+        instance.gclid = request.args.get('gclid', u'')[:250] or None
         instance.active_at = datetime.utcnow()
         instance.events = []
         return instance
@@ -183,11 +183,11 @@ class UserEventBase(object):
     @classmethod
     def new_from_request(cls, request):
         instance = cls()
-        instance.ipaddr = request and request.environ['REMOTE_ADDR'][:45]
-        instance.useragent = request and request.user_agent.string[:250]
+        instance.ipaddr = request and unicode(request.environ['REMOTE_ADDR'][:45])
+        instance.useragent = request and unicode(request.user_agent.string[:250])
         instance.url = request and request.url[:2038]
-        instance.method = request and request.method[:10]
-        instance.name = request and ('endpoint/' + (request.endpoint or '')[:80])
+        instance.method = request and unicode(request.method[:10])
+        instance.name = request and (u'endpoint/' + (request.endpoint or '')[:80])
         return instance
 
     def as_dict(self):
@@ -210,7 +210,7 @@ class UserEvent(UserEventBase, BaseMixin, db.Model):
     url = db.Column(db.Unicode(2038), nullable=True)
     #: Referrer
     referrer = db.Column(db.Unicode(2038), nullable=True,
-        default=lambda: request and ((request.referrer or '')[:2038] or None))
+        default=lambda: request and (unicode((request.referrer or '')[:2038]) or None))
     #: HTTP Method
     method = db.Column(db.Unicode(10), nullable=True)
     #: Status code
