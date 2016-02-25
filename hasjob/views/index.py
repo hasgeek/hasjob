@@ -133,7 +133,10 @@ def index(basequery=None, md5sum=None, tag=None, domain=None, title=None, showal
             if ld:
                 f_locations.append(ld['geonameid'])
     remote_location_query = basequery.filter(JobPost.remote_location == True)  # NOQA
-    locations_query = basequery.join(JobLocation).filter(JobLocation.geonameid.in_(f_locations))
+    if f_locations:
+        locations_query = basequery.join(JobLocation).filter(JobLocation.geonameid.in_(f_locations))
+    else:
+        locations_query = basequery.join(JobLocation)
     if f_locations and remote_location:
         data_filters['locations'] = f_locations
         data_filters['anywhere'] = True
