@@ -201,18 +201,6 @@ class JobPost(BaseMixin, db.Model):
     def after_expiry_date(self):
         return self.expiry_date + timedelta(days=1)
 
-    @property
-    def location_city(self):
-        pass
-
-    @property
-    def location_state(self):
-        pass
-
-    @property
-    def location_country(self):
-        pass
-
     def status_label(self):
         if self.status == POSTSTATUS.DRAFT:
             return _("Draft")

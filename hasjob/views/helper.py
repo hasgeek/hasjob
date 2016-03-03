@@ -545,6 +545,36 @@ def location_geodata(location):
     return {}
 
 
+def jobpost_location_hierarchy(self):
+    locations = []
+    for loc in self.geonameids:
+        locations.append(location_geodata(loc))  # Call one at a time for better cache performance
+    parts = {
+        'city': set(),
+        'area': set(),
+        'state': set(),
+        'country': set(),
+        'continent': set(),
+        }
+    for row in locations:
+        if row and 'fcode' in row:
+            if row['fcode'] in ('PPL', 'PPLA', ):
+                parts['city'].add(row['use_title'])
+            elif row['fcode'] in ('ADM2'):
+                parts['area'].add(row['use_title'])
+            elif row['fcode'] in ('ADM1'):
+                parts['state'].add(row['use_title'])
+            elif row['fcode'] == 'CONT':
+                parts['continent'].add(row['use_title'])
+            if 'country' in row and row['country']:
+                parts['country'].add(row['country'])  # Use 2 letter ISO code, not name
+
+    return {k: tuple(parts[k]) for k in parts}
+
+
+JobPost.location_hierarchy = property(jobpost_location_hierarchy)
+
+
 @app.template_filter('urlfor')
 def url_from_ob(ob):
     if isinstance(ob, JobPost):

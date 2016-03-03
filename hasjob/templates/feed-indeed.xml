@@ -10,17 +10,21 @@
     <referencenumber>{{ post.hashid|cdata }}</referencenumber>
     <url>{{ post.url_for(subdomain=none, _external=true)|cdata }}</url>
     <company>{{ post.company_name|cdata }}</company>
-  {%- if post.location_city %}
-    <city>{{ post.location_city|cdata }}</city>
-  {%- endif %}
-  {%- if post.location_state %}
-    <state>{{ post.location_state|cdata }}</state>
-  {%- endif %}
-  {%- if post.location_country %}
-    <country>{{ post.location_country|cdata }}</country>
+  {%- with loc = post.location_hierarchy %}
+  {%- for city in loc['city'] %}
+    <city>{{ city|cdata }}</city>
+  {%- endfor %}
+  {%- for state in loc['state'] %}
+    <state>{{ state|cdata }}</state>
+  {%- endfor %}
+  {%- if loc['country'] %}
+    {%- for country in loc['country'] %}
+    <country>{{ country|cdata }}</country>
+    {%- endfor %}
   {%- else %}
-    <country>IN</country>
+    <country>--</country>
   {%- endif %}
+  {%- endwith %}
     {#- <postalcode><![CDATA[insert-here]]></postalcode> #}
     <description>{{ post.description|cdata }}</description>
     {#- <salary><![CDATA[insert-here]]></salary> #}
