@@ -1,4 +1,4 @@
-@import url("//code.cdn.mozilla.net/fonts/fira.css");
+@import url("//fonts.googleapis.com/css?family=Fira+Sans:400,700,400italic,700italic&subset=latin,latin-ext");
 body {
   margin: 5px;
   font-size: 16px;
