@@ -3,6 +3,7 @@
 from datetime import datetime, timedelta
 from flask import request
 from flask.ext.lastuser.sqlalchemy import UserBase2
+from coaster.utils import unicode_http_header
 from coaster.sqlalchemy import JsonDict
 from baseframe import _, cache
 from . import db, BaseMixin
@@ -67,7 +68,7 @@ class EventSessionBase(object):
     def new_from_request(cls, request):
         instance = cls()
         instance.created_at = datetime.utcnow()
-        instance.referrer = unicode(request.referrer[:2083]) if request.referrer else None
+        instance.referrer = unicode_http_header(request.referrer)[:2083] if request.referrer else None
         instance.utm_source = request.args.get('utm_source', u'')[:250] or None
         instance.utm_medium = request.args.get('utm_medium', u'')[:250] or None
         instance.utm_term = request.args.get('utm_term', u'')[:250] or None
@@ -184,7 +185,7 @@ class UserEventBase(object):
     def new_from_request(cls, request):
         instance = cls()
         instance.ipaddr = request and unicode(request.environ['REMOTE_ADDR'][:45])
-        instance.useragent = request and unicode(request.user_agent.string[:250])
+        instance.useragent = request and unicode_http_header(request.user_agent.string)[:250]
         instance.url = request and request.url[:2038]
         instance.method = request and unicode(request.method[:10])
         instance.name = request and (u'endpoint/' + (request.endpoint or '')[:80])
@@ -210,7 +211,7 @@ class UserEvent(UserEventBase, BaseMixin, db.Model):
     url = db.Column(db.Unicode(2038), nullable=True)
     #: Referrer
     referrer = db.Column(db.Unicode(2038), nullable=True,
-        default=lambda: request and (unicode((request.referrer or '')[:2038]) or None))
+        default=lambda: request and (unicode_http_header(request.referrer or '')[:2038] or None))
     #: HTTP Method
     method = db.Column(db.Unicode(10), nullable=True)
     #: Status code
