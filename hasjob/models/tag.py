@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from coaster.sqlalchemy import Query
+from coaster.sqlalchemy import Query, failsafe_add
 from coaster.utils import make_name, LabeledEnum
 from baseframe import __
 from . import db, TimestampMixin, BaseNameMixin, POSTSTATUS
@@ -23,6 +23,8 @@ class TAG_TYPE(LabeledEnum):
     # A re-run of the parser found this auto-tag missing
     # in the latest results and so removed it
     REMOVED = (5, 'removed', __("Removed"))
+    # Tag is currently present
+    TAG_PRESENT = [0, 1, 2, 3]
 
 
 class Tag(BaseNameMixin, db.Model):
@@ -34,19 +36,25 @@ class Tag(BaseNameMixin, db.Model):
     public = db.Column(db.Boolean, default=True, nullable=False)
 
     def __repr__(self):
-        return "<Tag %r>" % self.tag
+        return "<Tag %r>" % self.title
 
     def __unicode__(self):
-        return self.tag
+        return self.title
 
     @classmethod
     def get(cls, tag, create=False):
-        name = make_name(tag)
+        title = tag[:cls.__name_length__]
+        name = make_name(title)
         ob = cls.query.filter_by(name=name).one_or_none()
         if create and not ob:
-            ob = cls(title=tag[:cls.__name_length__])
-            db.session.add(ob)
+            ob = cls(name=name, title=title)
+            ob = failsafe_add(db.session, ob, name=name)
         return ob
+
+    @classmethod
+    def autocomplete(cls, prefix):
+        search = make_name(prefix) + '%'
+        return cls.query.filter(cls.name.like(search), cls.public == True).all()  # NOQA
 
 
 class JobPostTag(TimestampMixin, db.Model):
@@ -62,7 +70,7 @@ class JobPostTag(TimestampMixin, db.Model):
     status = db.Column(db.SmallInteger, nullable=False)
 
     def __repr__(self):
-        return "<JobPostTag %r for %s>" % (self.tag.tag, self.jobpost.hashid)
+        return "<JobPostTag %r for %s>" % (self.tag.title, self.jobpost.hashid)
 
     @property
     def status_label(self):
@@ -85,8 +93,9 @@ def related_posts(self, limit=12):
                     SELECT tag_id FROM jobpost_tag WHERE jobpost_id=:id)
                 AND jobpost_id != :id AND jobpost.status IN :listed
                 AND jobpost.datetime >= NOW() AT TIME ZONE 'UTC' - INTERVAL '30 days'
+                AND jobpost_tag.status IN :tag_present
                 GROUP BY jobpost_tag.jobpost_id ORDER BY count DESC LIMIT :limit) AS matches, jobpost
             WHERE jobpost.id = matches.jobpost_id;'''
-        ).params(id=self.id, listed=POSTSTATUS.LISTED, limit=limit)
+        ).params(id=self.id, listed=POSTSTATUS.LISTED, limit=limit, tag_present=tuple(TAG_TYPE.TAG_PRESENT))
 
 JobPost.related_posts = related_posts

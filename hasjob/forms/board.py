@@ -67,6 +67,9 @@ class BoardTaggingForm(forms.Form):
         "One per line. Do NOT add the www prefix"))
     geonameids = forms.GeonameSelectMultiField(__("Locations"),
         description=__("Jobs in any of these locations will be automatically added to this board"))
+    auto_keywords = forms.AutocompleteMultipleField(__("Tags"),
+        autocomplete_endpoint='/api/1/tag/autocomplete', results_key='tags',
+        description=__("Jobs tagged with these keywords will be automatically added to this board"))
 
     def validate_tag_domains(self, field):
         relist = []
