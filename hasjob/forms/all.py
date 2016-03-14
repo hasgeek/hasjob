@@ -15,12 +15,12 @@ from wtforms.ext.sqlalchemy.fields import QuerySelectMultipleField
 from coaster.utils import getbool, get_email_domain
 from flask.ext.lastuser import LastuserResourceException
 
-from .models import (User, JobType, JobCategory, JobApplication, Board, EMPLOYER_RESPONSE, PAY_TYPE,
+from ..models import (User, JobType, JobCategory, JobApplication, Board, EMPLOYER_RESPONSE, PAY_TYPE,
     CAMPAIGN_POSITION, CAMPAIGN_ACTION, BANNER_LOCATION, CURRENCY, Campaign, Domain)
-from .uploads import process_image, UploadNotAllowed
+from ..uploads import process_image, UploadNotAllowed
 
-from . import app, lastuser
-from .utils import simplify_text, EMAIL_RE, URL_RE, PHONE_DETECT_RE, get_word_bag, string_to_number
+from .. import app, lastuser
+from ..utils import simplify_text, EMAIL_RE, URL_RE, PHONE_DETECT_RE, get_word_bag, string_to_number
 
 QUOTES_RE = re.compile(ur'[\'"`‘’“”′″‴«»]+')
 
