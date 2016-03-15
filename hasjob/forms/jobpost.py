@@ -47,14 +47,14 @@ class ListingForm(forms.Form):
             """<a id="abtest" class="no-jshidden" href="#">A/B test it?</a>""")),
         validators=[forms.validators.DataRequired(__("A headline is required")),
             forms.validators.StripWhitespace(),
-            forms.validators.Length(min=1, max=100, message=__("%(max)d characters maximum")),
+            forms.validators.Length(min=1, max=100, message=__("%%(max)d characters maximum")),
             forms.validators.NoObfuscatedEmail(__(u"Do not include contact information in the post"))])
     job_headlineb = forms.NullTextField(__("Headline B"),
         description=__(u"An alternate headline that will be shown to 50%% of users. "
             u"You’ll get a count of views per headline"),
         validators=[forms.validators.Optional(),
             forms.validators.StripWhitespace(),
-            forms.validators.Length(min=1, max=100, message=__("%(max)d characters maximum")),
+            forms.validators.Length(min=1, max=100, message=__("%%(max)d characters maximum")),
             forms.validators.NoObfuscatedEmail(__(u"Do not include contact information in the post"))])
     job_type = forms.RadioField(__("Type"), coerce=int,
         validators=[forms.validators.InputRequired(__("The job type must be specified"))])
@@ -64,7 +64,7 @@ class ListingForm(forms.Form):
         description=__(u'“Bangalore”, “Chennai”, “Pune”, etc or “Anywhere” (without quotes)'),
         validators=[forms.validators.DataRequired(__(u"If this job doesn’t have a fixed location, use “Anywhere”")),
             forms.validators.StripWhitespace(),
-            forms.validators.Length(min=3, max=80, message=__("%(max)d characters maximum"))])
+            forms.validators.Length(min=3, max=80, message=__("%%(max)d characters maximum"))])
     job_relocation_assist = forms.BooleanField(__("Relocation assistance available"))
     job_description = forms.TinyMce4Field(__("Description"),
         content_css=content_css,
@@ -103,7 +103,7 @@ class ListingForm(forms.Form):
                        u"may be removed without notice"),
         validators=[forms.validators.DataRequired(__(u"This is required. Posting any name other than that of the actual organization is a violation of the ToS")),
             forms.validators.StripWhitespace(),
-            forms.validators.Length(min=4, max=80, message=__("The name must be within %(min)d to %(max)d characters"))])
+            forms.validators.Length(min=4, max=80, message=__("The name must be within %%(min)d to %%(max)d characters"))])
     company_logo = forms.FileField(__("Logo"),
         description=__(u"Optional — Your organization’s logo will appear at the top of your post."),
         )  # validators=[file_allowed(uploaded_logos, "That image type is not supported")])
@@ -111,7 +111,7 @@ class ListingForm(forms.Form):
     company_url = forms.URLField(__("URL"),
         description=__(u"Your organization’s website"),
         validators=[forms.validators.DataRequired(), forms.validators.StripWhitespace(), optional_url,
-            forms.validators.Length(max=255, message=__("%(max)d characters maximum")), forms.validators.ValidUrl()])
+            forms.validators.Length(max=255, message=__("%%(max)d characters maximum")), forms.validators.ValidUrl()])
     hr_contact = forms.RadioField(__(u"Is it okay for recruiters and other "
         u"intermediaries to contact you about this post?"), coerce=getbool,
         description=__(u"We’ll display a notice to this effect on the post"),
@@ -130,7 +130,7 @@ class ListingForm(forms.Form):
         validators=[
             forms.validators.DataRequired(__("We need to confirm your email address before the job can be listed")),
             forms.validators.StripWhitespace(),
-            forms.validators.Length(min=5, max=80, message=__("%(max)d characters maximum")),
+            forms.validators.Length(min=5, max=80, message=__("%%(max)d characters maximum")),
             forms.validators.ValidEmail(__("This does not appear to be a valid email address"))])
     twitter = forms.AnnotatedNullTextField(__("Twitter"),
         description=__(u"Optional — your organization’s Twitter account. "
@@ -138,7 +138,7 @@ class ListingForm(forms.Form):
         prefix='@', validators=[
             forms.validators.Optional(),
             forms.validators.StripWhitespace(),
-            forms.validators.Length(min=0, max=15, message=__(u"Twitter accounts can’t be over %(max)d characters long"))])
+            forms.validators.Length(min=0, max=15, message=__(u"Twitter accounts can’t be over %%(max)d characters long"))])
     collaborators = forms.UserSelectMultiField(__(u"Collaborators"),
         description=__(u"If someone is helping you evaluate candidates, type their names here. "
                        u"They must have a HasGeek account. They will not receive email notifications "
@@ -215,7 +215,7 @@ class ListingForm(forms.Form):
                 raise forms.ValidationError(_("Please specify what this job pays"))
             data = string_to_number(data)
             if data is None:
-                raise forms.ValidationError(_("Unrecognised value %s") % field.data)
+                raise forms.ValidationError(_("Unrecognised value %%s") % field.data)
             else:
                 field.data = data
         else:
@@ -225,7 +225,7 @@ class ListingForm(forms.Form):
         if form.job_pay_type.data in (PAY_TYPE.ONETIME, PAY_TYPE.RECURRING):
             data = string_to_number(field.data.strip())
             if data is None:
-                raise forms.ValidationError(_("Unrecognised value %s") % field.data)
+                raise forms.ValidationError(_("Unrecognised value %%s") % field.data)
             else:
                 field.data = data
         else:
@@ -241,9 +241,9 @@ class ListingForm(forms.Form):
                 try:
                     field.data = Decimal(data)
                 except InvalidOperation:
-                    raise forms.ValidationError(_("Please enter a percentage between 0% and 100%"))
+                    raise forms.ValidationError(_("Please enter a percentage between 0%% and 100%%"))
             else:
-                raise forms.ValidationError(_("Unrecognised value %s") % field.data)
+                raise forms.ValidationError(_("Unrecognised value %%s") % field.data)
         else:
             # Discard submission if equity checkbox is unchecked
             field.data = None
@@ -258,9 +258,9 @@ class ListingForm(forms.Form):
                 try:
                     field.data = Decimal(data)
                 except InvalidOperation:
-                    raise forms.ValidationError(_("Please enter a percentage between 0% and 100%"))
+                    raise forms.ValidationError(_("Please enter a percentage between 0%% and 100%%"))
             else:
-                raise forms.ValidationError(_("Unrecognised value %s") % field.data)
+                raise forms.ValidationError(_("Unrecognised value %%s") % field.data)
         else:
             # Discard submission if equity checkbox is unchecked
             field.data = None
@@ -269,13 +269,13 @@ class ListingForm(forms.Form):
         success = super(ListingForm, self).validate(send_signals=False)
         if success:
             if (not self.job_type_ob.nopay_allowed) and self.job_pay_type.data == PAY_TYPE.NOCASH:
-                self.job_pay_type.errors.append(_(u"“%s” cannot pay nothing") % self.job_type_ob.title)
+                self.job_pay_type.errors.append(_(u"“%%s” cannot pay nothing") % self.job_type_ob.title)
                 success = False
 
             domain_name = get_email_domain(self.poster_email.data)
             domain = Domain.get(domain_name)
             if domain and domain.is_banned:
-                self.poster_email.errors.append(_(u"%s is banned from posting jobs on Hasjob") % domain_name)
+                self.poster_email.errors.append(_(u"%%s is banned from posting jobs on Hasjob") % domain_name)
                 success = False
             elif (not self.job_type_ob.webmail_allowed) and domain_name in webmail_domains:
                 self.poster_email.errors.append(
@@ -326,7 +326,7 @@ class ListingForm(forms.Form):
 
                     if self.job_pay_equity_max.data > self.job_pay_equity_min.data * multiplier:
                         self.job_pay_equity_max.errors.append(
-                            _(u"Please select a narrower range, with maximum within %d× minimum") % multiplier)
+                            _(u"Please select a narrower range, with maximum within %%d× minimum") % multiplier)
                         success = False
         self.send_signals()
         return success
@@ -366,7 +366,7 @@ class ApplicationForm(forms.Form):
     apply_phone = forms.StringField(__("Phone"),
         validators=[forms.validators.DataRequired(__("Specify a phone number")),
             forms.validators.StripWhitespace(),
-            forms.validators.Length(min=1, max=15, message=__("%(max)d characters maximum"))],
+            forms.validators.Length(min=1, max=15, message=__("%%(max)d characters maximum"))],
         description=__("A phone number the employer can reach you at"))
     apply_message = forms.TinyMce4Field(__("Job application"),
         content_css=content_css,
@@ -425,7 +425,7 @@ class KioskApplicationForm(forms.Form):
         description=__("Your email address"))
     apply_phone = forms.StringField(__("Phone"),
         validators=[forms.validators.DataRequired(__("Specify a phone number")),
-            forms.validators.Length(min=1, max=15, message=__("%(max)d characters maximum"))],
+            forms.validators.Length(min=1, max=15, message=__("%%(max)d characters maximum"))],
         description=__("A phone number the employer can reach you at"))
     apply_message = forms.TinyMce4Field(__("Job application"),
         content_css=content_css,
