@@ -40,7 +40,7 @@ class BoardOptionsForm(forms.Form):
             u"but you can make it optional for jobs posted from this board. "
             u"Pay data is used to match candidates to jobs. We recommend you collect it"))
     newjob_headline = forms.NullTextField(__(u"Headline"),
-        description=__(u"The sample headline shown to employers when post a job"),
+        description=__(u"The sample headline shown to employers when posting a job"),
         validators=[
             forms.validators.StripWhitespace(),
             forms.validators.Length(min=0, max=100, message=__("%(max)d characters maximum"))])
