@@ -90,7 +90,7 @@ class CampaignActionForm(forms.Form):
         validators=[
             forms.validators.StripWhitespace(),
             optional_url,
-            forms.validators.Length(min=0, max=250, message="%(max)d characters maximum"),
+            forms.validators.Length(min=0, max=250, message=__("%%(max)d characters maximum")),
             forms.validators.ValidUrl()])
     form = forms.TextAreaField(__("Form JSON"), description=__("Form definition (for form type)"),
         validators=[forms.validators.Optional()])
