@@ -9,6 +9,7 @@ import hasjob.views as views
 from hasjob.models import db
 from hasjob import app, init_for
 from datetime import datetime, timedelta
+from sqlalchemy.exc import IntegrityError
 
 @database.option('-e', '--env', default='dev', help="runtime env [default 'dev']")
 def sweep(env):
@@ -19,6 +20,11 @@ def sweep(env):
     # Inactive sessions are only kept for 30mins
     es.query.filter((es.ended_at==None) & (es.active_at<(datetime.utcnow() - \
         timedelta(minutes=30)))).update({es.ended_at: es.active_at})
+    try:
+        db.sessions.commit()
+    except IntegrityError:
+        print "Could not commit changes made. Please try again later."
+        db.session.rollback()
 
 
 if __name__ == '__main__':
