@@ -445,9 +445,8 @@ def browse_by_email(md5sum):
     if not md5sum:
         abort(404)
     basequery = JobPost.query.filter_by(md5sum=md5sum)
-    if basequery.isempty():
-        abort(404)
-    jobpost_user = basequery.first().user
+    jobpost = basequery.first_or_404()
+    jobpost_user = jobpost.user
     return index(basequery=basequery, md5sum=md5sum, showall=True, template_vars={'jobpost_user': jobpost_user})
 
 
