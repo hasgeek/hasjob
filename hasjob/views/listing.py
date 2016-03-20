@@ -39,7 +39,7 @@ from hasjob.models import (
 from hasjob.twitter import tweet
 from hasjob.tagging import tag_locations, add_to_boards, tag_jobpost
 from hasjob.uploads import uploaded_logos
-from hasjob.utils import get_word_bag, redactemail, random_long_key
+from hasjob.utils import get_word_bag, redactemail, random_long_key, common_legal_names
 from hasjob.views import ALLOWED_TAGS
 from hasjob.nlp import identify_language
 from hasjob.views.helper import gif1x1, cache_viewcounts, session_jobpost_ab, bgroup
@@ -858,6 +858,8 @@ def editjob(hashid, key, domain=None, form=None, validated=False, newpost=None):
                     # This is dependent on the domain's DNS validity already being confirmed
                     # by the form's email validator
                     post.domain = Domain.get(post.email_domain, create=True)
+                    if not post.domain.is_webmail and not post.domain.title:
+                        post.domain.title, post.domain.legal_title = common_legal_names(post.company_name)
             # To protect from gaming, don't allow words to be removed in edited posts once the post
             # has been confirmed. Just add the new words.
             if post.status in POSTSTATUS.POSTPENDING:
