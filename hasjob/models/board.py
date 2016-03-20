@@ -3,7 +3,7 @@
 from datetime import datetime
 from pytz import timezone
 from werkzeug import cached_property
-from flask import url_for
+from flask import url_for, Markup
 from sqlalchemy.orm import defer
 from sqlalchemy.ext.associationproxy import association_proxy
 from coaster.sqlalchemy import make_timestamp_columns
@@ -161,6 +161,11 @@ class Board(BaseNameMixin, db.Model):
     @cached_property
     def tz(self):
         return timezone(self.timezone)
+
+    @property
+    def title_and_name(self):
+        return Markup(u'{title} (<a href="{url}" target="_blank">{name}</a>)'.format(
+            title=self.title, name=self.name, url=self.url_for()))
 
     def owner_is(self, user):
         if user is None:

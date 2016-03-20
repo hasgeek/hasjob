@@ -41,7 +41,7 @@ class CampaignForm(forms.Form):
             "same dates. 0 implies lowest priority"))
     boards = QuerySelectMultipleField(__("Boards"),
         widget=ListWidget(), option_widget=CheckboxInput(),
-        query_factory=lambda: Board.query.order_by('title'), get_label='title',
+        query_factory=lambda: Board.query.order_by('featured desc, title'), get_label='title_and_name',
         validators=[forms.validators.Optional()],
         description=__(u"Select the boards this campaign is active on"))
     geonameids = forms.GeonameSelectMultiField("Locations",
