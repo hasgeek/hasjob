@@ -31,9 +31,9 @@
   {%- if post.parsed_location %}
     {%- for token in post.parsed_location.get('tokens', []) -%}
       {%- if token['geoname'] -%}
-        <a itemscope itemtype="http://schema.org/Place" href="{{ url_for('index', l=token['geoname'].get('name') or token['geoname'].get('geonameid')) }}"><span itemprop="name">{{ token['token'] }}</span></a>
+        <a itemscope itemtype="http://schema.org/Place" href="{{ url_for('browse_by_location', location=token['geoname'].get('name') or token['geoname'].get('geonameid')) }}"><span itemprop="name">{{ token['token'] }}</span></a>
       {%- elif token['remote'] -%}
-        <a href="{{ url_for('index', l='anywhere') }}">{{ token['token'] }}</a>
+        <a href="{{ url_for('browse_by_anywhere') }}">{{ token['token'] }}</a>
       {%- else -%}
         {{ token['token'] }}
       {%- endif %}
