@@ -4,7 +4,7 @@ from datetime import datetime
 from collections import OrderedDict
 
 from sqlalchemy.exc import ProgrammingError
-from flask import abort, redirect, render_template, request, Response, url_for, g, flash, jsonify
+from flask import abort, redirect, render_template, request, Response, url_for, g, flash, jsonify, Markup
 from coaster.utils import getbool, parse_isoformat, for_tsquery
 from coaster.views import render_with
 from baseframe import csrf, _
@@ -92,7 +92,7 @@ def json_index(data):
 @app.route('/', methods=['GET', 'POST'], subdomain='<subdomain>')
 @app.route('/', methods=['GET', 'POST'])
 @render_with({'text/html': 'index.html', 'application/json': json_index}, json=False)
-def index(basequery=None, md5sum=None, tag=None, domain=None, title=None, showall=True, statuses=None, batched=True, ageless=False, template_vars={}):
+def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, title=None, showall=True, statuses=None, batched=True, ageless=False, template_vars={}):
 
     if basequery is None:
         is_index = True
@@ -121,10 +121,14 @@ def index(basequery=None, md5sum=None, tag=None, domain=None, title=None, showal
         data_filters['categories'] = f_categories
         basequery = basequery.join(JobCategory).filter(JobCategory.name.in_(f_categories))
     r_locations = request.args.getlist('l')
+    if location:
+        r_locations.append(location['geonameid'])
     f_locations = []
     remote_location = getbool(request.args.get('anywhere')) or False
     for rl in r_locations:
-        if rl == 'anywhere':
+        if isinstance(rl, int) and rl > 0:
+            f_locations.append(rl)
+        elif rl == 'anywhere':
             remote_location = True
         elif rl.isdigit():
             f_locations.append(int(rl))
@@ -355,7 +359,7 @@ def index(basequery=None, md5sum=None, tag=None, domain=None, title=None, showal
     return dict(
         pinsandposts=pinsandposts, grouped=grouped, now=now,
         newlimit=newlimit, title=title,
-        md5sum=md5sum, domain=domain, employer_name=employer_name,
+        md5sum=md5sum, domain=domain, location=location, employer_name=employer_name,
         showall=showall, is_index=is_index,
         header_campaign=header_campaign, loadmore=loadmore,
         search_domains=search_domains, query_params=query_params,
@@ -405,7 +409,7 @@ def applied():
 def browse_by_type(name):
     if name == 'all':
         return redirect(url_for('index'))
-    return redirect(url_for('index', t=name), code=301)
+    return redirect(url_for('index', t=name), code=302)
 
 
 @csrf.exempt
@@ -435,7 +439,7 @@ def browse_by_domain_legacy(domain):
 def browse_by_category(name):
     if name == 'all':
         return redirect(url_for('index'))
-    return redirect(url_for('index', c=name), code=301)
+    return redirect(url_for('index', c=name), code=302)
 
 
 @csrf.exempt
@@ -454,14 +458,21 @@ def browse_by_email(md5sum):
 @app.route('/in/<location>', methods=['GET', 'POST'], subdomain='<subdomain>')
 @app.route('/in/<location>', methods=['GET', 'POST'])
 def browse_by_location(location):
-    return redirect(url_for('index', l=location), code=301)
+    loc = Location.get(location)
+    if loc:
+        geodata = {'geonameid': loc.id, 'name': loc.name, 'use_title': loc.title, 'description': Markup(loc.description)}
+    else:
+        return redirect(url_for('index', l=location), code=302)
+    if location != geodata['name']:
+        return redirect(url_for('browse_by_location', location=geodata['name']))
+    return index(location=geodata, title=geodata['use_title'])
 
 
 @csrf.exempt
 @app.route('/in/anywhere', methods=['GET', 'POST'], subdomain='<subdomain>')
 @app.route('/in/anywhere', methods=['GET', 'POST'])
 def browse_by_anywhere():
-    return redirect(url_for('index', l='anywhere'), code=301)
+    return redirect(url_for('index', l='anywhere'), code=302)
 
 
 @csrf.exempt
