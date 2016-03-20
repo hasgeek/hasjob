@@ -648,9 +648,13 @@ def archive():
         min=min, max=max, sortarchive=sortarchive)
 
 
-@app.route('/sitemap.xml', subdomain='<subdomain>')
-@app.route('/sitemap.xml')
-def sitemap():
+@app.route('/sitemap.xml', defaults={'key': None}, subdomain='<subdomain>')
+@app.route('/sitemap.xml', defaults={'key': None})
+@app.route('/sitemap.xml/<key>', subdomain='<subdomain>')
+@app.route('/sitemap.xml/<key>')
+def sitemap(key):
+    authorized_sitemap = key == app.config.get('SITEMAP_KEY')
+
     sitemapxml = '<?xml version="1.0" encoding="UTF-8"?>\n'\
                  '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
     # Add featured boards to sitemap
@@ -674,13 +678,14 @@ def sitemap():
                       '    <lastmod>%s</lastmod>\n' % (post.datetime.isoformat() + 'Z') + \
                       '    <changefreq>monthly</changefreq>\n'\
                       '  </url>\n'
-    # Add domains to sitemap
-    for domain in Domain.query.filter(Domain.title != None).all():  # NOQA
-        sitemapxml += '  <url>\n'\
-                      '    <loc>%s</loc>\n' % domain.url_for(_external=True) + \
-                      '    <lastmod>%s</lastmod>\n' % (domain.updated_at.isoformat() + 'Z') + \
-                      '    <changefreq>monthly</changefreq>\n'\
-                      '  </url>\n'
+    if authorized_sitemap:
+        # Add domains to sitemap
+        for domain in Domain.query.filter(Domain.title != None).order_by('updated_at desc').all():  # NOQA
+            sitemapxml += '  <url>\n'\
+                          '    <loc>%s</loc>\n' % domain.url_for(_external=True) + \
+                          '    <lastmod>%s</lastmod>\n' % (domain.updated_at.isoformat() + 'Z') + \
+                          '    <changefreq>monthly</changefreq>\n'\
+                          '  </url>\n'
     sitemapxml += '</urlset>'
     return Response(sitemapxml, content_type='text/xml; charset=utf-8')
 
