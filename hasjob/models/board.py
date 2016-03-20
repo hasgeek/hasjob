@@ -115,6 +115,8 @@ class Board(BaseNameMixin, db.Model):
     newjob_headline = db.Column(db.Unicode(100), nullable=True)
     #: New job posting instructions
     newjob_blurb = db.Column(db.UnicodeText, nullable=True)
+    #: Featured board
+    featured = db.Column(db.Boolean, default=False, nullable=False, index=True)
     #: Posting users
     posting_users = db.relationship(User, secondary=board_users_table)
     #: Available job types

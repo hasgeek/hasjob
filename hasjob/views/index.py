@@ -10,7 +10,7 @@ from coaster.views import render_with
 from baseframe import csrf, _
 
 from .. import app, lastuser
-from ..models import (db, JobCategory, JobPost, JobType, POSTSTATUS, newlimit, agelimit, JobLocation,
+from ..models import (db, JobCategory, JobPost, JobType, POSTSTATUS, newlimit, agelimit, JobLocation, Board,
     Domain, Location, Tag, JobPostTag, Campaign, CAMPAIGN_POSITION, CURRENCY, JobApplication, starred_job_table)
 from ..views.helper import (getposts, getallposts, gettags, location_geodata, cache_viewcounts, session_jobpost_ab,
     bgroup, make_pay_graph)
@@ -653,6 +653,13 @@ def archive():
 def sitemap():
     sitemapxml = '<?xml version="1.0" encoding="UTF-8"?>\n'\
                  '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+    # Add featured boards to sitemap
+    for board in Board.query.filter_by(featured=True).all():
+        sitemapxml += '  <url>\n'\
+                      '    <loc>%s</loc>\n' % board.url_for(_external=True) + \
+                      '    <lastmod>%s</lastmod>\n' % (board.updated_at.isoformat() + 'Z') + \
+                      '    <changefreq>monthly</changefreq>\n'\
+                      '  </url>\n'
     # Add locations to sitemap
     for item in Location.query.all():
         sitemapxml += '  <url>\n'\
@@ -665,6 +672,13 @@ def sitemap():
         sitemapxml += '  <url>\n'\
                       '    <loc>%s</loc>\n' % post.url_for(_external=True) + \
                       '    <lastmod>%s</lastmod>\n' % (post.datetime.isoformat() + 'Z') + \
+                      '    <changefreq>monthly</changefreq>\n'\
+                      '  </url>\n'
+    # Add domains to sitemap
+    for domain in Domain.query.filter(Domain.title != None).all():  # NOQA
+        sitemapxml += '  <url>\n'\
+                      '    <loc>%s</loc>\n' % domain.url_for(_external=True) + \
+                      '    <lastmod>%s</lastmod>\n' % (domain.updated_at.isoformat() + 'Z') + \
                       '    <changefreq>monthly</changefreq>\n'\
                       '  </url>\n'
     sitemapxml += '</urlset>'
