@@ -28,7 +28,7 @@
       {%- if domain.has_profile -%}
         {{ domain.description|firstline }}
       {%- else -%}
-        All jobs at {{ domain.title or domain.name }}
+        All jobs at {{ domain.use_title }}
       {%- endif -%}
     {%- else -%}
       {{ super() }}

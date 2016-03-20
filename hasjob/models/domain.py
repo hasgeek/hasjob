@@ -47,6 +47,9 @@ class Domain(BaseMixin, db.Model):
 
     @property
     def use_title(self):
+        post = self.jobposts.filter(JobPost.status.in_(POSTSTATUS.POSTPENDING)).order_by('datetime desc').first()
+        if post:
+            return post.company_name
         return self.title or self.name
 
     @property
@@ -62,7 +65,8 @@ class Domain(BaseMixin, db.Model):
         if self.logo_url:
             return self.logo_url
         else:
-            post = self.jobposts.filter(JobPost.company_logo != None, JobPost.status.in_(POSTSTATUS.ARCHIVED)).order_by("datetime desc").first()  # NOQA
+            post = self.jobposts.filter(JobPost.company_logo != None,
+                JobPost.status.in_(POSTSTATUS.ARCHIVED)).order_by('datetime desc').first()  # NOQA
             return post.url_for('logo', _external=True) if post else None
 
     def editor_is(self, user):
