@@ -47,7 +47,7 @@
 {% block content %}
   {%- from "macros.html" import stickie %}
   {% with gkiosk=g.kiosk, gboard=g.board, guser=g.user, gstarred_ids=g.starred_ids %}
-    {%- if gboard and gboard.not_root and not paginated and not (domain or md5sum) %}
+    {%- if gboard and gboard.not_root and not paginated and not (domain or md5sum or location or tag) %}
       <div class="flash info">
         {{ gboard.description|safe }}
         {%- if gkiosk and g.peopleflow_url %}
