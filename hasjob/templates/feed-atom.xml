@@ -7,7 +7,7 @@
   <updated>{{ updated }}</updated>
   <id>{{ url_for('index', _external=true) }}</id>
   <icon>{{ url_for('static', filename='img/logo.png', _external=true) }}</icon>
-  <author><name>{{ config['SITE_TITLE']|e }}</name></author>
+  <author><name>{% if g.board %}{{ g.board.title|e }}{% if g.board.not_root %} ({{ config['SITE_TITLE']|e }}){% endif %}{% else %}{{ config['SITE_TITLE']|e }}{% endif %}</name></author>
 
   {% for post in posts -%}
   <entry>
