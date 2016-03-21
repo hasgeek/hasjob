@@ -11,7 +11,7 @@
 {%- endblock %}
 
 {%- block titletags %}
-  <title>{% block title %}{{ title }}{% endblock %} | {% if g.board %}{{ g.board.title }}{% else %}{{ config['SITE_TITLE'] }}{% endif %}</title>
+  <title>{% block title %}{{ title }}{% endblock %} | {% if g.board %}{{ g.board.title }}{% if g.board.not_root %} ({{ config['SITE_TITLE'] }}){% endif %}{% else %}{{ config['SITE_TITLE'] }}{% endif %}</title>
   <meta name="DC.title" content="{{ self.title()|e }}" />
   <meta property="og:title" content="{{ self.title()|e }}" />
 {%- endblock %}
