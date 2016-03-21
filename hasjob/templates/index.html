@@ -1,6 +1,6 @@
 {%- from "domain.html" import org_profile, user_profile with context %}
 {% from "baseframe/forms.html" import renderfield, widgetscripts %}
-{%- macro pagetitle() %}{% if title %}{{ title }} | {% endif %}{% if g.board %}{{ g.board.title }}{% if g.board.not_root %} ({{ config['SITE_TITLE'] }}){% endif %}{% else %}{{ config['SITE_TITLE'] }}{% endif %}{%- endmacro %}
+{%- macro pagetitle() %}{% if title %}{% if domain %}Jobs at {% endif%}{{ title }} | {% endif %}{% if g.board %}{{ g.board.title }}{% if g.board.not_root %} ({{ config['SITE_TITLE'] }}){% endif %}{% else %}{{ config['SITE_TITLE'] }}{% endif %}{%- endmacro %}
 {%- if not request.is_xhr -%}
   {% extends "layout.html" %}
   {% block titletags -%}

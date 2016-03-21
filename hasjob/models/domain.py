@@ -47,10 +47,12 @@ class Domain(BaseMixin, db.Model):
 
     @property
     def use_title(self):
+        if self.title:
+            return self.title
         post = self.jobposts.filter(JobPost.status.in_(POSTSTATUS.POSTPENDING)).order_by('datetime desc').first()
         if post:
             return post.company_name
-        return self.title or self.name
+        return self.name
 
     @property
     def has_profile(self):
