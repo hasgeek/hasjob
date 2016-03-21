@@ -1,7 +1,7 @@
 @charset "UTF-8";
 body {
   font-family: "Fira Sans", arial, sans-serif;
-  background: #e8e7e6 url('../img/canvas.jpg?1425290105');
+  background: #e8e7e6 url('../img/canvas.jpg?1457700997');
 }
 
 header {
@@ -104,7 +104,7 @@ header #hgnav .fa {
   overflow: hidden;
   text-align: left;
   text-transform: capitalize;
-  background-image: url('../img/logo-star.png?1425290105');
+  background-image: url('../img/logo-star.png?1457701438');
   background-repeat: no-repeat;
   background-position: 50% 50%;
   width: 170px;
@@ -237,7 +237,7 @@ header #hgnav .fa {
     min-height: 0;
   }
   header #hgnav .hg-header-app-nav {
-    max-width: 83%;
+    max-width: 76%;
   }
   header #hgnav .board-caption {
     position: static;
@@ -340,7 +340,7 @@ header #hgnav .fa {
   line-height: 36px;
 }
 #search input[type="text"] {
-  background: white url('../img/search.png?1425290105') 4px center no-repeat;
+  background: white url('../img/search.png?1457712464') 4px center no-repeat;
   padding: 7px 10px 3px 20px;
 }
 #search .btn {
