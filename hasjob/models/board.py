@@ -239,6 +239,9 @@ class BoardJobPost(TimestampMixin, db.Model):
     #: Is this post pinned on this board?
     pinned = db.Column(db.Boolean, default=False, nullable=False)
 
+    def __repr__(self):
+        return '<BoardJobPost %s: %s>' % (self.board.name, repr(self.jobpost)[1:-1])
+
 
 def _jobpost_link_to_board(self, board):
     return BoardJobPost.query.get((board.id, self.id))
