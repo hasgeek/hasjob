@@ -2,9 +2,9 @@
 
 {% block content %}
   <p>Hi {{ post.company_name }},</p>
-  <p>This is regarding your job post on Hasjob titled "<strong>{{ post.headline }}</strong>". Unfortunately, your post is not in compliance with our <a href="https://hasjob.co/tos">Terms of Service</a> and has been taken down. Your post was reviewed by {{ post.reviewer.fullname }}, who left the following comment:</p>
+  <p>This is regarding your job post on Hasjob titled "<strong>{{ post.headline }}</strong>". Unfortunately, your post is not in compliance with our <a href="{{ url_for('terms_of_service', _external=true) }}">Terms of Service</a> and has been taken down. Your post was reviewed by {{ post.reviewer.fullname }}, who left the following comment:</p>
   <p>"<strong>{{ post.review_comments }}</strong>"</p>
-  <p>You are welcome to post again in compliance with our <a href="https://hasjob.co/tos">Terms of Service</a>.</p>
+  <p>You are welcome to post again in compliance with our <a href="{{ url_for('terms_of_service', _external=true) }}">Terms of Service</a>.</p>
   <hr>
-  <p><a href="https://hasjob.co/">Hasjob</a> is a service of <a href="https://hasgeek.com/">HasGeek</a>. Write to us at <a href="mailto:support@hasgeek.com">support@hasgeek.com</a> if you have suggestions or questions on this service.</p>
+  <p><a href="{{ url_for('index', subdomain=none, _external=true) }}">Hasjob</a> is a service of <a href="https://hasgeek.com/">HasGeek</a>. Write to us at <a href="mailto:{{ config['SUPPORT_EMAIL'] }}">{{ config['SUPPORT_EMAIL'] }}</a> if you have suggestions or questions on this service.</p>
 {% endblock %}

@@ -10,7 +10,7 @@
     <meta itemprop="description" content="This is a confirmation email for the job you listed."/>  
     <div itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
     <meta itemprop="name" content="Hasjob"/>
-    <link itemprop="url" href="https://hasjob.co/"/>
+    <link itemprop="url" href="{{ url_for('index', subdomain=none, _external=true) }}"/>
     </div>  
   </div>
   <p>Hello,</p>
@@ -26,7 +26,7 @@
   </ul>
   <p>
     {% if g.board and g.board.not_root %}[{{ g.board.title }}][board] is powered by Hasjob. {% endif -%}
-    <a href="https://hasjob.co/">Hasjob</a> is a service of <a href="https://hasgeek.com/">HasGeek</a>. Write to us at info@hasgeek.com if you have suggestions or questions on this service.
+    <a href="{{ url_for('index', subdomain=none, _external=true) }}">Hasjob</a> is a service of <a href="https://hasgeek.com/">HasGeek</a>. Write to us at <a href="mailto:{{ config['SUPPORT_EMAIL'] }}">{{ config['SUPPORT_EMAIL'] }}</a> if you have suggestions or questions on this service.
   </p>
   <p>If you did not post a job, you may safely ignore this email.</p>
 {% endblock %}
