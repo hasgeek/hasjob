@@ -245,6 +245,7 @@ def record_views_and_events(response):
                     db.session.commit()
                 except IntegrityError:  # Race condition from parallel requests
                     db.session.rollback()
+            db.session.commit()
             campaign_view_count_update.delay(campaign_id=campaign.id, user_id=g.user.id)
     elif g.anon_user:
         for campaign in g.campaign_views:
@@ -255,6 +256,7 @@ def record_views_and_events(response):
                     db.session.commit()
                 except IntegrityError:  # Race condition from parallel requests
                     db.session.rollback()
+            db.session.commit()
             campaign_view_count_update.delay(campaign_id=campaign.id, anon_user_id=g.anon_user.id)
 
     if g.esession:  # Will be None for anon static requests
@@ -508,8 +510,16 @@ def campaign_view_count_update(campaign_id, user_id=None, anon_user_id=None):
         return
     if user_id:
         cv = CampaignView.get_by_ids(campaign_id=campaign_id, user_id=user_id)
+        if not cv:
+            # Could be missing because of begin_nested introduced in 36070d9e without outer commit
+            cv = CampaignView(campaign_id=campaign_id, user_id=user_id)
+            db.session.add(cv)
     elif anon_user_id:
         cv = CampaignAnonView.get_by_ids(campaign_id=campaign_id, anon_user_id=anon_user_id)
+        if not cv:
+            # Could be missing because of begin_nested introduced in 36070d9e without outer commit
+            cv = CampaignAnonView(campaign_id=campaign_id, anon_user_id=anon_user_id)
+            db.session.add(cv)
     query = db.session.query(db.func.count(campaign_event_session_table.c.event_session_id)).filter(
         campaign_event_session_table.c.campaign_id == campaign_id).join(EventSession)
 
