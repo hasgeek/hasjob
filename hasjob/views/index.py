@@ -94,6 +94,7 @@ def json_index(data):
 @render_with({'text/html': 'index.html', 'application/json': json_index}, json=False)
 def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, title=None, showall=True, statuses=None, batched=True, ageless=False, template_vars={}):
 
+    is_siteadmin = lastuser.has_permission('siteadmin')
     if basequery is None:
         is_index = True
     else:
@@ -207,8 +208,8 @@ def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, tit
     # getposts sets g.board_jobs, used below
     posts = getposts(basequery, pinned=True, showall=showall, statuses=statuses, ageless=ageless).all()
 
-    # Cache viewcounts (admin view or not)
-    cache_viewcounts(posts)
+    if is_siteadmin or (g.user and g.user.flags.is_employer_month):
+        cache_viewcounts(posts)
 
     if posts:
         employer_name = posts[0].company_name
@@ -363,7 +364,7 @@ def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, tit
         showall=showall, is_index=is_index,
         header_campaign=header_campaign, loadmore=loadmore,
         search_domains=search_domains, query_params=query_params,
-        is_siteadmin=lastuser.has_permission('siteadmin'),
+        is_siteadmin=is_siteadmin,
         pay_graph_data=pay_graph_data, paginated=JobPost.is_paginated(request), template_vars=template_vars)
 
 
