@@ -406,7 +406,7 @@ pay_graph_buckets = {
         range(200000, 1000000, 50000) +
         range(1000000, 10000000, 100000) +
         [10000000])
-}
+    }
 pay_graph_buckets['EUR'] = pay_graph_buckets['USD']
 pay_graph_buckets['SGD'] = pay_graph_buckets['USD']
 pay_graph_buckets['GBP'] = pay_graph_buckets['USD']
