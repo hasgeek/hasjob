@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from coaster.manage import init_manager, database
+from coaster.manage import init_manager, manager
 
 import hasjob
 import hasjob.models as models
@@ -11,7 +11,7 @@ from hasjob import app, init_for
 from datetime import datetime, timedelta
 from sqlalchemy.exc import IntegrityError
 
-@database.option('-e', '--env', default='dev', help="runtime env [default 'dev']")
+@manager.option('-e', '--env', default='dev', help="runtime env [default 'dev']")
 def sweep(env):
     """Sweep the user database to close all the inactive sessions"""
     manager.init_for(env)
@@ -21,7 +21,7 @@ def sweep(env):
     es.query.filter((es.ended_at==None) & (es.active_at<(datetime.utcnow() - \
         timedelta(minutes=30)))).update({es.ended_at: es.active_at})
     try:
-        db.sessions.commit()
+        db.session.commit()
     except IntegrityError:
         print "Could not commit changes made. Please try again later."
         db.session.rollback()
