@@ -4,7 +4,6 @@ from datetime import datetime
 from pytz import timezone
 from werkzeug import cached_property
 from flask import url_for, Markup
-from sqlalchemy.orm import defer
 from sqlalchemy.ext.associationproxy import association_proxy
 from coaster.sqlalchemy import make_timestamp_columns
 from . import db, TimestampMixin, BaseNameMixin
@@ -218,7 +217,7 @@ class Board(BaseNameMixin, db.Model):
 def _user_boards(self):
     return Board.query.filter(
         Board.userid.in_(self.user_organizations_owned_ids())).options(
-        defer(Board.description)).all()
+        db.load_only('id', 'name', 'title', 'userid')).all()
 
 User.boards = _user_boards
 

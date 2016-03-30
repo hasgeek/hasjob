@@ -53,8 +53,7 @@ from hasjob.views.helper import gif1x1, cache_viewcounts, session_jobpost_ab, bg
 def jobdetail(domain, hashid):
     is_siteadmin = lastuser.has_permission('siteadmin')
     query = JobPost.query.filter_by(hashid=hashid).options(
-        db.subqueryload('locations'), db.subqueryload('taglinks')
-        )
+        db.subqueryload('locations'), db.subqueryload('taglinks'))
     # if g.user:
     #     query = query.outerjoin(UserJobView,
     #         db.and_(UserJobView.user_id == g.user.id, UserJobView.jobpost_id == JobPost.id))
