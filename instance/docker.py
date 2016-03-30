@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 import os
 CACHE_TYPE = 'redis'
-CACHE_REDIS_HOST = 'redis'
+CACHE_REDIS_HOST = os.environ.get('CACHE_REDIS_HOST')
 #: Database backend
-SQLALCHEMY_DATABASE_URI = 'postgres://postgres:postgres@pg/postgres'
-REDIS_URL = 'redis://redis:6379/0'
+SQLALCHEMY_DATABASE_URI = os.environ.get('SQLALCHEMY_DATABASE_URI')
+REDIS_URL = os.environ.get('REDIS_URL')
 SERVER_NAME = (os.environ.get('SERVER_NAME') or 'hasjob.docker.dev') + ':5000'
 #: LastUser server
 LASTUSER_SERVER = os.environ.get('LASTUSER_SERVER') or 'https://auth.hasgeek.com'

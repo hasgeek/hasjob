@@ -1,6 +1,6 @@
 web:
   build: .
-  command: python /code/hasjob/runserver.py &
+  command: python /code/hasjob/rundockerserver.py
   volumes:
    - .:/code/hasjob
   environment:
@@ -11,10 +11,12 @@ web:
   links:
    - pg
    - redis
+   - postfix
   ports:
    - "5000:5000"
    - "5432:5432"
    - "6379:6379"
+   - "25:25"
 pg:
   image: postgres
   environment:
@@ -22,3 +24,10 @@ pg:
     POSTGRES_USER: postgres
 redis:
   image: redis
+postfix:
+  image: hasgeek/postfix
+  environment:
+    SMTP_SERVER: smtp.bar.com
+    SMTP_USERNAME: foo@bar.com
+    SMTP_PASSWORD: XXXXXXXX
+    SMTP_HOSTNAME: helpdesk.mycompany.com

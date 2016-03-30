@@ -1,16 +1,10 @@
-FROM ubuntu:14.04
+FROM phusion/baseimage:0.9.18
 
-# Configure apt
-
-RUN echo 'deb http://us.archive.ubuntu.com/ubuntu/ precise universe' >> /etc/apt/sources.list
-RUN apt-get -y update
-
-RUN apt-get install -y build-essential git curl
-RUN apt-get install -y python python-dev python-setuptools
-RUN apt-get install -y software-properties-common python-software-properties
-RUN apt-get install -y libpq-dev libffi-dev libxml2-dev libxslt1-dev 
-RUN apt-get install -y pandoc
-RUN apt-get install -y nodejs
+# Use baseimage-docker's init system.
+CMD ["/sbin/my_init"]
+RUN add-apt-repository "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) main universe"
+RUN apt-get update
+RUN apt-get install -y build-essential git curl python python-dev python-setuptools software-properties-common python-software-properties libpq-dev libffi-dev libxml2-dev libxslt1-dev pandoc nodejs libjpeg-dev
 RUN easy_install-2.7 pip
 
 # add our requirements
