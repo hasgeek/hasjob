@@ -2,6 +2,7 @@
 
 from werkzeug import cached_property
 from sqlalchemy import event, DDL
+from sqlalchemy.orm import deferred
 from sqlalchemy.dialects.postgresql import TSVECTOR
 from flask import url_for
 from baseframe.staticdata import webmail_domains
@@ -39,7 +40,7 @@ class Domain(BaseMixin, db.Model):
     #: Jobposts using this domain
     jobposts = db.relationship(JobPost, lazy='dynamic', backref=db.backref('domain', lazy='joined'))
     #: Search vector
-    search_vector = db.Column(TSVECTOR, nullable=True)
+    search_vector = deferred(db.Column(TSVECTOR, nullable=True))
 
     def __repr__(self):
         flags = [' webmail' if self.is_webmail else '', ' banned' if self.is_banned else '']

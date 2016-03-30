@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from werkzeug import cached_property
 from flask import url_for, g, escape, Markup
 from sqlalchemy import event, DDL
-from sqlalchemy.orm import defer
+from sqlalchemy.orm import defer, deferred
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.dialects.postgresql import TSVECTOR
 import tldextract
@@ -131,7 +131,7 @@ class JobPost(BaseMixin, db.Model):
     review_datetime = db.Column(db.DateTime, nullable=True)
     review_comments = db.Column(db.Unicode(250), nullable=True)
 
-    search_vector = db.Column(TSVECTOR, nullable=True)
+    search_vector = deferred(db.Column(TSVECTOR, nullable=True))
 
     # Metadata for classification
     language = db.Column(db.CHAR(2), nullable=True)

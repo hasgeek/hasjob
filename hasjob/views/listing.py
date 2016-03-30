@@ -51,7 +51,14 @@ from hasjob.views.helper import gif1x1, cache_viewcounts, session_jobpost_ab, bg
 @app.route('/view/<hashid>', defaults={'domain': None}, methods=('GET', 'POST'), subdomain='<subdomain>')
 @app.route('/view/<hashid>', defaults={'domain': None}, methods=('GET', 'POST'))
 def jobdetail(domain, hashid):
-    post = JobPost.query.filter_by(hashid=hashid).first_or_404()
+    is_siteadmin = lastuser.has_permission('siteadmin')
+    query = JobPost.query.filter_by(hashid=hashid).options(
+        db.subqueryload('locations'), db.subqueryload('taglinks')
+        )
+    # if g.user:
+    #     query = query.outerjoin(UserJobView,
+    #         db.and_(UserJobView.user_id == g.user.id, UserJobView.jobpost_id == JobPost.id))
+    post = query.first_or_404()
 
     # If we're on a board (that's not 'www') and this post isn't on this board,
     # redirect to (a) the first board it is on, or (b) on the root domain (which may
@@ -169,8 +176,9 @@ def jobdetail(domain, hashid):
         g.starred_ids = set()
 
     jobpost_ab = session_jobpost_ab()
-    related_posts = post.related_posts()
-    cache_viewcounts(related_posts)
+    related_posts = post.related_posts().all()
+    if is_siteadmin or (g.user and g.user.flags.get('is_employer_month')):
+        cache_viewcounts(related_posts)
     is_bgroup = getbool(request.args.get('b'))
     headline = post.headlineb if is_bgroup and post.headlineb else post.headline
     g.impressions = {rp.id: (False, rp.id, bgroup(jobpost_ab, rp)) for rp in related_posts}
@@ -180,7 +188,7 @@ def jobdetail(domain, hashid):
         jobview=jobview, report=report, moderateform=moderateform,
         domain_mismatch=domain_mismatch, header_campaign=header_campaign,
         related_posts=related_posts, is_bgroup=is_bgroup,
-        is_siteadmin=lastuser.has_permission('siteadmin')
+        is_siteadmin=is_siteadmin
         )
 
 

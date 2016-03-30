@@ -121,7 +121,10 @@ def load_user_data(user):
     if g.user or g.anon_user and not g.esession:
         g.esession = EventSession.get_session(user=g.user, anon_user=g.anon_user)
 
-    db.session.commit()
+    # Don't commit here. It flushes SQLAlchemy's session cache and forces
+    # fresh database hits. Let after_request commit. (Commented out 30-03-2016)
+    # db.session.commit()
+    g.db_commit_needed = True
 
     if g.anon_user:
         session['au'] = g.anon_user.id
@@ -178,6 +181,9 @@ def load_user_data(user):
 
 @app.after_request
 def record_views_and_events(response):
+    if hasattr(g, 'db_commit_needed') and g.db_commit_needed:
+        db.session.commit()
+
     # We had a few error reports with g.* variables missing in this function, so now
     # we look again and make note if something is missing. We haven't encountered
     # this problem ever since after several days of logging, but this bit of code
@@ -305,7 +311,7 @@ def session_jobpost_ab():
 
 
 def bgroup(jobpost_ab, post):
-    return jobpost_ab.get(post.id) or cointoss() if post.headlineb else None
+    return (jobpost_ab.get(post.id) or cointoss()) if post.headlineb else None
 
 
 def cache_viewcounts(posts):

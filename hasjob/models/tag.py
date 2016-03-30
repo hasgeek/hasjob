@@ -66,7 +66,7 @@ class JobPostTag(TimestampMixin, db.Model):
     jobpost_id = db.Column(None, db.ForeignKey('jobpost.id'), nullable=False, primary_key=True)
     jobpost = db.relationship(JobPost, backref=db.backref('taglinks', cascade='all, delete-orphan'))
     tag_id = db.Column(None, db.ForeignKey('tag.id'), nullable=False, primary_key=True, index=True)
-    tag = db.relationship(Tag, backref=db.backref('taglinks', cascade='all, delete-orphan'))
+    tag = db.relationship(Tag, lazy='joined', backref=db.backref('taglinks', cascade='all, delete-orphan'))
     status = db.Column(db.SmallInteger, nullable=False)
 
     def __repr__(self):
@@ -82,11 +82,11 @@ class JobPostTag(TimestampMixin, db.Model):
 
 
 def related_posts(self, limit=12):
-    return db.session.query(JobPost).from_statement(
-        '''SELECT jobpost.id, jobpost.hashid, jobpost.datetime, jobpost.headline, jobpost.location,
-            jobpost.company_name, jobpost.type_id, jobpost.category_id,
+    return db.session.query(JobPost).options(*JobPost._defercols).from_statement(db.text(
+        '''SELECT jobpost.id, jobpost.hashid, jobpost.datetime, jobpost.headline, jobpost.headlineb,
+            jobpost.location, jobpost.company_name, jobpost.type_id, jobpost.category_id, jobpost.status,
             jobpost.pay_type, jobpost.pay_currency, jobpost.pay_cash_min, jobpost.pay_cash_max,
-            jobpost.pay_equity_min, jobpost.pay_equity_max
+            jobpost.pay_equity_min, jobpost.pay_equity_max, jobpost.email_domain
             FROM (
                 SELECT jobpost_tag.jobpost_id AS jobpost_id, COUNT(*) AS count FROM jobpost_tag, jobpost
                 WHERE jobpost.id = jobpost_tag.jobpost_id AND tag_id IN (
@@ -96,6 +96,6 @@ def related_posts(self, limit=12):
                 AND jobpost_tag.status IN :tag_present
                 GROUP BY jobpost_tag.jobpost_id ORDER BY count DESC LIMIT :limit) AS matches, jobpost
             WHERE jobpost.id = matches.jobpost_id;'''
-        ).params(id=self.id, listed=POSTSTATUS.LISTED, limit=limit, tag_present=tuple(TAG_TYPE.TAG_PRESENT))
+        )).params(id=self.id, listed=POSTSTATUS.LISTED, limit=limit, tag_present=tuple(TAG_TYPE.TAG_PRESENT))
 
 JobPost.related_posts = related_posts
