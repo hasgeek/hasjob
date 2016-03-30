@@ -208,7 +208,7 @@ def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, tit
     # getposts sets g.board_jobs, used below
     posts = getposts(basequery, pinned=True, showall=showall, statuses=statuses, ageless=ageless).all()
 
-    if is_siteadmin or (g.user and g.user.flags.is_employer_month):
+    if is_siteadmin or (g.user and g.user.flags.get('is_employer_month')):
         cache_viewcounts(posts)
 
     if posts:
