@@ -17,7 +17,7 @@ from flask.ext.rq import job
 from flask.ext.lastuser import signal_user_looked_up
 
 from coaster.sqlalchemy import failsafe_add
-from baseframe import cache
+from baseframe import _, cache
 from baseframe.signals import form_validation_error, form_validation_success
 
 from .. import app, redis_store
@@ -716,18 +716,20 @@ def filter_basequery(basequery, filters, exclude_list=[]):
     return basequery
 
 
-def filter_locations(filters):
+def filter_locations(board, filters):
     now = datetime.utcnow()
     basequery = db.session.query(JobLocation.geonameid, db.func.count(JobLocation.geonameid).label('count')
         ).join(JobPost).filter(JobPost.status.in_(POSTSTATUS.LISTED), JobPost.datetime > now - agelimit,
         JobLocation.primary == True).group_by(JobLocation.geonameid).order_by(db.text('count DESC'))  # NOQA
+    if board:
+        basequery = basequery.join(BoardJobPost).filter(BoardJobPost.board == board)
 
     geonameids = [jobpost_location.geonameid for jobpost_location in basequery]
     filtered_basequery = filter_basequery(basequery, filters, exclude_list=['locations', 'anywhere'])
     filtered_geonameids = [jobpost_location.geonameid for jobpost_location in filtered_basequery]
     remote_location_available = filtered_basequery.filter(JobPost.remote_location == True).count() > 0  # NOQA
     data = location_geodata(geonameids)
-    return [{'name': 'anywhere', 'title': 'Anywhere', 'available': remote_location_available}] + [{'name': data[geonameid]['name'], 'title': data[geonameid]['picker_title'],
+    return [{'name': 'anywhere', 'title': _("Anywhere"), 'available': remote_location_available}] + [{'name': data[geonameid]['name'], 'title': data[geonameid]['picker_title'],
             'available': False if not filtered_geonameids else geonameid in filtered_geonameids}
             for geonameid in geonameids]
 
@@ -769,10 +771,10 @@ def inject_filter_options():
         return dict()
     basequery = getposts(showall=True, order=False, limit=False)
     filters = g.get('event_data', {}).get('filters', {})
-    cache_key = 'jobfilters/' + hashlib.sha1(repr(filters)).hexdigest()
+    cache_key = 'jobfilters/' + (g.board.name + '/' if g.board else '') + hashlib.sha1(repr(filters)).hexdigest()
     result = cache.get(cache_key)
     if not result:
-        result = dict(job_location_filters=filter_locations(filters),
+        result = dict(job_location_filters=filter_locations(g.board, filters),
             job_type_filters=filter_types(basequery, board=g.board, filters=filters),
             job_category_filters=filter_categories(basequery, board=g.board, filters=filters))
         cache.set(cache_key, result, timeout=3600)
