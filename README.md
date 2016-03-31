@@ -121,6 +121,14 @@ Before you run the server in development mode, make sure you have Postgres serve
 
     $ python runserver.py
 
+## Periodic jobs
+
+Hasjob maintains user sessions that expire after half hour of inactivity. You need to install a cron script to sweep for expired sessions. Use `crontab -e` as the user account running Hasjob and add:
+
+    */10 * * * * cd /path/to/hasjob; python manage.py sweep -e dev
+
+Switch to `production` in a production environment.
+
 ## Testing
 
 Tests are written in [CasperJS](http://casperjs.org/).
