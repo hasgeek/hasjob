@@ -269,9 +269,13 @@ window.Hasjob.Filters = {
       window.Hasjob.StickieList.refresh();
     });
 
+    var lastKeyword;
     $('.js-handle-keyword-update').on('keyup', function(){
-      window.clearTimeout(keywordTimeout);
-      keywordTimeout = window.setTimeout(window.Hasjob.StickieList.refresh, 500);
+      if ($(this).val() !== lastKeyword){
+        window.clearTimeout(keywordTimeout);
+        lastKeyword = $(this).val();
+        keywordTimeout = window.setTimeout(window.Hasjob.StickieList.refresh, 1000);
+      }
     });
 
     $('#job-filters-location').multiselect({
