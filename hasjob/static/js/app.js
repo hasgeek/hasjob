@@ -269,7 +269,7 @@ window.Hasjob.Filters = {
       window.Hasjob.StickieList.refresh();
     });
 
-    var lastKeyword;
+    var lastKeyword = '';
     $('.js-handle-keyword-update').on('keyup', function(){
       if ($(this).val() !== lastKeyword){
         window.clearTimeout(keywordTimeout);
