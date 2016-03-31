@@ -546,10 +546,6 @@ class JobPost(BaseMixin, db.Model):
             counts[flag.reportcode] = counts.setdefault(flag.reportcode, 0) + 1
         return [{'count': i[2], 'title': i[1]} for i in sorted([(k.seq, k.title, v) for k, v in counts.items()])]
 
-    @classmethod
-    def is_paginated(cls, request):
-        return 'startdate' in request.values
-
 
 def viewstats_helper(jobpost_id, interval, limit, daybatch=False):
     post = JobPost.query.get(jobpost_id)

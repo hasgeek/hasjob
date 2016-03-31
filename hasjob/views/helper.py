@@ -3,11 +3,12 @@
 from os import path
 from datetime import datetime, timedelta
 from urlparse import urljoin
+from urllib import quote, quote_plus
+import hashlib
 import uuid
 import bleach
 import requests
 from pytz import utc, timezone
-from urllib import quote, quote_plus
 from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
 from geoip2.errors import AddressNotFoundError
@@ -37,6 +38,10 @@ def sniffle():
         'Pragma': 'no-cache',
         'Expires': '0'
     }
+
+
+def index_is_paginated():
+    return 'startdate' in request.values
 
 
 @form_validation_success.connect
@@ -711,7 +716,6 @@ def filter_basequery(basequery, filters, exclude_list=[]):
     return basequery
 
 
-@cache.memoize(timeout=3600)
 def filter_locations(filters):
     now = datetime.utcnow()
     basequery = db.session.query(JobLocation.geonameid, db.func.count(JobLocation.geonameid).label('count')
@@ -728,7 +732,6 @@ def filter_locations(filters):
             for geonameid in geonameids]
 
 
-@cache.memoize(timeout=3600)
 def filter_types(basequery, board, filters):
     basequery = filter_basequery(basequery, filters, exclude_list=['types'])
     filtered_typeids = [post.type_id for post in basequery.options(db.load_only('type_id')).distinct('type_id').all()]
@@ -744,7 +747,6 @@ def filter_types(basequery, board, filters):
                 for job_type in JobType.query.filter_by(private=False, public=True).order_by('seq')]
 
 
-@cache.memoize(timeout=3600)
 def filter_categories(basequery, board, filters):
     basequery = filter_basequery(basequery, filters, exclude_list=['categories'])
     filtered_categoryids = [post.category_id for post in basequery.options(db.load_only('category_id')).distinct('category_id').all()]
@@ -763,10 +765,15 @@ def filter_categories(basequery, board, filters):
 @app.context_processor
 def inject_filter_options():
     # Don't compute filter choices for paginated results
-    if JobPost.is_paginated(request):
+    if index_is_paginated():
         return dict()
     basequery = getposts(showall=True, order=False, limit=False)
     filters = g.get('event_data', {}).get('filters', {})
-    return dict(job_location_filters=filter_locations(filters),
-                job_type_filters=filter_types(basequery, board=g.board, filters=filters),
-                job_category_filters=filter_categories(basequery, board=g.board, filters=filters))
+    cache_key = 'jobfilters/' + hashlib.sha1(repr(filters)).hexdigest()
+    result = cache.get(cache_key)
+    if not result:
+        result = dict(job_location_filters=filter_locations(filters),
+            job_type_filters=filter_types(basequery, board=g.board, filters=filters),
+            job_category_filters=filter_categories(basequery, board=g.board, filters=filters))
+        cache.set(cache_key, result, timeout=3600)
+    return result

@@ -13,7 +13,7 @@ from .. import app, lastuser
 from ..models import (db, JobCategory, JobPost, JobType, POSTSTATUS, newlimit, agelimit, JobLocation, Board,
     Domain, Location, Tag, JobPostTag, Campaign, CAMPAIGN_POSITION, CURRENCY, JobApplication, starred_job_table)
 from ..views.helper import (getposts, getallposts, gettags, location_geodata, cache_viewcounts, session_jobpost_ab,
-    bgroup, make_pay_graph)
+    bgroup, make_pay_graph, index_is_paginated)
 from ..uploads import uploaded_logos
 from ..utils import string_to_number
 
@@ -365,7 +365,7 @@ def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, tit
         header_campaign=header_campaign, loadmore=loadmore,
         search_domains=search_domains, query_params=query_params,
         is_siteadmin=is_siteadmin,
-        pay_graph_data=pay_graph_data, paginated=JobPost.is_paginated(request), template_vars=template_vars)
+        pay_graph_data=pay_graph_data, paginated=index_is_paginated(), template_vars=template_vars)
 
 
 @csrf.exempt
