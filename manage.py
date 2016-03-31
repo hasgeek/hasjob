@@ -9,22 +9,18 @@ import hasjob.views as views
 from hasjob.models import db
 from hasjob import app, init_for
 from datetime import datetime, timedelta
-from sqlalchemy.exc import IntegrityError
+
 
 @manager.option('-e', '--env', default='dev', help="runtime env [default 'dev']")
 def sweep(env):
-    """Sweep the user database to close all the inactive sessions"""
+    """Sweep user sessions to close all inactive sessions"""
     manager.init_for(env)
-    print "Sweeping all the inactive sessions"
     es = models.EventSession
-    # Inactive sessions are only kept for 30mins
-    es.query.filter((es.ended_at==None) & (es.active_at<(datetime.utcnow() - \
-        timedelta(minutes=30)))).update({es.ended_at: es.active_at})
-    try:
-        db.session.commit()
-    except IntegrityError:
-        print "Could not commit changes made. Please try again later."
-        db.session.rollback()
+    # Close all sessions that have been inactive for >= 30 minutes
+    es.query.filter(es.ended_at == None,  # NOQA
+        es.active_at < (datetime.utcnow() - timedelta(minutes=30))).update(
+        {es.ended_at: es.active_at})
+    db.session.commit()
 
 
 if __name__ == '__main__':
