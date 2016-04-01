@@ -111,6 +111,7 @@ window.Hasjob.StickieList = {
       if (shouldLoad()){
         stickielist.loadmoreRactive.set('loading', true);
         $.ajax(stickielist.loadmoreRactive.get('url'), {
+          method: 'POST',
           success: function(data) {
             $('ul#stickie-area').append(data.trim());
             stickielist.loadmoreRactive.set('loading', false);

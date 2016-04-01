@@ -41,7 +41,7 @@ def sniffle():
 
 
 def index_is_paginated():
-    return 'startdate' in request.values
+    return request.method == 'POST' and 'startdate' in request.values
 
 
 @form_validation_success.connect

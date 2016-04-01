@@ -188,6 +188,7 @@
 {% endmacro %}
 
 {% macro filters_setup_script(job_location_filters, job_type_filters, job_category_filters) %}
+  {%- if (job_location_filters is defined) and (job_type_filters is defined) and (job_category_filters is defined) %}
   <script type="text/javascript">
     window.Hasjob.Config.jobsArchive = {{request.args.get('archive') | tojson}},
     window.Hasjob.Config.jobLocationFilters = {{job_location_filters | tojson}},
@@ -199,4 +200,5 @@
     window.Hasjob.Config.selectedQuery = {{request.args.getlist('q') | tojson}},
     window.Hasjob.Config.selectedEquity = {{request.args.get('e') | tojson}}
   </script>
+  {%- endif %}
 {% endmacro %}
