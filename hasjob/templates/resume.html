@@ -1,0 +1,32 @@
+{% extends "sheet.html" %}
+{%- from "baseframe/forms.html" import ajaxform %}
+{% block title %}{{ user.fullname }}{% endblock %}
+{% block canonical_url %}
+  {%- if g.board and g.board.not_root %}
+    <link rel="canonical" href="{{ user.url_for(subdomain=none) }}" />
+    <meta property="og:url" content="{{ user.url_for(subdomain=none) }}" />
+  {%- else %}
+    <link rel="canonical" href="{{ request.base_url }}" />
+    <meta property="og:url" content="{{ request.base_url }}" />
+  {%- endif %}
+{% endblock %}
+{%- block image_src %}
+  {%- with avatar = user|avatar_url %}
+    {%- if avatar %}
+      <link rel="image_src" href="{{ avatar }}" />
+      <meta property="og:image" content="{{ avatar }}" />
+    {%- else %}
+      {{ super() }}
+    {%- endif %}
+  {%- endwith %}
+{%- endblock %}
+{% block pageheaders %}
+  <meta name="robots" content="nofollow" />
+{% endblock %}
+{% block content %}
+  <div itemscope itemtype="http://schema.org/Article" class="sheet">
+    <div class="section first">
+      <h1>{{ user.fullname }}</h1>
+    </div>
+  </div>
+{% endblock %}

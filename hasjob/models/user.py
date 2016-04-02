@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from datetime import datetime, timedelta
-from flask import request
+from flask import request, url_for
 from flask.ext.lastuser.sqlalchemy import UserBase2
 from sqlalchemy_utils.types import UUIDType
 from coaster.utils import unicode_http_header, uuid1mc
@@ -17,6 +17,10 @@ class User(UserBase2, db.Model):
 
     resume = db.deferred(db.Column(JsonDict, nullable=False, default={}))
     blocked = db.Column(db.Boolean, nullable=False, default=False)
+
+    def url_for(self, action='view', **kwargs):
+        if action == 'view':
+            return url_for('resume', username=self.username or self.userid, **kwargs)
 
 
 class UserActiveAt(db.Model):

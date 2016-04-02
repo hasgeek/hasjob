@@ -750,7 +750,7 @@ class JobApplication(BaseMixin, db.Model):
     hashid = db.Column(db.String(40), nullable=False, unique=True)
     #: User who applied for this post
     user_id = db.Column(None, db.ForeignKey('user.id'), nullable=True, index=True)  # TODO: add unique=True
-    user = db.relationship(User, foreign_keys=user_id)
+    user = db.relationship(User, foreign_keys=user_id, backref=db.backref('job_applications', lazy='dynamic'))
     #: Full name of the user (as it was at the time of the application)
     fullname = db.Column(db.Unicode(250), nullable=False)
     #: Job post they applied to
@@ -777,6 +777,15 @@ class JobApplication(BaseMixin, db.Model):
     replied_at = db.Column(db.DateTime, nullable=True)
 
     candidate_feedback = db.Column(db.SmallInteger, nullable=True)
+
+    _defercols = [
+        defer('email'),
+        defer('phone'),
+        defer('message'),
+        defer('response'),
+        defer('response_message'),
+        defer('words'),
+        ]
 
     def __init__(self, **kwargs):
         super(JobApplication, self).__init__(**kwargs)
