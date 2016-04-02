@@ -14,7 +14,7 @@ __all__ = ['User', 'UserActiveAt', 'AnonUser', 'EventSessionBase', 'EventSession
 class User(UserBase2, db.Model):
     __tablename__ = 'user'
 
-    resume = db.Column(JsonDict, nullable=False, default={})
+    resume = db.deferred(db.Column(JsonDict, nullable=False, default={}))
     blocked = db.Column(db.Boolean, nullable=False, default=False)
 
 
