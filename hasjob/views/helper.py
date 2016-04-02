@@ -5,7 +5,6 @@ from datetime import datetime, timedelta
 from urlparse import urljoin
 from urllib import quote, quote_plus
 import hashlib
-import uuid
 import bleach
 import requests
 from pytz import utc, timezone
@@ -15,7 +14,7 @@ from geoip2.errors import AddressNotFoundError
 from flask import Markup, request, url_for, g, session
 from flask.ext.rq import job
 from flask.ext.lastuser import signal_user_looked_up
-
+from coaster.utils import uuid1mc
 from coaster.sqlalchemy import failsafe_add
 from baseframe import _, cache
 from baseframe.signals import form_validation_error, form_validation_success
@@ -93,7 +92,7 @@ def load_user_data(user):
             session.pop('au', None)
         else:
             if not session.get('au'):
-                session['au'] = u'test-' + unicode(uuid.uuid4())
+                session['au'] = u'test-' + unicode(uuid1mc())
                 g.esession = EventSessionBase.new_from_request(request)
                 g.event_data['anon_cookie_test'] = session['au']
             elif session['au'] == 'test':  # Legacy test cookie, original request now lost
@@ -117,14 +116,16 @@ def load_user_data(user):
                 if not anon_user:
                     # XXX: We got a fake value? This shouldn't happen
                     g.event_data['anon_cookie_test'] = session['au']
-                    session['au'] = u'test-' + unicode(uuid.uuid4())  # Try again
+                    session['au'] = u'test-' + unicode(uuid1mc())  # Try again
                     g.esession = EventSessionBase.new_from_request(request)
                 else:
                     g.anon_user = anon_user
 
     # Prepare event session if it's not already present
     if g.user or g.anon_user and not g.esession:
-        g.esession = EventSession.get_session(user=g.user, anon_user=g.anon_user)
+        g.esession = EventSession.get_session(uuid=session.get('es'), user=g.user, anon_user=g.anon_user)
+    if g.esession:
+        session['es'] = g.esession.uuid
 
     # Don't commit here. It flushes SQLAlchemy's session cache and forces
     # fresh database hits. Let after_request commit. (Commented out 30-03-2016)

@@ -8,6 +8,7 @@ Flask-RQ
 Flask-Testing
 Flask-Redis
 Pillow
+sqlalchemy_utils
 SQLAlchemy>=1.0.0
 pytz
 markdown

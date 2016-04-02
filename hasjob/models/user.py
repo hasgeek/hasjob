@@ -3,7 +3,8 @@
 from datetime import datetime, timedelta
 from flask import request
 from flask.ext.lastuser.sqlalchemy import UserBase2
-from coaster.utils import unicode_http_header
+from sqlalchemy_utils.types import UUIDType
+from coaster.utils import unicode_http_header, uuid1mc
 from coaster.sqlalchemy import JsonDict
 from baseframe import _, cache
 from . import db, BaseMixin
@@ -68,6 +69,7 @@ class EventSessionBase(object):
     @classmethod
     def new_from_request(cls, request):
         instance = cls()
+        instance.uuid = uuid1mc()  # Don't wait for database commit to generate this
         instance.created_at = datetime.utcnow()
         instance.referrer = unicode_http_header(request.referrer)[:2083] if request.referrer else None
         instance.utm_source = request.args.get('utm_source', u'')[:250] or None
@@ -117,6 +119,8 @@ class EventSession(EventSessionBase, BaseMixin, db.Model):
 
     # See https://support.google.com/analytics/answer/2731565?hl=en for source of inspiration
     __tablename__ = 'event_session'
+    # UUID for public lookup
+    uuid = db.Column(UUIDType(binary=False), nullable=True, default=uuid1mc, unique=True)
     # Who is this user? If known
     user_id = db.Column(None, db.ForeignKey('user.id'), nullable=True, index=True)
     user = db.relationship(User)
@@ -147,12 +151,16 @@ class EventSession(EventSessionBase, BaseMixin, db.Model):
         name='user_event_session_user_id_or_anon_user_id'),)
 
     @classmethod
-    def get_session(cls, user=None, anon_user=None):
-        if (not not user) + (not not anon_user) != 1:
-            raise ValueError("Either user or anon_user must be specified")
-        ues = cls.query.filter_by(
-            user=user, anon_user=anon_user).filter(
-            cls.ended_at == None).order_by(cls.created_at.desc()).first()  # NOQA
+    def get_session(cls, uuid, user=None, anon_user=None):
+        ues = cls.query.filter_by(uuid=uuid).first() if uuid else None
+
+        # We no longer hard-link sessions to users, so this is commented out:
+        # if (not not user) + (not not anon_user) != 1:
+        #     raise ValueError("Either user or anon_user must be specified")
+        # ues = cls.query.filter_by(
+        #     user=user, anon_user=anon_user).filter(
+        #     cls.ended_at == None).order_by(cls.created_at.desc()).first()  # NOQA
+
         if ues:
             # Has this session been inactive for over half an hour? Close it,
             # mark as closed when last active.
