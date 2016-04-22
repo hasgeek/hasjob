@@ -548,18 +548,33 @@ window.Hasjob.PaySlider.toNumeric = function(str){
   return str.slice(1).replace(/,/g, '');
 };
 
+window.Hasjob.PaySlider.range = function(currency){
+  if(currency === '$') {
+    return {
+      'min': [0, 5000],
+      '2%': [200000, 50000],
+      '10%': [1000000, 100000],
+      'max': [10000000, 100000]
+    }
+  }
+  else {
+    return {
+      'min': [0, 50000],
+      '10%':  [1000000, 100000],
+      'max': [10000000, 100000]
+    }
+  }
+};
+
 window.Hasjob.PaySlider.prototype.init = function(){
   this.slider = $(this.selector).noUiSlider({
     start: [this.start, this.end],
-    step: 1,
     connect: true,
     behaviour: "tap",
     range: {
-      'min': [0, 5000],
-      '5%':  [100000, 10000],
-      '80%': [1000000, 50000],
-      '90%': [2000000, 100000],
-      'max': [10000000, 1000000],
+      'min': [0, 50000],
+      '10%':  [1000000, 100000],
+      'max': [10000000, 100000]
     },
     format: window.wNumb({
       decimals: 0,
@@ -578,6 +593,7 @@ window.Hasjob.PaySlider.prototype.resetSlider = function(currency) {
 
   this.slider.noUiSlider({
     start: [start, end],
+    range: Hasjob.PaySlider.range(window.Hasjob.Currency.prefix(currency)),
     format: Hasjob.Currency.wNumbFormat(currency)
   }, true);
 
