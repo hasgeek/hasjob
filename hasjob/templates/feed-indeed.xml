@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<source>
+  <publisher>{{ g.board.title|e }}</publisher>
+  <publisherurl>{{ g.board.url_for(_external=true)|e }}</publisherurl>
+  <lastBuildDate>{{ updated|e }}</lastBuildDate>
+{%- for post in posts %}
+  <job>
+    <title>{{ post.headline|cdata }}</title>
+    <date>{{ (post.datetime.isoformat()+'Z')|cdata }}</date>
+    <referencenumber>{{ post.hashid|cdata }}</referencenumber>
+    <url>{{ post.url_for(subdomain=none, _external=true)|cdata }}</url>
+    <company>{{ post.company_name|cdata }}</company>
+  {%- with loc = post.location_hierarchy %}
+  {%- for city in loc['city'] %}
+    <city>{{ city|cdata }}</city>
+  {%- endfor %}
+  {%- for state in loc['state'] %}
+    <state>{{ state|cdata }}</state>
+  {%- endfor %}
+  {%- if loc['country'] %}
+    {%- for country in loc['country'] %}
+    <country>{{ country|cdata }}</country>
+    {%- endfor %}
+  {%- else %}
+    <country>--</country>
+  {%- endif %}
+  {%- endwith %}
+    {#- <postalcode><![CDATA[insert-here]]></postalcode> #}
+    <description>{{ post.description|cdata }}</description>
+    {#- <salary><![CDATA[insert-here]]></salary> #}
+    {#- <education><![CDATA[insert-here]]></education> #}
+    <jobtype>{{ post.type.title|cdata }}</jobtype>
+    <category>{{ post.category.title|cdata }}</category>
+    {#- <experience><![CDATA[insert-years-here]]></experience> #}
+  </job>
+{% endfor %}
+</source>

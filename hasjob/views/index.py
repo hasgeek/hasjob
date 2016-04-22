@@ -4,16 +4,16 @@ from datetime import datetime
 from collections import OrderedDict
 
 from sqlalchemy.exc import ProgrammingError
-from flask import abort, redirect, render_template, request, Response, url_for, g, flash, Markup, jsonify
+from flask import abort, redirect, render_template, request, Response, url_for, g, flash, jsonify, Markup
 from coaster.utils import getbool, parse_isoformat, for_tsquery
 from coaster.views import render_with
 from baseframe import csrf, _
 
 from .. import app, lastuser
-from ..models import (db, JobCategory, JobPost, JobType, POSTSTATUS, newlimit, agelimit, JobLocation,
+from ..models import (db, JobCategory, JobPost, JobType, POSTSTATUS, newlimit, agelimit, JobLocation, Board,
     Domain, Location, Tag, JobPostTag, Campaign, CAMPAIGN_POSITION, CURRENCY, JobApplication, starred_job_table)
 from ..views.helper import (getposts, getallposts, gettags, location_geodata, cache_viewcounts, session_jobpost_ab,
-    bgroup, make_pay_graph)
+    bgroup, make_pay_graph, index_is_paginated)
 from ..uploads import uploaded_logos
 from ..utils import string_to_number
 
@@ -92,8 +92,9 @@ def json_index(data):
 @app.route('/', methods=['GET', 'POST'], subdomain='<subdomain>')
 @app.route('/', methods=['GET', 'POST'])
 @render_with({'text/html': 'index.html', 'application/json': json_index}, json=False)
-def index(basequery=None, md5sum=None, tag=None, domain=None, title=None, showall=True, statuses=None, batched=True, ageless=False, template_vars={}):
+def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, title=None, showall=True, statuses=None, batched=True, ageless=False, template_vars={}):
 
+    is_siteadmin = lastuser.has_permission('siteadmin')
     if basequery is None:
         is_index = True
     else:
@@ -121,10 +122,14 @@ def index(basequery=None, md5sum=None, tag=None, domain=None, title=None, showal
         data_filters['categories'] = f_categories
         basequery = basequery.join(JobCategory).filter(JobCategory.name.in_(f_categories))
     r_locations = request.args.getlist('l')
+    if location:
+        r_locations.append(location['geonameid'])
     f_locations = []
     remote_location = getbool(request.args.get('anywhere')) or False
     for rl in r_locations:
-        if rl == 'anywhere':
+        if isinstance(rl, int) and rl > 0:
+            f_locations.append(rl)
+        elif rl == 'anywhere':
             remote_location = True
         elif rl.isdigit():
             f_locations.append(int(rl))
@@ -133,7 +138,10 @@ def index(basequery=None, md5sum=None, tag=None, domain=None, title=None, showal
             if ld:
                 f_locations.append(ld['geonameid'])
     remote_location_query = basequery.filter(JobPost.remote_location == True)  # NOQA
-    locations_query = basequery.join(JobLocation).filter(JobLocation.geonameid.in_(f_locations))
+    if f_locations:
+        locations_query = basequery.join(JobLocation).filter(JobLocation.geonameid.in_(f_locations))
+    else:
+        locations_query = basequery.join(JobLocation)
     if f_locations and remote_location:
         data_filters['locations'] = f_locations
         data_filters['anywhere'] = True
@@ -200,8 +208,8 @@ def index(basequery=None, md5sum=None, tag=None, domain=None, title=None, showal
     # getposts sets g.board_jobs, used below
     posts = getposts(basequery, pinned=True, showall=showall, statuses=statuses, ageless=ageless).all()
 
-    # Cache viewcounts (admin view or not)
-    cache_viewcounts(posts)
+    if is_siteadmin or (g.user and g.user.flags.get('is_employer_month')):
+        cache_viewcounts(posts)
 
     if posts:
         employer_name = posts[0].company_name
@@ -352,12 +360,12 @@ def index(basequery=None, md5sum=None, tag=None, domain=None, title=None, showal
     return dict(
         pinsandposts=pinsandposts, grouped=grouped, now=now,
         newlimit=newlimit, title=title,
-        md5sum=md5sum, domain=domain, employer_name=employer_name,
+        md5sum=md5sum, domain=domain, location=location, employer_name=employer_name,
         showall=showall, is_index=is_index,
         header_campaign=header_campaign, loadmore=loadmore,
         search_domains=search_domains, query_params=query_params,
-        is_siteadmin=lastuser.has_permission('siteadmin'),
-        pay_graph_data=pay_graph_data, paginated=JobPost.is_paginated(request), template_vars=template_vars)
+        is_siteadmin=is_siteadmin,
+        pay_graph_data=pay_graph_data, paginated=index_is_paginated(), template_vars=template_vars)
 
 
 @csrf.exempt
@@ -402,7 +410,7 @@ def applied():
 def browse_by_type(name):
     if name == 'all':
         return redirect(url_for('index'))
-    return redirect(url_for('index', t=name), code=301)
+    return redirect(url_for('index', t=name), code=302)
 
 
 @csrf.exempt
@@ -432,7 +440,7 @@ def browse_by_domain_legacy(domain):
 def browse_by_category(name):
     if name == 'all':
         return redirect(url_for('index'))
-    return redirect(url_for('index', c=name), code=301)
+    return redirect(url_for('index', c=name), code=302)
 
 
 @csrf.exempt
@@ -442,9 +450,8 @@ def browse_by_email(md5sum):
     if not md5sum:
         abort(404)
     basequery = JobPost.query.filter_by(md5sum=md5sum)
-    if basequery.isempty():
-        abort(404)
-    jobpost_user = basequery.first().user
+    jobpost = basequery.first_or_404()
+    jobpost_user = jobpost.user
     return index(basequery=basequery, md5sum=md5sum, showall=True, template_vars={'jobpost_user': jobpost_user})
 
 
@@ -452,14 +459,21 @@ def browse_by_email(md5sum):
 @app.route('/in/<location>', methods=['GET', 'POST'], subdomain='<subdomain>')
 @app.route('/in/<location>', methods=['GET', 'POST'])
 def browse_by_location(location):
-    return redirect(url_for('index', l=location), code=301)
+    loc = Location.get(location)
+    if loc:
+        geodata = {'geonameid': loc.id, 'name': loc.name, 'use_title': loc.title, 'description': Markup(loc.description)}
+    else:
+        return redirect(url_for('index', l=location), code=302)
+    if location != geodata['name']:
+        return redirect(url_for('browse_by_location', location=geodata['name']))
+    return index(location=geodata, title=geodata['use_title'])
 
 
 @csrf.exempt
 @app.route('/in/anywhere', methods=['GET', 'POST'], subdomain='<subdomain>')
 @app.route('/in/anywhere', methods=['GET', 'POST'])
 def browse_by_anywhere():
-    return redirect(url_for('index', l='anywhere'), code=301)
+    return redirect(url_for('index', l='anywhere'), code=302)
 
 
 @csrf.exempt
@@ -499,8 +513,21 @@ def feed(basequery=None, type=None, category=None, md5sum=None, domain=None, loc
             title = posts[0].company_name
     else:
         updated = datetime.utcnow().isoformat() + 'Z'
-    return Response(render_template('feed.xml', posts=posts, updated=updated, title=title),
+    return Response(render_template('feed-atom.xml', posts=posts, updated=updated, title=title),
         content_type='application/atom+xml; charset=utf-8')
+
+
+@app.route('/feed/indeed', subdomain='<subdomain>')
+@app.route('/feed/indeed')
+def feed_indeed():
+    title = "All jobs"
+    posts = list(getposts(None, showall=True))
+    if posts:  # Can't do this unless posts is a list
+        updated = posts[0].datetime.isoformat() + 'Z'
+    else:
+        updated = datetime.utcnow().isoformat() + 'Z'
+    return Response(render_template('feed-indeed.xml', posts=posts, updated=updated, title=title),
+        content_type='textxml; charset=utf-8')
 
 
 @app.route('/type/<name>/feed', subdomain='<subdomain>')
@@ -633,11 +660,22 @@ def archive():
         min=min, max=max, sortarchive=sortarchive)
 
 
-@app.route('/sitemap.xml', subdomain='<subdomain>')
-@app.route('/sitemap.xml')
-def sitemap():
+@app.route('/sitemap.xml', defaults={'key': None}, subdomain='<subdomain>')
+@app.route('/sitemap.xml', defaults={'key': None})
+@app.route('/sitemap.xml/<key>', subdomain='<subdomain>')
+@app.route('/sitemap.xml/<key>')
+def sitemap(key):
+    authorized_sitemap = key == app.config.get('SITEMAP_KEY')
+
     sitemapxml = '<?xml version="1.0" encoding="UTF-8"?>\n'\
                  '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+    # Add featured boards to sitemap
+    for board in Board.query.filter_by(featured=True).all():
+        sitemapxml += '  <url>\n'\
+                      '    <loc>%s</loc>\n' % board.url_for(_external=True) + \
+                      '    <lastmod>%s</lastmod>\n' % (board.updated_at.isoformat() + 'Z') + \
+                      '    <changefreq>monthly</changefreq>\n'\
+                      '  </url>\n'
     # Add locations to sitemap
     for item in Location.query.all():
         sitemapxml += '  <url>\n'\
@@ -652,6 +690,14 @@ def sitemap():
                       '    <lastmod>%s</lastmod>\n' % (post.datetime.isoformat() + 'Z') + \
                       '    <changefreq>monthly</changefreq>\n'\
                       '  </url>\n'
+    if authorized_sitemap:
+        # Add domains to sitemap
+        for domain in Domain.query.filter(Domain.title != None).order_by('updated_at desc').all():  # NOQA
+            sitemapxml += '  <url>\n'\
+                          '    <loc>%s</loc>\n' % domain.url_for(_external=True) + \
+                          '    <lastmod>%s</lastmod>\n' % (domain.updated_at.isoformat() + 'Z') + \
+                          '    <changefreq>monthly</changefreq>\n'\
+                          '  </url>\n'
     sitemapxml += '</urlset>'
     return Response(sitemapxml, content_type='text/xml; charset=utf-8')
 

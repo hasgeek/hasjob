@@ -39,20 +39,27 @@ from hasjob.models import (
 from hasjob.twitter import tweet
 from hasjob.tagging import tag_locations, add_to_boards, tag_jobpost
 from hasjob.uploads import uploaded_logos
-from hasjob.utils import get_word_bag, redactemail, random_long_key
+from hasjob.utils import get_word_bag, redactemail, random_long_key, common_legal_names
 from hasjob.views import ALLOWED_TAGS
 from hasjob.nlp import identify_language
 from hasjob.views.helper import gif1x1, cache_viewcounts, session_jobpost_ab, bgroup
 
 
+@csrf.exempt
 @app.route('/<domain>/<hashid>', methods=('GET', 'POST'), subdomain='<subdomain>')
 @app.route('/<domain>/<hashid>', methods=('GET', 'POST'))
 @app.route('/view/<hashid>', defaults={'domain': None}, methods=('GET', 'POST'), subdomain='<subdomain>')
 @app.route('/view/<hashid>', defaults={'domain': None}, methods=('GET', 'POST'))
 def jobdetail(domain, hashid):
-    post = JobPost.query.filter_by(hashid=hashid).first_or_404()
+    is_siteadmin = lastuser.has_permission('siteadmin')
+    query = JobPost.query.filter_by(hashid=hashid).options(
+        db.subqueryload('locations'), db.subqueryload('taglinks'))
+    # if g.user:
+    #     query = query.outerjoin(UserJobView,
+    #         db.and_(UserJobView.user_id == g.user.id, UserJobView.jobpost_id == JobPost.id))
+    post = query.first_or_404()
 
-    # If we're on a board (that's now 'www') and this post isn't on this board,
+    # If we're on a board (that's not 'www') and this post isn't on this board,
     # redirect to (a) the first board it is on, or (b) on the root domain (which may
     # be the 'www' board, which is why we don't bother to redirect if we're currently
     # in the 'www' board)
@@ -67,7 +74,7 @@ def jobdetail(domain, hashid):
     if post.status not in POSTSTATUS.UNPUBLISHED and post.email_domain != domain:
         return redirect(post.url_for(), code=301)
 
-    if post.status in [POSTSTATUS.DRAFT, POSTSTATUS.PENDING]:
+    if post.status in POSTSTATUS.UNPUBLISHED:
         if not ((g.user and post.admin_is(g.user))):
             abort(403)
     if post.status in POSTSTATUS.GONE:
@@ -168,8 +175,9 @@ def jobdetail(domain, hashid):
         g.starred_ids = set()
 
     jobpost_ab = session_jobpost_ab()
-    related_posts = post.related_posts()
-    cache_viewcounts(related_posts)
+    related_posts = post.related_posts().all()
+    if is_siteadmin or (g.user and g.user.flags.get('is_employer_month')):
+        cache_viewcounts(related_posts)
     is_bgroup = getbool(request.args.get('b'))
     headline = post.headlineb if is_bgroup and post.headlineb else post.headline
     g.impressions = {rp.id: (False, rp.id, bgroup(jobpost_ab, rp)) for rp in related_posts}
@@ -179,7 +187,7 @@ def jobdetail(domain, hashid):
         jobview=jobview, report=report, moderateform=moderateform,
         domain_mismatch=domain_mismatch, header_campaign=header_campaign,
         related_posts=related_posts, is_bgroup=is_bgroup,
-        is_siteadmin=lastuser.has_permission('siteadmin')
+        is_siteadmin=is_siteadmin
         )
 
 
@@ -857,6 +865,8 @@ def editjob(hashid, key, domain=None, form=None, validated=False, newpost=None):
                     # This is dependent on the domain's DNS validity already being confirmed
                     # by the form's email validator
                     post.domain = Domain.get(post.email_domain, create=True)
+                    if not post.domain.is_webmail and not post.domain.title:
+                        post.domain.title, post.domain.legal_title = common_legal_names(post.company_name)
             # To protect from gaming, don't allow words to be removed in edited posts once the post
             # has been confirmed. Just add the new words.
             if post.status in POSTSTATUS.POSTPENDING:

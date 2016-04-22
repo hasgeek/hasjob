@@ -3,6 +3,8 @@
 from datetime import datetime, timedelta
 from flask import request
 from flask.ext.lastuser.sqlalchemy import UserBase2
+from sqlalchemy_utils.types import UUIDType
+from coaster.utils import unicode_http_header, uuid1mc
 from coaster.sqlalchemy import JsonDict
 from baseframe import _, cache
 from . import db, BaseMixin
@@ -13,6 +15,7 @@ __all__ = ['User', 'UserActiveAt', 'AnonUser', 'EventSessionBase', 'EventSession
 class User(UserBase2, db.Model):
     __tablename__ = 'user'
 
+    resume = db.deferred(db.Column(JsonDict, nullable=False, default={}))
     blocked = db.Column(db.Boolean, nullable=False, default=False)
 
 
@@ -66,15 +69,16 @@ class EventSessionBase(object):
     @classmethod
     def new_from_request(cls, request):
         instance = cls()
+        instance.uuid = uuid1mc()  # Don't wait for database commit to generate this
         instance.created_at = datetime.utcnow()
-        instance.referrer = request.referrer[:2083] if request.referrer else None
-        instance.utm_source = request.args.get('utm_source', '')[:250] or None
-        instance.utm_medium = request.args.get('utm_medium', '')[:250] or None
-        instance.utm_term = request.args.get('utm_term', '')[:250] or None
-        instance.utm_content = request.args.get('utm_content', '')[:250] or None
-        instance.utm_id = request.args.get('utm_id', '')[:250] or None
-        instance.utm_campaign = request.args.get('utm_campaign', '')[:250] or None
-        instance.gclid = request.args.get('gclid', '')[:250] or None
+        instance.referrer = unicode_http_header(request.referrer)[:2083] if request.referrer else None
+        instance.utm_source = request.args.get('utm_source', u'')[:250] or None
+        instance.utm_medium = request.args.get('utm_medium', u'')[:250] or None
+        instance.utm_term = request.args.get('utm_term', u'')[:250] or None
+        instance.utm_content = request.args.get('utm_content', u'')[:250] or None
+        instance.utm_id = request.args.get('utm_id', u'')[:250] or None
+        instance.utm_campaign = request.args.get('utm_campaign', u'')[:250] or None
+        instance.gclid = request.args.get('gclid', u'')[:250] or None
         instance.active_at = datetime.utcnow()
         instance.events = []
         return instance
@@ -115,6 +119,8 @@ class EventSession(EventSessionBase, BaseMixin, db.Model):
 
     # See https://support.google.com/analytics/answer/2731565?hl=en for source of inspiration
     __tablename__ = 'event_session'
+    # UUID for public lookup
+    uuid = db.Column(UUIDType(binary=False), nullable=True, default=uuid1mc, unique=True)
     # Who is this user? If known
     user_id = db.Column(None, db.ForeignKey('user.id'), nullable=True, index=True)
     user = db.relationship(User)
@@ -145,12 +151,16 @@ class EventSession(EventSessionBase, BaseMixin, db.Model):
         name='user_event_session_user_id_or_anon_user_id'),)
 
     @classmethod
-    def get_session(cls, user=None, anon_user=None):
-        if (not not user) + (not not anon_user) != 1:
-            raise ValueError("Either user or anon_user must be specified")
-        ues = cls.query.filter_by(
-            user=user, anon_user=anon_user).filter(
-            cls.ended_at == None).order_by(cls.created_at.desc()).first()  # NOQA
+    def get_session(cls, uuid, user=None, anon_user=None):
+        ues = cls.query.filter_by(uuid=uuid).first() if uuid else None
+
+        # We no longer hard-link sessions to users, so this is commented out:
+        # if (not not user) + (not not anon_user) != 1:
+        #     raise ValueError("Either user or anon_user must be specified")
+        # ues = cls.query.filter_by(
+        #     user=user, anon_user=anon_user).filter(
+        #     cls.ended_at == None).order_by(cls.created_at.desc()).first()  # NOQA
+
         if ues:
             # Has this session been inactive for over half an hour? Close it,
             # mark as closed when last active.
@@ -183,11 +193,11 @@ class UserEventBase(object):
     @classmethod
     def new_from_request(cls, request):
         instance = cls()
-        instance.ipaddr = request and request.environ['REMOTE_ADDR'][:45]
-        instance.useragent = request and request.user_agent.string[:250]
+        instance.ipaddr = request and unicode(request.environ['REMOTE_ADDR'][:45])
+        instance.useragent = request and unicode_http_header(request.user_agent.string)[:250]
         instance.url = request and request.url[:2038]
-        instance.method = request and request.method[:10]
-        instance.name = request and ('endpoint/' + (request.endpoint or '')[:80])
+        instance.method = request and unicode(request.method[:10])
+        instance.name = request and (u'endpoint/' + (request.endpoint or '')[:80])
         return instance
 
     def as_dict(self):
@@ -210,7 +220,7 @@ class UserEvent(UserEventBase, BaseMixin, db.Model):
     url = db.Column(db.Unicode(2038), nullable=True)
     #: Referrer
     referrer = db.Column(db.Unicode(2038), nullable=True,
-        default=lambda: request and ((request.referrer or '')[:2038] or None))
+        default=lambda: request and (unicode_http_header(request.referrer or '')[:2038] or None))
     #: HTTP Method
     method = db.Column(db.Unicode(10), nullable=True)
     #: Status code

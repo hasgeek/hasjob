@@ -31,9 +31,9 @@
   {%- if post.parsed_location %}
     {%- for token in post.parsed_location.get('tokens', []) -%}
       {%- if token['geoname'] -%}
-        <a itemscope itemtype="http://schema.org/Place" href="{{ url_for('index', l=token['geoname'].get('name') or token['geoname'].get('geonameid')) }}"><span itemprop="name">{{ token['token'] }}</span></a>
+        <a itemscope itemtype="http://schema.org/Place" href="{{ url_for('browse_by_location', location=token['geoname'].get('name') or token['geoname'].get('geonameid')) }}"><span itemprop="name">{{ token['token'] }}</span></a>
       {%- elif token['remote'] -%}
-        <a href="{{ url_for('index', l='anywhere') }}">{{ token['token'] }}</a>
+        <a href="{{ url_for('browse_by_anywhere') }}">{{ token['token'] }}</a>
       {%- else -%}
         {{ token['token'] }}
       {%- endif %}
@@ -188,15 +188,20 @@
 {% endmacro %}
 
 {% macro filters_setup_script(job_location_filters, job_type_filters, job_category_filters) %}
+  {%- if (job_location_filters is defined) and (job_type_filters is defined) and (job_category_filters is defined) %}
   <script type="text/javascript">
-    window.Hasjob.Config.jobsArchive = {{request.args.get('archive') | tojson}},
-    window.Hasjob.Config.jobLocationFilters = {{job_location_filters | tojson}},
-    window.Hasjob.Config.jobTypeFilters = {{job_type_filters | tojson}},
-    window.Hasjob.Config.jobCategoryFilters = {{job_category_filters | tojson}},
-    window.Hasjob.Config.selectedLocations = {{request.args.getlist('l') | tojson}},
-    window.Hasjob.Config.selectedTypes = {{request.args.getlist('t') | tojson}},
-    window.Hasjob.Config.selectedCategories = {{request.args.getlist('c') | tojson}},
-    window.Hasjob.Config.selectedQuery = {{request.args.getlist('q') | tojson}},
-    window.Hasjob.Config.selectedEquity = {{request.args.get('e') | tojson}}
+    window.Hasjob.Config.jobsArchive = {{request.args.get('archive') | tojson}};
+    window.Hasjob.Config.jobLocationFilters = {{job_location_filters | tojson}};
+    window.Hasjob.Config.jobTypeFilters = {{job_type_filters | tojson}};
+    window.Hasjob.Config.jobCategoryFilters = {{job_category_filters | tojson}};
+    window.Hasjob.Config.selectedLocations = {{request.args.getlist('l') | tojson}};
+    window.Hasjob.Config.selectedTypes = {{request.args.getlist('t') | tojson}};
+    window.Hasjob.Config.selectedCategories = {{request.args.getlist('c') | tojson}};
+    window.Hasjob.Config.selectedQuery = {{request.args.getlist('q') | tojson}};
+    window.Hasjob.Config.selectedCurrency = {{request.args.get('currency') | tojson}};
+    window.Hasjob.Config.pmin = {{request.args.get('pmin') | tojson}};
+    window.Hasjob.Config.pmax = {{request.args.get('pmax') | tojson}};
+    window.Hasjob.Config.equity = {{request.args.get('equity') | tojson}};
   </script>
+  {%- endif %}
 {% endmacro %}

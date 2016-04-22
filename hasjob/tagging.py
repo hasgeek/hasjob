@@ -7,7 +7,7 @@ from flask.ext.rq import job
 from coaster.utils import text_blocks
 from coaster.nlp import extract_named_entities
 from . import app
-from .models import (db, JobPost, JobLocation, Board, BoardDomain, BoardLocation,
+from .models import (db, JobPost, JobLocation, Board, BoardAutoDomain, BoardAutoLocation, board_auto_tag_table,
     Tag, JobPostTag, TAG_TYPE)
 
 
@@ -64,10 +64,15 @@ def tag_locations(jobpost_id):
 @job('hasjob')
 def add_to_boards(jobpost_id):
     with app.test_request_context():
-        post = JobPost.query.options(db.joinedload('locations')).get(jobpost_id)
-        query = Board.query.join(BoardDomain).filter(BoardDomain.domain == post.email_domain)
+        post = JobPost.query.options(db.joinedload('locations'), db.joinedload('taglinks')).get(jobpost_id)
+        query = Board.query.join(BoardAutoDomain).filter(BoardAutoDomain.domain == post.email_domain)
         if post.geonameids:
-            query = query.union(Board.query.join(BoardLocation).filter(BoardLocation.geonameid.in_(post.geonameids)))
+            query = query.union(Board.query.join(BoardAutoLocation).filter(
+                BoardAutoLocation.geonameid.in_(post.geonameids)))
+        if post.taglinks:
+            query = query.union(Board.query.join(board_auto_tag_table).filter(
+                board_auto_tag_table.c.tag_id.in_(
+                    [tl.tag_id for tl in post.taglinks if tl.status in TAG_TYPE.TAG_PRESENT])))
         for board in query:
             board.add(post)
         db.session.commit()

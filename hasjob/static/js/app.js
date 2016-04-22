@@ -18,7 +18,11 @@ Hasjob.Util = {
 window.Hasjob.Body = {
   init: function() {
     var body = this;
-    var hammer = new Hammer(document.body);
+    var hammer = Hammer(document.body, {
+      cssProps: {
+        userSelect: true
+      }
+    });
 
     body.ractive = new Ractive();
 
@@ -107,6 +111,7 @@ window.Hasjob.StickieList = {
       if (shouldLoad()){
         stickielist.loadmoreRactive.set('loading', true);
         $.ajax(stickielist.loadmoreRactive.get('url'), {
+          method: 'POST',
           success: function(data) {
             $('ul#stickie-area').append(data.trim());
             stickielist.loadmoreRactive.set('loading', false);
@@ -207,7 +212,10 @@ window.Hasjob.Filters = {
         selectedTypes: window.Hasjob.Config.selectedTypes,
         selectedCategories: window.Hasjob.Config.selectedCategories,
         selectedQuery: window.Hasjob.Config.selectedQuery,
-        selectedEquity: window.Hasjob.Config.selectedEquity,
+        selectedCurrency: window.Hasjob.Config.selectedCurrency,
+        pmin: window.Hasjob.Config.pmin,
+        pmax: window.Hasjob.Config.pmax,
+        equity: window.Hasjob.Config.equity,
         sidebarOn: false
       },
       showSidebar: function() {
@@ -265,9 +273,13 @@ window.Hasjob.Filters = {
       window.Hasjob.StickieList.refresh();
     });
 
+    var lastKeyword = '';
     $('.js-handle-keyword-update').on('keyup', function(){
-      window.clearTimeout(keywordTimeout);
-      keywordTimeout = window.setTimeout(window.Hasjob.StickieList.refresh, 500);
+      if ($(this).val() !== lastKeyword){
+        window.clearTimeout(keywordTimeout);
+        lastKeyword = $(this).val();
+        keywordTimeout = window.setTimeout(window.Hasjob.StickieList.refresh, 1000);
+      }
     });
 
     $('#job-filters-location').multiselect({
@@ -434,7 +446,10 @@ window.Hasjob.Filters = {
       selectedTypes: window.Hasjob.Config.selectedTypes,
       selectedCategories: window.Hasjob.Config.selectedCategories,
       selectedQuery: window.Hasjob.Config.selectedQuery,
-      selectedEquity: window.Hasjob.Config.equity
+      selectedCurrency: window.Hasjob.Config.selectedCurrency,
+      pmin: window.Hasjob.Config.pmin,
+      pmax: window.Hasjob.Config.pmax,
+      equity: window.Hasjob.Config.equity
     }).then(function() {
       $('#job-filters-location').multiselect('rebuild');
       $('#job-filters-type').multiselect('rebuild');
@@ -632,12 +647,17 @@ $(function() {
   });
 
   // set initial value for the currency radio button
-  var presetCurrency = (Hasjob.PayFilterParameters && Hasjob.PayFilterParameters.currency) || 'NA';
+  var presetCurrency = (Hasjob.Config && Hasjob.Config.selectedCurrency) || 'NA';
   $.each($("input[type='radio'][name='currency']"), function(index, currencyRadio){
     if ($(currencyRadio).val() === presetCurrency) {
       $(currencyRadio).attr('checked', 'checked');
     }
   });
+
+  // preset equity
+  if (Hasjob.Config && parseInt(Hasjob.Config.equity, 10) === 1) {
+    $("input[type='checkbox'][name='equity']").attr('checked', 'checked');
+  }
 
   $("input[type='radio'][name='currency']").on('change',function(){
     setPaySliderVisibility();
@@ -659,8 +679,8 @@ $(function() {
   };
 
   var paySlider = new Hasjob.PaySlider({
-    start: (Hasjob.PayFilterParameters && Hasjob.PayFilterParameters.pmin) || 0,
-    end: (Hasjob.PayFilterParameters && Hasjob.PayFilterParameters.pmax) || 10000000,
+    start: (Hasjob.Config && Hasjob.Config.pmin) || 0,
+    end: (Hasjob.Config && Hasjob.Config.pmax) || 10000000,
     selector: '#pay-slider',
     minField: '#job-filters-pmin',
     maxField: '#job-filters-pmax'

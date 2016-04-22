@@ -3,7 +3,7 @@ Hasjob
 
 Code for Hasjob, HasGeek's job board at https://hasjob.co/
 
-Copyright © 2010-2015 by HasGeek Media LLP
+Copyright © 2010-2016 by HasGeek
 
 Hasjob's code is open source under the AGPL v3 license (see LICENSE.txt),
 but the name 'Hasjob' and the distinctive appearance of the job board are
@@ -21,7 +21,7 @@ requires you to release all your modifications to the public under the same
 license. You may not make a proprietary fork.
 
 To have your contributions merged back into the master repository, you must
-agree to assign copyright to HasGeek Media LLP and must assert that you have
+agree to assign copyright to HasGeek and must assert that you have
 the right to make this assignment.
 
 -----
@@ -120,6 +120,14 @@ Finish configuration with:
 Before you run the server in development mode, make sure you have Postgres server and Redis server running as well. To start Hasjob:
 
     $ python runserver.py
+
+## Periodic jobs
+
+Hasjob maintains user sessions that expire after half hour of inactivity. You need to install a cron script to sweep for expired sessions. Use `crontab -e` as the user account running Hasjob and add:
+
+    */10 * * * * cd /path/to/hasjob; python manage.py sweep -e dev
+
+Switch to `production` in a production environment.
 
 ## Testing
 

@@ -11,7 +11,7 @@
 {%- endblock %}
 
 {%- block titletags %}
-  <title>{% block title %}{{ title }}{% endblock %} — {% if g.board %}{{ g.board.title }}{% else %}{{ config['SITE_TITLE'] }}{% endif %}</title>
+  <title>{% block title %}{{ title }}{% endblock %} | {% if g.board %}{{ g.board.title }}{% if g.board.not_root %} ({{ config['SITE_TITLE'] }}){% endif %}{% else %}{{ config['SITE_TITLE'] }}{% endif %}</title>
   <meta name="DC.title" content="{{ self.title()|e }}" />
   <meta property="og:title" content="{{ self.title()|e }}" />
 {%- endblock %}
@@ -25,10 +25,11 @@
 
 {%- block layoutheaders %}
   <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=McLaren" />
+  <!-- <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Fira+Sans:400,700,400italic,700italic&subset=latin,latin-ext"> -->
   <link rel="stylesheet" type="text/css" href="//code.cdn.mozilla.net/fonts/fira.css">
   <!-- Feed and search -->
-  <link rel="alternate" type="application/atom+xml" title="All jobs – {% if g.board -%} {{ g.board.title }} {%- else -%} {{ config['SITE_TITLE'] }} {%- endif %}" href="{{ url_for('feed') }}" />
   <link rel="search" type="application/opensearchdescription+xml" href="{{ url_for('static', filename='opensearch.xml') }}" title="Hasjob Search" />
+  <link rel="alternate" type="application/atom+xml" title="All jobs | {% if g.board -%} {{ g.board.title }} {%- if g.board.not_root %} ({{ config['SITE_TITLE'] }}) {%- endif -%} {%- else -%} {{ config['SITE_TITLE'] }} {%- endif %}" href="{{ url_for('feed') }}" />
   {% block pageheaders %}{% endblock %}
   {%- block twittercards %}
     <meta name="twitter:card" content="summary" />
@@ -149,7 +150,7 @@
                     </div>
                   </div>
                   <div class="filters col-xs-12 col-sm-4 col-md-3">
-                    <input id="job-filters-keywords" class="filter-select form-control js-handle-keyword-update" type="text" placeholder="Keywords" name="q" value={{q}} />
+                    <input id="job-filters-keywords" class="filter-select form-control js-handle-keyword-update" type="text" placeholder="Keywords" name="q" value={{selectedQuery}} />
                   </div>
                   <div class="col-xs-12">
                     <button id='js-mobile-filter-done' class="btn btn-default submit-btn visible-xs">
@@ -179,11 +180,7 @@
       {% set user_links = user_links + [{'title': "Drafts", 'url': url_for('browse_drafts')}] %}
     {%- endif %}
     {%- if request.path != url_for('newjob') %}
-      {%- if g.user %}
-        {% set site_links = site_links + [{'title': "Post a job", 'url': url_for('newjob')|usessl, 'class': 'btn btn-sm btn-post-job'}] %}
-      {%- else %}
         {% set site_links = site_links + [{'title': "Post a job", 'url': url_for('newjob')|usessl, 'class': 'btn btn-sm btn-post-job hidden-xs'}] %}
-      {%- endif %}
     {%- endif %}
     {{ hgnav(site_title=site_title(), site_nav_button=site_nav_button(), site_nav=site_nav(), site_links=site_links, user_links=user_links) }}
   {% endwith %}

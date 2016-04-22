@@ -60,3 +60,5 @@ PERIODIC_KEY = ''
 #: Throttle limit for email domain
 THROTTLE_LIMIT = 5
 SUPPORT_EMAIL = 'person@example.com'
+#: Sitemap key
+SITEMAP_KEY = None

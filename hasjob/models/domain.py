@@ -2,6 +2,7 @@
 
 from werkzeug import cached_property
 from sqlalchemy import event, DDL
+from sqlalchemy.orm import deferred
 from sqlalchemy.dialects.postgresql import TSVECTOR
 from flask import url_for
 from baseframe.staticdata import webmail_domains
@@ -39,7 +40,7 @@ class Domain(BaseMixin, db.Model):
     #: Jobposts using this domain
     jobposts = db.relationship(JobPost, lazy='dynamic', backref=db.backref('domain', lazy='joined'))
     #: Search vector
-    search_vector = db.Column(TSVECTOR, nullable=True)
+    search_vector = deferred(db.Column(TSVECTOR, nullable=True))
 
     def __repr__(self):
         flags = [' webmail' if self.is_webmail else '', ' banned' if self.is_banned else '']
@@ -47,7 +48,12 @@ class Domain(BaseMixin, db.Model):
 
     @property
     def use_title(self):
-        return self.title or self.name
+        if self.title:
+            return self.title
+        post = self.jobposts.filter(JobPost.status.in_(POSTSTATUS.POSTPENDING)).order_by('datetime desc').first()
+        if post:
+            return post.company_name
+        return self.name
 
     @property
     def has_profile(self):
@@ -62,7 +68,8 @@ class Domain(BaseMixin, db.Model):
         if self.logo_url:
             return self.logo_url
         else:
-            post = self.jobposts.filter(JobPost.company_logo != None, JobPost.status.in_(POSTSTATUS.ARCHIVED)).order_by("datetime desc").first()  # NOQA
+            post = self.jobposts.filter(JobPost.company_logo != None,
+                JobPost.status.in_(POSTSTATUS.ARCHIVED)).order_by('datetime desc').first()  # NOQA
             return post.url_for('logo', _external=True) if post else None
 
     def editor_is(self, user):

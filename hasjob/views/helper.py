@@ -3,20 +3,20 @@
 from os import path
 from datetime import datetime, timedelta
 from urlparse import urljoin
-import uuid
+from urllib import quote, quote_plus
+import hashlib
 import bleach
 import requests
 from pytz import utc, timezone
-from urllib import quote, quote_plus
 from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
 from geoip2.errors import AddressNotFoundError
 from flask import Markup, request, url_for, g, session
 from flask.ext.rq import job
 from flask.ext.lastuser import signal_user_looked_up
-
+from coaster.utils import uuid1mc
 from coaster.sqlalchemy import failsafe_add
-from baseframe import cache
+from baseframe import _, cache
 from baseframe.signals import form_validation_error, form_validation_success
 
 from .. import app, redis_store
@@ -37,6 +37,10 @@ def sniffle():
         'Pragma': 'no-cache',
         'Expires': '0'
     }
+
+
+def index_is_paginated():
+    return request.method == 'POST' and 'startdate' in request.values
 
 
 @form_validation_success.connect
@@ -88,7 +92,7 @@ def load_user_data(user):
             session.pop('au', None)
         else:
             if not session.get('au'):
-                session['au'] = u'test-' + unicode(uuid.uuid4())
+                session['au'] = u'test-' + unicode(uuid1mc())
                 g.esession = EventSessionBase.new_from_request(request)
                 g.event_data['anon_cookie_test'] = session['au']
             elif session['au'] == 'test':  # Legacy test cookie, original request now lost
@@ -112,16 +116,21 @@ def load_user_data(user):
                 if not anon_user:
                     # XXX: We got a fake value? This shouldn't happen
                     g.event_data['anon_cookie_test'] = session['au']
-                    session['au'] = u'test-' + unicode(uuid.uuid4())  # Try again
+                    session['au'] = u'test-' + unicode(uuid1mc())  # Try again
                     g.esession = EventSessionBase.new_from_request(request)
                 else:
                     g.anon_user = anon_user
 
     # Prepare event session if it's not already present
     if g.user or g.anon_user and not g.esession:
-        g.esession = EventSession.get_session(user=g.user, anon_user=g.anon_user)
+        g.esession = EventSession.get_session(uuid=session.get('es'), user=g.user, anon_user=g.anon_user)
+    if g.esession:
+        session['es'] = g.esession.uuid
 
-    db.session.commit()
+    # Don't commit here. It flushes SQLAlchemy's session cache and forces
+    # fresh database hits. Let after_request commit. (Commented out 30-03-2016)
+    # db.session.commit()
+    g.db_commit_needed = True
 
     if g.anon_user:
         session['au'] = g.anon_user.id
@@ -178,6 +187,9 @@ def load_user_data(user):
 
 @app.after_request
 def record_views_and_events(response):
+    if hasattr(g, 'db_commit_needed') and g.db_commit_needed:
+        db.session.commit()
+
     # We had a few error reports with g.* variables missing in this function, so now
     # we look again and make note if something is missing. We haven't encountered
     # this problem ever since after several days of logging, but this bit of code
@@ -245,6 +257,7 @@ def record_views_and_events(response):
                     db.session.commit()
                 except IntegrityError:  # Race condition from parallel requests
                     db.session.rollback()
+            db.session.commit()
             campaign_view_count_update.delay(campaign_id=campaign.id, user_id=g.user.id)
     elif g.anon_user:
         for campaign in g.campaign_views:
@@ -255,6 +268,7 @@ def record_views_and_events(response):
                     db.session.commit()
                 except IntegrityError:  # Race condition from parallel requests
                     db.session.rollback()
+            db.session.commit()
             campaign_view_count_update.delay(campaign_id=campaign.id, anon_user_id=g.anon_user.id)
 
     if g.esession:  # Will be None for anon static requests
@@ -303,7 +317,7 @@ def session_jobpost_ab():
 
 
 def bgroup(jobpost_ab, post):
-    return jobpost_ab.get(post.id) or cointoss() if post.headlineb else None
+    return (jobpost_ab.get(post.id) or cointoss()) if post.headlineb else None
 
 
 def cache_viewcounts(posts):
@@ -404,7 +418,7 @@ pay_graph_buckets = {
         range(200000, 1000000, 50000) +
         range(1000000, 10000000, 100000) +
         [10000000])
-}
+    }
 pay_graph_buckets['EUR'] = pay_graph_buckets['USD']
 pay_graph_buckets['SGD'] = pay_graph_buckets['USD']
 pay_graph_buckets['GBP'] = pay_graph_buckets['USD']
@@ -508,8 +522,16 @@ def campaign_view_count_update(campaign_id, user_id=None, anon_user_id=None):
         return
     if user_id:
         cv = CampaignView.get_by_ids(campaign_id=campaign_id, user_id=user_id)
+        if not cv:
+            # Could be missing because of begin_nested introduced in 36070d9e without outer commit
+            cv = CampaignView(campaign_id=campaign_id, user_id=user_id)
+            db.session.add(cv)
     elif anon_user_id:
         cv = CampaignAnonView.get_by_ids(campaign_id=campaign_id, anon_user_id=anon_user_id)
+        if not cv:
+            # Could be missing because of begin_nested introduced in 36070d9e without outer commit
+            cv = CampaignAnonView(campaign_id=campaign_id, anon_user_id=anon_user_id)
+            db.session.add(cv)
     query = db.session.query(db.func.count(campaign_event_session_table.c.event_session_id)).filter(
         campaign_event_session_table.c.campaign_id == campaign_id).join(EventSession)
 
@@ -543,6 +565,36 @@ def location_geodata(location):
                 result = {r['geonameid']: r for r in result}
             return result
     return {}
+
+
+def jobpost_location_hierarchy(self):
+    locations = []
+    for loc in self.geonameids:
+        locations.append(location_geodata(loc))  # Call one at a time for better cache performance
+    parts = {
+        'city': set(),
+        'area': set(),
+        'state': set(),
+        'country': set(),
+        'continent': set(),
+        }
+    for row in locations:
+        if row and 'fcode' in row:
+            if row['fcode'] in ('PPL', 'PPLA', ):
+                parts['city'].add(row['use_title'])
+            elif row['fcode'] in ('ADM2'):
+                parts['area'].add(row['use_title'])
+            elif row['fcode'] in ('ADM1'):
+                parts['state'].add(row['use_title'])
+            elif row['fcode'] == 'CONT':
+                parts['continent'].add(row['use_title'])
+            if 'country' in row and row['country']:
+                parts['country'].add(row['country'])  # Use 2 letter ISO code, not name
+
+    return {k: tuple(parts[k]) for k in parts}
+
+
+JobPost.location_hierarchy = property(jobpost_location_hierarchy)
 
 
 @app.template_filter('urlfor')
@@ -665,24 +717,24 @@ def filter_basequery(basequery, filters, exclude_list=[]):
     return basequery
 
 
-@cache.memoize(timeout=3600)
-def filter_locations(filters):
+def filter_locations(board, filters):
     now = datetime.utcnow()
     basequery = db.session.query(JobLocation.geonameid, db.func.count(JobLocation.geonameid).label('count')
         ).join(JobPost).filter(JobPost.status.in_(POSTSTATUS.LISTED), JobPost.datetime > now - agelimit,
         JobLocation.primary == True).group_by(JobLocation.geonameid).order_by(db.text('count DESC'))  # NOQA
+    if board:
+        basequery = basequery.join(BoardJobPost).filter(BoardJobPost.board == board)
 
     geonameids = [jobpost_location.geonameid for jobpost_location in basequery]
     filtered_basequery = filter_basequery(basequery, filters, exclude_list=['locations', 'anywhere'])
     filtered_geonameids = [jobpost_location.geonameid for jobpost_location in filtered_basequery]
     remote_location_available = filtered_basequery.filter(JobPost.remote_location == True).count() > 0  # NOQA
     data = location_geodata(geonameids)
-    return [{'name': 'anywhere', 'title': 'Anywhere', 'available': remote_location_available}] + [{'name': data[geonameid]['name'], 'title': data[geonameid]['picker_title'],
+    return [{'name': 'anywhere', 'title': _("Anywhere"), 'available': remote_location_available}] + [{'name': data[geonameid]['name'], 'title': data[geonameid]['picker_title'],
             'available': False if not filtered_geonameids else geonameid in filtered_geonameids}
             for geonameid in geonameids]
 
 
-@cache.memoize(timeout=3600)
 def filter_types(basequery, board, filters):
     basequery = filter_basequery(basequery, filters, exclude_list=['types'])
     filtered_typeids = [post.type_id for post in basequery.options(db.load_only('type_id')).distinct('type_id').all()]
@@ -698,7 +750,6 @@ def filter_types(basequery, board, filters):
                 for job_type in JobType.query.filter_by(private=False, public=True).order_by('seq')]
 
 
-@cache.memoize(timeout=3600)
 def filter_categories(basequery, board, filters):
     basequery = filter_basequery(basequery, filters, exclude_list=['categories'])
     filtered_categoryids = [post.category_id for post in basequery.options(db.load_only('category_id')).distinct('category_id').all()]
@@ -717,10 +768,15 @@ def filter_categories(basequery, board, filters):
 @app.context_processor
 def inject_filter_options():
     # Don't compute filter choices for paginated results
-    if JobPost.is_paginated(request):
+    if index_is_paginated():
         return dict()
     basequery = getposts(showall=True, order=False, limit=False)
     filters = g.get('event_data', {}).get('filters', {})
-    return dict(job_location_filters=filter_locations(filters),
-                job_type_filters=filter_types(basequery, board=g.board, filters=filters),
-                job_category_filters=filter_categories(basequery, board=g.board, filters=filters))
+    cache_key = 'jobfilters/' + (g.board.name + '/' if g.board else '') + hashlib.sha1(repr(filters)).hexdigest()
+    result = cache.get(cache_key)
+    if not result:
+        result = dict(job_location_filters=filter_locations(g.board, filters),
+            job_type_filters=filter_types(basequery, board=g.board, filters=filters),
+            job_category_filters=filter_categories(basequery, board=g.board, filters=filters))
+        cache.set(cache_key, result, timeout=3600)
+    return result

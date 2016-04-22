@@ -4,6 +4,62 @@ from coaster import simplify_text
 
 NO_NUM_RE = re.compile('[^0-9]+', re.UNICODE)
 
+LEGAL_SUFFIX_RE = re.compile(r'''
+    (  # Common descriptors
+    Business\s+Systems|
+    Consultancy|
+    Consulting|
+    Communications|
+    Digital\s+Communications|
+    Digital\s+Media|
+    Digital\s+Services|
+    Financial\s+Services|
+    Global\s+Services|
+    Global\s+Solutions|
+    Healthcare|
+    India|
+    Infotech|
+    Info\s+Solutions|
+    Innotech|
+    Learning|
+    Software|
+    Software\s+Development|
+    Software\s+Labs|
+    Software\s+Solutions|
+    Software\s+Testing|
+    Solutions|
+    Technology|
+    Technology\s+Solutions|
+    Technologies|
+    Media|
+    )?\s+
+    (  # Legal suffixes
+    Private\s+Limited|
+    Pvt\.?\s+Ltd\.?|
+    Private\s+Ltd\.?|
+    Pvt\.?\s+Limited|
+    P\.?\s+Ltd\.?|
+    \(P\)\s+Ltd\.?|
+    Ltd\.?|
+    Limited|
+    LLP|
+    Inc\.?|
+    LLC\.?|
+    )$''', re.VERBOSE | re.IGNORECASE)
+
+
+def common_legal_names(candidate):
+    """
+    Attempt to break up a candidate name into common and legal names
+    """
+    candidate = candidate.strip()
+    if LEGAL_SUFFIX_RE.search(candidate):
+        legal_name = candidate
+        common_name = LEGAL_SUFFIX_RE.sub('', candidate).strip()
+        return common_name, legal_name
+    else:
+        return candidate, None
+
 
 def string_to_number(value):
     """

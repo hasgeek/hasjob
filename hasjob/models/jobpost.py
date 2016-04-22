@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from werkzeug import cached_property
 from flask import url_for, g, escape, Markup
 from sqlalchemy import event, DDL
-from sqlalchemy.orm import defer
+from sqlalchemy.orm import defer, deferred
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.dialects.postgresql import TSVECTOR
 import tldextract
@@ -131,13 +131,13 @@ class JobPost(BaseMixin, db.Model):
     review_datetime = db.Column(db.DateTime, nullable=True)
     review_comments = db.Column(db.Unicode(250), nullable=True)
 
-    search_vector = db.Column(TSVECTOR, nullable=True)
+    search_vector = deferred(db.Column(TSVECTOR, nullable=True))
 
     # Metadata for classification
     language = db.Column(db.CHAR(2), nullable=True)
     language_confidence = db.Column(db.Float, nullable=True)
 
-    admins = db.relationship(User, secondary=lambda: jobpost_admin_table,
+    admins = db.relationship(User, lazy='dynamic', secondary=lambda: jobpost_admin_table,
         backref=db.backref('admin_of', lazy='dynamic'))
     starred_by = db.relationship(User, lazy='dynamic', secondary=starred_job_table,
         backref=db.backref('starred_jobs', lazy='dynamic'))
@@ -173,6 +173,14 @@ class JobPost(BaseMixin, db.Model):
         defer('language'),
         defer('language_confidence'),
 
+        # These are defined below JobApplication
+        defer('new_applications'),
+        defer('replied_applications'),
+        defer('viewcounts_impressions'),
+        defer('viewcounts_viewed'),
+        defer('viewcounts_opened'),
+        defer('viewcounts_applied'),
+
         # defer('pay_type'),
         # defer('pay_currency'),
         # defer('pay_cash_min'),
@@ -191,7 +199,7 @@ class JobPost(BaseMixin, db.Model):
     def admin_is(self, user):
         if user is None:
             return False
-        return user == self.user or user in self.admins
+        return user == self.user or bool(self.admins.options(db.load_only('id')).filter_by(id=user.id).count())
 
     @property
     def expiry_date(self):
@@ -415,27 +423,31 @@ class JobPost(BaseMixin, db.Model):
             values = redis_store.hgetall(cache_key)
         if 'impressions' not in values:
             # Also see views.helper.save_impressions for a copy of this query
-            values['impressions'] = db.session.query(db.func.count(
-                db.func.distinct(EventSession.user_id)).label('count')).join(
-                JobImpression).filter(JobImpression.jobpost == self).first().count
+            # values['impressions'] = db.session.query(db.func.count(
+            #     db.func.distinct(EventSession.user_id)).label('count')).join(
+            #     JobImpression).filter(JobImpression.jobpost == self).first().count
+            values['impressions'] = self.viewcounts_impressions
             redis_store.hset(cache_key, 'impressions', values['impressions'])
             redis_store.expire(cache_key, 86400)
         else:
             values['impressions'] = int(values['impressions'])
         if 'viewed' not in values:
-            values['viewed'] = UserJobView.query.filter_by(jobpost=self).count()
+            # values['viewed'] = UserJobView.query.filter_by(jobpost=self).count()
+            values['viewed'] = self.viewcounts_viewed
             redis_store.hset(cache_key, 'viewed', values['viewed'])
             redis_store.expire(cache_key, 86400)
         else:
             values['viewed'] = int(values['viewed'])
         if 'opened' not in values:
-            values['opened'] = UserJobView.query.filter_by(jobpost=self, applied=True).count()
+            # values['opened'] = UserJobView.query.filter_by(jobpost=self, applied=True).count()
+            values['opened'] = self.viewcounts_opened
             redis_store.hset(cache_key, 'opened', values['opened'])
             redis_store.expire(cache_key, 86400)
         else:
             values['opened'] = int(values['opened'])
         if 'applied' not in values:
-            values['applied'] = JobApplication.query.filter_by(jobpost=self).count()
+            # values['applied'] = JobApplication.query.filter_by(jobpost=self).count()
+            values['applied'] = self.viewcounts_applied
             redis_store.hset(cache_key, 'applied', values['applied'])
             redis_store.expire(cache_key, 86400)
         else:
@@ -526,14 +538,6 @@ class JobPost(BaseMixin, db.Model):
         else:
             return 'd', viewstats_by_id_day(self.id)
 
-    @property
-    def new_applications(self):
-        return JobApplication.query.filter_by(jobpost=self, response=EMPLOYER_RESPONSE.NEW).count()
-
-    @property
-    def replied_applications(self):
-        return JobApplication.query.filter_by(jobpost=self, response=EMPLOYER_RESPONSE.REPLIED).count()
-
     def reports(self):
         if not self.flags:
             return []
@@ -541,10 +545,6 @@ class JobPost(BaseMixin, db.Model):
         for flag in self.flags:
             counts[flag.reportcode] = counts.setdefault(flag.reportcode, 0) + 1
         return [{'count': i[2], 'title': i[1]} for i in sorted([(k.seq, k.title, v) for k, v in counts.items()])]
-
-    @classmethod
-    def is_paginated(cls, request):
-        return 'startdate' in request.values
 
 
 def viewstats_helper(jobpost_id, interval, limit, daybatch=False):
@@ -874,6 +874,36 @@ JobApplication.jobpost = db.relationship(JobPost,
             EMPLOYER_RESPONSE.SPAM: 6
             }),
         db.desc(JobApplication.created_at)), cascade='all, delete-orphan'))
+
+
+JobPost.new_applications = db.column_property(
+    db.select([db.func.count(JobApplication.id)]).where(
+        db.and_(JobApplication.jobpost_id == JobPost.id, JobApplication.response == EMPLOYER_RESPONSE.NEW)))
+
+
+JobPost.replied_applications = db.column_property(
+    db.select([db.func.count(JobApplication.id)]).where(
+        db.and_(JobApplication.jobpost_id == JobPost.id, JobApplication.response == EMPLOYER_RESPONSE.REPLIED)))
+
+
+JobPost.viewcounts_impressions = db.column_property(
+    db.select([db.func.count(db.func.distinct(EventSession.user_id))]).where(
+        db.and_(JobImpression.event_session_id == EventSession.id, JobImpression.jobpost_id == JobPost.id)))
+
+
+JobPost.viewcounts_viewed = db.column_property(
+    db.select([db.func.count()]).where(
+        UserJobView.jobpost_id == JobPost.id))
+
+
+JobPost.viewcounts_opened = db.column_property(
+    db.select([db.func.count()]).where(
+        db.and_(UserJobView.jobpost_id == JobPost.id, UserJobView.applied == True)))  # NOQA
+
+
+JobPost.viewcounts_applied = db.column_property(
+    db.select([db.func.count(JobApplication.id)]).where(
+        JobApplication.jobpost_id == JobPost.id))
 
 
 def unique_hash(model=JobPost):

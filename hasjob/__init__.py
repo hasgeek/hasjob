@@ -52,7 +52,8 @@ def init_for(env):
     baseframe.init_app(app, requires=['hasjob'],
         ext_requires=['baseframe-bs3',
             ('jquery.autosize', 'jquery.sparkline', 'jquery.liblink', 'jquery.wnumb', 'jquery.nouislider'),
-            'baseframe-firasans', 'fontawesome>=4.3.0', 'bootstrap-multiselect', 'nprogress', 'ractive', 'jquery.appear', 'hammer'],
+            'baseframe-firasans', 'fontawesome>=4.3.0', 'bootstrap-multiselect', 'nprogress', 'ractive',
+            'jquery.appear', 'hammer'],
         enable_csrf=True)
     # TinyMCE has to be loaded by itself, unminified, or it won't be able to find its assets
     app.assets.register('js_tinymce', assets.require('!jquery.js', 'tinymce.js>=4.0.0', 'jquery.tinymce.js>=4.0.0'))

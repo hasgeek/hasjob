@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
+from datetime import datetime
 from pytz import timezone
 from werkzeug import cached_property
-from flask import url_for
-from sqlalchemy.orm import defer
+from flask import url_for, Markup
 from sqlalchemy.ext.associationproxy import association_proxy
 from coaster.sqlalchemy import make_timestamp_columns
 from . import db, TimestampMixin, BaseNameMixin
@@ -11,8 +11,10 @@ from .user import User, UserActiveAt
 from .jobpost import JobPost
 from .jobtype import JobType
 from .jobcategory import JobCategory
+from .tag import Tag
 
-__all__ = ['Board', 'BoardJobPost', 'BoardDomain', 'BoardLocation']
+
+__all__ = ['Board', 'BoardJobPost', 'BoardAutoDomain', 'BoardAutoLocation', 'board_auto_tag_table']
 
 
 board_jobtype_table = db.Table('board_jobtype', db.Model.metadata,
@@ -36,6 +38,13 @@ board_users_table = db.Table('board_user', db.Model.metadata,
     )))
 
 
+board_auto_tag_table = db.Table('board_auto_tag', db.Model.metadata,
+    db.Column('tag_id', None, db.ForeignKey('tag.id'), primary_key=True),
+    db.Column('board_id', None, db.ForeignKey('board.id'), primary_key=True),
+    db.Column('created_at', db.DateTime, default=datetime.utcnow)
+    )
+
+
 def jobtype_choices(cls, board=None):
     if board:
         return [(ob.id, ob.title) for ob in board.types if not ob.private]
@@ -54,32 +63,32 @@ def jobcategory_choices(cls, board=None):
 JobCategory.choices = classmethod(jobcategory_choices)
 
 
-class BoardDomain(TimestampMixin, db.Model):
+class BoardAutoDomain(TimestampMixin, db.Model):
     """
     Domain tag for boards
     """
-    __tablename__ = 'board_domain'
+    __tablename__ = 'board_auto_domain'
     #: Board we are referencing
     board_id = db.Column(None, db.ForeignKey('board.id'), primary_key=True, nullable=False)
     #: Domain for this board
     domain = db.Column(db.Unicode(80), primary_key=True, nullable=False, index=True)
 
     def __repr__(self):
-        return '<BoardDomain %s for board %s>' % (self.domain, self.board.name)
+        return '<BoardAutoDomain %s for board %s>' % (self.domain, self.board.name)
 
 
-class BoardLocation(TimestampMixin, db.Model):
+class BoardAutoLocation(TimestampMixin, db.Model):
     """
     Location tag for boards
     """
-    __tablename__ = 'board_location'
+    __tablename__ = 'board_auto_location'
     #: Board we are referencing
     board_id = db.Column(None, db.ForeignKey('board.id'), primary_key=True, nullable=False)
     #: Geonameid for this board
     geonameid = db.Column(db.Integer, primary_key=True, nullable=False, index=True)
 
     def __repr__(self):
-        return '<BoardLocation %d for board %s>' % (self.geonameid, self.board.name)
+        return '<BoardAutoLocation %d for board %s>' % (self.geonameid, self.board.name)
 
 
 class Board(BaseNameMixin, db.Model):
@@ -105,6 +114,8 @@ class Board(BaseNameMixin, db.Model):
     newjob_headline = db.Column(db.Unicode(100), nullable=True)
     #: New job posting instructions
     newjob_blurb = db.Column(db.UnicodeText, nullable=True)
+    #: Featured board
+    featured = db.Column(db.Boolean, default=False, nullable=False, index=True)
     #: Posting users
     posting_users = db.relationship(User, secondary=board_users_table)
     #: Available job types
@@ -113,11 +124,15 @@ class Board(BaseNameMixin, db.Model):
     categories = db.relationship(JobCategory, secondary=board_jobcategory_table, order_by=JobCategory.seq)
 
     #: Automatic tagging domains
-    domains = db.relationship(BoardDomain, backref='board', cascade='all, delete-orphan', order_by=BoardDomain.domain)
-    tag_domains = association_proxy('domains', 'domain', creator=lambda d: BoardDomain(domain=d))
+    domains = db.relationship(BoardAutoDomain, backref='board', cascade='all, delete-orphan',
+        order_by=BoardAutoDomain.domain)
+    tag_domains = association_proxy('domains', 'domain', creator=lambda d: BoardAutoDomain(domain=d))
     #: Automatic tagging locations
-    locations = db.relationship(BoardLocation, backref='board', cascade='all, delete-orphan')
-    geonameids = association_proxy('locations', 'geonameid', creator=lambda l: BoardLocation(geonameid=l))
+    locations = db.relationship(BoardAutoLocation, backref='board', cascade='all, delete-orphan')
+    geonameids = association_proxy('locations', 'geonameid', creator=lambda l: BoardAutoLocation(geonameid=l))
+    #: Automatic tagging keywords
+    auto_tags = db.relationship(Tag, secondary=board_auto_tag_table, order_by=Tag.name)
+    auto_keywords = association_proxy('auto_tags', 'title', creator=lambda t: Tag.get(t, create=True))
     #: Users active on this board
     users_active_at = db.relationship(UserActiveAt, lazy='dynamic', backref='board')
 
@@ -145,6 +160,11 @@ class Board(BaseNameMixin, db.Model):
     @cached_property
     def tz(self):
         return timezone(self.timezone)
+
+    @property
+    def title_and_name(self):
+        return Markup(u'{title} (<a href="{url}" target="_blank">{name}</a>)'.format(
+            title=self.title, name=self.name, url=self.url_for()))
 
     def owner_is(self, user):
         if user is None:
@@ -197,7 +217,7 @@ class Board(BaseNameMixin, db.Model):
 def _user_boards(self):
     return Board.query.filter(
         Board.userid.in_(self.user_organizations_owned_ids())).options(
-        defer(Board.description)).all()
+        db.load_only('id', 'name', 'title', 'userid')).all()
 
 User.boards = _user_boards
 
@@ -217,6 +237,9 @@ class BoardJobPost(TimestampMixin, db.Model):
         lazy='dynamic', order_by='BoardJobPost.created_at', cascade='all, delete-orphan'))
     #: Is this post pinned on this board?
     pinned = db.Column(db.Boolean, default=False, nullable=False)
+
+    def __repr__(self):
+        return '<BoardJobPost %s: %s>' % (self.board.name, repr(self.jobpost)[1:-1])
 
 
 def _jobpost_link_to_board(self, board):

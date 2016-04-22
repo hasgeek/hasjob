@@ -1,5 +1,9 @@
 {% extends "sheet.html" %}
 {% block title %}Terms of Service{% endblock %}
+{% block canonical_url %}
+  <link rel="canonical" href="{{ url_for('terms_of_service', subdomain=none) }}" />
+  <meta property="og:url" content="{{ url_for('terms_of_service', subdomain=none) }}" />
+{% endblock %}
 {% block content %}
   <div class="sheet">
     <div class="section first">
