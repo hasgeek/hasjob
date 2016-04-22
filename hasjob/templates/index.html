@@ -70,6 +70,16 @@
         <h2>{{ location.use_title }}</h2>
         {{ location.description }}
       </div>
+    {%- elif location_prompts and not domain %}
+      <div class="flash info">
+        <p>In {{ location_prompts[0]['use_title'] }}? Filter this view:</p>
+        <p class="button-bar">
+          {%- for loc in location_prompts %}
+            <a class="btn btn-sm btn-default" data-geonameid="{{ loc['geonameid'] }}" href="{{ request.base_url + '?l=' + loc['name']|urlencode }}">{{ loc['picker_title'] }}</a>
+          {%- endfor %}
+          <a class="btn btn-sm btn-default" href="{{ request.base_url }}?anywhere=1">Anywhere</a>
+        </p>
+      </div>
     {%- endif %}
     {%- if domain %}
       {{ org_profile(domain) }}
