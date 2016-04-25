@@ -212,7 +212,10 @@ window.Hasjob.Filters = {
         selectedTypes: window.Hasjob.Config.selectedTypes,
         selectedCategories: window.Hasjob.Config.selectedCategories,
         selectedQuery: window.Hasjob.Config.selectedQuery,
-        selectedEquity: window.Hasjob.Config.selectedEquity,
+        selectedCurrency: window.Hasjob.Config.selectedCurrency,
+        pmin: window.Hasjob.Config.pmin,
+        pmax: window.Hasjob.Config.pmax,
+        equity: window.Hasjob.Config.equity,
         sidebarOn: false
       },
       showSidebar: function() {
@@ -443,7 +446,10 @@ window.Hasjob.Filters = {
       selectedTypes: window.Hasjob.Config.selectedTypes,
       selectedCategories: window.Hasjob.Config.selectedCategories,
       selectedQuery: window.Hasjob.Config.selectedQuery,
-      selectedEquity: window.Hasjob.Config.equity
+      selectedCurrency: window.Hasjob.Config.selectedCurrency,
+      pmin: window.Hasjob.Config.pmin,
+      pmax: window.Hasjob.Config.pmax,
+      equity: window.Hasjob.Config.equity
     }).then(function() {
       $('#job-filters-location').multiselect('rebuild');
       $('#job-filters-type').multiselect('rebuild');
@@ -542,18 +548,33 @@ window.Hasjob.PaySlider.toNumeric = function(str){
   return str.slice(1).replace(/,/g, '');
 };
 
+window.Hasjob.PaySlider.range = function(currency){
+  if(currency === '$') {
+    return {
+      'min': [0, 5000],
+      '2%': [200000, 50000],
+      '10%': [1000000, 100000],
+      'max': [10000000, 100000]
+    }
+  }
+  else {
+    return {
+      'min': [0, 50000],
+      '10%':  [1000000, 100000],
+      'max': [10000000, 100000]
+    }
+  }
+};
+
 window.Hasjob.PaySlider.prototype.init = function(){
   this.slider = $(this.selector).noUiSlider({
     start: [this.start, this.end],
-    step: 1,
     connect: true,
     behaviour: "tap",
     range: {
-      'min': [0, 5000],
-      '5%':  [100000, 10000],
-      '80%': [1000000, 50000],
-      '90%': [2000000, 100000],
-      'max': [10000000, 1000000],
+      'min': [0, 50000],
+      '10%':  [1000000, 100000],
+      'max': [10000000, 100000]
     },
     format: window.wNumb({
       decimals: 0,
@@ -572,6 +593,7 @@ window.Hasjob.PaySlider.prototype.resetSlider = function(currency) {
 
   this.slider.noUiSlider({
     start: [start, end],
+    range: Hasjob.PaySlider.range(window.Hasjob.Currency.prefix(currency)),
     format: Hasjob.Currency.wNumbFormat(currency)
   }, true);
 
@@ -625,12 +647,17 @@ $(function() {
   });
 
   // set initial value for the currency radio button
-  var presetCurrency = (Hasjob.PayFilterParameters && Hasjob.PayFilterParameters.currency) || 'NA';
+  var presetCurrency = (Hasjob.Config && Hasjob.Config.selectedCurrency) || 'NA';
   $.each($("input[type='radio'][name='currency']"), function(index, currencyRadio){
     if ($(currencyRadio).val() === presetCurrency) {
       $(currencyRadio).attr('checked', 'checked');
     }
   });
+
+  // preset equity
+  if (Hasjob.Config && parseInt(Hasjob.Config.equity, 10) === 1) {
+    $("input[type='checkbox'][name='equity']").attr('checked', 'checked');
+  }
 
   $("input[type='radio'][name='currency']").on('change',function(){
     setPaySliderVisibility();
@@ -652,8 +679,8 @@ $(function() {
   };
 
   var paySlider = new Hasjob.PaySlider({
-    start: (Hasjob.PayFilterParameters && Hasjob.PayFilterParameters.pmin) || 0,
-    end: (Hasjob.PayFilterParameters && Hasjob.PayFilterParameters.pmax) || 10000000,
+    start: (Hasjob.Config && Hasjob.Config.pmin) || 0,
+    end: (Hasjob.Config && Hasjob.Config.pmax) || 10000000,
     selector: '#pay-slider',
     minField: '#job-filters-pmin',
     maxField: '#job-filters-pmax'

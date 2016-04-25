@@ -65,15 +65,25 @@
         {%- endif %}
       </div>
     {%- endif %}
-    {%- if location and location.use_title and location.description %}
+    {%- if location and location.use_title and location.description and not paginated %}
       <div class="flash info">
         <h2>{{ location.use_title }}</h2>
         {{ location.description }}
       </div>
+    {%- elif location_prompts and not domain and not paginated %}
+      <div class="flash info">
+        <p>In {{ location_prompts[0]['use_title'] }}? Filter this view:</p>
+        <p class="button-bar">
+          {%- for loc in location_prompts %}
+            <a class="btn btn-sm btn-default" data-geonameid="{{ loc['geonameid'] }}" href="{{ request.base_url + '?l=' + loc['name']|urlencode }}">{{ loc['picker_title'] }}</a>
+          {%- endfor %}
+          <a class="btn btn-sm btn-default" href="{{ request.base_url }}?anywhere=1">Anywhere</a>
+        </p>
+      </div>
     {%- endif %}
-    {%- if domain %}
+    {%- if domain and not paginated %}
       {{ org_profile(domain) }}
-    {%- elif md5sum %}
+    {%- elif md5sum and not paginated %}
       {%- if template_vars['jobpost_user'] %}
         {{ user_profile(template_vars['jobpost_user']) }}
       {%- endif %}

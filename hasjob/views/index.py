@@ -292,10 +292,7 @@ def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, tit
             except ValueError:
                 pass
 
-        if request.method == 'GET':
-            batchsize = 31  # Skipping one for the special stickie that's on all pages
-        else:
-            batchsize = 32
+        batchsize = 32
 
         # list of posts that were pinned at the time of first load
         pinned_hashids = request.args.getlist('ph')
@@ -354,6 +351,17 @@ def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, tit
     elif pinsandposts:
         g.impressions = {post.id: (pinflag, post.id, is_bgroup) for pinflag, post, is_bgroup in pinsandposts}
 
+    # Test values for development:
+    # if not g.user_geonameids:
+    #     g.user_geonameids = [1277333, 1277331, 1269750]
+    if not location and 'l' not in request.args and g.user_geonameids and (g.user or g.anon_user) and (
+            (not g.board.locations) if g.board else True):
+        # No location filters? Prompt the user
+        ldata = location_geodata(g.user_geonameids)
+        location_prompts = [ldata[geonameid] for geonameid in g.user_geonameids if geonameid in ldata]
+    else:
+        location_prompts = []
+
     query_params = request.args.to_dict(flat=False)
     if loadmore:
         query_params.update({'startdate': loadmore.isoformat() + 'Z', 'ph': pinned_hashids})
@@ -363,6 +371,7 @@ def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, tit
         md5sum=md5sum, domain=domain, location=location, employer_name=employer_name,
         showall=showall, is_index=is_index,
         header_campaign=header_campaign, loadmore=loadmore,
+        location_prompts=location_prompts,
         search_domains=search_domains, query_params=query_params,
         is_siteadmin=is_siteadmin,
         pay_graph_data=pay_graph_data, paginated=index_is_paginated(), template_vars=template_vars)
