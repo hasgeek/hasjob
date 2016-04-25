@@ -767,10 +767,6 @@ def filter_categories(basequery, board, filters):
 
 @app.context_processor
 def inject_filter_options():
-    # Don't compute filter choices for paginated results
-    if index_is_paginated():
-        return dict()
-
     def get_job_filters():
         basequery = getposts(showall=True, order=False, limit=False)
         filters = g.get('event_data', {}).get('filters', {})

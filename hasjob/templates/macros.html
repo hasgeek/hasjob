@@ -189,7 +189,6 @@
 
 {% macro filters_setup_script(job_filters) %}
   {% with all_jobs_filters=job_filters() %}
-    {%- if (all_jobs_filters.job_location_filters is defined) and (all_jobs_filters.job_type_filters is defined) and (all_jobs_filters.job_category_filters is defined) %}
     <script type="text/javascript">
       window.Hasjob.Config.jobsArchive = {{request.args.get('archive') | tojson}};
       window.Hasjob.Config.jobLocationFilters = {{all_jobs_filters.job_location_filters | tojson}};
@@ -204,6 +203,5 @@
       window.Hasjob.Config.pmax = {{request.args.get('pmax') | tojson}};
       window.Hasjob.Config.equity = {{request.args.get('equity') | tojson}};
     </script>
-    {%- endif %}
   {%- endwith %}
 {% endmacro %}
