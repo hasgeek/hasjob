@@ -292,10 +292,7 @@ def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, tit
             except ValueError:
                 pass
 
-        if request.method == 'GET':
-            batchsize = 31  # Skipping one for the special stickie that's on all pages
-        else:
-            batchsize = 32
+        batchsize = 32
 
         # list of posts that were pinned at the time of first load
         pinned_hashids = request.args.getlist('ph')
