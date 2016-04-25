@@ -65,12 +65,12 @@
         {%- endif %}
       </div>
     {%- endif %}
-    {%- if location and location.use_title and location.description %}
+    {%- if location and location.use_title and location.description and not paginated %}
       <div class="flash info">
         <h2>{{ location.use_title }}</h2>
         {{ location.description }}
       </div>
-    {%- elif location_prompts and not domain %}
+    {%- elif location_prompts and not domain and not paginated %}
       <div class="flash info">
         <p>In {{ location_prompts[0]['use_title'] }}? Filter this view:</p>
         <p class="button-bar">
@@ -81,9 +81,9 @@
         </p>
       </div>
     {%- endif %}
-    {%- if domain %}
+    {%- if domain and not paginated %}
       {{ org_profile(domain) }}
-    {%- elif md5sum %}
+    {%- elif md5sum and not paginated %}
       {%- if template_vars['jobpost_user'] %}
         {{ user_profile(template_vars['jobpost_user']) }}
       {%- endif %}
