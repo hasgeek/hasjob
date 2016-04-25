@@ -66,7 +66,7 @@
           {% for error in form.job_pay_cash_min.errors %}<div><p class="help-error">{{ error }}</p></div>{% endfor %}
           {% for error in form.job_pay_cash_max.errors %}<div><p class="help-error">{{ error }}</p></div>{% endfor %}
         </div>
-        
+
         {{ renderfield(form.job_pay_equity, style="wide") }}
         <div id="field-equityslider">
           <div class="row form-group equity-slider">
@@ -203,6 +203,20 @@
             e.preventDefault();
             break;
         };
+      });
+
+      $("#company_logo").bind('change', function(e) {
+        if (e.target.files.length == 1) {
+          var file = e.target.files[0];
+          if (['image/jpeg', 'image/png', 'image/gif'].indexOf(file.type) < 0) {
+            alert('File type not supported. Only JPEG/PNG files are supported.')
+            $(e.target).val("");
+          }
+          if (file.size/(1024*1024) > 2) {
+            alert('File too big. Maximum size allowed is 2MB.')
+            $(e.target).val("");
+          }
+        }
       });
 
       var equityslider = $("#equityslider").noUiSlider({
