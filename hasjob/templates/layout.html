@@ -47,7 +47,7 @@
     }
   </script>
   {%- if not paginated -%}
-    {{ filters_setup_script(job_location_filters, job_type_filters, job_category_filters) }}
+    {{ filters_setup_script(job_filters) }}
   {%- endif %}
 {%- endblock %}
 
