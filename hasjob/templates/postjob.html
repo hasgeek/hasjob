@@ -205,11 +205,11 @@
         };
       });
 
-      $("#company_logo").bind('change', function(e) {
+      $("#company_logo").on('change', function(e) {
         if (e.target.files.length == 1) {
           var file = e.target.files[0];
           if (['image/jpeg', 'image/png', 'image/gif'].indexOf(file.type) < 0) {
-            alert('File type not supported. Only JPEG/PNG files are supported.')
+            alert('File type not supported. Only JPEG/PNG/GIF files are supported.')
             $(e.target).val("");
           }
           if (file.size/(1024*1024) > 2) {
