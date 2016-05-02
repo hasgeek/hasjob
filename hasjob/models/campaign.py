@@ -32,7 +32,7 @@ board_campaign_table = db.Table('campaign_board', db.Model.metadata,
 campaign_event_session_table = db.Table('campaign_event_session', db.Model.metadata,
     db.Column('campaign_id', None, db.ForeignKey('campaign.id'), primary_key=True),
     db.Column('event_session_id', None, db.ForeignKey('event_session.id'), primary_key=True, index=True),
-    db.Column('created_at', db.DateTime, default=datetime.utcnow)
+    db.Column('created_at', db.DateTime, default=db.func.utcnow())
     )
 
 
@@ -384,7 +384,7 @@ class CampaignView(TimestampMixin, db.Model):
     """
     __tablename__ = 'campaign_view'
     #: Datetime when this activity happened (which is likely much before it was written to the database)
-    datetime = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
+    datetime = db.Column(db.DateTime, default=db.func.utcnow(), nullable=False, index=True)
     #: Campaign
     campaign_id = db.Column(None, db.ForeignKey('campaign.id'), nullable=False, primary_key=True)
     campaign = db.relationship(Campaign, backref=db.backref('views', lazy='dynamic',
@@ -417,7 +417,7 @@ class CampaignAnonView(TimestampMixin, db.Model):
     """
     __tablename__ = 'campaign_anon_view'
     #: Datetime when this activity happened (which is likely much before it was written to the database)
-    datetime = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
+    datetime = db.Column(db.DateTime, default=db.func.utcnow(), nullable=False, index=True)
     #: Campaign
     campaign_id = db.Column(None, db.ForeignKey('campaign.id'), nullable=False, primary_key=True)
     campaign = db.relationship(Campaign, backref=db.backref('anonviews', lazy='dynamic',

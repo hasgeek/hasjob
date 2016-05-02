@@ -47,7 +47,7 @@ def number_abbreviate(number, indian=False):
 starred_job_table = db.Table('starred_job', db.Model.metadata,
     db.Column('user_id', None, db.ForeignKey('user.id'), primary_key=True),
     db.Column('jobpost_id', None, db.ForeignKey('jobpost.id'), primary_key=True),
-    db.Column('created_at', db.DateTime, default=datetime.utcnow, nullable=False),
+    db.Column('created_at', db.DateTime, default=db.func.utcnow(), nullable=False),
     )
 
 
@@ -72,7 +72,7 @@ class JobPost(BaseMixin, db.Model):
     user = db.relationship(User, primaryjoin=user_id == User.id, backref=db.backref('jobposts', lazy='dynamic'))
 
     hashid = db.Column(db.String(5), nullable=False, unique=True)
-    datetime = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)  # Published
+    datetime = db.Column(db.DateTime, default=db.func.utcnow(), nullable=False, index=True)  # Published
     closed_datetime = db.Column(db.DateTime, nullable=True)  # If withdrawn or rejected
     # Pinned on the home page. Boards use the BoardJobPost.pinned column
     sticky = db.Column(db.Boolean, nullable=False, default=False)
@@ -677,7 +677,7 @@ class AnonJobView(db.Model):
     anon_user_id = db.Column(None, db.ForeignKey('anon_user.id'), primary_key=True, index=True)
     anon_user = db.relationship(AnonUser)
     #: Timestamp
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
+    created_at = db.Column(db.DateTime, default=db.func.utcnow(), nullable=False, index=True)
 
     @classmethod
     def get(cls, jobpost, anon_user):
@@ -687,7 +687,7 @@ class AnonJobView(db.Model):
 class JobImpression(TimestampMixin, db.Model):
     __tablename__ = 'job_impression'
     #: Datetime when this activity happened (which is likely much before it was written to the database)
-    datetime = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
+    datetime = db.Column(db.DateTime, default=db.func.utcnow(), nullable=False, index=True)
     #: Job post that was impressed
     jobpost_id = db.Column(None, db.ForeignKey('jobpost.id'), primary_key=True)
     jobpost = db.relationship(JobPost)
@@ -713,7 +713,7 @@ class JobImpression(TimestampMixin, db.Model):
 class JobViewSession(TimestampMixin, db.Model):
     __tablename__ = 'job_view_session'
     #: Datetime indicates the time, impression has made
-    datetime = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
+    datetime = db.Column(db.DateTime, default=db.func.utcnow(), nullable=False, index=True)
     #: Job post that was impressed
     #: Event session in which jobpost was viewed
     #: This takes precedence as we'll be loading all instances
