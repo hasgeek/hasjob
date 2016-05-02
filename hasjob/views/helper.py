@@ -11,7 +11,7 @@ from pytz import utc, timezone
 from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
 from geoip2.errors import AddressNotFoundError
-from flask import Markup, request, url_for, g, session
+from flask import Markup, request, g, session
 from flask.ext.rq import job
 from flask.ext.lastuser import signal_user_looked_up
 from coaster.utils import uuid1mc
@@ -595,16 +595,6 @@ def jobpost_location_hierarchy(self):
 
 
 JobPost.location_hierarchy = property(jobpost_location_hierarchy)
-
-
-@app.template_filter('urlfor')
-def url_from_ob(ob):
-    if isinstance(ob, JobPost):
-        return ob.url_for()
-    elif isinstance(ob, JobType):
-        return url_for('browse_by_type', name=ob.name)
-    elif isinstance(ob, JobCategory):
-        return url_for('browse_by_category', name=ob.name)
 
 
 def use_timezone():
