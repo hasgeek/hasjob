@@ -41,21 +41,21 @@ board_users_table = db.Table('board_user', db.Model.metadata,
 board_auto_tag_table = db.Table('board_auto_tag', db.Model.metadata,
     db.Column('tag_id', None, db.ForeignKey('tag.id'), primary_key=True),
     db.Column('board_id', None, db.ForeignKey('board.id'), primary_key=True),
-    db.Column('created_at', db.DateTime, default=db.func.utcnow())
+    db.Column('created_at', db.DateTime, nullable=False, default=db.func.utcnow())
     )
 
 
 board_auto_jobtype_table = db.Table('board_auto_jobtype', db.Model.metadata,
     db.Column('jobtype_id', None, db.ForeignKey('jobtype.id'), primary_key=True),
     db.Column('board_id', None, db.ForeignKey('board.id'), primary_key=True),
-    db.Column('created_at', db.DateTime, default=db.func.utcnow())
+    db.Column('created_at', db.DateTime, nullable=False, default=db.func.utcnow())
     )
 
 
 board_auto_jobcategory_table = db.Table('board_auto_jobcategory', db.Model.metadata,
     db.Column('jobcategory_id', None, db.ForeignKey('jobcategory.id'), primary_key=True),
     db.Column('board_id', None, db.ForeignKey('board.id'), primary_key=True),
-    db.Column('created_at', db.DateTime, default=db.func.utcnow())
+    db.Column('created_at', db.DateTime, nullable=False, default=db.func.utcnow())
     )
 
 
