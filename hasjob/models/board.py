@@ -14,7 +14,8 @@ from .jobcategory import JobCategory
 from .tag import Tag
 
 
-__all__ = ['Board', 'BoardJobPost', 'BoardAutoDomain', 'BoardAutoLocation', 'board_auto_tag_table']
+__all__ = ['Board', 'BoardJobPost', 'BoardAutoDomain', 'BoardAutoLocation', 'board_auto_tag_table',
+    'board_auto_jobtype_table', 'board_auto_jobcategory_table']
 
 
 board_jobtype_table = db.Table('board_jobtype', db.Model.metadata,
@@ -40,6 +41,20 @@ board_users_table = db.Table('board_user', db.Model.metadata,
 
 board_auto_tag_table = db.Table('board_auto_tag', db.Model.metadata,
     db.Column('tag_id', None, db.ForeignKey('tag.id'), primary_key=True),
+    db.Column('board_id', None, db.ForeignKey('board.id'), primary_key=True),
+    db.Column('created_at', db.DateTime, default=datetime.utcnow)
+    )
+
+
+board_auto_jobtype_table = db.Table('board_auto_jobtype', db.Model.metadata,
+    db.Column('jobtype_id', None, db.ForeignKey('jobtype.id'), primary_key=True),
+    db.Column('board_id', None, db.ForeignKey('board.id'), primary_key=True),
+    db.Column('created_at', db.DateTime, default=datetime.utcnow)
+    )
+
+
+board_auto_jobcategory_table = db.Table('board_auto_jobcategory', db.Model.metadata,
+    db.Column('jobcategory_id', None, db.ForeignKey('jobcategory.id'), primary_key=True),
     db.Column('board_id', None, db.ForeignKey('board.id'), primary_key=True),
     db.Column('created_at', db.DateTime, default=datetime.utcnow)
     )
@@ -126,13 +141,17 @@ class Board(BaseNameMixin, db.Model):
     #: Automatic tagging domains
     domains = db.relationship(BoardAutoDomain, backref='board', cascade='all, delete-orphan',
         order_by=BoardAutoDomain.domain)
-    tag_domains = association_proxy('domains', 'domain', creator=lambda d: BoardAutoDomain(domain=d))
+    auto_domains = association_proxy('domains', 'domain', creator=lambda d: BoardAutoDomain(domain=d))
     #: Automatic tagging locations
-    locations = db.relationship(BoardAutoLocation, backref='board', cascade='all, delete-orphan')
-    geonameids = association_proxy('locations', 'geonameid', creator=lambda l: BoardAutoLocation(geonameid=l))
+    auto_locations = db.relationship(BoardAutoLocation, backref='board', cascade='all, delete-orphan')
+    auto_geonameids = association_proxy('auto_locations', 'geonameid', creator=lambda l: BoardAutoLocation(geonameid=l))
     #: Automatic tagging keywords
     auto_tags = db.relationship(Tag, secondary=board_auto_tag_table, order_by=Tag.name)
     auto_keywords = association_proxy('auto_tags', 'title', creator=lambda t: Tag.get(t, create=True))
+    auto_types = db.relationship(JobType, secondary=board_auto_jobtype_table, order_by=JobType.seq)
+    auto_categories = db.relationship(JobCategory, secondary=board_auto_jobcategory_table, order_by=JobCategory.seq)
+    #: Must all criteria match for an auto-post?
+    auto_all = db.Column(db.Boolean, default=False, nullable=False)
     #: Users active on this board
     users_active_at = db.relationship(UserActiveAt, lazy='dynamic', backref='board')
 

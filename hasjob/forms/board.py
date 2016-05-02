@@ -62,16 +62,25 @@ class BoardOptionsForm(forms.Form):
 
 
 class BoardTaggingForm(forms.Form):
-    tag_domains = forms.TextListField(__("Email Domains"),
+    auto_domains = forms.TextListField(__("Email Domains"),
         description=__("Jobs from any of these email domains will be automatically added to this board. "
         "One per line. Do NOT add the www prefix"))
-    geonameids = forms.GeonameSelectMultiField(__("Locations"),
+    auto_geonameids = forms.GeonameSelectMultiField(__("Locations"),
         description=__("Jobs in any of these locations will be automatically added to this board"))
     auto_keywords = forms.AutocompleteMultipleField(__("Tags"),
         autocomplete_endpoint='/api/1/tag/autocomplete', results_key='tags',
         description=__("Jobs tagged with these keywords will be automatically added to this board"))
+    auto_types = QuerySelectMultipleField(__("Job types"),
+        query_factory=lambda: JobType.query.filter_by(private=False).order_by('seq'), get_label='title',
+        description=__(u"Jobs of this type will be automatically added to this board"))
+    auto_categories = QuerySelectMultipleField(__("Job categories"),
+        query_factory=lambda: JobCategory.query.filter_by(private=False).order_by('seq'), get_label='title',
+        description=__(u"Jobs of this category will be automatically added to this board"))
+    auto_all = forms.BooleanField(__("All of the above criteria must match"),
+        description=__(u"Select this if, for example, you want to match all programming jobs in Bangalore "
+            u"and not all programming jobs or Bangalore-based jobs."))
 
-    def validate_tag_domains(self, field):
+    def validate_auto_domains(self, field):
         relist = []
         for item in field.data:
             item = item.strip()
@@ -92,7 +101,7 @@ class BoardTaggingForm(forms.Form):
                     domains.add(d)
         field.data = list(domains)
 
-    def validate_geonameids(self, field):
+    def validate_auto_geonameids(self, field):
         field.data = [int(x) for x in field.data if x.isdigit()]
 
 

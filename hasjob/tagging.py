@@ -8,7 +8,7 @@ from coaster.utils import text_blocks
 from coaster.nlp import extract_named_entities
 from . import app
 from .models import (db, JobPost, JobLocation, Board, BoardAutoDomain, BoardAutoLocation, board_auto_tag_table,
-    Tag, JobPostTag, TAG_TYPE)
+    board_auto_jobtype_table, board_auto_jobcategory_table, Tag, JobPostTag, TAG_TYPE)
 
 
 @job('hasjob')
@@ -65,7 +65,12 @@ def tag_locations(jobpost_id):
 def add_to_boards(jobpost_id):
     with app.test_request_context():
         post = JobPost.query.options(db.joinedload('locations'), db.joinedload('taglinks')).get(jobpost_id)
+        # Find all boards that match and that don't have an all-match criteria
         query = Board.query.join(BoardAutoDomain).filter(BoardAutoDomain.domain == post.email_domain)
+        query = query.union(Board.query.join(board_auto_jobtype_table).filter(
+            board_auto_jobtype_table.c.jobtype_id == post.type_id))
+        query = query.union(Board.query.join(board_auto_jobcategory_table).filter(
+            board_auto_jobcategory_table.c.jobcategory_id == post.category_id))
         if post.geonameids:
             query = query.union(Board.query.join(BoardAutoLocation).filter(
                 BoardAutoLocation.geonameid.in_(post.geonameids)))
@@ -74,7 +79,32 @@ def add_to_boards(jobpost_id):
                 board_auto_tag_table.c.tag_id.in_(
                     [tl.tag_id for tl in post.taglinks if tl.status in TAG_TYPE.TAG_PRESENT])))
         for board in query:
-            board.add(post)
+            # Some criteria match. Does this board require all to match?
+            if not board.auto_all:
+                # No? Add it
+                board.add(post)
+            else:
+                # Yes? Check all the filters again
+                if board.auto_domains and post.email_domain not in board.auto_domains:
+                    # This board requires specific domains and none match. Skip.
+                    continue
+                if board.auto_locations:
+                    if not set(board.auto_geonameids).intersection(set(post.geonameids)):
+                        # This board requires specific locations and none match. Skip.
+                        continue
+                if board.auto_tags:
+                    if not set(board.auto_keywords).intersection(
+                            {tl.tag for tl in post.taglinks if tl.status in TAG_TYPE.TAG_PRESENT}):
+                        # This board requires specific keywords and none match. Skip.
+                        continue
+                if board.auto_types and post.type not in board.auto_types:
+                    # This board requires specific job types and none match. Skip.
+                    continue
+                if board.auto_categories and post.category not in board.auto_categories:
+                    # This board requires specific job categories and none match. Skip.
+                    continue
+                # No reason to exclude? Add it to the board
+                board.add(post)
         db.session.commit()
 
 
