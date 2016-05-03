@@ -2,22 +2,25 @@
 
 from collections import OrderedDict
 from datetime import datetime
-from flask import redirect, abort
-from baseframe.forms import render_form
+from flask import g, redirect, abort, url_for
+from baseframe import _
+from baseframe.forms import render_form, render_delete_sqla
 from ..models import db, agelimit, Location, JobLocation, JobPost, POSTSTATUS
 from ..forms import NewLocationForm, EditLocationForm
 from .. import app, lastuser
 from .helper import location_geodata
 
 
+@app.route('/in/new', methods=['GET', 'POST'], subdomain='<subdomain>')
 @app.route('/in/new', methods=['GET', 'POST'])
-@lastuser.requires_permission('siteadmin')
 def location_new():
+    if not (lastuser.has_permission('siteadmin') or (g.board and g.board.owner_is(g.user))):
+        abort(403)
     now = datetime.utcnow()
     geonames = OrderedDict([(r.geonameid, None) for r in
         db.session.query(JobLocation.geonameid, db.func.count(JobLocation.geonameid).label('count')).join(
             JobPost).filter(JobPost.status.in_(POSTSTATUS.LISTED), JobPost.datetime > now - agelimit,
-            ~JobLocation.geonameid.in_(db.session.query(Location.id))
+            ~JobLocation.geonameid.in_(db.session.query(Location.id).filter(Location.board == g.board))
             ).group_by(JobLocation.geonameid).order_by(db.text('count DESC')).limit(100)])
     data = location_geodata(geonames.keys())
     for row in data.values():
@@ -30,18 +33,20 @@ def location_new():
         geonameid, name = form.geoname.data.split('/', 1)
         geonameid = int(geonameid)
         title = geonames[geonameid]['use_title']
-        location = Location(id=geonameid, name=name, title=title)
+        location = Location(id=geonameid, board=g.board, name=name, title=title)
         db.session.add(location)
         db.session.commit()
         return redirect(location.url_for('edit'), code=303)
 
-    return render_form(form=form, title="Add a location")
+    return render_form(form=form, title=_("Add a location"))
 
 
+@app.route('/in/<name>/edit', methods=['GET', 'POST'], subdomain='<subdomain>')
 @app.route('/in/<name>/edit', methods=['GET', 'POST'])
-@lastuser.requires_permission('siteadmin')
 def location_edit(name):
-    location = Location.get(name)
+    if not (lastuser.has_permission('siteadmin') or (g.board and g.board.owner_is(g.user))):
+        abort(403)
+    location = Location.get(name, g.board)
     if not location:
         abort(404)
 
@@ -50,4 +55,19 @@ def location_edit(name):
         form.populate_obj(location)
         db.session.commit()
         return redirect(location.url_for(), code=303)
-    return render_form(form=form, title="Edit location")
+    return render_form(form=form, title=_("Edit location"))
+
+
+@app.route('/in/<name>/delete', methods=['GET', 'POST'], subdomain='<subdomain>')
+@app.route('/in/<name>/delete', methods=['GET', 'POST'])
+def location_delete(name):
+    if not (lastuser.has_permission('siteadmin') or (g.board and g.board.owner_is(g.user))):
+        abort(403)
+    location = Location.get(name, g.board)
+    if not location:
+        abort(404)
+
+    return render_delete_sqla(location, db, title=_("Confirm delete"),
+        message=_(u"Delete location ‘{title}’?").format(title=location.title),
+        success=_(u"You have deleted location ‘{title}’.").format(title=location.title),
+        next=url_for('index'), cancel_url=location.url_for())

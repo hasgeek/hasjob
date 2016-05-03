@@ -685,14 +685,16 @@ def sitemap(key):
     sitemapxml = '<?xml version="1.0" encoding="UTF-8"?>\n'\
                  '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
     # Add featured boards to sitemap
+    board_ids = []
     for board in Board.query.filter_by(featured=True).all():
+        board_ids.append(board.id)
         sitemapxml += '  <url>\n'\
                       '    <loc>%s</loc>\n' % board.url_for(_external=True) + \
                       '    <lastmod>%s</lastmod>\n' % (board.updated_at.isoformat() + 'Z') + \
                       '    <changefreq>monthly</changefreq>\n'\
                       '  </url>\n'
     # Add locations to sitemap
-    for item in Location.query.all():
+    for item in Location.query.filter(Location.board_id.in_(board_ids)).all():
         sitemapxml += '  <url>\n'\
                       '    <loc>%s</loc>\n' % item.url_for(_external=True) + \
                       '    <lastmod>%s</lastmod>\n' % (item.updated_at.isoformat() + 'Z') + \

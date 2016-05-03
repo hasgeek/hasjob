@@ -42,4 +42,6 @@ class NewLocationForm(forms.Form):
 
 
 class EditLocationForm(forms.Form):
+    title = forms.StringField(__("Page title"),
+        validators=[forms.validators.DataRequired(__(u"This location needs a name"))])
     description = forms.TinyMce4Field(__("Description"), content_css=content_css)
