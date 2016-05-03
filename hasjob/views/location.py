@@ -38,9 +38,11 @@ def location_new():
         db.session.commit()
         return redirect(location.url_for('edit'), code=303)
 
-    return render_form(form=form, title=_("Add a location"))
+    return render_form(form=form, title=_("Add a location"), submit=_("Next"))
 
 
+# This view does not use load_model because of the dependency on g.board, which
+# load_model does not currently support
 @app.route('/in/<name>/edit', methods=['GET', 'POST'], subdomain='<subdomain>')
 @app.route('/in/<name>/edit', methods=['GET', 'POST'])
 def location_edit(name):
@@ -58,6 +60,8 @@ def location_edit(name):
     return render_form(form=form, title=_("Edit location"))
 
 
+# This view does not use load_model because of the dependency on g.board, which
+# load_model does not currently support
 @app.route('/in/<name>/delete', methods=['GET', 'POST'], subdomain='<subdomain>')
 @app.route('/in/<name>/delete', methods=['GET', 'POST'])
 def location_delete(name):
