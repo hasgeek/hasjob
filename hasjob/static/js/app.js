@@ -213,8 +213,7 @@ window.Hasjob.Filters = {
         selectedCategories: window.Hasjob.Config.selectedCategories,
         selectedQuery: window.Hasjob.Config.selectedQuery,
         selectedCurrency: window.Hasjob.Config.selectedCurrency,
-        pmin: window.Hasjob.Config.pmin,
-        pmax: window.Hasjob.Config.pmax,
+        pay: window.Hasjob.Config.pay,
         equity: window.Hasjob.Config.equity,
         sidebarOn: false
       },
@@ -421,12 +420,15 @@ window.Hasjob.Filters = {
         }
         currencyVal = formParams[fpIndex].value;
       }
-      // format pmin and pmax based on currency value
-      if (formParams[fpIndex].name === 'pmin' || formParams[fpIndex].name === 'pmax') {
+      // format pay based on currency value
+      if (formParams[fpIndex].name === 'pay') {
         if (currencyVal === '') {
           formParams[fpIndex].value = '';
         } else {
           formParams[fpIndex].value = Hasjob.PaySlider.toNumeric(formParams[fpIndex].value);
+          if (formParams[fpIndex].value === '0') {
+            formParams[fpIndex].value = '';
+          }
         }
       }
       // remove empty values
@@ -447,8 +449,7 @@ window.Hasjob.Filters = {
       selectedCategories: window.Hasjob.Config.selectedCategories,
       selectedQuery: window.Hasjob.Config.selectedQuery,
       selectedCurrency: window.Hasjob.Config.selectedCurrency,
-      pmin: window.Hasjob.Config.pmin,
-      pmax: window.Hasjob.Config.pmax,
+      pay: window.Hasjob.Config.pay,
       equity: window.Hasjob.Config.equity
     }).then(function() {
       $('#job-filters-location').multiselect('rebuild');
@@ -461,10 +462,8 @@ window.Hasjob.Filters = {
 window.Hasjob.PaySlider = function(options){
   this.selector = options.selector;
   this.slider = null;
-  this.start = options.start;
-  this.end = options.end;
-  this.minField = options.minField;
-  this.maxField = options.maxField;
+  this.pay = options.pay;
+  this.payField = options.payField;
   this.init();
 };
 
@@ -568,9 +567,8 @@ window.Hasjob.PaySlider.range = function(currency){
 
 window.Hasjob.PaySlider.prototype.init = function(){
   this.slider = $(this.selector).noUiSlider({
-    start: [this.start, this.end],
-    connect: true,
-    behaviour: "tap",
+    start: this.pay,
+    behaviour: 'tap',
     range: {
       'min': [0, 50000],
       '10%':  [1000000, 100000],
@@ -582,23 +580,20 @@ window.Hasjob.PaySlider.prototype.init = function(){
       prefix: '¤'
     })
   });
-  this.slider.Link('lower').to($(this.minField));
-  this.slider.Link('upper').to($(this.maxField));
+  this.slider.Link('lower').to($(this.payField));
   return this;
 };
 
 window.Hasjob.PaySlider.prototype.resetSlider = function(currency) {
-  var start = Hasjob.PaySlider.toNumeric(this.slider.val()[0]),
-      end = Hasjob.PaySlider.toNumeric(this.slider.val()[1]);
+  var pay = Hasjob.PaySlider.toNumeric(this.slider.val());
 
   this.slider.noUiSlider({
-    start: [start, end],
+    start: pay,
     range: Hasjob.PaySlider.range(window.Hasjob.Currency.prefix(currency)),
     format: Hasjob.Currency.wNumbFormat(currency)
   }, true);
 
-  this.slider.Link('lower').to($(this.minField));
-  this.slider.Link('upper').to($(this.maxField));
+  this.slider.Link('lower').to($(this.payField));
 };
 
 $(function() {
@@ -632,7 +627,12 @@ $(function() {
     if (getCurrencyVal().toLowerCase() === 'na'){
       currencyLabel = 'Pay';
     } else {
-      currencyLabel = $('#job-filters-pmin').val() + ' - ' + $('#job-filters-pmax').val();
+      var payVal = Hasjob.PaySlider.toNumeric($('#job-filters-payval').val());
+      if (payVal === '0') {
+        currencyLabel = 'Pay ' + getCurrencyVal();
+      } else {
+        currencyLabel = $('#job-filters-payval').val();
+      };
     }
     if (currencyLabel === 'Pay' && equityLabel !== '') {
       payFieldLabel = 'Equity (%)';
@@ -642,7 +642,7 @@ $(function() {
     $('#job-filters-pay-text').html(payFieldLabel);
   };
 
-  $('#job-filters-equity').on('change', function(){
+  $('#job-filters-equity').on('change', function() {
     setPayTextField();
   });
 
@@ -679,11 +679,9 @@ $(function() {
   };
 
   var paySlider = new Hasjob.PaySlider({
-    start: (Hasjob.Config && Hasjob.Config.pmin) || 0,
-    end: (Hasjob.Config && Hasjob.Config.pmax) || 10000000,
+    pay: (Hasjob.Config && Hasjob.Config.pay) || 0,
     selector: '#pay-slider',
-    minField: '#job-filters-pmin',
-    maxField: '#job-filters-pmax'
+    payField: '#job-filters-payval'
   });
 
   $('#pay-slider').on('slide', function(){

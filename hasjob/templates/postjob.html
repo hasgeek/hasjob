@@ -153,8 +153,7 @@
       });
 
       var cashslider = new Hasjob.PaySlider({
-        start: {{ (form.job_pay_cash_min.data or 0)|tojson }},
-        end: {{ (form.job_pay_cash_max.data or 10000000)|tojson }},
+        start: [{{ (form.job_pay_cash_min.data or 0)|tojson }}, {{ (form.job_pay_cash_max.data or 10000000)|tojson }}],
         selector: "#cashslider",
         minField: '#job_pay_cash_min',
         maxField: '#job_pay_cash_max'

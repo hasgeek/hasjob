@@ -165,14 +165,21 @@ def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, tit
         # Only works as a positive filter: you can't search for jobs that DON'T pay in equity
         data_filters['equity'] = True
         basequery = basequery.filter(JobPost.pay_equity_min != None)  # NOQA
-    if 'pmin' in request.args and 'pmax' in request.args:
-        f_min = string_to_number(request.args['pmin'])
-        f_max = string_to_number(request.args['pmax'])
-        if f_min is not None and f_max is not None:
-            data_filters['pay_min'] = f_min
-            data_filters['pay_max'] = f_max
+    if 'pay' in request.args or ('pmin' in request.args and 'pmax' in request.args):
+        if 'pay' in request.args:
+            f_pay = string_to_number(request.args['pay'])
+            f_min = int(f_pay * 0.90)
+            f_max = int(f_pay * 1.30)
+        else:
+            # Legacy URL with min/max values
+            f_min = string_to_number(request.args['pmin'])
+            f_max = string_to_number(request.args['pmax'])
+            f_pay = f_min  # Use min for pay now
+        if f_pay is not None and f_min is not None and f_max is not None:
+            data_filters['pay'] = f_pay
             basequery = basequery.filter(JobPost.pay_cash_min < f_max, JobPost.pay_cash_max >= f_min)
     else:
+        f_pay = None
         f_min = None
         f_max = None
 
