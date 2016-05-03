@@ -468,7 +468,7 @@ def browse_by_email(md5sum):
 @app.route('/in/<location>', methods=['GET', 'POST'], subdomain='<subdomain>')
 @app.route('/in/<location>', methods=['GET', 'POST'])
 def browse_by_location(location):
-    loc = Location.get(location)
+    loc = Location.get(location, g.board)
     if loc:
         geodata = {'geonameid': loc.id, 'name': loc.name, 'use_title': loc.title, 'description': Markup(loc.description)}
     else:
@@ -499,6 +499,12 @@ def browse_by_tag(tag):
 @app.route('/tag')
 def browse_tags():
     return render_template('tags.html', tags=gettags(alltime=getbool(request.args.get('all'))))
+
+
+@app.route('/opensearch.xml', subdomain='<subdomain>')
+@app.route('/opensearch.xml')
+def opensearch():
+    return render_template('opensearch.xml')
 
 
 @app.route('/feed', subdomain='<subdomain>')

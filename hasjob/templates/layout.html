@@ -28,7 +28,7 @@
   <!-- <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Fira+Sans:400,700,400italic,700italic&subset=latin,latin-ext"> -->
   <link rel="stylesheet" type="text/css" href="//code.cdn.mozilla.net/fonts/fira.css">
   <!-- Feed and search -->
-  <link rel="search" type="application/opensearchdescription+xml" href="{{ url_for('static', filename='opensearch.xml') }}" title="Hasjob Search" />
+  <link rel="search" type="application/opensearchdescription+xml" href="{{ url_for('opensearch') }}" title="{% if g.board %}{{ g.board.title }}{% else %}{{ config['SITE_TITLE'] }}{% endif %}" />
   <link rel="alternate" type="application/atom+xml" title="All jobs | {% if g.board -%} {{ g.board.title }} {%- if g.board.not_root %} ({{ config['SITE_TITLE'] }}) {%- endif -%} {%- else -%} {{ config['SITE_TITLE'] }} {%- endif %}" href="{{ url_for('feed') }}" />
   {% block pageheaders %}{% endblock %}
   {%- block twittercards %}

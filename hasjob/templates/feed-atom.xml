@@ -3,7 +3,7 @@
   <title>{{ title|e }} – {{ config['SITE_TITLE']|e }}</title>
   <link href="{{ url_for('index', _external=true) }}"/>
   <link rel="self" href="{{ request.base_url }}"/>
-  <link rel="search" type="application/opensearchdescription+xml" href="{{ url_for('static', filename='opensearch.xml', _external=true) }}" title="Hasjob Search" />
+  <link rel="search" type="application/opensearchdescription+xml" href="{{ url_for('opensearch', _external=true) }}" title="{% if g.board %}{{ g.board.title }}{% else %}{{ config['SITE_TITLE'] }}{% endif %}" />
   <updated>{{ updated }}</updated>
   <id>{{ url_for('index', _external=true) }}</id>
   <icon>{{ url_for('static', filename='img/logo.png', _external=true) }}</icon>

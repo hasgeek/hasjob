@@ -47,7 +47,7 @@ def kiosk_manifest():
 
         # Static resources
         lines.append(url_for('static', filename='img/logo-star.png'))
-        lines.append(url_for('static', filename='opensearch.xml'))
+        lines.append(url_for('opensearch'))
         lines.append(url_for('static', filename='css/editor.css'))
 
         lines.append(url_for('baseframe.static', filename='js/modernizr.min.js'))
