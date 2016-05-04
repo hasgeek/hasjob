@@ -45,9 +45,6 @@
     {%- if g.board and g.board.not_root and domain %}
       <link rel="canonical" href="{{ domain.url_for(subdomain=none) }}" />
       <meta property="og:url" content="{{ domain.url_for(subdomain=none) }}" />
-    {%- elif g.board and g.board.not_root and location %}
-      <link rel="canonical" href="{{ url_for('browse_by_location', location=location['name'], subdomain=none) }}" />
-      <meta property="og:url" content="{{ url_for('browse_by_location', location=location['name'], subdomain=none) }}" />
     {%- else %}
       <link rel="canonical" href="{{ request.base_url }}" />
       <meta property="og:url" content="{{ request.base_url }}" />
