@@ -462,8 +462,9 @@ window.Hasjob.Filters = {
 window.Hasjob.PaySlider = function(options){
   this.selector = options.selector;
   this.slider = null;
-  this.pay = options.pay;
-  this.payField = options.payField;
+  this.start = options.start;
+  this.minField = options.minField;
+  this.maxField = options.maxField;
   this.init();
 };
 
@@ -567,7 +568,8 @@ window.Hasjob.PaySlider.range = function(currency){
 
 window.Hasjob.PaySlider.prototype.init = function(){
   this.slider = $(this.selector).noUiSlider({
-    start: this.pay,
+    start: this.start,
+    connect: (this.start.constructor === Array)?true:false,
     behaviour: 'tap',
     range: {
       'min': [0, 50000],
@@ -580,20 +582,32 @@ window.Hasjob.PaySlider.prototype.init = function(){
       prefix: '¤'
     })
   });
-  this.slider.Link('lower').to($(this.payField));
+  this.slider.Link('lower').to($(this.minField));
+  if (typeof this.maxField !== 'undefined') {
+    this.slider.Link('upper').to($(this.maxField));
+  };
   return this;
 };
 
 window.Hasjob.PaySlider.prototype.resetSlider = function(currency) {
-  var pay = Hasjob.PaySlider.toNumeric(this.slider.val());
+  var startval = this.slider.val(), start;
+  if (startval.constructor === Array) {
+    start = [Hasjob.PaySlider.toNumeric(startval[0]), Hasjob.PaySlider.toNumeric(startval[1])];
+  } else {
+    start = Hasjob.PaySlider.toNumeric(startval);
+  };
 
   this.slider.noUiSlider({
-    start: pay,
+    start: start,
+    connect: (start.constructor === Array)?true:false,
     range: Hasjob.PaySlider.range(window.Hasjob.Currency.prefix(currency)),
     format: Hasjob.Currency.wNumbFormat(currency)
   }, true);
 
-  this.slider.Link('lower').to($(this.payField));
+  this.slider.Link('lower').to($(this.minField));
+  if (typeof this.maxField !== 'undefined') {
+    this.slider.Link('upper').to($(this.maxField));
+  };
 };
 
 $(function() {
@@ -631,7 +645,7 @@ $(function() {
       if (payVal === '0') {
         currencyLabel = 'Pay ' + getCurrencyVal();
       } else {
-        currencyLabel = $('#job-filters-payval').val();
+        currencyLabel = $('#job-filters-payval').val() + ' per year';
       };
     }
     if (currencyLabel === 'Pay' && equityLabel !== '') {
@@ -679,9 +693,9 @@ $(function() {
   };
 
   var paySlider = new Hasjob.PaySlider({
-    pay: (Hasjob.Config && Hasjob.Config.pay) || 0,
+    start: (Hasjob.Config && Hasjob.Config.pay) || 0,
     selector: '#pay-slider',
-    payField: '#job-filters-payval'
+    minField: '#job-filters-payval'
   });
 
   $('#pay-slider').on('slide', function(){
