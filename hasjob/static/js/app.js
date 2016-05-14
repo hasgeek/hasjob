@@ -439,6 +439,11 @@ window.Hasjob.Filters = {
     return sortedFilterParams;
   },
   refresh: function() {
+    // Capture initial cursor position in the keywords field
+    var keywordsField = document.getElementById('job-filters-keywords');
+    var initialKeywordPos = keywordsField.selectionEnd;
+
+    // reset pre-selected values in filters
     this.ractive.set({
       jobsArchive: window.Hasjob.Config.jobsArchive,
       jobLocations: window.Hasjob.Config.jobLocationFilters,
@@ -452,9 +457,13 @@ window.Hasjob.Filters = {
       pay: window.Hasjob.Config.pay,
       equity: window.Hasjob.Config.equity
     }).then(function() {
+      // Since the data may have changed, multiselect requires a rebuild
       $('#job-filters-location').multiselect('rebuild');
       $('#job-filters-type').multiselect('rebuild');
       $('#job-filters-category').multiselect('rebuild');
+
+      // Set the cursor back to where it was before refresh
+      keywordsField.selectionEnd = initialKeywordPos;
     });
   }
 };
