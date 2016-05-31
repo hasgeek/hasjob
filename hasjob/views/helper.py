@@ -479,6 +479,33 @@ def save_jobview(event_session_id, jobpost_id, bgroup, viewed_time):
         db.session.commit()
 
 
+def mark_dirty_impression_counts(jobpost_ids):
+    redis_store.sadd('hasjob/dirty_impression_counts', *jobpost_ids)
+
+
+def remove_dirty_impression_counts(jobpost_ids):
+    redis_store.srem('hasjob/dirty_impression_counts', *jobpost_ids)
+
+
+def list_dirty_impression_counts():
+    return [int(x) for x in redis_store.smembers('hasjob/dirty_impression_counts')]
+
+
+def update_impression_counts(jobpost_ids):
+    for jobpost_id in jobpost_ids:
+        # Replicate post.viewcounts's query here because we don't want to load the post from db just to
+        # access a class instance method
+        redis_store.hset('hasjob/viewcounts/%d' % jobpost_id, 'impressions',
+            db.session.query(db.func.count(db.func.distinct(EventSession.user_id)).label('count')
+            ).join(JobImpression).filter(JobImpression.jobpost_id == jobpost_id).first().count)
+
+
+def update_dirty_impression_counts():
+    jobpost_ids = list_dirty_impression_counts()
+    update_impression_counts(jobpost_ids)
+    remove_dirty_impression_counts(jobpost_ids)
+
+
 @job('hasjob')
 def save_impressions(session_id, impressions, viewed_time):
     """
@@ -487,11 +514,9 @@ def save_impressions(session_id, impressions, viewed_time):
     with app.test_request_context():
         for pinned, postid, bgroup in impressions:
             ji = JobImpression.get_by_ids(jobpost_id=postid, event_session_id=session_id)
-            new_impression = False
             if ji is None:
                 ji = JobImpression(jobpost_id=postid, event_session_id=session_id, datetime=viewed_time, pinned=False, bgroup=bgroup)
                 db.session.add(ji)
-                new_impression = True
             # Never set pinned=False on an existing JobImpression instance. The pinned status
             # could change during a session. We are only interested in knowing if it was
             # rendered as pinned at least once during a session.
@@ -505,15 +530,9 @@ def save_impressions(session_id, impressions, viewed_time):
             # is why this function runs as a background job instead of in-process.
             try:
                 db.session.commit()
-
-                # Replicate post.viewcounts's query here because we don't want to load the post from db just to
-                # access a class instance method
-                if new_impression:
-                    redis_store.hset('hasjob/viewcounts/%d' % postid, 'impressions',
-                        db.session.query(db.func.count(db.func.distinct(EventSession.user_id)).label('count')
-                            ).join(JobImpression).filter(JobImpression.jobpost_id == postid).first().count)
             except IntegrityError:  # Parallel request, skip this and move on
                 db.session.rollback()
+        mark_dirty_impression_counts([postid for pinned, postid, bgroup in impressions])
 
 
 @job('hasjob')

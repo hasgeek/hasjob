@@ -133,9 +133,10 @@ Some functionality in Hasjob requires the presence of a sub-board named `www`. C
 
 ## Periodic jobs
 
-Hasjob maintains user sessions that expire after half hour of inactivity. You need to install a cron script to sweep for expired sessions. Use `crontab -e` as the user account running Hasjob and add:
+Hasjob requires some tasks to be run in periodic background jobs. These can be called from cron. Use `crontab -e` as the user account running Hasjob and add:
 
-    */10 * * * * cd /path/to/hasjob; python manage.py sweep -e dev
+    */10 * * * * cd /path/to/hasjob; python manage.py periodic sessions -e dev
+    */5  * * * * cd /path/to/hasjob; python manage.py periodic impressions -e dev
 
 Switch from `dev` to `production` in a production environment.
 
