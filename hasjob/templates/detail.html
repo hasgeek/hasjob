@@ -385,15 +385,8 @@
   {%- endif %}
 {% endblock %}
 {% block postcontent %}
-  {%- if related_posts %}
   <ul id="stickie-area" class="row">
-    {%- for post in related_posts -%}
-      <li class="col-xs-12 col-md-3 col-sm-4">
-        {{ stickie(post, post.url_for(), false, show_viewcounts=is_siteadmin or g.user and g.user.flags.is_employer_month, show_pay=is_siteadmin, starred=g.user and post.id in g.starred_ids) }}
-      </li>
-    {%- endfor -%}
   </ul>
-  {%- endif %}
 {% endblock %}
 {% block footerscripts %}
 <script type="text/javascript">
@@ -454,6 +447,23 @@
         $(this).removeAttr("disabled");
       });
       return false;
+    });
+  });
+  $(function () {
+    var triggered_related = false;
+    $(window).scroll(function() {
+      if (!triggered_related &&
+          $(window).scrollTop() >= ($('#stickie-area').position().top - $(window).height()) &&
+          ($(window).height() + $(window).scrollTop()) < $(document).height()
+      ) {
+        triggered_related = true;
+        jQuery.get(
+          window.location.pathname + '/related',
+          function (data) {
+            $('#stickie-area').html(data);
+          }
+        );
+      }
     });
   });
 </script>

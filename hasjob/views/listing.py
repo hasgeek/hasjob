@@ -174,21 +174,39 @@ def jobdetail(domain, hashid):
     else:
         g.starred_ids = set()
 
-    jobpost_ab = session_jobpost_ab()
-    related_posts = post.related_posts().all()
-    if is_siteadmin or (g.user and g.user.flags.get('is_employer_month')):
-        cache_viewcounts(related_posts)
     is_bgroup = getbool(request.args.get('b'))
     headline = post.headlineb if is_bgroup and post.headlineb else post.headline
-    g.impressions = {rp.id: (False, rp.id, bgroup(jobpost_ab, rp)) for rp in related_posts}
 
     return render_template('detail.html', post=post, headline=headline, reportform=reportform, rejectform=rejectform,
         pinnedform=pinnedform, applyform=applyform, job_application=job_application,
         jobview=jobview, report=report, moderateform=moderateform,
         domain_mismatch=domain_mismatch, header_campaign=header_campaign,
-        related_posts=related_posts, is_bgroup=is_bgroup,
-        is_siteadmin=is_siteadmin
+        is_bgroup=is_bgroup, is_siteadmin=is_siteadmin
         )
+
+
+@csrf.exempt
+@app.route('/<domain>/<hashid>/related', methods=('GET', 'POST'), subdomain='<subdomain>')
+@app.route('/<domain>/<hashid>/related', methods=('GET', 'POST'))
+@app.route('/view/<hashid>/related', defaults={'domain': None}, methods=('GET', 'POST'), subdomain='<subdomain>')
+@app.route('/view/<hashid>/related', defaults={'domain': None}, methods=('GET', 'POST'))
+def jobrelatedposts(domain, hashid):
+    is_siteadmin = lastuser.has_permission('siteadmin')
+    query = JobPost.query.filter_by(hashid=hashid).options(
+        db.subqueryload('locations'), db.subqueryload('taglinks'))
+    # if g.user:
+    #     query = query.outerjoin(UserJobView,
+    #         db.and_(UserJobView.user_id == g.user.id, UserJobView.jobpost_id == JobPost.id))
+    post = query.first_or_404()
+
+    jobpost_ab = session_jobpost_ab()
+    related_posts = post.related_posts().all()
+    if is_siteadmin or (g.user and g.user.flags.get('is_employer_month')):
+        cache_viewcounts(related_posts)
+    g.impressions = {rp.id: (False, rp.id, bgroup(jobpost_ab, rp)) for rp in related_posts}
+
+    return render_template('related_posts.html', post=post,
+        related_posts=related_posts, is_siteadmin=is_siteadmin)
 
 
 @app.route('/<domain>/<hashid>/star', defaults={'domain': None}, methods=['POST'], subdomain='<subdomain>')
