@@ -152,7 +152,7 @@ class EventSession(EventSessionBase, BaseMixin, db.Model):
 
     @classmethod
     def get_session(cls, uuid, user=None, anon_user=None):
-        ues = cls.query.filter_by(uuid=uuid).first() if uuid else None
+        ues = cls.query.filter_by(uuid=uuid).one_or_none() if uuid else None
 
         # We no longer hard-link sessions to users, so this is commented out:
         # if (not not user) + (not not anon_user) != 1:
