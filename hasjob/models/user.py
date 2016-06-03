@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
+from time import mktime
 from datetime import datetime, timedelta
+from uuid import UUID
 from flask import request
 from flask.ext.lastuser.sqlalchemy import UserBase2
 from sqlalchemy_utils.types import UUIDType
@@ -8,6 +10,7 @@ from coaster.utils import unicode_http_header, uuid1mc
 from coaster.sqlalchemy import JsonDict
 from baseframe import _, cache
 from . import db, BaseMixin
+from .. import redis_store
 
 __all__ = ['User', 'UserActiveAt', 'AnonUser', 'EventSessionBase', 'EventSession', 'UserEventBase', 'UserEvent']
 
@@ -185,8 +188,62 @@ class EventSession(EventSessionBase, BaseMixin, db.Model):
             ues.user = user
             ues.anon_user = anon_user
             db.session.add(ues)
-        ues.active_at = datetime.utcnow()
+        # ues.active_at = datetime.utcnow()
+        session_set_active_at(ues.uuid)
         return ues
+
+    @classmethod
+    def get(cls, uuid):
+        if isinstance(uuid, basestring):
+            uuid = UUID(uuid)
+        return cls.query.filter_by(uuid=uuid).one_or_none()
+
+    @classmethod
+    def all(cls, uuids):
+        uuids = [u if isinstance(u, basestring) else UUID(u) for u in uuids]
+        return cls.query.filter(cls.uuid.in_(uuids))
+
+    @classmethod
+    def close_all_inactive(cls):
+        cls.query.filter(cls.ended_at == None,  # NOQA
+        cls.active_at < (datetime.utcnow() - timedelta(minutes=30))).update(
+        {cls.ended_at: cls.active_at})
+
+
+# These should be class or instance methods
+def session_set_active_at(sessionid):
+    sessionid = unicode(sessionid)  # In case this is a UUID
+    now = datetime.utcnow()
+    active_at = repr(mktime(now.timetuple()) + now.microsecond / 1e6)  # repr has more precision than unicode in Py2
+    redis_store.hset('hasjob/session_active_at', sessionid, active_at)
+
+
+def session_get_active_at(sessionid=None):
+    sessionid = unicode(sessionid)
+    if sessionid:
+        active_at = redis_store.hget('hasjob/session_active_at', sessionid)
+        if active_at:
+            return datetime.fromtimestamp(float(active_at))
+    else:
+        result = redis_store.hgetall('hasjob/session_active_at')
+        for sessionid in result:
+            result[sessionid] = datetime.fromtimestamp(float(result[sessionid]))
+        return result
+
+
+def session_save_active_at(sessionid=None):
+    if sessionid:
+        active_at = session_get_active_at(sessionid)
+        if active_at:
+            session = EventSession.get(sessionid)
+            session.active_at = active_at
+            db.session.commit()
+    else:
+        queue = session.get_active_at()  # Returns a dict of sessionid (as UUID string) to active_at (as datetime)
+        sessions = EventSession.all(queue.keys())
+        for session in sessions:
+            session.active_at = queue[unicode(session.uuid)]
+        db.session.commit()
 
 
 class UserEventBase(object):
