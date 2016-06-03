@@ -451,15 +451,10 @@
   });
   $(function () {
     var triggered_related = false;
-    $(window).scroll(function() {
-      if (!triggered_related &&
-          $(window).scrollTop() >= ($('#stickie-area').position().top - $(window).height()) &&
-          ($(window).height() + $(window).scrollTop()) < $(document).height()
-      ) {
+    $('#stickie-area').appear().on('appear', function(event, element) {
+      if(!triggered_related) {
         triggered_related = true;
-        jQuery.get(
-          window.location.pathname + '/related',
-          function (data) {
+        $.get(window.location.pathname + '/related', function (data) {
             $('#stickie-area').html(data);
           }
         );
