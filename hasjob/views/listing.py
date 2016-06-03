@@ -190,13 +190,11 @@ def jobdetail(domain, hashid):
 @app.route('/<domain>/<hashid>/related', methods=('GET', 'POST'))
 @app.route('/view/<hashid>/related', defaults={'domain': None}, methods=('GET', 'POST'), subdomain='<subdomain>')
 @app.route('/view/<hashid>/related', defaults={'domain': None}, methods=('GET', 'POST'))
-def jobrelatedposts(domain, hashid):
+def job_related_posts(domain, hashid):
     is_siteadmin = lastuser.has_permission('siteadmin')
     query = JobPost.query.filter_by(hashid=hashid).options(
         db.subqueryload('locations'), db.subqueryload('taglinks'))
-    # if g.user:
-    #     query = query.outerjoin(UserJobView,
-    #         db.and_(UserJobView.user_id == g.user.id, UserJobView.jobpost_id == JobPost.id))
+
     post = query.first_or_404()
 
     jobpost_ab = session_jobpost_ab()
