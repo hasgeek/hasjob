@@ -451,7 +451,10 @@
   });
   $(function () {
     var triggered_related = false;
-    $('#stickie-area').appear().on('appear', function(event, element) {
+    // Fetch the related posts once the given view is on the display.
+    // triggered_related is a boolean that makes sure we dont call the
+    // related posts endpoint more than once.
+    $('#apply-info').appear().on('appear', function(event, element) {
       if(!triggered_related) {
         triggered_related = true;
         $.get(window.location.pathname + '/related', function (data) {

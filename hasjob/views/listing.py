@@ -185,11 +185,10 @@ def jobdetail(domain, hashid):
         )
 
 
-@csrf.exempt
-@app.route('/<domain>/<hashid>/related', methods=('GET', 'POST'), subdomain='<subdomain>')
-@app.route('/<domain>/<hashid>/related', methods=('GET', 'POST'))
-@app.route('/view/<hashid>/related', defaults={'domain': None}, methods=('GET', 'POST'), subdomain='<subdomain>')
-@app.route('/view/<hashid>/related', defaults={'domain': None}, methods=('GET', 'POST'))
+@app.route('/<domain>/<hashid>/related', subdomain='<subdomain>')
+@app.route('/<domain>/<hashid>/related')
+@app.route('/view/<hashid>/related', defaults={'domain': None}, subdomain='<subdomain>')
+@app.route('/view/<hashid>/related', defaults={'domain': None})
 def job_related_posts(domain, hashid):
     is_siteadmin = lastuser.has_permission('siteadmin')
     post = JobPost.query.filter_by(hashid=hashid).options(*JobPost._defercols).first_or_404()
