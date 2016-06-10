@@ -277,11 +277,7 @@
             {%- if post.is_draft() %}{# Always show when in draft state #}
               {{ post.how_to_apply|hideemail }}
             {%- elif g.user %}
-              {% if jobview.applied %}{# User has already hit the reveal button #}
-                {{ post.how_to_apply|hideemail }}
-              {%- else %}
-                <a class="btn btn-primary" id="reveal-button" href="{{ post.url_for('reveal') }}">Show instructions</a>
-              {%- endif %}
+              <a class="btn btn-primary" id="reveal-button" href="{{ post.url_for('reveal') }}">Show instructions</a> <span class="loading hidden"></span>
             {%- else %}
               <a class="btn btn-primary" href="{{ post.url_for('reveal') }}">Login with Twitter or Google</a>
               to see instructions on how to apply.
@@ -291,9 +287,7 @@
         {%- endif %}
       </div>
       {%- if not post.is_draft() and (g.user or g.kiosk) and applyform %}
-        <div id="apply-section" class="section {%- if g.kiosk or (jobview and not jobview.applied) %} hidden {%- endif -%}">
-          {#- This form must be part of the page (even if hidden) in kiosk mode, so remember that if we ever remove it pre-reveal #}
-          {% include "inc/applyform.html" %}
+        <div id="apply-section" class="section hidden">
         </div>
       {%- endif %}
       {%- if post.hr_contact is not none %}{# Don't display notice on old posts #}
@@ -314,17 +308,6 @@
         <p>
           This is a special announcement from {{ post.company_name }}
         </p>
-      </div>
-    {%- endif %}
-    {%- if job_application %}
-      <div class="section">
-        <h3>You have applied for this position</h3>
-        <p>
-          <strong>Name:</strong> {{ job_application.fullname }}<br>
-          <strong>Email:</strong> {{ job_application.email }}<br>
-          <strong>Phone:</strong> {{ job_application.phone }}
-        </p>
-        {{ job_application.message|safe }}
       </div>
     {%- endif %}
     {%- if is_siteadmin %}
@@ -435,16 +418,19 @@
   });
   $(function() {
     $("#reveal-button").on('click dblclick', function(e) {
+      var reveal_button = this;
       e.preventDefault();
-      $(this).attr('disabled', 'disabled');
-      $.ajax($(this).attr('href')).done(function(html) {
-        $("#apply-info-para").html(html);
+      $(reveal_button).attr('disabled', 'disabled');
+      $('#reveal-button + .loading').removeClass('hidden');
+      $.ajax($(reveal_button).attr('href'), {method: 'POST'}).done(function(html) {
+        $("#apply-info-para").replaceWith(html);
         {%- if applyform %}
           $("#apply-section").removeClass('hidden');
         {%- endif %}
       })
       .fail(function(msg){
-        $(this).removeAttr("disabled");
+        $('#reveal-button + .loading').addClass('hidden');
+        $(reveal_button).removeAttr('disabled');
       });
       return false;
     });
@@ -469,13 +455,7 @@
 {{ ajaxform('rejectform', request, force=true) }}
 {{ ajaxform('pinnedform', request, force=true) }}
 {{ ajaxform('moderateform', request, force=true) }}
-{% if applyform %}
-  {{ ajaxform('applyform', request, force=true) }}
-  {% assets "js_tinymce" %}<script src="{{ ASSET_URL }}" type="text/javascript"></script>{% endassets %}
-  <script type="text/javascript">
-    {% include "inc/tinymce.js" %}
-  </script>
-{% endif %}
+{% assets "js_tinymce" %}<script src="{{ ASSET_URL }}" type="text/javascript"></script>{% endassets %}
 {%- if is_siteadmin or post.admin_is(g.user) or (g.user and g.user.flags.is_employer_month) %}{% with stats = post.viewstats[1], max = stats.max|tojson %}
   <script type="text/javascript">
     $(function() {

@@ -29,7 +29,9 @@
 {%- if request.is_xhr %}
   {{ ajaxform("applyform", request) }}
   <script type="text/javascript">
-    tinymce.editors[0].remove(); {#- FIXME: Do this right with Baseframe’s richtext editor #}
+    if (typeof tinymce.editors[0] !== 'undefined') {
+      tinymce.editors[0].remove(); {#- FIXME: Do this right with Baseframe’s richtext editor #}
+    };
     {% include "inc/tinymce.js" %}
   </script>
 {%- endif %}

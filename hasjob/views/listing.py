@@ -54,9 +54,6 @@ def jobdetail(domain, hashid):
     is_siteadmin = lastuser.has_permission('siteadmin')
     query = JobPost.query.filter_by(hashid=hashid).options(
         db.subqueryload('locations'), db.subqueryload('taglinks'))
-    # if g.user:
-    #     query = query.outerjoin(UserJobView,
-    #         db.and_(UserJobView.user_id == g.user.id, UserJobView.jobpost_id == JobPost.id))
     post = query.first_or_404()
 
     # If we're on a board (that's not 'www') and this post isn't on this board,
@@ -123,17 +120,7 @@ def jobdetail(domain, hashid):
         pinnedform = forms.PinnedForm(obj=post.link_to_board(g.board))
     else:
         pinnedform = forms.PinnedForm(obj=post)
-    applyform = None  # User isn't allowed to apply unless non-None
-    if g.user:
-        job_application = JobApplication.query.filter_by(user=g.user, jobpost=post).first()
-        if not job_application:
-            applyform = forms.ApplicationForm()
-            applyform.apply_phone.data = g.user.phone
-    elif g.kiosk and g.peopleflow_url:
-        applyform = forms.KioskApplicationForm()
-        job_application = None
-    else:
-        job_application = None
+
     if reportform.validate_on_submit():
         if g.user:
             if report is None:
@@ -178,7 +165,7 @@ def jobdetail(domain, hashid):
     headline = post.headlineb if is_bgroup and post.headlineb else post.headline
 
     return render_template('detail.html', post=post, headline=headline, reportform=reportform, rejectform=rejectform,
-        pinnedform=pinnedform, applyform=applyform, job_application=job_application,
+        pinnedform=pinnedform,
         jobview=jobview, report=report, moderateform=moderateform,
         domain_mismatch=domain_mismatch, header_campaign=header_campaign,
         is_bgroup=is_bgroup, is_siteadmin=is_siteadmin
@@ -235,48 +222,53 @@ def starjob(domain, hashid):
     return response
 
 
-@app.route('/<domain>/<hashid>/reveal', subdomain='<subdomain>')
-@app.route('/<domain>/<hashid>/reveal')
-@app.route('/reveal/<hashid>', defaults={'domain': None}, subdomain='<subdomain>')
-@app.route('/reveal/<hashid>', defaults={'domain': None})
+@csrf.exempt
+@app.route('/<domain>/<hashid>/reveal', methods=['POST'], subdomain='<subdomain>')
+@app.route('/<domain>/<hashid>/reveal', methods=['POST'])
+@app.route('/reveal/<hashid>', methods=['POST'], defaults={'domain': None}, subdomain='<subdomain>')
+@app.route('/reveal/<hashid>', methods=['POST'], defaults={'domain': None})
 @lastuser.requires_login
 def revealjob(domain, hashid):
     """
-    This view is a GET request and that is intentional.
+    Reveal job application form
     """
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
-    # If the domain doesn't match, redirect to correct URL
-    if post.email_domain != domain:
-        return redirect(post.url_for('reveal'), code=301)
-
-    if post.status in [POSTSTATUS.REJECTED, POSTSTATUS.WITHDRAWN, POSTSTATUS.SPAM]:
+    if post.status in POSTSTATUS.GONE:
         abort(410)
     jobview = UserJobView.query.get((post.id, g.user.id))
     if jobview is None:
         jobview = UserJobView(user=g.user, jobpost=post, applied=True)
-        post.uncache_viewcounts('opened')
-        cache.delete_memoized(viewstats_by_id_qhour, post.id)
-        cache.delete_memoized(viewstats_by_id_hour, post.id)
-        cache.delete_memoized(viewstats_by_id_day, post.id)
         db.session.add(jobview)
         try:
             db.session.commit()
+            post.uncache_viewcounts('opened')
+            cache.delete_memoized(viewstats_by_id_qhour, post.id)
+            cache.delete_memoized(viewstats_by_id_hour, post.id)
+            cache.delete_memoized(viewstats_by_id_day, post.id)
+            post.viewcounts  # Re-populate cache
         except IntegrityError:
             db.session.rollback()
             pass  # User double-clicked. Ignore.
-        post.viewcounts  # Re-populate cache
     elif not jobview.applied:
         jobview.applied = True
+        db.session.commit()
         post.uncache_viewcounts('opened')
         cache.delete_memoized(viewstats_by_id_qhour, post.id)
         cache.delete_memoized(viewstats_by_id_hour, post.id)
         cache.delete_memoized(viewstats_by_id_day, post.id)
-        db.session.commit()
         post.viewcounts  # Re-populate cache
-    if request.is_xhr:
-        return redactemail(post.how_to_apply)
-    else:
-        return redirect(post.url_for(), 303)
+
+    applyform = None
+    job_application = JobApplication.query.filter_by(user=g.user, jobpost=post).first()
+    if not job_application:
+        applyform = forms.ApplicationForm()
+        applyform.apply_phone.data = g.user.phone
+
+    return render_template('jobpost_reveal.html',
+        post=post,
+        instructions=redactemail(post.how_to_apply),
+        applyform=applyform,
+        job_application=job_application)
 
 
 @csrf.exempt
