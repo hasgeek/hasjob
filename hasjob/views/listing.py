@@ -588,8 +588,11 @@ def rejectjob(domain, hashid):
             post.status = POSTSTATUS.REJECTED
 
             # In case of Ban, Reject all the job posts by the same domain
-            for jobpost in post.domain.jobposts:
-                jobpost.status = POSTSTATUS.REJECTED
+            # unless it's a webmail domain
+            if not post.domain.is_webmail:
+                for jobpost in post.domain.jobposts:
+                    if jobpost.is_listed():
+                        jobpost.status = POSTSTATUS.REJECTED
 
             msg = Message(subject="About your job post on Hasjob",
                 recipients=[post.email])
