@@ -586,6 +586,11 @@ def rejectjob(domain, hashid):
             else:
                 flashmsg = "This job post has been rejected."
             post.status = POSTSTATUS.REJECTED
+
+            # In case of Ban, Reject all the job posts by the same domain
+            for jobpost in post.domain.jobposts:
+                jobpost.status = POSTSTATUS.REJECTED
+
             msg = Message(subject="About your job post on Hasjob",
                 recipients=[post.email])
             msg.html = email_transform(render_template('reject_email.html', post=post), base_url=request.url_root)
