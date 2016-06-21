@@ -590,9 +590,13 @@ def rejectjob(domain, hashid):
                     for jobpost in post.domain.jobposts:
                         if jobpost.is_listed():
                             jobpost.status = POSTSTATUS.REJECTED
+                            jobpost.closed_datetime = datetime.utcnow()
+                            jobpost.review_comments = rejectform.reason.data
+                            jobpost.review_datetime = datetime.utcnow()
+                            jobpost.reviewer = g.user
             else:
                 flashmsg = "This job post has been rejected."
-            post.status = POSTSTATUS.REJECTED
+                post.status = POSTSTATUS.REJECTED
 
             msg = Message(subject="About your job post on Hasjob",
                 recipients=[post.email])
