@@ -568,9 +568,9 @@ window.Hasjob.PaySlider.range = function(currency){
   }
   else {
     return {
-      'min': [0, 50000],
-      '10%':  [1000000, 100000],
-      'max': [10000000, 100000]
+      'min': [0, 5000],
+      '10%':  [100000, 10000],
+      'max': [1000000, 10000]
     }
   }
 };
