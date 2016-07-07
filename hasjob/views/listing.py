@@ -578,49 +578,50 @@ def rejectjob(domain, hashid):
         msg.body = html2text(msg.html)
         mail.send(msg)
 
+    def reject_post(post, reason, spam=False):
+        post.status = POSTSTATUS.SPAM if spam else POSTSTATUS.REJECTED
+        post.closed_datetime = db.func.utcnow()
+        post.review_comments = reason
+        post.review_datetime = db.func.utcnow()
+        post.reviewer = g.user
+
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
     if post.status in POSTSTATUS.UNPUBLISHED and not post.admin_is(g.user):
         abort(403)
     if post.status in POSTSTATUS.GONE:
         abort(410)
     rejectform = forms.RejectForm()
-    
+
     if rejectform.validate_on_submit():
-        banned_posts = [post, ]
-        flashmsg = "This job post has been rejected."
-        post.closed_datetime = db.func.utcnow()
-        post.review_comments = rejectform.reason.data
-        post.review_datetime = db.func.utcnow()
-        post.reviewer = g.user
+        banned_posts = []
         if request.form.get('submit') == 'reject':
-            flashmsg = "This job post has been rejected."
-            post.status = POSTSTATUS.REJECTED
+            flashmsg = "This job post has been rejected"
+            reject_post(post, rejectform.reason.data)
         elif request.form.get('submit') == 'spam':
-            flashmsg = "This job post has been marked as spam."
-            post.status = POSTSTATUS.SPAM
+            flashmsg = "This job post has been marked as spam"
+            reject_post(post, rejectform.reason.data, True)
         elif request.form.get('submit') == 'ban':
-            # In case of Ban, Reject all the job posts by the same domain
-            # unless it's a webmail domain
+            # Moderator asked for a ban, so ban the user and reject
+            # all posts from the domain if it's not a webmail domain
             if post.user:
                 post.user.blocked = True
-            if not post.domain.is_webmail:
-                flashmsg = "This job post has been rejected and the user and domain banned."
+            if post.domain.is_webmail:
+                flashmsg = "This job post has been rejected and the user banned"
+                reject_post(post, rejectform.reason.data)
+                banned_posts = [post]
+            else:
+                flashmsg = "This job post has been rejected and the user and domain banned"
                 post.domain.is_banned = True
                 post.domain.banned_by = g.user
+                post.domain.banned_at = db.func.utcnow()
                 post.domain.banned_reason = rejectform.reason.data
-                
+
                 for jobpost in post.domain.jobposts:
-                    if jobpost.is_listed():
-                        jobpost.status = POSTSTATUS.REJECTED
-                        jobpost.closed_datetime = db.func.utcnow()
-                        jobpost.review_comments = rejectform.reason.data
-                        jobpost.review_datetime = db.func.utcnow()
-                        jobpost.reviewer = g.user
+                    if jobpost.status in POSTSTATUS.LISTED:
+                        reject_post(jobpost, rejectform.reason.data)
                         banned_posts.append(jobpost)
-            else:
-                post.status = POSTSTATUS.REJECTED
-                flashmsg = "This job post has been rejected and the user is banned."
         else:
+            # We're not sure what button the moderator hit
             abort(400)
 
         db.session.commit()
