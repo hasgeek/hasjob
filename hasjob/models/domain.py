@@ -35,6 +35,8 @@ class Domain(BaseMixin, db.Model):
     #: Who banned it?
     banned_by_id = db.Column(None, db.ForeignKey('user.id', ondelete='SET NULL'), nullable=True)
     banned_by = db.relationship(User)
+    #: Banned when?
+    banned_at = db.Column(db.DateTime, nullable=True)
     #: Reason for banning
     banned_reason = db.Column(db.Unicode(250), nullable=True)
     #: Jobposts using this domain
