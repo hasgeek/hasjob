@@ -560,7 +560,7 @@ def pinnedjob(domain, hashid):
 @app.route('/reject/<hashid>', defaults={'domain': None}, methods=('GET', 'POST'))
 @lastuser.requires_permission('siteadmin')
 def rejectjob(domain, hashid):
-    def send_reject_mail(request, reject_type, post, banned_posts=[]):
+    def send_reject_mail(reject_type, post, banned_posts=[]):
         if reject_type not in ['reject', 'ban']:
             return
         mail_meta = {
@@ -624,7 +624,7 @@ def rejectjob(domain, hashid):
             abort(400)
 
         db.session.commit()
-        send_reject_mail(request, request.form.get('submit'), post, banned_posts)
+        send_reject_mail(request.form.get('submit'), post, banned_posts)
         if request.is_xhr:
             return "<p>%s</p>" % flashmsg
         else:
