@@ -560,66 +560,66 @@ def pinnedjob(domain, hashid):
 @app.route('/reject/<hashid>', defaults={'domain': None}, methods=('GET', 'POST'))
 @lastuser.requires_permission('siteadmin')
 def rejectjob(domain, hashid):
-    def send_reject_mail(request, reject_type, post):
-        if reject_type == 'reject':
-            subject = "About your job post on Hasjob"
-            template = 'reject_email.html'
-        elif reject_type == 'ban':
-            subject = "About your account and job posts on Hasjob"
-            template = 'reject_domain_email.html'
-        else:
+    def send_reject_mail(request, reject_type, post, banned_posts=[]):
+        if reject_type not in ['reject', 'ban']:
             return
-        
-        msg = Message(subject=subject,
-                recipients=[post.email])
-        msg.html = email_transform(render_template(template, post=post), base_url=request.url_root)
+        mail_meta = {
+            'reject': {
+                'subject': "About your job post on Hasjob",
+                'template': "reject_email.html"
+            },
+            'ban': {
+                'subject': "About your account and job posts on Hasjob",
+                'template': "reject_domain_email.html"
+            }
+        }
+        msg = Message(subject=mail_meta[reject_type]['subject'], recipients=[post.email])
+        msg.html = email_transform(render_template(mail_meta[reject_type]['template'], post=post, banned_posts=banned_posts), base_url=request.url_root)
         msg.body = html2text(msg.html)
         mail.send(msg)
 
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
-    if post.status in [POSTSTATUS.DRAFT, POSTSTATUS.PENDING] and not post.admin_is(g.user):
+    if post.status in POSTSTATUS.UNPUBLISHED and not post.admin_is(g.user):
         abort(403)
-    if post.status in [POSTSTATUS.REJECTED, POSTSTATUS.WITHDRAWN, POSTSTATUS.SPAM]:
+    if post.status in POSTSTATUS.GONE:
         abort(410)
     rejectform = forms.RejectForm()
+    
     if rejectform.validate_on_submit():
+        banned_posts = [post, ]
+        flashmsg = "This job post has been rejected."
+        post.closed_datetime = db.func.utcnow()
+        post.review_comments = rejectform.reason.data
+        post.review_datetime = db.func.utcnow()
+        post.reviewer = g.user
         if request.form.get('submit') == 'reject':
             flashmsg = "This job post has been rejected."
             post.status = POSTSTATUS.REJECTED
-            post.closed_datetime = db.func.utcnow()
-            post.review_comments = rejectform.reason.data
-            post.review_datetime = db.func.utcnow()
-            post.reviewer = g.user
-
-            send_reject_mail(request, 'reject', post)
         elif request.form.get('submit') == 'spam':
             flashmsg = "This job post has been marked as spam."
             post.status = POSTSTATUS.SPAM
-            post.closed_datetime = db.func.utcnow()
-            post.review_comments = rejectform.reason.data
-            post.review_datetime = db.func.utcnow()
-            post.reviewer = g.user
         elif request.form.get('submit') == 'ban':
-            flashmsg = "This job post has been rejected and the user and domain banned."
-            post.domain.is_banned = True
-            post.domain.banned_by = g.user
-            post.domain.banned_reason = rejectform.reason.data
-            if post.user:
-                post.user.blocked = True
-
             # In case of Ban, Reject all the job posts by the same domain
             # unless it's a webmail domain
+            if post.user:
+                post.user.blocked = True
             if not post.domain.is_webmail:
-                for jobpost in post.domain.jobposts.options(*JobPost._defercols):
+                flashmsg = "This job post has been rejected and the user and domain banned."
+                post.domain.is_banned = True
+                post.domain.banned_by = g.user
+                post.domain.banned_reason = rejectform.reason.data
+                
+                for jobpost in post.domain.jobposts:
                     if jobpost.is_listed():
                         jobpost.status = POSTSTATUS.REJECTED
                         jobpost.closed_datetime = db.func.utcnow()
                         jobpost.review_comments = rejectform.reason.data
                         jobpost.review_datetime = db.func.utcnow()
                         jobpost.reviewer = g.user
+                        banned_posts.append(jobpost)
 
-            send_reject_mail(request, 'ban', post)
         db.session.commit()
+        send_reject_mail(request, request.form.get('submit'), post, banned_posts)
         if request.is_xhr:
             return "<p>%s</p>" % flashmsg
         else:
