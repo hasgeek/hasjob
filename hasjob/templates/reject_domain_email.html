@@ -5,9 +5,9 @@
   <p>This is regarding your job post(s) on Hasjob. A moderator ({{ post.reviewer.fullname }}) reviewed your post(s) and determined that you represent a recruitment agency or other class of employer that is not accepted on Hasjob, and has therefore taken down the following jobs:
   </p>
   <ul>
-    {% for jobpost in banned_posts %}
+    {% for jobpost in banned_posts -%}
     <li>{{ jobpost.headline }}</li>
-    {% endfor %}
+    {%- endfor %}
   </ul>
   <p>The moderator provided the following reason: "<strong>{{ post.review_comments }}</strong>"</p>
   <p>If you believe this is incorrect and would like to appeal, please forward this email to <a href="mailto:{{ config['SUPPORT_EMAIL'] }}">{{ config['SUPPORT_EMAIL'] }}</a> with an explanation.</p>

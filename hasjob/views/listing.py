@@ -617,6 +617,11 @@ def rejectjob(domain, hashid):
                         jobpost.review_datetime = db.func.utcnow()
                         jobpost.reviewer = g.user
                         banned_posts.append(jobpost)
+            else:
+                post.status = POSTSTATUS.REJECTED
+                flashmsg = "This job post has been rejected and the user is banned."
+        else:
+            abort(400)
 
         db.session.commit()
         send_reject_mail(request, request.form.get('submit'), post, banned_posts)
