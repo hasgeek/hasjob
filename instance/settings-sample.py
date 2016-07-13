@@ -20,10 +20,10 @@ STATIC_SUBDOMAIN = 'static'
 UPLOADED_LOGOS_DEST = '/tmp/uploads'
 #: Hascore server
 HASCORE_SERVER = 'https://api.hasgeek.com/'
-#: GeoIP database folder
-#: On Ubuntu: /usr/share/GeoIP
-#: On Homebrew: /usr/local/var/GeoIP
-GEOIP_PATH = '/usr/share/GeoIP'
+#: GeoIP database file (GeoIP2 or GeoLite2 city mmdb)
+#: On Ubuntu: /usr/share/GeoIP/GeoLite2-City.mmdb
+#: On Homebrew: /usr/local/var/GeoIP/GeoLite2-City.mmdb
+GEOIP_PATH = '/usr/share/GeoIP/GeoLite2-City.mmdb'
 #: Mail settings
 #: MAIL_FAIL_SILENTLY : default True
 #: MAIL_SERVER : default 'localhost'

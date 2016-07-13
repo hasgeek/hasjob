@@ -41,11 +41,10 @@ def init_for(env):
 
     app.geoip = None
     if 'GEOIP_PATH' in app.config:
-        geoip_database_path = os.path.join(app.config['GEOIP_PATH'], 'GeoLite2-City.mmdb')
-        if not os.path.exists(geoip_database_path):
-            app.logger.warn("GeoIP database missing at " + geoip_database_path)
+        if not os.path.exists(app.config['GEOIP_PATH']):
+            app.logger.warn("GeoIP database missing at " + app.config['GEOIP_PATH'])
         else:
-            app.geoip = geoip2.database.Reader(geoip_database_path)
+            app.geoip = geoip2.database.Reader(app.config['GEOIP_PATH'])
 
     RQ(app)
 
