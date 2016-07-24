@@ -63,7 +63,7 @@
         <span id="post-location">{{ joblocation(post) }}</span>
       {%- endif %}
       {%- if post.company_url %}
-        &middot; {% if kiosk %}{{ post.company_url|cleanurl }}{% else %}<a href="{{ post.company_url }}" target="_blank" rel="nofollow">{{ post.company_url|cleanurl }}</a>{% endif %}
+        &middot; {% if kiosk %}{{ post.company_url|cleanurl }}{% else %}<a href="{{ post.company_url }}" target="_blank" rel="nofollow noopener">{{ post.company_url|cleanurl }}</a>{% endif %}
       {%- endif %}
       {% if not post.is_announcement() %}
         &middot; <a href="{{url_for('index', t=post.type.name)}}">{{ post.type.title }}</a>
