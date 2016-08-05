@@ -441,6 +441,7 @@
         );
       }
 
+      {%- if is_siteadmin or post.admin_is(g.user) or (g.user and g.user.flags.is_employer_month) %}
       if (!triggered_viewstats) {
         triggered_viewstats = true;
         var UNITTYPE = {
@@ -482,6 +483,7 @@
           });
         })
       }
+      {%- endif %}
     });
 
     {%- if is_siteadmin or post.admin_is(g.user) or (g.user and g.user.flags.is_employer_month) %}{% with stats = post.viewstats[1], max = stats.max|tojson %}
