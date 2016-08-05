@@ -177,12 +177,16 @@ def jobdetail(domain, hashid):
 @app.route('/view/<hashid>/viewstats', defaults={'domain': None}, subdomain='<subdomain>')
 @app.route('/view/<hashid>/viewstats', defaults={'domain': None})
 def job_viewstats(domain, hashid):
+    is_siteadmin = lastuser.has_permission('siteadmin')
     post = JobPost.query.filter_by(hashid=hashid).options(*JobPost._defercols).first_or_404()
-    return jsonify({
-        "unittype": post.viewstats[0],
-        "stats": post.viewstats[1],
-        "counts": post.viewcounts
-    })
+    if is_siteadmin or post.admin_is(g.user) or (g.user and g.user.flags.is_employer_month):
+        return jsonify({
+            "unittype": post.viewstats[0],
+            "stats": post.viewstats[1],
+            "counts": post.viewcounts
+        })
+    else:
+        return abort(403)
 
 
 @app.route('/<domain>/<hashid>/related', subdomain='<subdomain>')
