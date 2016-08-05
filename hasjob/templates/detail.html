@@ -24,6 +24,7 @@
   {%- if post.is_old() %}
     <meta name="robots" content="nofollow" />
   {%- endif %}
+  <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/c3/0.4.10/c3.css">
 {% endblock %}
 {% block content %}
   {% if post.is_unpublished() %}
