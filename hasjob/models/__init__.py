@@ -24,9 +24,10 @@ class POSTSTATUS:
     MODERATED = 8     # Moderated, needs edit
     ANNOUNCEMENT = 9  # Special announcement
     CLOSED = 10       # Not accepting applications, but publicly viewable
+    DELETED = 11      # For posts that are actually deleted, like in case of drafts
 
     UNPUBLISHED = (DRAFT, PENDING)
-    GONE = (REJECTED, WITHDRAWN, SPAM)
+    GONE = (REJECTED, WITHDRAWN, SPAM, DELETED)
     LISTED = (CONFIRMED, REVIEWED, ANNOUNCEMENT)
     POSTPENDING = (CONFIRMED, REVIEWED, REJECTED, WITHDRAWN, FLAGGED, SPAM, MODERATED, ANNOUNCEMENT)
     MY = (DRAFT, PENDING, CONFIRMED, REVIEWED, MODERATED, ANNOUNCEMENT, CLOSED)
