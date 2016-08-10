@@ -4,7 +4,6 @@ from sqlalchemy.exc import IntegrityError
 from flask import g, Response, redirect, flash
 from flask.ext.lastuser import signal_user_session_refreshed
 from coaster.views import get_next_url
-from baseframe import csrf
 
 from .. import app, lastuser
 from ..signals import signal_login, signal_logout
@@ -38,7 +37,6 @@ def lastuserauth():
     return redirect(get_next_url())
 
 
-@csrf.exempt
 @app.route('/login/notify', methods=['POST'])
 @lastuser.notification_handler
 def lastusernotify(user):

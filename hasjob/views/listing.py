@@ -10,7 +10,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import StaleDataError
 from flask import abort, flash, g, redirect, render_template, request, url_for, session, Markup, jsonify
 from flask.ext.mail import Message
-from baseframe import cache, csrf
+from baseframe import cache
 from baseframe.forms import Form
 from coaster.utils import getbool, get_email_domain, md5sum, base_domain_matches
 from coaster.views import load_model
@@ -45,7 +45,6 @@ from hasjob.nlp import identify_language
 from hasjob.views.helper import gif1x1, cache_viewcounts, session_jobpost_ab, bgroup
 
 
-@csrf.exempt
 @app.route('/<domain>/<hashid>', methods=('GET', 'POST'), subdomain='<subdomain>')
 @app.route('/<domain>/<hashid>', methods=('GET', 'POST'))
 @app.route('/view/<hashid>', defaults={'domain': None}, methods=('GET', 'POST'), subdomain='<subdomain>')
@@ -239,7 +238,6 @@ def starjob(domain, hashid):
     return response
 
 
-@csrf.exempt
 @app.route('/<domain>/<hashid>/reveal', methods=['POST'], subdomain='<subdomain>')
 @app.route('/<domain>/<hashid>/reveal', methods=['POST'])
 @app.route('/reveal/<hashid>', methods=['POST'], defaults={'domain': None}, subdomain='<subdomain>')
@@ -288,7 +286,6 @@ def revealjob(domain, hashid):
         job_application=job_application)
 
 
-@csrf.exempt
 @app.route('/<domain>/<hashid>/apply', methods=['POST'], subdomain='<subdomain>')
 @app.route('/<domain>/<hashid>/apply', methods=['POST'])
 @app.route('/apply/<hashid>', defaults={'domain': None}, methods=['POST'], subdomain='<subdomain>')
@@ -462,7 +459,6 @@ def view_application(domain, hashid, application):
         response_form=response_form, statuses=statuses, is_siteadmin=lastuser.has_permission('siteadmin'))
 
 
-@csrf.exempt
 @app.route('/<domain>/<hashid>/appl/<application>/process', methods=['POST'], subdomain='<subdomain>')
 @app.route('/<domain>/<hashid>/appl/<application>/process', methods=['POST'])
 @app.route('/apply/<hashid>/<application>', defaults={'domain': None}, methods=['POST'], subdomain='<subdomain>')
@@ -684,7 +680,6 @@ def moderatejob(domain, hashid):
     return redirect(post.url_for(), code=303)
 
 
-@csrf.exempt
 @app.route('/<domain>/<hashid>/confirm', methods=('GET', 'POST'), subdomain='<subdomain>')
 @app.route('/<domain>/<hashid>/confirm', methods=('GET', 'POST'))
 @app.route('/confirm/<hashid>', defaults={'domain': None}, methods=('GET', 'POST'), subdomain='<subdomain>')
@@ -794,7 +789,6 @@ def withdraw(domain, hashid, key):
     return render_template("withdraw.html", post=post, form=form)
 
 
-@csrf.exempt
 @app.route('/<domain>/<hashid>/edit', methods=('GET', 'POST'), defaults={'key': None}, subdomain='<subdomain>')
 @app.route('/<domain>/<hashid>/edit', methods=('GET', 'POST'), defaults={'key': None})
 @app.route('/edit/<hashid>', methods=('GET', 'POST'), defaults={'key': None, 'domain': None}, subdomain='<subdomain>')
@@ -958,7 +952,6 @@ def editjob(hashid, key, domain=None, form=None, validated=False, newpost=None):
     return render_template('postjob.html', form=form, no_email=no_email)
 
 
-@csrf.exempt
 @app.route('/new', methods=('GET', 'POST'), subdomain='<subdomain>')
 @app.route('/new', methods=('GET', 'POST'))
 def newjob():
@@ -1019,7 +1012,6 @@ def newjob():
     return render_template('postjob.html', form=form, no_removelogo=True, archived_post=archived_post)
 
 
-@csrf.exempt
 @app.route('/<domain>/<hashid>/close', methods=('GET', 'POST'), defaults={'key': None}, subdomain='<subdomain>')
 @app.route('/<domain>/<hashid>/close', methods=('GET', 'POST'), defaults={'key': None})
 def close(domain, hashid, key):
@@ -1042,7 +1034,6 @@ def close(domain, hashid, key):
     return render_template("close.html", post=post, form=form)
 
 
-@csrf.exempt
 @app.route('/<domain>/<hashid>/reopen', methods=('GET', 'POST'), defaults={'key': None}, subdomain='<subdomain>')
 @app.route('/<domain>/<hashid>/reopen', methods=('GET', 'POST'), defaults={'key': None})
 def reopen(domain, hashid, key):

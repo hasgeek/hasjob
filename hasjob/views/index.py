@@ -7,7 +7,7 @@ from sqlalchemy.exc import ProgrammingError
 from flask import abort, redirect, render_template, request, Response, url_for, g, flash, jsonify, Markup
 from coaster.utils import getbool, parse_isoformat, for_tsquery
 from coaster.views import render_with
-from baseframe import csrf, _
+from baseframe import _
 
 from .. import app, lastuser
 from ..models import (db, JobCategory, JobPost, JobType, POSTSTATUS, newlimit, agelimit, JobLocation, Board,
@@ -88,7 +88,6 @@ def json_index(data):
     return jsonify(result)
 
 
-@csrf.exempt
 @app.route('/', methods=['GET', 'POST'], subdomain='<subdomain>')
 @app.route('/', methods=['GET', 'POST'])
 @render_with({'text/html': 'index.html', 'application/json': json_index}, json=False)
@@ -384,7 +383,6 @@ def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, tit
         pay_graph_data=pay_graph_data, paginated=index_is_paginated(), template_vars=template_vars)
 
 
-@csrf.exempt
 @app.route('/drafts', methods=['GET', 'POST'], subdomain='<subdomain>')
 @app.route('/drafts', methods=['GET', 'POST'])
 @lastuser.requires_login
@@ -393,7 +391,6 @@ def browse_drafts():
     return index(basequery=basequery, ageless=True, statuses=[POSTSTATUS.DRAFT, POSTSTATUS.PENDING])
 
 
-@csrf.exempt
 @app.route('/my', methods=['GET', 'POST'], subdomain='<subdomain>')
 @app.route('/my', methods=['GET', 'POST'])
 @lastuser.requires_login
@@ -402,7 +399,6 @@ def my_posts():
     return index(basequery=basequery, ageless=True, statuses=POSTSTATUS.MY)
 
 
-@csrf.exempt
 @app.route('/bookmarks', subdomain='<subdomain>')
 @app.route('/bookmarks')
 @lastuser.requires_login
@@ -411,7 +407,6 @@ def bookmarks():
     return index(basequery=basequery, ageless=True, statuses=POSTSTATUS.ARCHIVED)
 
 
-@csrf.exempt
 @app.route('/applied', subdomain='<subdomain>')
 @app.route('/applied')
 @lastuser.requires_login
@@ -420,7 +415,6 @@ def applied():
     return index(basequery=basequery, ageless=True, statuses=POSTSTATUS.ARCHIVED)
 
 
-@csrf.exempt
 @app.route('/type/<name>', methods=['GET', 'POST'], subdomain='<subdomain>')
 @app.route('/type/<name>', methods=['GET', 'POST'])
 def browse_by_type(name):
@@ -429,7 +423,6 @@ def browse_by_type(name):
     return redirect(url_for('index', t=name), code=302)
 
 
-@csrf.exempt
 @app.route('/<domain>', methods=['GET', 'POST'], subdomain='<subdomain>')
 @app.route('/<domain>', methods=['GET', 'POST'])
 def browse_by_domain(domain):
@@ -450,7 +443,6 @@ def browse_by_domain_legacy(domain):
     return redirect(url_for('browse_by_domain', domain=domain), code=301)
 
 
-@csrf.exempt
 @app.route('/category/<name>', methods=['GET', 'POST'], subdomain='<subdomain>')
 @app.route('/category/<name>', methods=['GET', 'POST'])
 def browse_by_category(name):
@@ -459,7 +451,6 @@ def browse_by_category(name):
     return redirect(url_for('index', c=name), code=302)
 
 
-@csrf.exempt
 @app.route('/by/<md5sum>', methods=['GET', 'POST'], subdomain='<subdomain>')
 @app.route('/by/<md5sum>', methods=['GET', 'POST'])
 def browse_by_email(md5sum):
@@ -471,7 +462,6 @@ def browse_by_email(md5sum):
     return index(basequery=basequery, md5sum=md5sum, showall=True, template_vars={'jobpost_user': jobpost_user})
 
 
-@csrf.exempt
 @app.route('/in/<location>', methods=['GET', 'POST'], subdomain='<subdomain>')
 @app.route('/in/<location>', methods=['GET', 'POST'])
 def browse_by_location(location):
@@ -485,14 +475,12 @@ def browse_by_location(location):
     return index(location=geodata, title=geodata['use_title'])
 
 
-@csrf.exempt
 @app.route('/in/anywhere', methods=['GET', 'POST'], subdomain='<subdomain>')
 @app.route('/in/anywhere', methods=['GET', 'POST'])
 def browse_by_anywhere():
     return redirect(url_for('index', l='anywhere'), code=302)
 
 
-@csrf.exempt
 @app.route('/tag/<tag>', methods=['GET', 'POST'], subdomain='<subdomain>')
 @app.route('/tag/<tag>', methods=['GET', 'POST'])
 def browse_by_tag(tag):

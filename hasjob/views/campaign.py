@@ -8,7 +8,6 @@ import unicodecsv
 from flask import g, request, flash, url_for, redirect, render_template, Markup, abort
 from coaster.utils import buid, make_name
 from coaster.views import load_model, load_models
-from baseframe import csrf
 from baseframe.forms import render_form, render_delete_sqla, render_redirect
 from .. import app, lastuser
 from ..models import (db, Campaign, CampaignView, CampaignAction, CampaignUserAction, CampaignAnonUserAction,
@@ -273,7 +272,6 @@ def campaign_action_redirect(campaign, action):
     return redirect(action.link, code=302)
 
 
-@csrf.exempt
 @app.route('/go/c/<campaign>', methods=['POST'], subdomain='<subdomain>')
 @app.route('/go/c/<campaign>', methods=['POST'])
 @load_model(Campaign, {'name': 'campaign'}, 'campaign')
