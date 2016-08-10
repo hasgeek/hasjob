@@ -558,7 +558,7 @@ window.Hasjob.PaySlider.toNumeric = function(str){
 };
 
 window.Hasjob.PaySlider.range = function(currency){
-  if(currency === 'INR') {
+  if (currency === 'INR') {
     return {
       'min': [0, 5000],
       '15%': [100000, 10000],
