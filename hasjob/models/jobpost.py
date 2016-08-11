@@ -264,6 +264,9 @@ class JobPost(BaseMixin, db.Model):
     def close(self):
         self.status = POSTSTATUS.CLOSED
 
+    def delete(self):
+        self.status = POSTSTATUS.DELETED
+
     def confirm(self):
         self.status = POSTSTATUS.CONFIRMED
 
@@ -292,6 +295,8 @@ class JobPost(BaseMixin, db.Model):
             return url_for('withdraw', hashid=self.hashid, domain=domain, _external=_external, **kwargs)
         elif action == 'close':
             return url_for('close', hashid=self.hashid, domain=domain, _external=_external, **kwargs)
+        elif action == 'delete':
+            return url_for('delete', hashid=self.hashid, domain=domain, _external=_external, **kwargs)
         elif action == 'reopen':
             return url_for('reopen', hashid=self.hashid, domain=domain, _external=_external, **kwargs)
         elif action == 'moderate':
