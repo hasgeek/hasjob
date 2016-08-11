@@ -1,0 +1,20 @@
+{% extends "sheet.html" %}
+{% from "baseframe/forms.html" import renderfield %}
+{% block title %}{{ post.headline|e }}{% endblock %}
+{% block content %}
+  <div class="sheet">
+    <div class="section first">
+      <h1>Delete this draft job post?</h1>
+      <h2>{{ post.headline }}</h2>
+      <p>
+        This draft will be deleted forever with no way to recover it.
+        You have to create a new job from scratch.
+      </p>
+      <form method="POST" class="form-horizontal">
+        {{ form.hidden_tag() }}
+        <button type="submit" class="btn btn-danger">Delete</button>
+        <a class="btn btn-default" href="{{ post.url_for() }}">Cancel</a>
+      </form>
+    </div>
+  </div>
+{% endblock %}
