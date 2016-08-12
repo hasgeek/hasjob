@@ -10,6 +10,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import StaleDataError
 from flask import abort, flash, g, redirect, render_template, request, url_for, session, Markup, jsonify
 from flask.ext.mail import Message
+from flask.ext.rq import job
 from baseframe import cache
 from baseframe.forms import Form
 from coaster.utils import getbool, get_email_domain, md5sum, base_domain_matches
@@ -32,6 +33,8 @@ from hasjob.models import (
     JobApplication,
     Campaign, CAMPAIGN_POSITION,
     unique_hash,
+    User,
+    AnonUser,
     viewstats_by_id_qhour,
     viewstats_by_id_hour,
     viewstats_by_id_day,
@@ -43,6 +46,39 @@ from hasjob.utils import get_word_bag, redactemail, random_long_key, common_lega
 from hasjob.views import ALLOWED_TAGS
 from hasjob.nlp import identify_language
 from hasjob.views.helper import gif1x1, cache_viewcounts, session_jobpost_ab, bgroup
+
+
+@job('hasjob')
+def update_userjobview(postid, userid):
+    post = JobPost.query.get(postid)
+    user = User.query.get(userid)
+    jobview = UserJobView.get(post, user)
+    if jobview is None:
+        jobview = UserJobView(user=user, jobpost=post)
+        post.uncache_viewcounts('viewed')
+        cache.delete_memoized(viewstats_by_id_qhour, post.id)
+        cache.delete_memoized(viewstats_by_id_hour, post.id)
+        cache.delete_memoized(viewstats_by_id_day, post.id)
+        db.session.add(jobview)
+        try:
+            db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
+        post.viewcounts  # Re-populate cache
+
+
+@job('hasjob')
+def update_anonjobview(postid, anon_userid):
+    post = JobPost.query.get(postid)
+    anon_user = AnonUser.query.get(anon_userid)
+    anonview = AnonJobView.get(post, anon_user)
+    if not anonview:
+        anonview = AnonJobView(jobpost=post, anon_user=anon_user)
+        db.session.add(anonview)
+        try:
+            db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
 
 
 @app.route('/<domain>/<hashid>', methods=('GET', 'POST'), subdomain='<subdomain>')
@@ -75,32 +111,12 @@ def jobdetail(domain, hashid):
             abort(403)
     if post.status in POSTSTATUS.GONE:
         abort(410)
+
     if g.user:
-        jobview = UserJobView.get(post, g.user)
-        if jobview is None:
-            jobview = UserJobView(user=g.user, jobpost=post)
-            post.uncache_viewcounts('viewed')
-            cache.delete_memoized(viewstats_by_id_qhour, post.id)
-            cache.delete_memoized(viewstats_by_id_hour, post.id)
-            cache.delete_memoized(viewstats_by_id_day, post.id)
-            db.session.add(jobview)
-            try:
-                db.session.commit()
-            except IntegrityError:
-                db.session.rollback()
-            post.viewcounts  # Re-populate cache
-    else:
-        jobview = None
+        update_userjobview.delay(post.id, g.user.id)
 
     if g.anon_user:
-        anonview = AnonJobView.get(post, g.anon_user)
-        if not anonview:
-            anonview = AnonJobView(jobpost=post, anon_user=g.anon_user)
-            db.session.add(anonview)
-            try:
-                db.session.commit()
-            except IntegrityError:
-                db.session.rollback()
+        update_anonjobview.delay(post.id, g.anon_user.id)
 
     if g.user:
         report = JobPostReport.query.filter_by(post=post, user=g.user).first()
@@ -165,10 +181,9 @@ def jobdetail(domain, hashid):
 
     return render_template('detail.html', post=post, headline=headline, reportform=reportform, rejectform=rejectform,
         pinnedform=pinnedform,
-        jobview=jobview, report=report, moderateform=moderateform,
+        report=report, moderateform=moderateform,
         domain_mismatch=domain_mismatch, header_campaign=header_campaign,
-        is_bgroup=is_bgroup, is_siteadmin=is_siteadmin
-        )
+        is_bgroup=is_bgroup, is_siteadmin=is_siteadmin)
 
 
 @app.route('/<domain>/<hashid>/related', subdomain='<subdomain>')
