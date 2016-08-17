@@ -305,8 +305,7 @@
       </div>
     {%- endif %}
     <div class="section hidden" id="viewstats">
-      <h2>Page views</h2>
-      <div><span id="post-viewed"></span> › <span id="post-opened"></span> › <span id="post-applied"></span> &middot; Per <span id="post-stats-unit"></span>:</div>
+      <div><span id="post-viewed">&middot;&middot;&middot;</span> viewed › <span id="post-opened">&middot;&middot;&middot;</span> opened › <span id="post-applied">&middot;&middot;&middot;</span> applied &middot; Per <span id="post-stats-unit"></span>:</div>
       <div id="viewstats-chart"></div>
 
       <div class="section unmarked"><p></p></div>
@@ -360,7 +359,7 @@
   {%- endif %}
 {% endblock %}
 {% block postcontent %}
-  <ul id="related-posts" class="row">
+  <ul id="stickie-area" class="row">
   </ul>
 {% endblock %}
 {% block footerscripts %}
@@ -435,8 +434,8 @@
     $('#apply-info').appear().on('appear', function(event, element) {
       if (!triggered_related) {
         triggered_related = true;
-        $.get(window.location.pathname + '/related', function (data) {
-            $('#related-posts').html(data);
+        $.get("{{ post.url_for('related_posts') }}", function (data) {
+            $('#stickie-area').html(data);
           }
         );
       }
@@ -449,9 +448,7 @@
           'h': 'hour',
           'd': 'day'
         }
-        $.get(window.location.pathname + '/viewstats', function(data) {
-          $('#viewstats').removeClass('hidden');
-
+        $.get("{{ post.url_for('viewstats') }}", function(data) {
           $('#post-viewed').text(data['counts']['viewed']);
           $('#post-opened').text(data['counts']['opened']);
           $('#post-applied').text(data['counts']['applied']);
@@ -484,6 +481,7 @@
               }
             }
           });
+          $('#viewstats').removeClass('hidden');
         })
       }
       {%- endif %}

@@ -292,6 +292,10 @@ class JobPost(BaseMixin, db.Model):
             return url_for('withdraw', hashid=self.hashid, domain=domain, _external=_external, **kwargs)
         elif action == 'close':
             return url_for('close', hashid=self.hashid, domain=domain, _external=_external, **kwargs)
+        elif action == 'viewstats':
+            return url_for('job_viewstats', hashid=self.hashid, domain=domain, _external=_external, **kwargs)
+        elif action == 'related_posts':
+            return url_for('job_related_posts', hashid=self.hashid, domain=domain, _external=_external, **kwargs)
         elif action == 'reopen':
             return url_for('reopen', hashid=self.hashid, domain=domain, _external=_external, **kwargs)
         elif action == 'moderate':
