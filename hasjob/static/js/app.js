@@ -558,18 +558,20 @@ window.Hasjob.PaySlider.toNumeric = function(str){
 };
 
 window.Hasjob.PaySlider.range = function(currency){
-  if(currency === '$') {
+  if (currency === 'INR') {
+    return {
+      'min': [0, 5000],
+      '15%': [100000, 10000],
+      '30%': [200000, 50000],
+      '70%': [2000000, 100000],
+      '85%': [10000000, 1000000],
+      'max': [100000000]
+    }
+  } else {
     return {
       'min': [0, 5000],
       '2%': [200000, 50000],
       '10%': [1000000, 100000],
-      'max': [10000000, 100000]
-    }
-  }
-  else {
-    return {
-      'min': [0, 50000],
-      '10%':  [1000000, 100000],
       'max': [10000000, 100000]
     }
   }
@@ -609,7 +611,7 @@ window.Hasjob.PaySlider.prototype.resetSlider = function(currency) {
   this.slider.noUiSlider({
     start: start,
     connect: (start.constructor === Array)?true:false,
-    range: Hasjob.PaySlider.range(window.Hasjob.Currency.prefix(currency)),
+    range: Hasjob.PaySlider.range(currency),
     format: Hasjob.Currency.wNumbFormat(currency)
   }, true);
 
