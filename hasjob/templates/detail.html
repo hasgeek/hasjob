@@ -275,7 +275,7 @@
             {%- elif g.user %}
               <a class="btn btn-primary" id="reveal-button" href="{{ post.url_for('reveal') }}">Show instructions</a> <span class="loading hidden"></span>
             {%- else %}
-              <a class="btn btn-primary" href="{{ post.url_for('reveal') }}">Login with Twitter or Google</a>
+              <a class="btn btn-primary" href="{{ url_for('login') }}">Login with Twitter or Google</a>
               to see instructions on how to apply.
               Your identity will not be revealed to the employer.
             {%- endif %}
