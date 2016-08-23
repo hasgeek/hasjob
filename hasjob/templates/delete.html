@@ -4,11 +4,10 @@
 {% block content %}
   <div class="sheet">
     <div class="section first">
-      <h1>Delete this draft job post?</h1>
+      <h1>Delete this draft?</h1>
       <h2>{{ post.headline }}</h2>
       <p>
-        This draft will be deleted forever with no way to recover it.
-        You have to create a new job from scratch.
+        Deleted drafts will be gone forever, with no undo. Are you sure you want to delete?
       </p>
       <form method="POST" class="form-horizontal">
         {{ form.hidden_tag() }}

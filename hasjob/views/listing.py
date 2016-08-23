@@ -1011,31 +1011,26 @@ def close(domain, hashid, key):
     form = Form()
     if form.validate_on_submit():
         post.close()
-        post.closed_datetime = datetime.utcnow()
         db.session.commit()
         return redirect(post.url_for(), code=303)
     return render_template("close.html", post=post, form=form)
 
 
-@app.route('/<domain>/<hashid>/delete', methods=('GET', 'POST'), defaults={'key': None}, subdomain='<subdomain>')
-@app.route('/<domain>/<hashid>/delete', methods=('GET', 'POST'), defaults={'key': None})
-def delete(domain, hashid, key):
+@app.route('/delete/<hashid>', methods=('GET', 'POST'), defaults={'key': None}, subdomain='<subdomain>')
+@app.route('/delete/<hashid>', methods=('GET', 'POST'), defaults={'key': None})
+def delete(hashid, key):
     post = JobPost.get(hashid)
     if not post:
         abort(404)
     if not post.admin_is(g.user):
         abort(403)
-    if request.method == 'GET' and not post.is_draft():
-        return redirect(post.url_for('jobdetail'), code=303)
     if not post.is_draft():
-        flash("Your job is not a draft. Please close or withdraw it.", "info")
         return redirect(post.url_for(), code=303)
     form = Form()
     if form.validate_on_submit():
         post.delete()
-        post.closed_datetime = datetime.utcnow()
         db.session.commit()
-        return redirect(post.url_for(), code=303)
+        return redirect(url_for('my_posts'), code=303)
     return render_template("delete.html", post=post, form=form)
 
 
