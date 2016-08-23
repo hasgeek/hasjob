@@ -863,7 +863,7 @@ class JobApplication(BaseMixin, db.Model):
 
 
 JobApplication.jobpost = db.relationship(JobPost,
-    backref=db.backref('applications', order_by=(
+    backref=db.backref('applications', lazy='dynamic', order_by=(
         db.case(value=JobApplication.response, whens={
             EMPLOYER_RESPONSE.NEW: 0,
             EMPLOYER_RESPONSE.PENDING: 1,
