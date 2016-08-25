@@ -51,7 +51,7 @@ starred_job_table = db.Table('starred_job', db.Model.metadata,
     )
 
 
-def starred_job_ids(user, agelimit=None):
+def starred_job_ids(user, agelimit):
     if agelimit:
         return [r[0] for r in db.session.query(starred_job_table.c.jobpost_id).filter(
             starred_job_table.c.user_id == user.id,
@@ -196,7 +196,7 @@ class JobPost(BaseMixin, db.Model):
     @classmethod
     def fetch(cls, hashid):
         """Returns a SQLAlchemy query object for JobPost"""
-        return db.session.query(JobPost).filter_by(hashid=hashid).options(db.load_only("id", "headline", "headlineb", "hashid", "datetime", "status", "email_domain", "review_comments", "company_url"))
+        return db.session.query(cls).filter_by(hashid=hashid).options(db.load_only("id", "headline", "headlineb", "hashid", "datetime", "status", "email_domain", "review_comments", "company_url"))
 
     def __repr__(self):
         return u'<JobPost {hashid} "{headline}">'.format(hashid=self.hashid, headline=self.headline)
