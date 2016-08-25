@@ -51,7 +51,7 @@ starred_job_table = db.Table('starred_job', db.Model.metadata,
     )
 
 
-def starred_job_ids(user, agelimit):
+def starred_job_ids(user, agelimit=None):
     if agelimit:
         return [r[0] for r in db.session.query(starred_job_table.c.jobpost_id).filter(
             starred_job_table.c.user_id == user.id,
@@ -192,6 +192,10 @@ class JobPost(BaseMixin, db.Model):
     @classmethod
     def get(cls, hashid):
         return cls.query.filter_by(hashid=hashid).one_or_none()
+
+    @classmethod
+    def fetch(cls, hashid):
+        return db.session.query(JobPost).filter_by(hashid=hashid).options(db.load_only("id", "headline", "headlineb", "hashid", "datetime", "status", "email_domain", "review_comments", "company_url"))
 
     def __repr__(self):
         return u'<JobPost {hashid} "{headline}">'.format(hashid=self.hashid, headline=self.headline)
