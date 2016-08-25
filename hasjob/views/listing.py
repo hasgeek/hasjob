@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 import bleach
 from datetime import datetime, timedelta
 from difflib import SequenceMatcher
@@ -51,9 +50,10 @@ from hasjob.views.helper import gif1x1, cache_viewcounts, session_jobpost_ab, bg
 @app.route('/view/<hashid>', defaults={'domain': None}, methods=('GET', 'POST'))
 def jobdetail(domain, hashid):
     is_siteadmin = lastuser.has_permission('siteadmin')
-    query = JobPost.query.filter_by(hashid=hashid).options(
-        db.subqueryload('locations'), db.subqueryload('taglinks'))
-    post = query.first_or_404()
+    query = JobPost.fetch(hashid).options(db.subqueryload('locations'), db.subqueryload('taglinks'))
+    post = query.first()
+    if not post:
+        abort(404)
 
     # If we're on a board (that's not 'www') and this post isn't on this board,
     # redirect to (a) the first board it is on, or (b) on the root domain (which may
