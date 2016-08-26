@@ -51,7 +51,7 @@ starred_job_table = db.Table('starred_job', db.Model.metadata,
     )
 
 
-def starred_job_ids(user, agelimit):
+def starred_job_ids(user, agelimit=None):
     if agelimit:
         return [r[0] for r in db.session.query(starred_job_table.c.jobpost_id).filter(
             starred_job_table.c.user_id == user.id,
@@ -62,6 +62,17 @@ def starred_job_ids(user, agelimit):
 
 
 User.starred_job_ids = starred_job_ids
+
+
+def has_starred_post(user, post):
+    """Checks if user has starred a particular post"""
+    if not post:
+        return False
+    query = starred_job_table.count().where(starred_job_table.c.user_id == user.id).where(starred_job_table.c.jobpost_id == post.id)
+    res = db.session.execute(query)
+    return bool(res.first()[0]) if res else False
+
+User.has_starred_post = has_starred_post
 
 
 class JobPost(BaseMixin, db.Model):
