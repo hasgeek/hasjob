@@ -66,7 +66,11 @@ User.starred_job_ids = starred_job_ids
 
 def has_starred_post(user, post):
     """Checks if user has starred a particular post"""
-    return post.id in user.starred_job_ids() if post else False
+    if not post:
+        return False
+    query = starred_job_table.count().where(starred_job_table.c.user_id == user.id).where(starred_job_table.c.jobpost_id == post.id)
+    res = db.session.execute(query)
+    return bool(res.first()[0]) if res else False
 
 User.has_starred_post = has_starred_post
 
