@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from werkzeug import cached_property
 from flask import url_for, g, escape, Markup
 from sqlalchemy import event, DDL
-from sqlalchemy.orm import defer, deferred
+from sqlalchemy.orm import defer, deferred, load_only
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.dialects.postgresql import TSVECTOR
 import tldextract
@@ -192,6 +192,11 @@ class JobPost(BaseMixin, db.Model):
     @classmethod
     def get(cls, hashid):
         return cls.query.filter_by(hashid=hashid).one_or_none()
+
+    @classmethod
+    def fetch(cls, hashid):
+        """Returns a SQLAlchemy query object for JobPost"""
+        return cls.query.filter_by(hashid=hashid).options(load_only("id", "headline", "headlineb", "hashid", "datetime", "status", "email_domain", "review_comments", "company_url"))
 
     def __repr__(self):
         return u'<JobPost {hashid} "{headline}">'.format(hashid=self.hashid, headline=self.headline)
