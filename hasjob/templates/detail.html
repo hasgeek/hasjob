@@ -444,20 +444,14 @@
       if (!triggered_viewstats) {
         triggered_viewstats = true;
         var UNITTYPE = {
-          'h': {
-            'name': 'hour',
-            'format': '%H:%M'
-          },
-          'd': {
-            'name': 'day',
-            'format': '%d-%m-%Y'
-          }
+          'h': 'hour',
+          'd': 'day'
         }
         $.get("{{ post.url_for('viewstats') }}", function(data) {
           $('#post-viewed').text(data['counts']['viewed']);
           $('#post-opened').text(data['counts']['opened']);
           $('#post-applied').text(data['counts']['applied']);
-          $('#post-stats-unit').text(UNITTYPE[data['unittype']]['name']);
+          $('#post-stats-unit').text(UNITTYPE[data['unittype']]);
 
           c3.generate({
             bindto: '#viewstats-chart',
