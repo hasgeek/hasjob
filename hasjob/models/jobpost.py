@@ -20,7 +20,7 @@ from .user import User, AnonUser, EventSession
 from ..utils import random_long_key, random_hash_key
 
 __all__ = ['JobPost', 'JobLocation', 'UserJobView', 'AnonJobView', 'JobImpression', 'JobApplication',
-    'JobViewSession', 'unique_hash', 'viewstats_by_id_qhour', 'viewstats_by_id_hour', 'viewstats_by_id_day', 'starred_job_table']
+    'JobViewSession', 'unique_hash', 'viewstats_by_id_hour', 'viewstats_by_id_day', 'starred_job_table']
 
 
 def number_format(number, suffix):
@@ -535,10 +535,7 @@ class JobPost(BaseMixin, db.Model):
         now = datetime.utcnow()
         delta = now - self.datetime
         if delta.days < 2:  # Less than two days
-            if delta.seconds < 21600:  # Less than 6 hours
-                return 'q', viewstats_by_id_qhour(self.id)
-            else:
-                return 'h', viewstats_by_id_hour(self.id)
+            return 'h', viewstats_by_id_hour(self.id)
         else:
             return 'd', viewstats_by_id_day(self.id)
 
@@ -575,6 +572,17 @@ def viewstats_helper(jobpost_id, interval, limit, daybatch=False):
     cviewed = batches * [0]
     copened = batches * [0]
     capplied = batches * [0]
+    cbuckets = batches * ['']
+
+    now_local = datetime.now()
+    for delta in range(batches):
+        if daybatch:
+            # here delta=0, so last item is the latest date/hour
+            cbuckets[batches - delta - 1] = (now_local - timedelta(days=delta)).strftime("%d-%m-%Y")
+        else:
+            from_hour = (now_local - timedelta(hours=delta)).strftime("%H:00")
+            to_hour = (now_local - timedelta(hours=delta - 1)).strftime("%H:00")
+            cbuckets[batches - delta - 1] = "{} - {}".format(from_hour, to_hour)
 
     for clist, source, attr in [
             (cviewed, viewed, 'created_at'),
@@ -602,6 +610,7 @@ def viewstats_helper(jobpost_id, interval, limit, daybatch=False):
         cviewed = cviewed[:limit]
         copened = copened[:limit]
         capplied = capplied[:limit]
+        cbuckets = cbuckets[:limit]
 
     return {
         'max': max([
@@ -613,12 +622,8 @@ def viewstats_helper(jobpost_id, interval, limit, daybatch=False):
         'viewed': cviewed,
         'opened': copened,
         'applied': capplied,
+        'buckets': cbuckets
         }
-
-
-@cache.memoize(timeout=900)
-def viewstats_by_id_qhour(jobpost_id):
-    return viewstats_helper(jobpost_id, 900, 24)
 
 
 @cache.memoize(timeout=3600)

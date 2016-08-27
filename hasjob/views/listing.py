@@ -32,7 +32,6 @@ from hasjob.models import (
     JobApplication,
     Campaign, CAMPAIGN_POSITION,
     unique_hash,
-    viewstats_by_id_qhour,
     viewstats_by_id_hour,
     viewstats_by_id_day,
     )
@@ -80,7 +79,6 @@ def jobdetail(domain, hashid):
         if jobview is None:
             jobview = UserJobView(user=g.user, jobpost=post)
             post.uncache_viewcounts('viewed')
-            cache.delete_memoized(viewstats_by_id_qhour, post.id)
             cache.delete_memoized(viewstats_by_id_hour, post.id)
             cache.delete_memoized(viewstats_by_id_day, post.id)
             db.session.add(jobview)
@@ -257,7 +255,6 @@ def revealjob(domain, hashid):
         try:
             db.session.commit()
             post.uncache_viewcounts('opened')
-            cache.delete_memoized(viewstats_by_id_qhour, post.id)
             cache.delete_memoized(viewstats_by_id_hour, post.id)
             cache.delete_memoized(viewstats_by_id_day, post.id)
             post.viewcounts  # Re-populate cache
@@ -268,7 +265,6 @@ def revealjob(domain, hashid):
         jobview.applied = True
         db.session.commit()
         post.uncache_viewcounts('opened')
-        cache.delete_memoized(viewstats_by_id_qhour, post.id)
         cache.delete_memoized(viewstats_by_id_hour, post.id)
         cache.delete_memoized(viewstats_by_id_day, post.id)
         post.viewcounts  # Re-populate cache

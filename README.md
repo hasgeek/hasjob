@@ -51,7 +51,7 @@ Hasjob can be used with Docker (recommended for quick start) or the harder way w
     ```
 
 * Start the server
-    
+
     ```
     $ docker-compose up
     ```
@@ -149,6 +149,13 @@ You need to [install CasperJS](http://docs.casperjs.org/en/latest/installation.h
 Edit the top few lines of test file `tests/test_job_post.js` with the URL, username and password.
 
 Run the test with `casperjs test tests/test_job_post.js`.
+
+## Disabling Cache
+
+If you ever want to disable caching when developing, inside your `development.py`, add these lines -
+
+    CACHE_TYPE = 'null'
+    CACHE_NO_NULL_WARNING = False
 
 ## Other notes
 

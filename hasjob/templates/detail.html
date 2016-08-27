@@ -444,15 +444,20 @@
       if (!triggered_viewstats) {
         triggered_viewstats = true;
         var UNITTYPE = {
-          'q': '15m',
-          'h': 'hour',
-          'd': 'day'
+          'h': {
+            'name': 'hour',
+            'format': '%H:%M'
+          },
+          'd': {
+            'name': 'day',
+            'format': '%d-%m-%Y'
+          }
         }
         $.get("{{ post.url_for('viewstats') }}", function(data) {
           $('#post-viewed').text(data['counts']['viewed']);
           $('#post-opened').text(data['counts']['opened']);
           $('#post-applied').text(data['counts']['applied']);
-          $('#post-stats-unit').text(UNITTYPE[data['unittype']])
+          $('#post-stats-unit').text(UNITTYPE[data['unittype']]['name']);
 
           c3.generate({
             bindto: '#viewstats-chart',
@@ -461,7 +466,9 @@
             },
             data: {
               type: 'spline',
+              x: 'datehour',
               columns: [
+                ['datehour'].concat(data['stats']['buckets']),
                 ['viewed'].concat(data['stats']['viewed']),
                 ['opened'].concat(data['stats']['opened']),
                 ['applied'].concat(data['stats']['applied'])
@@ -474,7 +481,7 @@
             },
             axis: {
               x: {
-                show: false
+                type: 'category'
               },
               y: {
                 tick: { format: d3.format("d") }
