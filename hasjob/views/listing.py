@@ -161,13 +161,14 @@ def jobdetail(domain, hashid):
 
     is_bgroup = getbool(request.args.get('b'))
     headline = post.headlineb if is_bgroup and post.headlineb else post.headline
+    is_post_admin = is_siteadmin or post.admin_is(g.user) or (g.user and g.user.flags.is_employer_month)
 
-    return render_template('detail.html', post=post, headline=headline, reportform=reportform, rejectform=rejectform,
-        pinnedform=pinnedform,
+    return render_template('detail.html', post=post, headline=headline,
+        reportform=reportform, rejectform=rejectform, pinnedform=pinnedform,
         jobview=jobview, report=report, moderateform=moderateform,
         domain_mismatch=domain_mismatch, header_campaign=header_campaign,
-        is_bgroup=is_bgroup, is_siteadmin=is_siteadmin
-        )
+        is_bgroup=is_bgroup, is_siteadmin=is_siteadmin,
+        is_post_admin=is_post_admin)
 
 
 @app.route('/<domain>/<hashid>/viewstats', subdomain='<subdomain>')
@@ -176,7 +177,7 @@ def jobdetail(domain, hashid):
 @app.route('/view/<hashid>/viewstats', defaults={'domain': None})
 def job_viewstats(domain, hashid):
     is_siteadmin = lastuser.has_permission('siteadmin')
-    post = JobPost.query.filter_by(hashid=hashid).options(load_only('id')).first_or_404()
+    post = JobPost.query.filter_by(hashid=hashid).options(load_only('id', 'datetime')).first_or_404()
     if is_siteadmin or post.admin_is(g.user) or (g.user and g.user.flags.is_employer_month):
         return jsonify({
             "unittype": post.viewstats[0],
