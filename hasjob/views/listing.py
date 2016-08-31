@@ -8,6 +8,7 @@ from premailer import transform as email_transform
 
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import StaleDataError
+from sqlalchemy.orm import load_only
 from flask import abort, flash, g, redirect, render_template, request, url_for, session, Markup, jsonify
 from flask.ext.mail import Message
 from baseframe import cache
@@ -175,7 +176,7 @@ def jobdetail(domain, hashid):
 @app.route('/view/<hashid>/viewstats', defaults={'domain': None})
 def job_viewstats(domain, hashid):
     is_siteadmin = lastuser.has_permission('siteadmin')
-    post = JobPost.query.filter_by(hashid=hashid).options(*JobPost._defercols).first_or_404()
+    post = JobPost.query.filter_by(hashid=hashid).options(load_only('id')).first_or_404()
     if is_siteadmin or post.admin_is(g.user) or (g.user and g.user.flags.is_employer_month):
         return jsonify({
             "unittype": post.viewstats[0],
