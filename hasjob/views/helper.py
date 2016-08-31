@@ -338,7 +338,7 @@ def getposts(basequery=None, pinned=False, showall=False, statuses=None, ageless
     if basequery is None:
         basequery = JobPost.query
 
-    query = basequery.filter(JobPost.status.in_(statuses)).options(*JobPost._defercols)
+    query = basequery.filter(JobPost.status.in_(statuses)).options(*JobPost._defercols).options(db.joinedload('domain'))
 
     now = datetime.utcnow()
 
@@ -410,9 +410,11 @@ def gettags(alltime=False):
 
 pay_graph_buckets = {
     'INR': (
-        range(0, 1000000, 50000) +
-        range(1000000, 10000000, 100000) +
-        [10000000]),
+        range(0, 200000, 25000) +
+        range(200000, 2000000, 50000) +
+        range(2000000, 10000000, 100000) +
+        range(10000000, 100000000, 1000000) +
+        [100000000]),
     'USD': (
         range(0, 200000, 5000) +
         range(200000, 1000000, 50000) +

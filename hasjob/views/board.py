@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from flask import g, abort, flash, url_for, redirect, request, Markup
+from flask import g, abort, flash, url_for, redirect, request
 from coaster.views import load_model, load_models
 from baseframe.forms import render_form, render_delete_sqla, render_redirect
 from .. import app, lastuser
@@ -42,7 +42,7 @@ def board_new():
     if 'siteadmin' not in lastuser.permissions():
         # Allow only siteadmins to set this field
         del form.options.form.require_pay
-    form.userid.choices = g.user.owner_choices()
+    form.userid.choices = g.user.allowner_choices()
     if form.validate_on_submit():
         board = Board()
         form.populate_obj(board)
@@ -75,10 +75,10 @@ def board_edit(board):
     if 'siteadmin' not in lastuser.permissions():
         # Allow only siteadmins to set this field
         del form.options.form.require_pay
-    form.userid.choices = g.user.owner_choices()
-    if board.userid not in g.user.user_organization_owned_ids():
+    form.userid.choices = g.user.allowner_choices()
+    if board.userid not in g.user.allowner_ids():
         # We could get here if we are a siteadmin editing someone's board
-        form.userid.choices.insert(0, (board.userid, Markup(u"<em>Preserve existing owner</em>")))
+        form.userid.choices.insert(0, (board.userid, u"(Preserve existing owner)"))
     if form.validate_on_submit():
         form.populate_obj(board)
         if not board.name:

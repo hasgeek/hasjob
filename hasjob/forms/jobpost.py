@@ -82,7 +82,7 @@ class ListingForm(forms.Form):
     job_pay_type = forms.RadioField(__("What does this job pay?"), coerce=int,
         validators=[forms.validators.InputRequired(__("You need to specify what this job pays"))],
         choices=PAY_TYPE.items())
-    job_pay_currency = ListingPayCurrencyField(__("Currency"), choices=CURRENCY.items())
+    job_pay_currency = ListingPayCurrencyField(__("Currency"), choices=CURRENCY.items(), default=CURRENCY.INR)
     job_pay_cash_min = forms.StringField(__("Minimum"))
     job_pay_cash_max = forms.StringField(__("Maximum"))
     job_pay_equity = forms.BooleanField(__("Equity compensation is available"))

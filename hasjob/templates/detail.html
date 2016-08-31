@@ -97,11 +97,17 @@
         <div class="col-md-3">{% if not g.kiosk %}
           <div class="list-group">
             {%- if g.user %}
-              <a class="list-group-item pstar" href="#">
-                <i class="fa fa-fw fa-star{% if post not in g.user.starred_jobs %}-o{% endif %}"
-                   data-id="{{ post.hashid }}"></i>
-                &nbsp;&nbsp; <span class="pstar-caption">{% if post not in g.user.starred_jobs %}Bookmark this{% else %}Bookmarked{% endif %}</span>
-              </a>
+              {% if g.user.has_starred_post(post) %}
+                <a class="list-group-item pstar" href="#">
+                  <i class="fa fa-fw fa-star" data-id="{{ post.hashid }}"></i>
+                  &nbsp;&nbsp; <span class="pstar-caption">Bookmarked</span>
+                </a>
+              {% else %}
+                <a class="list-group-item pstar" href="#">
+                  <i class="fa fa-fw fa-star-o" data-id="{{ post.hashid }}"></i>
+                  &nbsp;&nbsp; <span class="pstar-caption">Bookmark this</span>
+                </a>
+              {%- endif %}
             {%- endif %}
             <a class="list-group-item" href="mailto:?subject=Job%3A%20{{ headline|urlquoteplus }}&amp;body={{ post.url_for(utm_campaign='share', utm_medium='email', _external=true)|urlquoteplus }}">
               <i class="fa fa-fw fa-envelope"></i>&nbsp;&nbsp; Email this
@@ -279,7 +285,7 @@
             {%- elif g.user %}
               <a class="btn btn-primary" id="reveal-button" href="{{ post.url_for('reveal') }}">Show instructions</a> <span class="loading hidden"></span>
             {%- else %}
-              <a class="btn btn-primary" href="{{ post.url_for('reveal') }}">Login with Twitter or Google</a>
+              <a class="btn btn-primary" href="{{ url_for('login') }}">Login with Twitter or Google</a>
               to see instructions on how to apply.
               Your identity will not be revealed to the employer.
             {%- endif %}

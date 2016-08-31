@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from werkzeug import cached_property
 from flask import url_for, g, escape, Markup
 from sqlalchemy import event, DDL
-from sqlalchemy.orm import defer, deferred
+from sqlalchemy.orm import defer, deferred, load_only
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.dialects.postgresql import TSVECTOR
 import tldextract
@@ -51,7 +51,7 @@ starred_job_table = db.Table('starred_job', db.Model.metadata,
     )
 
 
-def starred_job_ids(user, agelimit):
+def starred_job_ids(user, agelimit=None):
     if agelimit:
         return [r[0] for r in db.session.query(starred_job_table.c.jobpost_id).filter(
             starred_job_table.c.user_id == user.id,
@@ -62,6 +62,17 @@ def starred_job_ids(user, agelimit):
 
 
 User.starred_job_ids = starred_job_ids
+
+
+def has_starred_post(user, post):
+    """Checks if user has starred a particular post"""
+    if not post:
+        return False
+    query = starred_job_table.count().where(starred_job_table.c.user_id == user.id).where(starred_job_table.c.jobpost_id == post.id)
+    res = db.session.execute(query)
+    return bool(res.first()[0]) if res else False
+
+User.has_starred_post = has_starred_post
 
 
 class JobPost(BaseMixin, db.Model):
@@ -192,6 +203,11 @@ class JobPost(BaseMixin, db.Model):
     @classmethod
     def get(cls, hashid):
         return cls.query.filter_by(hashid=hashid).one_or_none()
+
+    @classmethod
+    def fetch(cls, hashid):
+        """Returns a SQLAlchemy query object for JobPost"""
+        return cls.query.filter_by(hashid=hashid).options(load_only("id", "headline", "headlineb", "hashid", "datetime", "status", "email_domain", "review_comments", "company_url"))
 
     def __repr__(self):
         return u'<JobPost {hashid} "{headline}">'.format(hashid=self.hashid, headline=self.headline)
@@ -870,7 +886,7 @@ class JobApplication(BaseMixin, db.Model):
 
 
 JobApplication.jobpost = db.relationship(JobPost,
-    backref=db.backref('applications', order_by=(
+    backref=db.backref('applications', lazy='dynamic', order_by=(
         db.case(value=JobApplication.response, whens={
             EMPLOYER_RESPONSE.NEW: 0,
             EMPLOYER_RESPONSE.PENDING: 1,
