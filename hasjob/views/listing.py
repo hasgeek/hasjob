@@ -1019,7 +1019,7 @@ def close(domain, hashid, key):
 @app.route('/delete/<hashid>', methods=('GET', 'POST'), defaults={'key': None}, subdomain='<subdomain>')
 @app.route('/delete/<hashid>', methods=('GET', 'POST'), defaults={'key': None})
 def delete(hashid, key):
-    post = JobPost.query.filter_by(hashid=hashid).options(db.load_only('id')).first_or_404()
+    post = JobPost.query.filter_by(hashid=hashid).options(db.load_only('id', 'status')).first_or_404()
     if not post:
         abort(404)
     if not post.admin_is(g.user):
