@@ -468,7 +468,7 @@
           c3.generate({
             bindto: '#viewstats-chart',
             size: {
-              height: 150
+              height: 200
             },
             data: {
               type: 'spline',
@@ -487,7 +487,8 @@
             },
             axis: {
               x: {
-                type: 'category'
+                type: 'category',
+                height: 50
               },
               y: {
                 tick: { format: d3.format("d") }
@@ -495,6 +496,10 @@
             }
           });
           $('#viewstats').removeClass('hidden');
+          // c3 initially draws the width too big,
+          // a window resize event forces it to redraw the chart properly
+          // http://stackoverflow.com/a/27180464/257944
+          $(window).trigger('resize');
         })
       }
       {%- endif %}

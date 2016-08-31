@@ -594,7 +594,7 @@ def viewstats_helper(jobpost_id, interval, limit, daybatch=False):
     for delta in range(batches):
         if daybatch:
             # here delta=0, so last item is the latest date/hour
-            cbuckets[batches - delta - 1] = (now_local - timedelta(days=delta)).strftime("%d-%m-%Y")
+            cbuckets[batches - delta - 1] = (now_local - timedelta(days=delta)).strftime("%b %d")
         else:
             from_hour = (now_local - timedelta(hours=delta)).strftime("%H:00")
             to_hour = (now_local - timedelta(hours=delta - 1)).strftime("%H:00")
