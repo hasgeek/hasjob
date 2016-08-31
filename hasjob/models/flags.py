@@ -390,7 +390,7 @@ class UserFlags(object):
     has_boards = UserFlag('admin',
         __("Has a sub-board"),
         lambda user: Board.query.filter(
-            Board.userid.in_(user.user_organizations_owned_ids())
+            Board.userid.in_(user.allowner_ids())
             ).notempty(),
         None
         )

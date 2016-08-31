@@ -130,8 +130,8 @@ class BoardForm(forms.Form):
         content_css=content_css,
         validators=[forms.validators.DataRequired(__("A description of the job board is required")),
             forms.validators.AllUrlsValid()])
-    userid = forms.RadioField(__(u"Owner"), validators=[forms.validators.DataRequired(__("Select an owner"))],
-        description=__(u"Select the user or organization who owns this board. "
+    userid = forms.SelectField(__(u"Owner"), validators=[forms.validators.DataRequired(__("Select an owner"))],
+        description=__(u"Select the user, organization or team who owns this board. "
             "Owners can add jobs to the board and edit these settings"))
     require_login = forms.BooleanField(__(u"Prompt users to login"), default=True,
         description=__(u"If checked, users must login to see all jobs available. "

@@ -187,7 +187,7 @@ class Board(BaseNameMixin, db.Model):
     def owner_is(self, user):
         if user is None:
             return False
-        if user.userid == self.userid or self.userid in user.organizations_owned_ids():
+        if self.userid == user.userid or self.userid in user.allowner_ids():
             return True
         return False
 
@@ -206,7 +206,7 @@ class Board(BaseNameMixin, db.Model):
         perms.add('view')
         if not self.restrict_listing:
             perms.add('new-job')
-        if user is not None and (user.userid == self.userid or self.userid in user.organizations_owned_ids()):
+        if user is not None and (user.userid == self.userid or self.userid in user.allowner_ids()):
             perms.add('edit')
             perms.add('delete')
             perms.add('add')
