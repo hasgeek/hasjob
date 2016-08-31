@@ -10,7 +10,6 @@ import requests
 from pytz import utc, timezone
 from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import joinedload
 from geoip2.errors import AddressNotFoundError
 from flask import Markup, request, g, session
 from flask.ext.rq import job
@@ -339,7 +338,7 @@ def getposts(basequery=None, pinned=False, showall=False, statuses=None, ageless
     if basequery is None:
         basequery = JobPost.query
 
-    query = basequery.filter(JobPost.status.in_(statuses)).options(*JobPost._defercols).options(joinedload("domain"))
+    query = basequery.filter(JobPost.status.in_(statuses)).options(*JobPost._defercols).options(db.joinedload('domain'))
 
     now = datetime.utcnow()
 
