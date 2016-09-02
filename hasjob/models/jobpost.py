@@ -75,7 +75,7 @@ def has_starred_post(user, post):
 User.has_starred_post = has_starred_post
 
 
-class   JobPost(BaseMixin, db.Model):
+class JobPost(BaseMixin, db.Model):
     __tablename__ = 'jobpost'
 
     # Metadata
