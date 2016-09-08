@@ -18,9 +18,11 @@ before_script:
   - sleep 30
 script: casperjs test --log-level=debug tests/test_job_post.js
 addons:
-  postgresql: "9.3"
+  postgresql: "9.4"
 services:
   - redis-server
 notifications:
   email: false
-  irc: "irc.freenode.net#hasgeek-dev"
+  slack:
+    - hasgeek:HDCoMDj3T4ICB59qFFVorCG8
+    - friendsofhasgeek:3bLViYSzhfaThJovFYCVD3fX
