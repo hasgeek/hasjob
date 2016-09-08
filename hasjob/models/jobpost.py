@@ -659,7 +659,7 @@ def viewstats_by_id_hour(jobpost_id, limit=48):
 
 
 @cache.memoize(timeout=86400)
-def viewstats_by_id_day(jobpost_id, limit):
+def viewstats_by_id_day(jobpost_id, limit=30):
     return viewstats_helper(jobpost_id, 1, limit, daybatch=True)
 
 
