@@ -41,7 +41,8 @@ from hasjob.uploads import uploaded_logos
 from hasjob.utils import get_word_bag, redactemail, random_long_key, common_legal_names
 from hasjob.views import ALLOWED_TAGS
 from hasjob.nlp import identify_language
-from hasjob.views.helper import gif1x1, cache_viewcounts, session_jobpost_ab, bgroup
+from hasjob.views.helper import (gif1x1, cache_viewcounts, session_jobpost_ab,
+    bgroup, has_post_stats)
 
 
 @app.route('/<domain>/<hashid>', methods=('GET', 'POST'), subdomain='<subdomain>')
@@ -160,14 +161,13 @@ def jobdetail(domain, hashid):
 
     is_bgroup = getbool(request.args.get('b'))
     headline = post.headlineb if is_bgroup and post.headlineb else post.headline
-    is_post_admin = is_siteadmin or post.admin_is(g.user) or (g.user and g.user.flags.is_employer_month)
 
     return render_template('detail.html', post=post, headline=headline,
         reportform=reportform, rejectform=rejectform, pinnedform=pinnedform,
         jobview=jobview, report=report, moderateform=moderateform,
         domain_mismatch=domain_mismatch, header_campaign=header_campaign,
         is_bgroup=is_bgroup, is_siteadmin=is_siteadmin,
-        is_post_admin=is_post_admin)
+        can_see_post_stats=has_post_stats(post))
 
 
 @app.route('/<domain>/<hashid>/viewstats', subdomain='<subdomain>')

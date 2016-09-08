@@ -4,6 +4,7 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 from werkzeug import cached_property
 from flask import url_for, g, escape, Markup
+from flask.ext.babelex import format_datetime
 from sqlalchemy import event, DDL
 from sqlalchemy.orm import defer, deferred, load_only
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -550,10 +551,11 @@ class JobPost(BaseMixin, db.Model):
     def viewstats(self):
         now = datetime.utcnow()
         delta = now - self.datetime
-        if delta.days < 2:  # Less than two days
-            return 'h', viewstats_by_id_hour(self.id)
+        hourly_stat_limit = 3 # days
+        if delta.days < hourly_stat_limit:  # Less than {limit} days
+            return 'h', viewstats_by_id_hour(self.id, hourly_stat_limit * 24)
         else:
-            return 'd', viewstats_by_id_day(self.id)
+            return 'd', viewstats_by_id_day(self.id, 30)
 
     def reports(self):
         if not self.flags:
@@ -590,15 +592,24 @@ def viewstats_helper(jobpost_id, interval, limit, daybatch=False):
     capplied = batches * [0]
     cbuckets = batches * ['']
 
-    now_local = datetime.now()
+    interval_hour = interval/3600
+    # these are used as initial values for hourly stats
+    # buckets are like "HH:00 - HH:00"
+    to_datetime = (now + timedelta(hours=1)) # if now is 09:45, bucket ending hour will be 10:00
+    from_datetime = to_datetime - timedelta(hours=interval_hour) # starting hour will be, 06:00, if interval is 4 hours
+
     for delta in range(batches):
         if daybatch:
-            # here delta=0, so last item is the latest date/hour
-            cbuckets[batches - delta - 1] = (now_local - timedelta(days=delta)).strftime("%b %d")
+            # here delta=0 at first, and last item is the latest date/hour
+            cbuckets[batches - delta - 1] = format_datetime((now - timedelta(days=delta)), 'MMM d')
         else:
-            from_hour = (now_local - timedelta(hours=delta)).strftime("%H:00")
-            to_hour = (now_local - timedelta(hours=delta - 1)).strftime("%H:00")
+            from_hour = format_datetime(from_datetime, 'H:00')
+            to_hour = format_datetime(to_datetime, 'H:00')
             cbuckets[batches - delta - 1] = "{} - {}".format(from_hour, to_hour)
+            # if current bucket was 18:00-22:00, then
+            # previous bucket becomes 14:00-18:00
+            to_datetime = from_datetime
+            from_datetime = to_datetime - timedelta(hours=interval_hour)
 
     for clist, source, attr in [
             (cviewed, viewed, 'created_at'),
@@ -643,13 +654,13 @@ def viewstats_helper(jobpost_id, interval, limit, daybatch=False):
 
 
 @cache.memoize(timeout=3600)
-def viewstats_by_id_hour(jobpost_id):
-    return viewstats_helper(jobpost_id, 3600, 48)
+def viewstats_by_id_hour(jobpost_id, limit):
+    return viewstats_helper(jobpost_id, 4 * 3600, limit) # 4 hours interval
 
 
 @cache.memoize(timeout=86400)
-def viewstats_by_id_day(jobpost_id):
-    return viewstats_helper(jobpost_id, 1, 30, daybatch=True)
+def viewstats_by_id_day(jobpost_id, limit):
+    return viewstats_helper(jobpost_id, 1, limit, daybatch=True)
 
 
 jobpost_admin_table = db.Table('jobpost_admin', db.Model.metadata,

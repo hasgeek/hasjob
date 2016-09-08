@@ -16,6 +16,7 @@ from flask.ext.rq import job
 from flask.ext.lastuser import signal_user_looked_up
 from coaster.utils import uuid1mc
 from coaster.sqlalchemy import failsafe_add
+from hasjob import lastuser
 from baseframe import _, cache
 from baseframe.signals import form_validation_error, form_validation_success
 
@@ -41,6 +42,11 @@ def sniffle():
 
 def index_is_paginated():
     return request.method == 'POST' and 'startdate' in request.values
+
+
+def has_post_stats(post):
+    is_siteadmin = lastuser.has_permission('siteadmin')
+    return is_siteadmin or post.admin_is(g.user) or (g.user and g.user.flags.is_employer_month)
 
 
 @form_validation_success.connect
