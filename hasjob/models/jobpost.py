@@ -551,7 +551,7 @@ class JobPost(BaseMixin, db.Model):
     def viewstats(self):
         now = datetime.utcnow()
         delta = now - self.datetime
-        hourly_stat_limit = 3 # days
+        hourly_stat_limit = 2 # days
         if delta.days < hourly_stat_limit:  # Less than {limit} days
             return 'h', viewstats_by_id_hour(self.id, hourly_stat_limit * 24)
         else:
