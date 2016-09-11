@@ -175,7 +175,6 @@ def job_related_posts(domain, hashid):
 @app.route('/report/<hashid>', defaults={'domain': None}, methods=('POST',))
 @lastuser.requires_login
 def reportjob(domain, hashid):
-    is_siteadmin = lastuser.has_permission('siteadmin')
     post = JobPost.fetch(hashid).options(db.load_only('id')).first_or_404()
 
     if g.user:
