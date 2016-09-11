@@ -306,6 +306,8 @@ class JobPost(BaseMixin, db.Model):
             return url_for('editjob', hashid=self.hashid, domain=domain, _external=_external, **kwargs)
         elif action == 'withdraw':
             return url_for('withdraw', hashid=self.hashid, domain=domain, _external=_external, **kwargs)
+        elif action == 'report':
+            return url_for('reportjob', hashid=self.hashid, domain=domain, _external=_external, **kwargs)
         elif action == 'close':
             return url_for('close', hashid=self.hashid, domain=domain, _external=_external, **kwargs)
         elif action == 'reopen':

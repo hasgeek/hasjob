@@ -1,5 +1,5 @@
 {% from "baseframe/forms.html" import renderfield, ajaxform %}
-<form id="reportform" method="POST" class="form-horizontal">
+<form id="reportform" method="POST" class="form-horizontal" action="{{ post.url_for('report') }}">
   <input type="hidden" name="_charset_"/>
   <input type="hidden" name="form.id" value="reportform"/>
   {{ reportform.hidden_tag() }}
