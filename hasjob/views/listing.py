@@ -230,7 +230,7 @@ def revealjob(domain, hashid):
     """
     Reveal job application form
     """
-    post = JobPost.query.filter_by(hashid=hashid).options(db.load_only("id", "status", "how_to_apply")).first_or_404()
+    post = JobPost.query.filter_by(hashid=hashid).options(db.load_only('id', 'status', 'how_to_apply')).first_or_404()
     if post.status in POSTSTATUS.GONE:
         abort(410)
     jobview = UserJobView.query.get((post.id, g.user.id))
@@ -277,7 +277,7 @@ def applyjob(domain, hashid):
     """
     Apply to a job (including in kiosk mode)
     """
-    post = JobPost.query.filter_by(hashid=hashid).options(db.load_only("id", "email", "email_domain")).first_or_404()
+    post = JobPost.query.filter_by(hashid=hashid).options(db.load_only('id', 'email', 'email_domain')).first_or_404()
     # If the domain doesn't match, redirect to correct URL
     if post.email_domain != domain:
         return redirect(post.url_for('apply'), code=301)
