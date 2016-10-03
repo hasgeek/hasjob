@@ -1,7 +1,7 @@
 @charset "UTF-8";
 body {
   font-family: "Fira Sans", arial, sans-serif;
-  background: #e8e7e6 url('../img/canvas.jpg?1457700997');
+  background: #e8e7e6 url('../img/canvas.jpg?1461219836');
 }
 
 header {
@@ -104,7 +104,7 @@ header #hgnav .fa {
   overflow: hidden;
   text-align: left;
   text-transform: capitalize;
-  background-image: url('../img/logo-star.png?1457701438');
+  background-image: url('../img/logo-star.png?1461219836');
   background-repeat: no-repeat;
   background-position: 50% 50%;
   width: 170px;
@@ -340,7 +340,7 @@ header #hgnav .fa {
   line-height: 36px;
 }
 #search input[type="text"] {
-  background: white url('../img/search.png?1457712464') 4px center no-repeat;
+  background: white url('../img/search.png?1461219836') 4px center no-repeat;
   padding: 7px 10px 3px 20px;
 }
 #search .btn {
@@ -844,12 +844,6 @@ tr > div {
   .popup-box > *:last-child {
     margin-bottom: 0;
   }
-  .popup-box .close-popup {
-    display: none;
-  }
-  .no-js .popup-box .close-popup {
-    display: inline;
-  }
   .popup-box h2 {
     margin: 0;
   }
@@ -1026,7 +1020,7 @@ tr > div {
   left: 1.5em;
   right: 1.5em;
 }
-.no-touch li:hover > .stickie.grouped.under {
+li:hover > .stickie.grouped.under {
   top: 0px;
   left: 15px;
   right: 15px;
@@ -1044,31 +1038,31 @@ tr > div {
   -webkit-transition-timing-function: ease-out;
   transition-timing-function: ease-out;
 }
-.no-touch li:hover > .stickie.grouped.under:nth-of-type(1) {
+li:hover > .stickie.grouped.under:nth-of-type(1) {
   top: -15px;
   left: 0px;
   right: 30px;
   bottom: 15px;
 }
-.no-touch li:hover > .stickie.grouped.under:nth-of-type(2) {
+li:hover > .stickie.grouped.under:nth-of-type(2) {
   top: 15px;
   left: 30px;
   right: 0px;
   bottom: -15px;
 }
-.no-touch li:hover > .stickie.grouped.under:nth-of-type(3) {
+li:hover > .stickie.grouped.under:nth-of-type(3) {
   top: -10px;
   left: 20px;
   right: 5px;
   bottom: 10px;
 }
-.no-touch li:hover > .stickie.grouped.under:nth-of-type(4) {
+li:hover > .stickie.grouped.under:nth-of-type(4) {
   top: 10px;
   left: 5px;
   right: 25px;
   bottom: -10px;
 }
-.no-touch li:hover > .stickie.grouped.under:nth-of-type(5) {
+li:hover > .stickie.grouped.under:nth-of-type(5) {
   top: -25px;
   left: 15px;
   right: 15px;
