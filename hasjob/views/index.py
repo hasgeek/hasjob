@@ -371,6 +371,8 @@ def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, tit
     query_params = request.args.to_dict(flat=False)
     if loadmore:
         query_params.update({'startdate': loadmore.isoformat() + 'Z', 'ph': pinned_hashids})
+    if location:
+        query_params.update({'l': location['name']})
     return dict(
         pinsandposts=pinsandposts, grouped=grouped, now=now,
         newlimit=newlimit, title=title,
