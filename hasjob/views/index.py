@@ -167,8 +167,12 @@ def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, tit
     if 'pay' in request.args or ('pmin' in request.args and 'pmax' in request.args):
         if 'pay' in request.args:
             f_pay = string_to_number(request.args['pay'])
-            f_min = int(f_pay * 0.90)
-            f_max = int(f_pay * 1.30)
+            if f_pay is not None:
+                f_min = int(f_pay * 0.90)
+                f_max = int(f_pay * 1.30)
+            else:
+                f_min = None
+                f_max = None
         else:
             # Legacy URL with min/max values
             f_min = string_to_number(request.args['pmin'])
