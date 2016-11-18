@@ -293,7 +293,7 @@ def record_views_and_events(response):
                 save_jobview.delay(
                     viewed_time=now,
                     event_session_id=g.esession.id,
-                    jobpost_id=g.jobpost_viewed[0].id,
+                    jobpost_id=g.jobpost_viewed[0],
                     bgroup=g.jobpost_viewed[1])
         else:
             g.esession.save_to_cache(session['au'])
