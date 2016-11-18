@@ -1,7 +1,7 @@
 {% extends "sheet.html" %}
 {%- from "baseframe/forms.html" import ajaxform %}
 {%- from "macros.html" import jobheader, stickie %}
-{% block title %}{{ headline }}{% endblock %}
+{% block title %}{{ headline }} / {{ post.company_name }} / {{ post.location }}{% endblock %}
 {% block description %}{{ post.company_name }}, {{ post.location }}, {{ post.type.title }}, {{ post.category.title }}{% endblock %}
 {% block canonical_url %}
   {%- if g.board and g.board.not_root %}
