@@ -837,18 +837,6 @@ class JobApplication(BaseMixin, db.Model):
         return self.response in (EMPLOYER_RESPONSE.NEW, EMPLOYER_RESPONSE.PENDING,
             EMPLOYER_RESPONSE.IGNORED, EMPLOYER_RESPONSE.REJECTED)
 
-    @classmethod
-    def fetch_by_post(cls, post):
-        return cls.query.filter(JobApplication.jobpost == post).order_by(db.case(value=JobApplication.response, whens={
-            EMPLOYER_RESPONSE.NEW: 0,
-            EMPLOYER_RESPONSE.PENDING: 1,
-            EMPLOYER_RESPONSE.IGNORED: 2,
-            EMPLOYER_RESPONSE.REPLIED: 3,
-            EMPLOYER_RESPONSE.REJECTED: 4,
-            EMPLOYER_RESPONSE.FLAGGED: 5,
-            EMPLOYER_RESPONSE.SPAM: 6
-            }), db.desc(JobApplication.created_at)).options(db.load_only('hashid'))
-
     def application_count(self):
         """Number of jobs candidate has applied to around this one"""
         if not self.user:
