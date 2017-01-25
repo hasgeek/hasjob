@@ -363,7 +363,7 @@ def managejob(post, kwargs):
     if post.email_domain != kwargs.get('domain'):
         return redirect(post.url_for('manage'), code=301)
 
-    first_application = post.applications.first()
+    first_application = JobApplication.fetch_by_post(post).first()
     if first_application:
         return redirect(first_application.url_for(), code=303)
     else:
