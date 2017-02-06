@@ -691,8 +691,20 @@ def confirm(domain, hashid):
         post.status = POSTSTATUS.PENDING
         db.session.commit()
 
-        return render_template('mailsent.html', post=post)
+        footer_campaign = Campaign.for_context(CAMPAIGN_POSITION.AFTERPOST, board=g.board, user=g.user,
+                    anon_user=g.anon_user, geonameids=g.user_geonameids)
+
+        return render_template('mailsent.html', footer_campaign=footer_campaign)
     return render_template('confirm.html', post=post, form=form)
+
+
+@app.route('/confirm/demo', defaults={'domain': None}, methods=('GET', 'POST'), subdomain='<subdomain>')
+@app.route('/confirm/demo', defaults={'domain': None}, methods=('GET', 'POST'))
+def confirm_demo(domain):
+    footer_campaign = Campaign.for_context(CAMPAIGN_POSITION.AFTERPOST, board=g.board, user=g.user,
+                anon_user=g.anon_user, geonameids=g.user_geonameids)
+
+    return render_template('mailsent.html', footer_campaign=footer_campaign)
 
 
 @app.route('/<domain>/<hashid>/confirm/<key>', subdomain='<subdomain>')
