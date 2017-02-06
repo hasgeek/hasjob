@@ -16,6 +16,8 @@ from ..views.helper import (getposts, getallposts, gettags, location_geodata, ca
     bgroup, make_pay_graph, index_is_paginated)
 from ..uploads import uploaded_logos
 from ..utils import string_to_number
+from memory_profiler import profile
+from hasjob import dogpile_cache
 
 
 def stickie_dict(post, url, pinned=False, show_viewcounts=False, show_pay=False,
@@ -86,6 +88,12 @@ def json_index(data):
                 ))
 
     return jsonify(result)
+
+
+# @dogpile_cache.region('hour')
+@profile
+def fetch_posts(request_args, basequery, showall, statuses, ageless, pinned=True):
+    return getposts(basequery, pinned, showall=showall, statuses=statuses, ageless=ageless).all()
 
 
 @app.route('/', methods=['GET', 'POST'], subdomain='<subdomain>')
@@ -216,7 +224,8 @@ def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, tit
         batched = True
 
     # getposts sets g.board_jobs, used below
-    posts = getposts(basequery, pinned=True, showall=showall, statuses=statuses, ageless=ageless).all()
+    # posts = getposts(basequery, pinned=True, showall=showall, statuses=statuses, ageless=ageless).all()
+    posts = fetch_posts(request.args, basequery, showall, statuses, ageless)
 
     if is_siteadmin or (g.user and g.user.flags.get('is_employer_month')):
         cache_viewcounts(posts)
