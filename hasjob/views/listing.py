@@ -960,9 +960,13 @@ def newjob():
     form.job_category.choices = JobCategory.choices(g.board)
 
     if request.method == 'GET':
+        header_campaign = Campaign.for_context(CAMPAIGN_POSITION.BEFOREPOST, board=g.board, user=g.user,
+                anon_user=g.anon_user, geonameids=g.user_geonameids)
         if g.user:
             # form.poster_name.data = g.user.fullname  # Deprecated 2013-11-20
             form.poster_email.data = g.user.email
+    else:
+        header_campaign = None
 
     # Job Reposting
     if request.method == 'GET' and request.args.get('template'):
@@ -975,6 +979,7 @@ def newjob():
             flash("This post is currently active and cannot be posted again.")
             return redirect(archived_post.url_for(), code=303)
         form.populate_from(archived_post)
+        header_campaign = None
 
     if form.validate_on_submit():
         # POST request from new job page, with successful validation
@@ -993,7 +998,8 @@ def newjob():
     # Render page. Execution reaches here under three conditions:
     # 1. GET request, page loaded for the first time
     # 2. POST request from this page, with errors
-    return render_template('postjob.html', form=form, no_removelogo=True, archived_post=archived_post)
+    return render_template('postjob.html', form=form, no_removelogo=True, archived_post=archived_post,
+        header_campaign=header_campaign)
 
 
 @app.route('/<domain>/<hashid>/close', methods=('GET', 'POST'), defaults={'key': None}, subdomain='<subdomain>')
