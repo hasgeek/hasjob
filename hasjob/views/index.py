@@ -90,11 +90,7 @@ def json_index(data):
 
 
 @dogpile_cache.region('hour')
-def fetch_jobposts(request_args, request_values, is_index, board, board_jobs, gkiosk, basequery, md5sum, tag, domain, location, title, showall, statuses, batched, ageless, template_vars):
-    """
-    Loads posts and returns a dict of variables required to render `index.html`.
-    This method is cached in Redis using dogpile.cache on an hourly basis.
-    """
+def fetch_jobposts(request_args, request_values, is_index, board, board_jobs, gkiosk, basequery, md5sum, domain, location, title, showall, statuses, batched, ageless, template_vars, search_query=None):
     if basequery is None:
         basequery = JobPost.query
 
@@ -184,23 +180,12 @@ def fetch_jobposts(request_args, request_values, is_index, board, board_jobs, gk
         statuses = POSTSTATUS.ARCHIVED
 
     search_domains = None
-    if request_args.get('q'):
-        q = for_tsquery(request_args['q'])
-        try:
-            # TODO: Can we do syntax validation without a database roundtrip?
-            db.session.query(db.func.to_tsquery(q)).all()
-        except ProgrammingError:
-            db.session.rollback()
-            g.event_data['search_syntax_error'] = (request_args['q'], q)
-            if not request.is_xhr:
-                flash(_(u"Search terms ignored because this didn’t parse: {query}").format(query=q), 'danger')
-        else:
-            # Query's good? Use it.
-            data_filters['query'] = q
-            search_domains = Domain.query.filter(
-                Domain.search_vector.match(q, postgresql_regconfig='english'), Domain.is_banned == False).options(
-                db.load_only('name', 'title', 'logo_url')).all()  # NOQA
-            basequery = basequery.filter(JobPost.search_vector.match(q, postgresql_regconfig='english'))
+    if search_query:
+        data_filters['query'] = search_query
+        search_domains = Domain.query.filter(
+            Domain.search_vector.match(search_query, postgresql_regconfig='english'), Domain.is_banned == False).options(
+            db.load_only('name', 'title', 'logo_url')).all()  # NOQA
+        basequery = basequery.filter(JobPost.search_vector.match(search_query, postgresql_regconfig='english'))
 
     if data_filters:
         showall = True
@@ -339,8 +324,8 @@ def fetch_jobposts(request_args, request_values, is_index, board, board_jobs, gk
 @app.route('/', methods=['GET', 'POST'])
 @render_with({'text/html': 'index.html', 'application/json': json_index}, json=False)
 def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, title=None, showall=True, statuses=None, batched=True, ageless=False, template_vars={}):
-    is_siteadmin = lastuser.has_permission('siteadmin')
     now = datetime.utcnow()
+    is_siteadmin = lastuser.has_permission('siteadmin')
     board = g.board
 
     if board:
@@ -361,7 +346,20 @@ def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, tit
         showall = False
         batched = False
 
-    data = fetch_jobposts(request.args, request.values, is_index, board, board_jobs, g.kiosk, basequery, md5sum, tag, domain, location, title, showall, statuses, batched, ageless, template_vars)
+    search_query = request.args.get('q')
+    if search_query:
+        search_query = for_tsquery(request.args.get('q'))
+        try:
+            # TODO: Can we do syntax validation without a database roundtrip?
+            db.session.query(db.func.to_tsquery(search_query)).all()
+        except ProgrammingError:
+            db.session.rollback()
+            g.event_data['search_syntax_error'] = (request.args['q'], search_query)
+            if not request.is_xhr:
+                flash(_(u"Search terms ignored because this didn’t parse: {query}").format(query=search_query), 'danger')
+            search_query = None
+
+    data = fetch_jobposts(request.args, request.values, is_index, board, board_jobs, g.kiosk, basequery, md5sum, domain, location, title, showall, statuses, batched, ageless, template_vars, search_query)
 
     if data['data_filters']:
         # For logging
