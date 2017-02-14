@@ -62,3 +62,10 @@ THROTTLE_LIMIT = 5
 SUPPORT_EMAIL = 'person@example.com'
 #: Sitemap key
 SITEMAP_KEY = None
+DOGPILE_CACHE_URLS = "http://127.0.0.1:6379"
+DOGPILE_CACHE_REGIONS = [
+    ('hour', 3600),
+    ('day', 3600 * 24),
+    ('month', 3600 * 24 * 31),
+]
+DOGPILE_CACHE_BACKEND = 'dogpile.cache.redis'
