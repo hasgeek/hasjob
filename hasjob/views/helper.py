@@ -343,12 +343,6 @@ def getposts(basequery=None, pinned=False, showall=False, statuses=None, ageless
     now = datetime.utcnow()
 
     if g.board:
-        # Load into cache
-        g.board_jobs = {r.jobpost_id: r for r in
-            BoardJobPost.query.join(BoardJobPost.jobpost).filter(
-                BoardJobPost.board == g.board, JobPost.datetime > now - agelimit).options(
-                    db.load_only('jobpost_id', 'pinned')).all()
-        }
         query = query.join(JobPost.postboards).filter(BoardJobPost.board == g.board)
 
     if not ageless:

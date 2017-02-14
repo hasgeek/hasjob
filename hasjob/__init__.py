@@ -9,6 +9,7 @@ from flask.ext.mail import Mail
 from flask.ext.redis import Redis
 from flask.ext.lastuser import Lastuser
 from flask.ext.lastuser.sqlalchemy import UserManager
+from flask.ext.dogpile_cache import DogpileCache
 from baseframe import baseframe, assets, Version
 import coaster.app
 from ._version import __version__
@@ -29,6 +30,7 @@ assets['hasjob.css'][version] = 'css/app.css'
 
 # Third, after config, import the models and views
 
+dogpile_cache = DogpileCache()
 from . import models, views  # NOQA
 from .models import db  # NOQA
 
@@ -46,6 +48,7 @@ def init_for(env):
         else:
             app.geoip = geoip2.database.Reader(app.config['GEOIP_PATH'])
 
+    dogpile_cache.init_app(app)
     RQ(app)
 
     baseframe.init_app(app, requires=['hasjob'],

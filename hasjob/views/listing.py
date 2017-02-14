@@ -14,7 +14,7 @@ from baseframe import cache
 from baseframe.forms import Form
 from coaster.utils import getbool, get_email_domain, md5sum, base_domain_matches
 from coaster.views import load_model
-from hasjob import app, forms, mail, lastuser
+from hasjob import app, forms, mail, lastuser, dogpile_cache
 from hasjob.models import (
     agelimit,
     db,
@@ -542,6 +542,8 @@ def pinnedjob(domain, hashid):
             msg = "This post has been pinned."
         else:
             msg = "This post is no longer pinned."
+        # cache bust
+        dogpile_cache.invalidate_region('hour')
     else:
         msg = "Invalid submission"
     if request.is_xhr:
@@ -623,6 +625,8 @@ def rejectjob(domain, hashid):
 
         db.session.commit()
         send_reject_mail(request.form.get('submit'), post, banned_posts)
+        # cache bust
+        dogpile_cache.invalidate_region('hour')
         if request.is_xhr:
             return "<p>%s</p>" % flashmsg
         else:
@@ -657,6 +661,8 @@ def moderatejob(domain, hashid):
         msg.body = html2text(msg.html)
         mail.send(msg)
         db.session.commit()
+        # cache bust
+        dogpile_cache.invalidate_region('hour')
         if request.is_xhr:
             return "<p>%s</p>" % flashmsg
     elif request.method == 'POST' and request.is_xhr:
@@ -756,6 +762,8 @@ def confirm_email(domain, hashid, key):
             flash("Congratulations! Your job post has been published. As a bonus for being an employer on Hasjob, "
                 "you can now see how your post is performing relative to others. Look in the sidebar of any post.",
                 "interactive")
+    # cache bust
+    dogpile_cache.invalidate_region('hour')
     return redirect(post.url_for(), code=302)
 
 
@@ -781,6 +789,8 @@ def withdraw(domain, hashid, key):
         post.closed_datetime = datetime.utcnow()
         db.session.commit()
         flash("Your job post has been withdrawn and is no longer available", "info")
+        # cache bust
+        dogpile_cache.invalidate_region('hour')
         return redirect(url_for('index'), code=303)
     return render_template("withdraw.html", post=post, form=form)
 
@@ -940,6 +950,8 @@ def editjob(hashid, key, domain=None, form=None, validated=False, newpost=None):
             post.uncache_viewcounts('pay_label')
             session.pop('userkeys', None)  # Remove legacy userkeys dict
             session.permanent = True
+            # cache bust
+            dogpile_cache.invalidate_region('hour')
             return redirect(post.url_for(), code=303)
     elif request.method == 'POST':
         flash("Please review the indicated issues", category='interactive')
@@ -1032,6 +1044,8 @@ def close(domain, hashid, key):
         post.close()
         post.closed_datetime = datetime.utcnow()
         db.session.commit()
+        # cache bust
+        dogpile_cache.invalidate_region('hour')
         return redirect(post.url_for(), code=303)
     return render_template("close.html", post=post, form=form)
 
@@ -1053,5 +1067,7 @@ def reopen(domain, hashid, key):
         post.confirm()
         post.closed_datetime = datetime.utcnow()
         db.session.commit()
+        # cache bust
+        dogpile_cache.invalidate_region('hour')
         return redirect(post.url_for(), code=303)
     return render_template("reopen.html", post=post, form=form)

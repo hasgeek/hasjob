@@ -11,12 +11,11 @@ from baseframe import _
 
 from .. import app, lastuser
 from ..models import (db, JobCategory, JobPost, JobType, POSTSTATUS, newlimit, agelimit, JobLocation, Board,
-    Domain, Location, Tag, JobPostTag, Campaign, CAMPAIGN_POSITION, CURRENCY, JobApplication, starred_job_table)
+    Domain, Location, Tag, JobPostTag, Campaign, CAMPAIGN_POSITION, CURRENCY, JobApplication, starred_job_table, BoardJobPost)
 from ..views.helper import (getposts, getallposts, gettags, location_geodata, cache_viewcounts, session_jobpost_ab,
     bgroup, make_pay_graph, index_is_paginated)
 from ..uploads import uploaded_logos
 from ..utils import string_to_number
-from memory_profiler import profile
 from hasjob import dogpile_cache
 
 
@@ -91,23 +90,18 @@ def json_index(data):
 
 
 # @dogpile_cache.region('hour')
-@profile
-def fetch_posts(request_args, basequery, showall, statuses, ageless, pinned=True):
-    return getposts(basequery, pinned, showall=showall, statuses=statuses, ageless=ageless).all()
-
-
-@app.route('/', methods=['GET', 'POST'], subdomain='<subdomain>')
-@app.route('/', methods=['GET', 'POST'])
-@render_with({'text/html': 'index.html', 'application/json': json_index}, json=False)
-def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, title=None, showall=True, statuses=None, batched=True, ageless=False, template_vars={}):
-
-    is_siteadmin = lastuser.has_permission('siteadmin')
+def fetch_jobposts(request_args, request_values, is_siteadmin, board, board_jobs, guser, gkiosk, gpreview_campaign, basequery, md5sum, tag, domain, location, title, showall, statuses, batched, ageless, template_vars):
+    """
+    Loads posts and returns a dict of variables required to render `index.html`.
+    This method is cached in Redis using dogpile.cache.
+    """
+    board = None
+    board_jobs = {}
     if basequery is None:
         is_index = True
     else:
         is_index = False
-    now = datetime.utcnow()
-    if basequery is None and not (g.user or g.kiosk or (g.board and not g.board.require_login)):
+    if basequery is None and not (guser or gkiosk or (board and not board.require_login)):
         showall = False
         batched = False
 
@@ -116,23 +110,23 @@ def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, tit
 
     # Apply request.args filters
     data_filters = {}
-    f_types = request.args.getlist('t')
+    f_types = request_args.getlist('t')
     while '' in f_types:
         f_types.remove('')
     if f_types:
         data_filters['types'] = f_types
         basequery = basequery.join(JobType).filter(JobType.name.in_(f_types))
-    f_categories = request.args.getlist('c')
+    f_categories = request_args.getlist('c')
     while '' in f_categories:
         f_categories.remove('')
     if f_categories:
         data_filters['categories'] = f_categories
         basequery = basequery.join(JobCategory).filter(JobCategory.name.in_(f_categories))
-    r_locations = request.args.getlist('l')
+    r_locations = request_args.getlist('l')
     if location:
         r_locations.append(location['geonameid'])
     f_locations = []
-    remote_location = getbool(request.args.get('anywhere')) or False
+    remote_location = getbool(request_args.get('anywhere')) or False
     for rl in r_locations:
         if isinstance(rl, int) and rl > 0:
             f_locations.append(rl)
@@ -161,20 +155,20 @@ def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, tit
         data_filters['anywhere'] = True
         # Only works as a positive filter: you can't search for jobs that are NOT anywhere
         basequery = remote_location_query
-    if 'currency' in request.args and request.args['currency'] in CURRENCY.keys():
-        currency = request.args['currency']
+    if 'currency' in request_args and request_args['currency'] in CURRENCY.keys():
+        currency = request_args['currency']
         data_filters['currency'] = currency
         basequery = basequery.filter(JobPost.pay_currency == currency)
         pay_graph = currency
     else:
         pay_graph = False
-    if getbool(request.args.get('equity')):
+    if getbool(request_args.get('equity')):
         # Only works as a positive filter: you can't search for jobs that DON'T pay in equity
         data_filters['equity'] = True
         basequery = basequery.filter(JobPost.pay_equity_min != None)  # NOQA
-    if 'pay' in request.args or ('pmin' in request.args and 'pmax' in request.args):
-        if 'pay' in request.args:
-            f_pay = string_to_number(request.args['pay'])
+    if 'pay' in request_args or ('pmin' in request_args and 'pmax' in request_args):
+        if 'pay' in request_args:
+            f_pay = string_to_number(request_args['pay'])
             if f_pay is not None:
                 f_min = int(f_pay * 0.90)
                 f_max = int(f_pay * 1.30)
@@ -183,8 +177,8 @@ def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, tit
                 f_max = None
         else:
             # Legacy URL with min/max values
-            f_min = string_to_number(request.args['pmin'])
-            f_max = string_to_number(request.args['pmax'])
+            f_min = string_to_number(request_args['pmin'])
+            f_max = string_to_number(request_args['pmax'])
             f_pay = f_min  # Use min for pay now
         if f_pay is not None and f_min is not None and f_max is not None:
             data_filters['pay'] = f_pay
@@ -194,20 +188,20 @@ def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, tit
         f_min = None
         f_max = None
 
-    if getbool(request.args.get('archive')):
+    if getbool(request_args.get('archive')):
         ageless = True
         data_filters['archive'] = True
         statuses = POSTSTATUS.ARCHIVED
 
     search_domains = None
-    if request.args.get('q'):
-        q = for_tsquery(request.args['q'])
+    if request_args.get('q'):
+        q = for_tsquery(request_args['q'])
         try:
             # TODO: Can we do syntax validation without a database roundtrip?
             db.session.query(db.func.to_tsquery(q)).all()
         except ProgrammingError:
             db.session.rollback()
-            g.event_data['search_syntax_error'] = (request.args['q'], q)
+            g.event_data['search_syntax_error'] = (request_args['q'], q)
             if not request.is_xhr:
                 flash(_(u"Search terms ignored because this didn’t parse: {query}").format(query=q), 'danger')
         else:
@@ -219,37 +213,19 @@ def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, tit
             basequery = basequery.filter(JobPost.search_vector.match(q, postgresql_regconfig='english'))
 
     if data_filters:
-        g.event_data['filters'] = data_filters
         showall = True
         batched = True
 
-    # getposts sets g.board_jobs, used below
-    # posts = getposts(basequery, pinned=True, showall=showall, statuses=statuses, ageless=ageless).all()
-    posts = fetch_posts(request.args, basequery, showall, statuses, ageless)
-
-    if is_siteadmin or (g.user and g.user.flags.get('is_employer_month')):
-        cache_viewcounts(posts)
+    posts = getposts(basequery, pinned=True, showall=showall, statuses=statuses, ageless=ageless).all()
 
     if posts:
         employer_name = posts[0].company_name
     else:
         employer_name = u'a single employer'
 
-    if g.user:
-        g.starred_ids = set(g.user.starred_job_ids(agelimit if not ageless else None))
-    else:
-        g.starred_ids = set()
-
     jobpost_ab = session_jobpost_ab()
 
-    # Make lookup slightly faster in the loop below since 'g' is a proxy
-    board = g.board
-    if board:
-        board_jobs = g.board_jobs
-    else:
-        board_jobs = {}
-
-    if is_index and posts and not g.kiosk:
+    if is_index and posts and not gkiosk:
         # Group posts by email_domain on index page only, when not in kiosk mode
         grouped = OrderedDict()
         for post in posts:
@@ -275,7 +251,7 @@ def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, tit
         pinsandposts = None
     else:
         grouped = None
-        if g.board:
+        if board:
             pinsandposts = []
             for post in posts:
                 pinned = post.pinned
@@ -289,32 +265,21 @@ def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, tit
 
     # Pick a header campaign (only if not kiosk or an XHR reload)
     pay_graph_data = None
-    if not g.kiosk:
-        if g.preview_campaign:
-            header_campaign = g.preview_campaign
-        else:
-            geonameids = g.user_geonameids + f_locations
-            header_campaign = Campaign.for_context(CAMPAIGN_POSITION.HEADER, board=g.board, user=g.user,
-                anon_user=g.anon_user, geonameids=geonameids)
-        if pay_graph:
-            pay_graph_data = make_pay_graph(pay_graph, posts, rmin=f_min, rmax=f_max)
-    else:
-        header_campaign = None
 
     loadmore = False
     if batched:
         # Figure out where the batch should start from
         startdate = None
-        if 'startdate' in request.values:
+        if 'startdate' in request_values:
             try:
-                startdate = parse_isoformat(request.values['startdate'])
+                startdate = parse_isoformat(request_values['startdate'])
             except ValueError:
                 pass
 
         batchsize = 32
 
         # list of posts that were pinned at the time of first load
-        pinned_hashids = request.args.getlist('ph')
+        pinned_hashids = request_args.getlist('ph')
         # Depending on the display mechanism (grouped or ungrouped), extract the batch
         if grouped:
             if not startdate:
@@ -363,12 +328,72 @@ def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, tit
                 # batch = [(pinned, post), ...]
                 loadmore = batch[-1][1].datetime
             pinsandposts = batch
-    if grouped:
+
+    query_params = request_args.to_dict(flat=False)
+    if loadmore:
+        query_params.update({'startdate': loadmore.isoformat() + 'Z', 'ph': pinned_hashids})
+    if location:
+        query_params.update({'l': location['name']})
+
+    if pay_graph:
+        pay_graph_data = make_pay_graph(pay_graph, posts, rmin=f_min, rmax=f_max)
+
+    return dict(posts=posts, pinsandposts=pinsandposts, grouped=grouped, newlimit=newlimit, title=title,
+        md5sum=md5sum, domain=domain, location=location, employer_name=employer_name,
+        showall=showall, f_locations=f_locations, loadmore=loadmore,
+        search_domains=search_domains, query_params=query_params,
+        data_filters=data_filters,
+        pay_graph_data=pay_graph_data, paginated=index_is_paginated(), template_vars=template_vars)
+
+
+@app.route('/', methods=['GET', 'POST'], subdomain='<subdomain>')
+@app.route('/', methods=['GET', 'POST'])
+@render_with({'text/html': 'index.html', 'application/json': json_index}, json=False)
+def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, title=None, showall=True, statuses=None, batched=True, ageless=False, template_vars={}):
+    is_siteadmin = lastuser.has_permission('siteadmin')
+    now = datetime.utcnow()
+    board = g.board
+
+    if board:
+        board_jobs = {r.jobpost_id: r for r in
+            BoardJobPost.query.join(BoardJobPost.jobpost).filter(
+                BoardJobPost.board == g.board, JobPost.datetime > now - agelimit).options(
+                    db.load_only('jobpost_id', 'pinned')).all()
+        }
+
+    else:
+        board_jobs = {}
+
+    data = fetch_jobposts(request.args, request.values, is_siteadmin, board, board_jobs, g.user, g.kiosk, g.preview_campaign, basequery, md5sum, tag, domain, location, title, showall, statuses, batched, ageless, template_vars)
+
+    if data['data_filters']:
+        # For logging
+        g.event_data['filters'] = data['data_filters']
+
+    if g.user:
+        g.starred_ids = set(g.user.starred_job_ids(agelimit if not ageless else None))
+    else:
+        g.starred_ids = set()
+
+    if is_siteadmin or (g.user and g.user.flags.get('is_employer_month')):
+        cache_viewcounts(data['posts'])
+
+    if data['grouped']:
         g.impressions = {post.id: (pinflag, post.id, is_bgroup)
-            for group in grouped.itervalues()
+            for group in data['grouped'].itervalues()
             for pinflag, post, is_bgroup in group}
-    elif pinsandposts:
-        g.impressions = {post.id: (pinflag, post.id, is_bgroup) for pinflag, post, is_bgroup in pinsandposts}
+    elif data['pinsandposts']:
+        g.impressions = {post.id: (pinflag, post.id, is_bgroup) for pinflag, post, is_bgroup in data['pinsandposts']}
+
+    if not g.kiosk:
+        if g.preview_campaign:
+            header_campaign = g.preview_campaign
+        else:
+            geonameids = g.user_geonameids + data['f_locations']
+            header_campaign = Campaign.for_context(CAMPAIGN_POSITION.HEADER, board=g.board, user=g.user,
+                anon_user=g.anon_user, geonameids=geonameids)
+    else:
+        header_campaign = None
 
     # Test values for development:
     # if not g.user_geonameids:
@@ -381,21 +406,10 @@ def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, tit
     else:
         location_prompts = []
 
-    query_params = request.args.to_dict(flat=False)
-    if loadmore:
-        query_params.update({'startdate': loadmore.isoformat() + 'Z', 'ph': pinned_hashids})
-    if location:
-        query_params.update({'l': location['name']})
-    return dict(
-        pinsandposts=pinsandposts, grouped=grouped, now=now,
-        newlimit=newlimit, title=title,
-        md5sum=md5sum, domain=domain, location=location, employer_name=employer_name,
-        showall=showall, is_index=is_index,
-        header_campaign=header_campaign, loadmore=loadmore,
-        location_prompts=location_prompts,
-        search_domains=search_domains, query_params=query_params,
-        is_siteadmin=is_siteadmin,
-        pay_graph_data=pay_graph_data, paginated=index_is_paginated(), template_vars=template_vars)
+    data['header_campaign'] = header_campaign
+    data['now'] = now
+    data['location_prompts'] = location_prompts
+    return data
 
 
 @app.route('/drafts', methods=['GET', 'POST'], subdomain='<subdomain>')
