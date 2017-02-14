@@ -89,22 +89,12 @@ def json_index(data):
     return jsonify(result)
 
 
-# @dogpile_cache.region('hour')
-def fetch_jobposts(request_args, request_values, is_siteadmin, board, board_jobs, guser, gkiosk, gpreview_campaign, basequery, md5sum, tag, domain, location, title, showall, statuses, batched, ageless, template_vars):
+@dogpile_cache.region('hour')
+def fetch_jobposts(request_args, request_values, is_index, board, board_jobs, gkiosk, basequery, md5sum, tag, domain, location, title, showall, statuses, batched, ageless, template_vars):
     """
     Loads posts and returns a dict of variables required to render `index.html`.
-    This method is cached in Redis using dogpile.cache.
+    This method is cached in Redis using dogpile.cache on an hourly basis.
     """
-    board = None
-    board_jobs = {}
-    if basequery is None:
-        is_index = True
-    else:
-        is_index = False
-    if basequery is None and not (guser or gkiosk or (board and not board.require_login)):
-        showall = False
-        batched = False
-
     if basequery is None:
         basequery = JobPost.query
 
@@ -224,7 +214,6 @@ def fetch_jobposts(request_args, request_values, is_siteadmin, board, board_jobs
         employer_name = u'a single employer'
 
     jobpost_ab = session_jobpost_ab()
-
     if is_index and posts and not gkiosk:
         # Group posts by email_domain on index page only, when not in kiosk mode
         grouped = OrderedDict()
@@ -364,7 +353,15 @@ def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, tit
     else:
         board_jobs = {}
 
-    data = fetch_jobposts(request.args, request.values, is_siteadmin, board, board_jobs, g.user, g.kiosk, g.preview_campaign, basequery, md5sum, tag, domain, location, title, showall, statuses, batched, ageless, template_vars)
+    if basequery is None:
+        is_index = True
+    else:
+        is_index = False
+    if basequery is None and not (g.user or g.kiosk or (board and not board.require_login)):
+        showall = False
+        batched = False
+
+    data = fetch_jobposts(request.args, request.values, is_index, board, board_jobs, g.kiosk, basequery, md5sum, tag, domain, location, title, showall, statuses, batched, ageless, template_vars)
 
     if data['data_filters']:
         # For logging
@@ -408,6 +405,7 @@ def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, tit
 
     data['header_campaign'] = header_campaign
     data['now'] = now
+    data['is_siteadmin'] = is_siteadmin
     data['location_prompts'] = location_prompts
     return data
 
