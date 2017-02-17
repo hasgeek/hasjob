@@ -89,7 +89,7 @@ def json_index(data):
     return jsonify(result)
 
 
-@dogpile_cache.region('hour')
+@dogpile_cache.region('hasjob_index')
 def fetch_jobposts(request_args, request_values, is_index, board, board_jobs, gkiosk, basequery, md5sum, domain, location, title, showall, statuses, batched, ageless, template_vars, search_query=None):
     if basequery is None:
         basequery = JobPost.query
