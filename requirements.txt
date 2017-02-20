@@ -27,7 +27,6 @@ tldextract
 unicodecsv
 geoip2
 Flask-Script==0.5.3
-dogpile.cache
 git+https://github.com/hasgeek/coaster
 git+https://github.com/hasgeek/flask-lastuser
 git+https://github.com/hasgeek/baseframe
