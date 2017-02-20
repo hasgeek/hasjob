@@ -7,7 +7,7 @@ from sqlalchemy.exc import ProgrammingError
 from flask import abort, redirect, render_template, request, Response, url_for, g, flash, jsonify, Markup
 from coaster.utils import getbool, parse_isoformat, for_tsquery
 from coaster.views import render_with
-from baseframe import _
+from baseframe import _, dogpile
 
 from .. import app, lastuser
 from ..models import (db, JobCategory, JobPost, JobType, POSTSTATUS, newlimit, agelimit, JobLocation, Board,
@@ -16,7 +16,6 @@ from ..views.helper import (getposts, getallposts, gettags, location_geodata, ca
     bgroup, make_pay_graph, index_is_paginated)
 from ..uploads import uploaded_logos
 from ..utils import string_to_number
-from hasjob import dogpile_cache
 
 
 def stickie_dict(post, url, pinned=False, show_viewcounts=False, show_pay=False,
@@ -89,7 +88,7 @@ def json_index(data):
     return jsonify(result)
 
 
-@dogpile_cache.region('hasjob_index')
+@dogpile.region('hasjob_index')
 def fetch_jobposts(request_args, request_values, is_index, board, board_jobs, gkiosk, basequery, md5sum, domain, location, title, showall, statuses, batched, ageless, template_vars, search_query=None):
     if basequery is None:
         basequery = JobPost.query
