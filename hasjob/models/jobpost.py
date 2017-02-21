@@ -3,7 +3,7 @@
 from collections import defaultdict
 from datetime import datetime, timedelta
 from werkzeug import cached_property
-from flask import url_for, g, escape, Markup
+from flask import url_for, escape, Markup
 from sqlalchemy import event, DDL
 from sqlalchemy.orm import defer, deferred, load_only
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -430,52 +430,6 @@ class JobPost(BaseMixin, db.Model):
     def viewcounts_key(self):
         # Also see views.helper.update_impression_counts for a copy of this key
         return 'hasjob/viewcounts/%d' % self.id
-
-    @cached_property  # For multiple accesses in a single request
-    def viewcounts(self):
-        cache_key = self.viewcounts_key
-        values = g.viewcounts.get(cache_key) if g else None
-        if values is None:
-            values = redis_store.hgetall(cache_key)
-        if 'impressions' not in values:
-            # Also see views.helper.update_impression_counts for a copy of this query
-            # values['impressions'] = db.session.query(db.func.count(
-            #     db.func.distinct(EventSession.user_id)).label('count')).join(
-            #     JobImpression).filter(JobImpression.jobpost == self).first().count
-            values['impressions'] = self.viewcounts_impressions
-            redis_store.hset(cache_key, 'impressions', values['impressions'])
-            redis_store.expire(cache_key, 86400)
-        else:
-            values['impressions'] = int(values['impressions'])
-        if 'viewed' not in values:
-            # values['viewed'] = UserJobView.query.filter_by(jobpost=self).count()
-            values['viewed'] = self.viewcounts_viewed
-            redis_store.hset(cache_key, 'viewed', values['viewed'])
-            redis_store.expire(cache_key, 86400)
-        else:
-            values['viewed'] = int(values['viewed'])
-        if 'opened' not in values:
-            # values['opened'] = UserJobView.query.filter_by(jobpost=self, applied=True).count()
-            values['opened'] = self.viewcounts_opened
-            redis_store.hset(cache_key, 'opened', values['opened'])
-            redis_store.expire(cache_key, 86400)
-        else:
-            values['opened'] = int(values['opened'])
-        if 'applied' not in values:
-            # values['applied'] = JobApplication.query.filter_by(jobpost=self).count()
-            values['applied'] = self.viewcounts_applied
-            redis_store.hset(cache_key, 'applied', values['applied'])
-            redis_store.expire(cache_key, 86400)
-        else:
-            values['applied'] = int(values['applied'])
-        # pay_label rendering is extraordinarily slow. We don't know why yet, but it's static data, so cache it
-        if 'pay_label' not in values:
-            values['pay_label'] = self.pay_label()
-            redis_store.hset(cache_key, 'pay_label', values['pay_label'].encode('utf-8'))
-            redis_store.expire(cache_key, 86400)
-        elif isinstance(values['pay_label'], str):  # Redis appears to return bytestrings, not Unicode
-            values['pay_label'] = unicode(values['pay_label'], 'utf-8')
-        return values
 
     def uncache_viewcounts(self, key=None):
         cache_key = self.viewcounts_key

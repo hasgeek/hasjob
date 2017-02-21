@@ -1,4 +1,4 @@
-{%- macro stickie(post, url, pinned, groupedunder=false, dataurl=none, show_viewcounts=false, show_pay=false, starred=none, is_bgroup=none) %}
+{%- macro stickie(post, url, pinned, get_post_viewcounts, groupedunder=false, dataurl=none, show_viewcounts=false, show_pay=false, starred=none, is_bgroup=none) %}
   {%- if groupedunder %}
     <div class="stickie {%- if post.is_announcement() %} announcement{% endif %} grouped under" {%- if dataurl %} data-href="{{ dataurl }}"{% endif %}>
   {%- else %}
@@ -8,7 +8,7 @@
     <span class="annotation top-left">{{ post.location }}</span>
     <span class="annotation top-right">{{ post.datetime|shortdate }}</span>
     <span class="headline">{% if is_bgroup %}{{ post.headlineb }}{% else %}{{ post.headline }}{% endif %}</span>
-    {% if show_viewcounts or show_pay %}<span class="count">{% if show_viewcounts %}<span title="Listed › Viewed › Opened form › Applied">{{ post.viewcounts['impressions'] }} › {{ post.viewcounts['viewed'] }} › {{ post.viewcounts['opened'] }} › {{ post.viewcounts['applied'] }}</span>{% endif %}{% if show_viewcounts and show_pay %} &middot; {% endif %}{% if show_pay %}{{ post.viewcounts['pay_label'] }}{% endif %}</span>{% endif %}
+    {% if show_viewcounts or show_pay %}<span class="count">{% if show_viewcounts %}<span title="Listed › Viewed › Opened form › Applied">{{ get_post_viewcounts(post)['impressions'] }} › {{ get_post_viewcounts(post)['viewed'] }} › {{ get_post_viewcounts(post)['opened'] }} › {{ get_post_viewcounts(post)['applied'] }}</span>{% endif %}{% if show_viewcounts and show_pay %} &middot; {% endif %}{% if show_pay %}{{ get_post_viewcounts(post)['pay_label'] }}{% endif %}</span>{% endif %}
     <span class="annotation bottom-right">{{ post.company_name }}</span>
     <span class="annotation bottom-left">
       {% if starred is not none %}

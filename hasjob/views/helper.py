@@ -16,7 +16,7 @@ from flask.ext.rq import job
 from flask.ext.lastuser import signal_user_looked_up
 from coaster.utils import uuid1mc
 from coaster.sqlalchemy import failsafe_add
-from baseframe import _, cache
+from baseframe import _, cache, dogpile
 from baseframe.signals import form_validation_error, form_validation_success
 
 from .. import app, redis_store
@@ -320,6 +320,62 @@ def bgroup(jobpost_ab, post):
     return (jobpost_ab.get(post.id) or cointoss()) if post.headlineb else None
 
 
+@dogpile.region('hasjob_viewcounts')
+def get_post_viewcounts(jobpost):
+    # The result for this function is cached for a period
+    # of 3600 seconds
+    if jobpost not in db.session:
+        jobpost = db.session.merge(jobpost)
+    cache_key = jobpost.viewcounts_key
+    values = g.viewcounts.get(cache_key) if g else None
+    if values is None:
+        values = redis_store.hgetall(cache_key)
+    if 'impressions' not in values:
+        # Also see views.helper.update_impression_counts for a copy of this query
+        # values['impressions'] = db.session.query(db.func.count(
+        #     db.func.distinct(EventSession.user_id)).label('count')).join(
+        #     JobImpression).filter(JobImpression.jobpost == jobpost).first().count
+        values['impressions'] = jobpost.viewcounts_impressions
+        redis_store.hset(cache_key, 'impressions', values['impressions'])
+        redis_store.expire(cache_key, 86400)
+    else:
+        values['impressions'] = int(values['impressions'])
+    if 'viewed' not in values:
+        # values['viewed'] = UserJobView.query.filter_by(jobpost=jobpost).count()
+        values['viewed'] = jobpost.viewcounts_viewed
+        redis_store.hset(cache_key, 'viewed', values['viewed'])
+        redis_store.expire(cache_key, 86400)
+    else:
+        values['viewed'] = int(values['viewed'])
+    if 'opened' not in values:
+        # values['opened'] = UserJobView.query.filter_by(jobpost=jobpost, applied=True).count()
+        values['opened'] = jobpost.viewcounts_opened
+        redis_store.hset(cache_key, 'opened', values['opened'])
+        redis_store.expire(cache_key, 86400)
+    else:
+        values['opened'] = int(values['opened'])
+    if 'applied' not in values:
+        # values['applied'] = JobApplication.query.filter_by(jobpost=jobpost).count()
+        values['applied'] = jobpost.viewcounts_applied
+        redis_store.hset(cache_key, 'applied', values['applied'])
+        redis_store.expire(cache_key, 86400)
+    else:
+        values['applied'] = int(values['applied'])
+    # pay_label rendering is extraordinarily slow. We don't know why yet, but it's static data, so cache it
+    if 'pay_label' not in values:
+        values['pay_label'] = jobpost.pay_label()
+        redis_store.hset(cache_key, 'pay_label', values['pay_label'].encode('utf-8'))
+        redis_store.expire(cache_key, 86400)
+    elif isinstance(values['pay_label'], str):  # Redis appears to return bytestrings, not Unicode
+        values['pay_label'] = unicode(values['pay_label'], 'utf-8')
+    return values
+
+
+@app.context_processor
+def inject_post_viewcounts():
+    return dict(get_post_viewcounts=get_post_viewcounts)
+
+
 def cache_viewcounts(posts):
     redis_pipe = redis_store.pipeline()
     viewcounts_keys = [p.viewcounts_key for p in posts]
@@ -489,7 +545,7 @@ def list_dirty_impression_counts():
 
 def update_impression_counts(jobpost_ids):
     for jobpost_id in jobpost_ids:
-        # Replicate post.viewcounts's query here because we don't want to load the post from db just to
+        # Replicate viewcounts query from JobPost here because we don't want to load the post from db just to
         # access a class instance method
         redis_store.hset('hasjob/viewcounts/%d' % jobpost_id, 'impressions',
             db.session.query(db.func.count(db.func.distinct(EventSession.user_id)).label('count')

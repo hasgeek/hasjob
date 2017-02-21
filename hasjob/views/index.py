@@ -13,7 +13,7 @@ from .. import app, lastuser
 from ..models import (db, JobCategory, JobPost, JobType, POSTSTATUS, newlimit, agelimit, JobLocation, Board,
     Domain, Location, Tag, JobPostTag, Campaign, CAMPAIGN_POSITION, CURRENCY, JobApplication, starred_job_table, BoardJobPost)
 from ..views.helper import (getposts, getallposts, gettags, location_geodata, cache_viewcounts, session_jobpost_ab,
-    bgroup, make_pay_graph, index_is_paginated)
+    bgroup, make_pay_graph, index_is_paginated, get_post_viewcounts)
 from ..uploads import uploaded_logos
 from ..utils import string_to_number
 
@@ -33,13 +33,13 @@ def stickie_dict(post, url, pinned=False, show_viewcounts=False, show_pay=False,
         }
     if show_viewcounts:
         result['viewcounts'] = {
-            'listed': post.viewcounts['impressions'],
-            'viewed': post.viewcounts['viewed'],
-            'opened': post.viewcounts['opened'],
-            'applied': post.viewcounts['applied']
+            'listed': get_post_viewcounts(post)['impressions'],
+            'viewed': get_post_viewcounts(post)['viewed'],
+            'opened': get_post_viewcounts(post)['opened'],
+            'applied': get_post_viewcounts(post)['applied']
             }
     if show_pay:
-        result['pay'] = post.viewcounts['pay_label']
+        result['pay'] = get_post_viewcounts(post)['pay_label']
     return result
 
 
@@ -404,6 +404,8 @@ def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, tit
     data['now'] = now
     data['is_siteadmin'] = is_siteadmin
     data['location_prompts'] = location_prompts
+    if data['domain'] and data['domain'] not in db.session:
+        data['domain'] = db.session.merge(data['domain'])
     return data
 
 
