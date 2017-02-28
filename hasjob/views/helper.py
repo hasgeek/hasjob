@@ -829,11 +829,11 @@ def filter_categories(basequery, board, filters):
 @app.context_processor
 def inject_filter_options():
     def get_job_filters():
-        basequery = getposts(showall=True, order=False, limit=False)
         filters = g.get('event_data', {}).get('filters', {})
         cache_key = 'jobfilters/' + (g.board.name + '/' if g.board else '') + hashlib.sha1(repr(filters)).hexdigest()
         result = cache.get(cache_key)
         if not result:
+            basequery = getposts(showall=True, order=False, limit=False)
             result = dict(job_location_filters=filter_locations(g.board, filters),
                 job_type_filters=filter_types(basequery, board=g.board, filters=filters),
                 job_category_filters=filter_categories(basequery, board=g.board, filters=filters))
