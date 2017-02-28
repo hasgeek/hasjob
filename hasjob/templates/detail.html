@@ -1,7 +1,7 @@
 {% extends "sheet.html" %}
 {%- from "baseframe/forms.html" import ajaxform %}
 {%- from "macros.html" import jobheader, stickie %}
-{% block title %}{{ headline }}{% endblock %}
+{% block title %}{{ headline }} / {{ post.company_name }} / {{ post.location }}{% endblock %}
 {% block description %}{{ post.company_name }}, {{ post.location }}, {{ post.type.title }}, {{ post.category.title }}{% endblock %}
 {% block canonical_url %}
   {%- if g.board and g.board.not_root %}
@@ -462,7 +462,7 @@
 {{ ajaxform('pinnedform', request, force=true) }}
 {{ ajaxform('moderateform', request, force=true) }}
 {% assets "js_tinymce" %}<script src="{{ ASSET_URL }}" type="text/javascript"></script>{% endassets %}
-{%- if is_siteadmin or post.admin_is(g.user) or (g.user and g.user.flags.is_employer_month) %}{% with stats = post.viewstats[1], max = stats.max|tojson %}
+{%- if is_siteadmin or post.admin_is(g.user) or (g.user and g.user.flags.is_employer_month) %}{% with stats = post.viewstats[1] %}{% with max = stats.max|tojson %}
   <script type="text/javascript">
     $(function() {
       $("#statsline").removeClass('hidden').sparkline(
@@ -477,7 +477,7 @@
       );
     });
   </script>
-{%- endwith %}{%- endif %}
+{%- endwith %}{% endwith %}{%- endif %}
 {%- if g.kiosk and g.peopleflow_url %}
   <script src="http://127.0.0.1:8008/assets/js/lib.js"></script>
   <script type="text/javascript" src="{{ g.peopleflow_url }}"></script>

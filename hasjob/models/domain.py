@@ -52,6 +52,8 @@ class Domain(BaseMixin, db.Model):
     def use_title(self):
         if self.title:
             return self.title
+        if self.is_webmail:
+            return self.name
         post = self.jobposts.filter(JobPost.status.in_(POSTSTATUS.POSTPENDING)).order_by('datetime desc').first()
         if post:
             return post.company_name
@@ -70,6 +72,8 @@ class Domain(BaseMixin, db.Model):
         if self.logo_url:
             return self.logo_url
         else:
+            if self.is_webmail:
+                return None
             post = self.jobposts.filter(JobPost.company_logo != None,
                 JobPost.status.in_(POSTSTATUS.ARCHIVED)).order_by('datetime desc').first()  # NOQA
             return post.url_for('logo', _external=True) if post else None

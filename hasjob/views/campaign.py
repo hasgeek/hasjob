@@ -39,6 +39,8 @@ def campaign_list():
 @lastuser.requires_permission('siteadmin')
 def campaign_new():
     form = CampaignForm()
+    if request.method == 'GET' and g.board:
+        form.boards.data = [g.board]
     if form.validate_on_submit():
         campaign = Campaign(user=g.user)
         form.populate_obj(campaign)

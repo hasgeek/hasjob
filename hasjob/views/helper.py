@@ -95,24 +95,24 @@ def load_user_data(user):
                 session['au'] = u'test-' + unicode(uuid1mc())
                 g.esession = EventSessionBase.new_from_request(request)
                 g.event_data['anon_cookie_test'] = session['au']
-            elif session['au'] == 'test':  # Legacy test cookie, original request now lost
-                g.anon_user = AnonUser()
-                db.session.add(g.anon_user)
-                g.esession = EventSession.new_from_request(request)
-                g.esession.anon_user = g.anon_user
-                db.session.add(g.esession)
-                # We'll update session['au'] below after database commit
-            elif unicode(session['au']).startswith('test-'):  # Newer redis-backed test cookie
-                # This client sent us back our test cookie, so set a real value now
-                g.anon_user = AnonUser()
-                db.session.add(g.anon_user)
-                g.esession = EventSession.new_from_request(request)
-                g.esession.anon_user = g.anon_user
-                db.session.add(g.esession)
-                g.esession.load_from_cache(session['au'], UserEvent)
-                # We'll update session['au'] below after database commit
+            # elif session['au'] == 'test':  # Legacy test cookie, original request now lost
+            #     g.anon_user = AnonUser()
+            #     db.session.add(g.anon_user)
+            #     g.esession = EventSession.new_from_request(request)
+            #     g.esession.anon_user = g.anon_user
+            #     db.session.add(g.esession)
+            #     # We'll update session['au'] below after database commit
+            # elif unicode(session['au']).startswith('test-'):  # Newer redis-backed test cookie
+            #     # This client sent us back our test cookie, so set a real value now
+            #     g.anon_user = AnonUser()
+            #     db.session.add(g.anon_user)
+            #     g.esession = EventSession.new_from_request(request)
+            #     g.esession.anon_user = g.anon_user
+            #     db.session.add(g.esession)
+            #     g.esession.load_from_cache(session['au'], UserEvent)
+            #     # We'll update session['au'] below after database commit
             else:
-                anon_user = AnonUser.query.get(session['au'])
+                anon_user = None  # AnonUser.query.get(session['au'])
                 if not anon_user:
                     # XXX: We got a fake value? This shouldn't happen
                     g.event_data['anon_cookie_test'] = session['au']
@@ -293,7 +293,7 @@ def record_views_and_events(response):
                 save_jobview.delay(
                     viewed_time=now,
                     event_session_id=g.esession.id,
-                    jobpost_id=g.jobpost_viewed[0].id,
+                    jobpost_id=g.jobpost_viewed[0],
                     bgroup=g.jobpost_viewed[1])
         else:
             g.esession.save_to_cache(session['au'])
@@ -343,12 +343,6 @@ def getposts(basequery=None, pinned=False, showall=False, statuses=None, ageless
     now = datetime.utcnow()
 
     if g.board:
-        # Load into cache
-        g.board_jobs = {r.jobpost_id: r for r in
-            BoardJobPost.query.join(BoardJobPost.jobpost).filter(
-                BoardJobPost.board == g.board, JobPost.datetime > now - agelimit).options(
-                    db.load_only('jobpost_id', 'pinned')).all()
-        }
         query = query.join(JobPost.postboards).filter(BoardJobPost.board == g.board)
 
     if not ageless:
