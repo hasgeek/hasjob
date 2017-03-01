@@ -12,7 +12,7 @@ from baseframe import _, dogpile
 from .. import app, lastuser
 from ..models import (db, JobCategory, JobPost, JobType, POSTSTATUS, newlimit, agelimit, JobLocation, Board,
     Domain, Location, Tag, JobPostTag, Campaign, CAMPAIGN_POSITION, CURRENCY, JobApplication, starred_job_table, BoardJobPost)
-from ..views.helper import (getposts, getallposts, gettags, location_geodata, cache_viewcounts, session_jobpost_ab,
+from ..views.helper import (getposts, getallposts, gettags, location_geodata, load_viewcounts, session_jobpost_ab,
     bgroup, make_pay_graph, index_is_paginated, get_post_viewcounts)
 from ..uploads import uploaded_logos
 from ..utils import string_to_number
@@ -372,7 +372,7 @@ def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, tit
         g.starred_ids = set()
 
     if is_siteadmin or (g.user and g.user.flags.get('is_employer_month')):
-        cache_viewcounts(data['posts'])
+        load_viewcounts(data['posts'])
         show_viewcounts = True
     else:
         show_viewcounts = False

@@ -42,7 +42,7 @@ from hasjob.uploads import uploaded_logos
 from hasjob.utils import get_word_bag, redactemail, random_long_key, common_legal_names
 from hasjob.views import ALLOWED_TAGS
 from hasjob.nlp import identify_language
-from hasjob.views.helper import gif1x1, cache_viewcounts, session_jobpost_ab, bgroup, get_post_viewcounts
+from hasjob.views.helper import gif1x1, load_viewcounts, session_jobpost_ab, bgroup, get_post_viewcounts
 
 
 @app.route('/<domain>/<hashid>', methods=('GET', 'POST'), subdomain='<subdomain>')
@@ -183,7 +183,7 @@ def job_related_posts(domain, hashid):
     jobpost_ab = session_jobpost_ab()
     related_posts = post.related_posts().all()
     if is_siteadmin or (g.user and g.user.flags.get('is_employer_month')):
-        cache_viewcounts(related_posts)
+        load_viewcounts(related_posts)
     g.impressions = {rp.id: (False, rp.id, bgroup(jobpost_ab, rp)) for rp in related_posts}
     return render_template('related_posts.html', post=post,
         related_posts=related_posts, is_siteadmin=is_siteadmin)

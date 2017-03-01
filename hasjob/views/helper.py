@@ -379,7 +379,7 @@ def inject_post_viewcounts():
     return {'get_post_viewcounts': get_post_viewcounts}
 
 
-def cache_viewcounts(posts):
+def load_viewcounts(posts):
     redis_pipe = redis_store.pipeline()
     viewcounts_keys = [JobPost.viewcounts_key(p.id) for p in posts]
     for key in viewcounts_keys:
