@@ -1053,11 +1053,10 @@ def close(domain, hashid, key):
 @app.route('/delete/<hashid>', methods=('GET', 'POST'), defaults={'key': None})
 def delete(hashid, key):
     post = JobPost.query.filter_by(hashid=hashid).options(db.load_only('id', 'status')).first_or_404()
-    if not post:
-        abort(404)
     if not post.admin_is(g.user):
         abort(403)
     if not post.is_draft():
+        flash("Your job post must be withdrawn or closed.", "info")
         return redirect(post.url_for(), code=303)
     form = Form()
     if form.validate_on_submit():
