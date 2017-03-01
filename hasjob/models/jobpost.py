@@ -427,7 +427,8 @@ class JobPost(BaseMixin, db.Model):
 
     @staticmethod
     def viewcounts_key(jobpost_id):
-        # Also see views.helper.update_impression_counts for a copy of this key
+        if isinstance(jobpost_id, (list, tuple)):
+            return ['hasjob/viewcounts/%d' % post_id for post_id in jobpost_id]
         return 'hasjob/viewcounts/%d' % jobpost_id
 
     def uncache_viewcounts(self, key=None):

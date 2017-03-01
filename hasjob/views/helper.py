@@ -381,7 +381,7 @@ def inject_post_viewcounts():
 
 def load_viewcounts(posts):
     redis_pipe = redis_store.pipeline()
-    viewcounts_keys = [JobPost.viewcounts_key(p.id) for p in posts]
+    viewcounts_keys = JobPost.viewcounts_key([p.id for p in posts])
     for key in viewcounts_keys:
         redis_pipe.hgetall(key)
     viewcounts_values = redis_pipe.execute()
