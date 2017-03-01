@@ -204,12 +204,6 @@ class JobPost(BaseMixin, db.Model):
         return cls.query.filter_by(hashid=hashid).one_or_none()
 
     @classmethod
-    def get_by_id(cls, jobpost_id, load_id_only=False):
-        if load_id_only:
-            return cls.query.filter_by(id=jobpost_id).options(db.load_only("id")).one()
-        return cls.query.filter_by(id=jobpost_id).one()
-
-    @classmethod
     def fetch(cls, hashid):
         """Returns a SQLAlchemy query object for JobPost"""
         return cls.query.filter_by(hashid=hashid).options(load_only("id", "headline", "headlineb", "hashid", "datetime", "status", "email_domain", "review_comments", "company_url"))

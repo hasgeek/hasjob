@@ -331,9 +331,9 @@ def get_post_viewcounts(jobpost_id):
     jobpost = None
     if not values:
         values = redis_store.hgetall(cache_key)
-        jobpost = JobPost.get_by_id(jobpost_id)
+        jobpost = JobPost.query.get(jobpost_id)
     if 'impressions' not in values:
-        jobpost = jobpost or JobPost.get_by_id(jobpost_id)
+        jobpost = jobpost or JobPost.query.get(jobpost_id)
         values['impressions'] = get_jobpost_impressions(jobpost.id)
         redis_store.hset(cache_key, 'impressions', values['impressions'])
         redis_store.expire(cache_key, 86400)
@@ -341,7 +341,7 @@ def get_post_viewcounts(jobpost_id):
         values['impressions'] = int(values['impressions'])
     if 'viewed' not in values:
         # values['viewed'] = UserJobView.query.filter_by(jobpost=jobpost).count()
-        jobpost = jobpost or JobPost.get_by_id(jobpost_id)
+        jobpost = jobpost or JobPost.query.get(jobpost_id)
         values['viewed'] = jobpost.viewcounts_viewed
         redis_store.hset(cache_key, 'viewed', values['viewed'])
         redis_store.expire(cache_key, 86400)
@@ -349,7 +349,7 @@ def get_post_viewcounts(jobpost_id):
         values['viewed'] = int(values['viewed'])
     if 'opened' not in values:
         # values['opened'] = UserJobView.query.filter_by(jobpost=jobpost, applied=True).count()
-        jobpost = jobpost or JobPost.get_by_id(jobpost_id)
+        jobpost = jobpost or JobPost.query.get(jobpost_id)
         values['opened'] = jobpost.viewcounts_opened
         redis_store.hset(cache_key, 'opened', values['opened'])
         redis_store.expire(cache_key, 86400)
@@ -357,7 +357,7 @@ def get_post_viewcounts(jobpost_id):
         values['opened'] = int(values['opened'])
     if 'applied' not in values:
         # values['applied'] = JobApplication.query.filter_by(jobpost=jobpost).count()
-        jobpost = jobpost or JobPost.get_by_id(jobpost_id)
+        jobpost = jobpost or JobPost.query.get(jobpost_id)
         values['applied'] = jobpost.viewcounts_applied
         redis_store.hset(cache_key, 'applied', values['applied'])
         redis_store.expire(cache_key, 86400)
@@ -365,7 +365,7 @@ def get_post_viewcounts(jobpost_id):
         values['applied'] = int(values['applied'])
     # pay_label rendering is extraordinarily slow. We don't know why yet, but it's static data, so cache it
     if 'pay_label' not in values:
-        jobpost = jobpost or JobPost.get_by_id(jobpost_id)
+        jobpost = jobpost or JobPost.query.get(jobpost_id)
         values['pay_label'] = jobpost.pay_label()
         redis_store.hset(cache_key, 'pay_label', values['pay_label'].encode('utf-8'))
         redis_store.expire(cache_key, 86400)
