@@ -88,8 +88,8 @@ def jobdetail(domain, hashid):
                 db.session.commit()
             except IntegrityError:
                 db.session.rollback()
-            # Re-populate cache
-            get_post_viewcounts(post)
+            # Clear cache
+            dogpile.invalidate_region('hasjob_viewcounts')
     else:
         jobview = None
 
@@ -245,8 +245,8 @@ def revealjob(domain, hashid):
             cache.delete_memoized(viewstats_by_id_qhour, post.id)
             cache.delete_memoized(viewstats_by_id_hour, post.id)
             cache.delete_memoized(viewstats_by_id_day, post.id)
-            # Re-populate cache
-            get_post_viewcounts(post)
+            # Clear cache
+            dogpile.invalidate_region('hasjob_viewcounts')
         except IntegrityError:
             db.session.rollback()
             pass  # User double-clicked. Ignore.
@@ -257,8 +257,8 @@ def revealjob(domain, hashid):
         cache.delete_memoized(viewstats_by_id_qhour, post.id)
         cache.delete_memoized(viewstats_by_id_hour, post.id)
         cache.delete_memoized(viewstats_by_id_day, post.id)
-        # Re-populate cache
-        get_post_viewcounts(post)
+        # bust cache
+        dogpile.invalidate_region('hasjob_viewcounts')
 
     applyform = None
     job_application = JobApplication.query.filter_by(user=g.user, jobpost=post).first()
