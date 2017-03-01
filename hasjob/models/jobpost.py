@@ -432,7 +432,7 @@ class JobPost(BaseMixin, db.Model):
         return 'hasjob/viewcounts/%d' % jobpost_id
 
     def uncache_viewcounts(self, key=None):
-        cache_key = self.viewcounts_key(self.id)
+        cache_key = JobPost.viewcounts_key(self.id)
         if not key:
             redis_store.delete(cache_key)
         else:
