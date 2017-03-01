@@ -220,7 +220,7 @@
                   <i class="fa fa-fw fa-money"></i>&nbsp;&nbsp; {{ post.pay_label() }}
                 </span>
               {%- endif %}
-              {%- with appl=get_post_viewcounts(post)['applied'], newappl=post.new_applications, replappl=post.replied_applications %}{% if appl %}
+              {%- with appl=post_viewcounts['applied'], newappl=post.new_applications, replappl=post.replied_applications %}{% if appl %}
                 <a class="list-group-item" href="{{ post.url_for('manage') }}">
                   <i class="fa fa-fw fa-file-text-o"></i>&nbsp;&nbsp; View candidates
                   {%- if newappl %} <span class="badge badge-new">{{ newappl }}/{{ appl }}{% if is_siteadmin and replappl %} › {{ replappl }}{% endif %}</span>
@@ -231,7 +231,7 @@
             {%- endif %}
             {%- if is_siteadmin or post.admin_is(g.user) or (g.user and g.user.flags.is_employer_month) %}
               <div class="list-group-item no-border">
-                <i class="fa fa-fw fa-bar-chart-o"></i>&nbsp;&nbsp; <span title="Viewed › Opened form › Applied">{{ get_post_viewcounts(post)['viewed'] }} › {{ get_post_viewcounts(post)['opened'] }} › {{ get_post_viewcounts(post)['applied'] }}</span> &middot;
+                <i class="fa fa-fw fa-bar-chart-o"></i>&nbsp;&nbsp; <span title="Viewed › Opened form › Applied">{{ post_viewcounts['viewed'] }} › {{ post_viewcounts['opened'] }} › {{ post_viewcounts['applied'] }}</span> &middot;
                 {%- with unittype = post.viewstats[0] %}
                   {%- if unittype == 'q' %} Per 15m:
                   {%- elif unittype == 'h' %} Per hour:

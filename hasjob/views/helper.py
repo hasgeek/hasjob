@@ -373,7 +373,7 @@ def get_post_viewcounts(jobpost):
 
 @app.context_processor
 def inject_post_viewcounts():
-    return dict(get_post_viewcounts=get_post_viewcounts)
+    return {'get_post_viewcounts': get_post_viewcounts}
 
 
 def cache_viewcounts(posts):
