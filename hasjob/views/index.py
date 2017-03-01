@@ -21,7 +21,7 @@ from ..utils import string_to_number
 def stickie_dict(post, url, pinned=False, show_viewcounts=False, show_pay=False,
         starred=False, is_bgroup=None):
     if show_viewcounts or show_pay:
-        post_viewcounts = get_post_viewcounts(post)
+        post_viewcounts = get_post_viewcounts(post.id)
     result = {
         'headline': post.headlineb if is_bgroup else post.headline,
         'url': url,
@@ -373,6 +373,9 @@ def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, tit
 
     if is_siteadmin or (g.user and g.user.flags.get('is_employer_month')):
         cache_viewcounts(data['posts'])
+        show_viewcounts = True
+    else:
+        show_viewcounts = False
 
     if data['grouped']:
         g.impressions = {post.id: (pinflag, post.id, is_bgroup)
@@ -408,6 +411,7 @@ def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, tit
     data['location_prompts'] = location_prompts
     if data['domain'] and data['domain'] not in db.session:
         data['domain'] = db.session.merge(data['domain'])
+    data['show_viewcounts'] = show_viewcounts
     return data
 
 

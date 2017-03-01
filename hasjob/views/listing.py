@@ -88,8 +88,6 @@ def jobdetail(domain, hashid):
                 db.session.commit()
             except IntegrityError:
                 db.session.rollback()
-            # Clear cache
-            dogpile.invalidate_region('hasjob_viewcounts')
     else:
         jobview = None
 
@@ -164,7 +162,7 @@ def jobdetail(domain, hashid):
     is_bgroup = getbool(request.args.get('b'))
     headline = post.headlineb if is_bgroup and post.headlineb else post.headline
     if is_siteadmin or post.admin_is(g.user) or (g.user and g.user.flags.is_employer_month):
-        post_viewcounts = get_post_viewcounts(post)
+        post_viewcounts = get_post_viewcounts(post.id)
     else:
         post_viewcounts = None
 
@@ -245,8 +243,6 @@ def revealjob(domain, hashid):
             cache.delete_memoized(viewstats_by_id_qhour, post.id)
             cache.delete_memoized(viewstats_by_id_hour, post.id)
             cache.delete_memoized(viewstats_by_id_day, post.id)
-            # Clear cache
-            dogpile.invalidate_region('hasjob_viewcounts')
         except IntegrityError:
             db.session.rollback()
             pass  # User double-clicked. Ignore.
@@ -257,8 +253,6 @@ def revealjob(domain, hashid):
         cache.delete_memoized(viewstats_by_id_qhour, post.id)
         cache.delete_memoized(viewstats_by_id_hour, post.id)
         cache.delete_memoized(viewstats_by_id_day, post.id)
-        # bust cache
-        dogpile.invalidate_region('hasjob_viewcounts')
 
     applyform = None
     job_application = JobApplication.query.filter_by(user=g.user, jobpost=post).first()

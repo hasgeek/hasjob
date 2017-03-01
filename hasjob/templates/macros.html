@@ -8,7 +8,19 @@
     <span class="annotation top-left">{{ post.location }}</span>
     <span class="annotation top-right">{{ post.datetime|shortdate }}</span>
     <span class="headline">{% if is_bgroup %}{{ post.headlineb }}{% else %}{{ post.headline }}{% endif %}</span>
-    {% if show_viewcounts or show_pay %}<span class="count">{% if show_viewcounts %}<span title="Listed › Viewed › Opened form › Applied">{{ get_post_viewcounts(post)['impressions'] }} › {{ get_post_viewcounts(post)['viewed'] }} › {{ get_post_viewcounts(post)['opened'] }} › {{ get_post_viewcounts(post)['applied'] }}</span>{% endif %}{% if show_viewcounts and show_pay %} &middot; {% endif %}{% if show_pay %}{{ get_post_viewcounts(post)['pay_label'] }}{% endif %}</span>{% endif %}
+    {% if show_viewcounts or show_pay %}
+      {% with post_viewcounts=get_post_viewcounts(post.id) %}
+      <span class="count">
+        {% if show_viewcounts %}
+          <span title="Listed › Viewed › Opened form › Applied">
+            {{ post_viewcounts['impressions'] }} › {{ post_viewcounts['viewed'] }} › {{ post_viewcounts['opened'] }} › {{ post_viewcounts['applied'] }}
+          </span>
+        {% endif %}
+        {% if show_viewcounts and show_pay %} &middot; {% endif %}
+        {% if show_pay %}{{ post_viewcounts['pay_label'] }}{% endif %}
+      </span>
+      {% endwith %}
+    {% endif %}
     <span class="annotation bottom-right">{{ post.company_name }}</span>
     <span class="annotation bottom-left">
       {% if starred is not none %}
