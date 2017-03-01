@@ -1,7 +1,7 @@
 {% extends "sheet.html" %}
 {%- from "baseframe/forms.html" import ajaxform %}
 {%- from "macros.html" import jobheader, stickie %}
-{% block title %}{{ headline }}{% endblock %}
+{% block title %}{{ headline }} / {{ post.company_name }} / {{ post.location }}{% endblock %}
 {% block description %}{{ post.company_name }}, {{ post.location }}, {{ post.type.title }}, {{ post.category.title }}{% endblock %}
 {% block canonical_url %}
   {%- if g.board and g.board.not_root %}
@@ -220,7 +220,7 @@
                   <i class="fa fa-fw fa-money"></i>&nbsp;&nbsp; {{ post.pay_label() }}
                 </span>
               {%- endif %}
-              {%- with appl=post.viewcounts['applied'], newappl=post.new_applications, replappl=post.replied_applications %}{% if appl %}
+              {%- with appl=post_viewcounts['applied'], newappl=post.new_applications, replappl=post.replied_applications %}{% if appl %}
                 <a class="list-group-item" href="{{ post.url_for('manage') }}">
                   <i class="fa fa-fw fa-file-text-o"></i>&nbsp;&nbsp; View candidates
                   {%- if newappl %} <span class="badge badge-new">{{ newappl }}/{{ appl }}{% if is_siteadmin and replappl %} › {{ replappl }}{% endif %}</span>
@@ -231,7 +231,7 @@
             {%- endif %}
             {%- if is_siteadmin or post.admin_is(g.user) or (g.user and g.user.flags.is_employer_month) %}
               <div class="list-group-item no-border">
-                <i class="fa fa-fw fa-bar-chart-o"></i>&nbsp;&nbsp; <span title="Viewed › Opened form › Applied">{{ post.viewcounts['viewed'] }} › {{ post.viewcounts['opened'] }} › {{ post.viewcounts['applied'] }}</span> &middot;
+                <i class="fa fa-fw fa-bar-chart-o"></i>&nbsp;&nbsp; <span title="Viewed › Opened form › Applied">{{ post_viewcounts['viewed'] }} › {{ post_viewcounts['opened'] }} › {{ post_viewcounts['applied'] }}</span> &middot;
                 {%- with unittype = post.viewstats[0] %}
                   {%- if unittype == 'q' %} Per 15m:
                   {%- elif unittype == 'h' %} Per hour:
@@ -458,7 +458,7 @@
 {{ ajaxform('pinnedform', request, force=true) }}
 {{ ajaxform('moderateform', request, force=true) }}
 {% assets "js_tinymce" %}<script src="{{ ASSET_URL }}" type="text/javascript"></script>{% endassets %}
-{%- if is_siteadmin or post.admin_is(g.user) or (g.user and g.user.flags.is_employer_month) %}{% with stats = post.viewstats[1], max = stats.max|tojson %}
+{%- if is_siteadmin or post.admin_is(g.user) or (g.user and g.user.flags.is_employer_month) %}{% with stats = post.viewstats[1] %}{% with max = stats.max|tojson %}
   <script type="text/javascript">
     $(function() {
       $("#statsline").removeClass('hidden').sparkline(
@@ -473,7 +473,7 @@
       );
     });
   </script>
-{%- endwith %}{%- endif %}
+{%- endwith %}{% endwith %}{%- endif %}
 {%- if g.kiosk and g.peopleflow_url %}
   <script src="http://127.0.0.1:8008/assets/js/lib.js"></script>
   <script type="text/javascript" src="{{ g.peopleflow_url }}"></script>

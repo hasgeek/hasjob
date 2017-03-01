@@ -98,17 +98,17 @@
         {%- for grouping, group in grouped.items() -%}{%- with pinned, post, is_bgroup=group[0] -%}
           {%- if group|length == 1 -%}
             <li class="col-xs-12 col-md-3 col-sm-4">
-              {{ stickie(post, post.url_for(b=is_bgroup), pinned, show_viewcounts=is_siteadmin or guser and guser.flags.is_employer_month, show_pay=is_siteadmin, starred=guser and post.id in gstarred_ids, is_bgroup=is_bgroup) }}
+              {{ stickie(post, post.url_for(b=is_bgroup), pinned, get_post_viewcounts, show_viewcounts=show_viewcounts, show_pay=is_siteadmin, starred=guser and post.id in gstarred_ids, is_bgroup=is_bgroup) }}
             </li>
           {%- else -%}
             <li class="grouped col-xs-12 col-md-3 col-sm-4">
               {%- if grouping[0] in ['sd', 'nd'] -%}
-                {{ stickie(post, url_for('browse_by_domain', domain=grouping[1]), pinned, dataurl=post.url_for(b=is_bgroup), show_viewcounts=is_siteadmin or guser and guser.flags.is_employer_month, show_pay=is_siteadmin, starred=guser and post.id in gstarred_ids, is_bgroup=is_bgroup) }}
+                {{ stickie(post, url_for('browse_by_domain', domain=grouping[1]), pinned, get_post_viewcounts, dataurl=post.url_for(b=is_bgroup), show_viewcounts=show_viewcounts, show_pay=is_siteadmin, starred=guser and post.id in gstarred_ids, is_bgroup=is_bgroup) }}
               {%- elif grouping[0] in ['se', 'ne'] -%}
-                {{ stickie(post, url_for('browse_by_email', md5sum=grouping[1]), pinned, dataurl=post.url_for(b=is_bgroup), show_viewcounts=is_siteadmin or guser and guser.flags.is_employer_month, show_pay=is_siteadmin, starred=guser and post.id in gstarred_ids, is_bgroup=is_bgroup) }}
+                {{ stickie(post, url_for('browse_by_email', md5sum=grouping[1]), pinned, get_post_viewcounts, dataurl=post.url_for(b=is_bgroup), show_viewcounts=show_viewcounts, show_pay=is_siteadmin, starred=guser and post.id in gstarred_ids, is_bgroup=is_bgroup) }}
               {%- endif -%}
               {%- for pinned, post, is_bgroup in group[1:] -%}
-                {{ stickie(post, none, false, groupedunder=true, dataurl=post.url_for(b=is_bgroup), show_viewcounts=is_siteadmin or guser and guser.flags.is_employer_month, show_pay=is_siteadmin, starred=guser and post.id in gstarred_ids, is_bgroup=is_bgroup) }}
+                {{ stickie(post, none, false, get_post_viewcounts, groupedunder=true, dataurl=post.url_for(b=is_bgroup), show_viewcounts=show_viewcounts, show_pay=is_siteadmin, starred=guser and post.id in gstarred_ids, is_bgroup=is_bgroup) }}
               {%- endfor -%}
             </li>
           {%- endif -%}
@@ -116,7 +116,7 @@
       {%- else %}
         {%- for pinned, post, is_bgroup in pinsandposts -%}
           <li class="col-xs-12 col-md-3 col-sm-4">
-            {{ stickie(post, post.url_for(b=is_bgroup), pinned, show_viewcounts=is_siteadmin or guser and guser.flags.is_employer_month, show_pay=is_siteadmin, starred=guser and post.id in gstarred_ids, is_bgroup=is_bgroup) }}
+            {{ stickie(post, post.url_for(b=is_bgroup), pinned, get_post_viewcounts, show_viewcounts=show_viewcounts, show_pay=is_siteadmin, starred=guser and post.id in gstarred_ids, is_bgroup=is_bgroup) }}
           </li>
         {%- else -%}
           <li class="col-xs-12 col-md-3 col-sm-4">

@@ -1,10 +1,11 @@
 {% extends "sheet.html" %}
-{% block title %}{{ post.headline|e }}{% endblock %}
+{%- from "macros.html" import campaign_header, campaign_header_postscript %}
+{% block title %}One last step…{% endblock %}
 {% block content %}
   <div class="sheet">
     <div class="section first">
       <div class="page-header">
-        <h1>One last step&hellip;</h1>
+        <h1>One last step…</h1>
       </div>
       <p>
         We sent you an email to confirm your email address.
@@ -28,8 +29,13 @@
         not be configured to receive email from outside your domain.
       </p>
     </div>
-  {#
-    TODO: Insert CAMPAIGN_POSITION.AFTERPOST campaign here
-  -#}
   </div>
+{% endblock %}
+{% block postcontent %}
+  {%- if footer_campaign %}
+    {{ campaign_header(g, footer_campaign) }}
+  {% endif %}
+{% endblock %}
+{% block footerscripts %}
+  {%- if footer_campaign %}{{ campaign_header_postscript() }}{% endif %}
 {% endblock %}

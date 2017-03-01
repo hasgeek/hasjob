@@ -10,7 +10,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import StaleDataError
 from flask import abort, flash, g, redirect, render_template, request, url_for, session, Markup, jsonify
 from flask.ext.mail import Message
-from baseframe import cache
+from baseframe import cache, dogpile
 from baseframe.forms import Form
 from coaster.utils import getbool, get_email_domain, md5sum, base_domain_matches
 from coaster.views import load_model
@@ -42,7 +42,7 @@ from hasjob.uploads import uploaded_logos
 from hasjob.utils import get_word_bag, redactemail, random_long_key, common_legal_names
 from hasjob.views import ALLOWED_TAGS
 from hasjob.nlp import identify_language
-from hasjob.views.helper import gif1x1, cache_viewcounts, session_jobpost_ab, bgroup
+from hasjob.views.helper import gif1x1, load_viewcounts, session_jobpost_ab, bgroup, get_post_viewcounts
 
 
 @app.route('/<domain>/<hashid>', methods=('GET',), subdomain='<subdomain>')
@@ -88,7 +88,6 @@ def jobdetail(domain, hashid):
                 db.session.commit()
             except IntegrityError:
                 db.session.rollback()
-            post.viewcounts  # Re-populate cache
     else:
         jobview = None
 
@@ -107,7 +106,7 @@ def jobdetail(domain, hashid):
     else:
         report = None
 
-    g.jobpost_viewed = (post, getbool(request.args.get('b')))
+    g.jobpost_viewed = (post.id, getbool(request.args.get('b')))
 
     reportform = forms.ReportForm(obj=report)
     reportform.report_code.choices = [(ob.id, ob.title) for ob in ReportCode.query.filter_by(public=True).order_by('seq')]
@@ -142,13 +141,16 @@ def jobdetail(domain, hashid):
 
     is_bgroup = getbool(request.args.get('b'))
     headline = post.headlineb if is_bgroup and post.headlineb else post.headline
+    if is_siteadmin or post.admin_is(g.user) or (g.user and g.user.flags.get('is_employer_month')):
+        post_viewcounts = get_post_viewcounts(post.id)
+    else:
+        post_viewcounts = None
 
     return render_template('detail.html', post=post, headline=headline, reportform=reportform, rejectform=rejectform,
         pinnedform=pinnedform,
         jobview=jobview, report=report, moderateform=moderateform,
         domain_mismatch=domain_mismatch, header_campaign=header_campaign,
-        is_bgroup=is_bgroup, is_siteadmin=is_siteadmin
-        )
+        is_bgroup=is_bgroup, is_siteadmin=is_siteadmin, post_viewcounts=post_viewcounts)
 
 
 @app.route('/<domain>/<hashid>/related', subdomain='<subdomain>')
@@ -158,13 +160,11 @@ def jobdetail(domain, hashid):
 def job_related_posts(domain, hashid):
     is_siteadmin = lastuser.has_permission('siteadmin')
     post = JobPost.query.filter_by(hashid=hashid).options(*JobPost._defercols).first_or_404()
-
     jobpost_ab = session_jobpost_ab()
     related_posts = post.related_posts().all()
     if is_siteadmin or (g.user and g.user.flags.get('is_employer_month')):
-        cache_viewcounts(related_posts)
+        load_viewcounts(related_posts)
     g.impressions = {rp.id: (False, rp.id, bgroup(jobpost_ab, rp)) for rp in related_posts}
-
     return render_template('related_posts.html', post=post,
         related_posts=related_posts, is_siteadmin=is_siteadmin)
 
@@ -212,7 +212,7 @@ def starjob(domain, hashid):
     # Handle IntegrityError/StaleDataError caused by users double clicking
     passed = False
     while not passed:
-        if post in g.user.starred_jobs:
+        if g.user.has_starred_post(post):
             g.user.starred_jobs.remove(post)
             is_starred = False
         else:
@@ -239,7 +239,7 @@ def revealjob(domain, hashid):
     """
     Reveal job application form
     """
-    post = JobPost.query.filter_by(hashid=hashid).first_or_404()
+    post = JobPost.query.filter_by(hashid=hashid).options(db.load_only('id', 'status', 'how_to_apply')).first_or_404()
     if post.status in POSTSTATUS.GONE:
         abort(410)
     jobview = UserJobView.query.get((post.id, g.user.id))
@@ -252,7 +252,6 @@ def revealjob(domain, hashid):
             cache.delete_memoized(viewstats_by_id_qhour, post.id)
             cache.delete_memoized(viewstats_by_id_hour, post.id)
             cache.delete_memoized(viewstats_by_id_day, post.id)
-            post.viewcounts  # Re-populate cache
         except IntegrityError:
             db.session.rollback()
             pass  # User double-clicked. Ignore.
@@ -263,7 +262,6 @@ def revealjob(domain, hashid):
         cache.delete_memoized(viewstats_by_id_qhour, post.id)
         cache.delete_memoized(viewstats_by_id_hour, post.id)
         cache.delete_memoized(viewstats_by_id_day, post.id)
-        post.viewcounts  # Re-populate cache
 
     applyform = None
     job_application = JobApplication.query.filter_by(user=g.user, jobpost=post).first()
@@ -286,7 +284,7 @@ def applyjob(domain, hashid):
     """
     Apply to a job (including in kiosk mode)
     """
-    post = JobPost.query.filter_by(hashid=hashid).first_or_404()
+    post = JobPost.query.filter_by(hashid=hashid).options(db.load_only('id', 'email', 'email_domain')).first_or_404()
     # If the domain doesn't match, redirect to correct URL
     if post.email_domain != domain:
         return redirect(post.url_for('apply'), code=301)
@@ -372,10 +370,11 @@ def managejob(post, kwargs):
     if post.email_domain != kwargs.get('domain'):
         return redirect(post.url_for('manage'), code=301)
 
-    if post.applications:
-        return redirect(post.applications[0].url_for(), code=303)
+    first_application = post.applications.options(db.load_only('hashid')).first()
+    if first_application:
+        return redirect(first_application.url_for(), code=303)
     else:
-        return redirect(post.url_for())
+        return redirect(post.url_for(), code=303)
 
 
 @app.route('/<domain>/<hashid>/appl/<application>/track.gif', subdomain='<subdomain>')
@@ -550,6 +549,8 @@ def pinnedjob(domain, hashid):
             msg = "This post has been pinned."
         else:
             msg = "This post is no longer pinned."
+        # cache bust
+        dogpile.invalidate_region('hasjob_index')
     else:
         msg = "Invalid submission"
     if request.is_xhr:
@@ -631,6 +632,8 @@ def rejectjob(domain, hashid):
 
         db.session.commit()
         send_reject_mail(request.form.get('submit'), post, banned_posts)
+        # cache bust
+        dogpile.invalidate_region('hasjob_index')
         if request.is_xhr:
             return "<p>%s</p>" % flashmsg
         else:
@@ -665,6 +668,8 @@ def moderatejob(domain, hashid):
         msg.body = html2text(msg.html)
         mail.send(msg)
         db.session.commit()
+        # cache bust
+        dogpile.invalidate_region('hasjob_index')
         if request.is_xhr:
             return "<p>%s</p>" % flashmsg
     elif request.method == 'POST' and request.is_xhr:
@@ -699,8 +704,20 @@ def confirm(domain, hashid):
         post.status = POSTSTATUS.PENDING
         db.session.commit()
 
-        return render_template('mailsent.html', post=post)
+        footer_campaign = Campaign.for_context(CAMPAIGN_POSITION.AFTERPOST, board=g.board, user=g.user,
+                    anon_user=g.anon_user, geonameids=g.user_geonameids)
+
+        return render_template('mailsent.html', footer_campaign=footer_campaign)
     return render_template('confirm.html', post=post, form=form)
+
+
+@app.route('/confirm/demo', defaults={'domain': None}, methods=('GET', 'POST'), subdomain='<subdomain>')
+@app.route('/confirm/demo', defaults={'domain': None}, methods=('GET', 'POST'))
+def confirm_demo(domain):
+    footer_campaign = Campaign.for_context(CAMPAIGN_POSITION.AFTERPOST, board=g.board, user=g.user,
+                anon_user=g.anon_user, geonameids=g.user_geonameids)
+
+    return render_template('mailsent.html', footer_campaign=footer_campaign)
 
 
 @app.route('/<domain>/<hashid>/confirm/<key>', subdomain='<subdomain>')
@@ -752,6 +769,8 @@ def confirm_email(domain, hashid, key):
             flash("Congratulations! Your job post has been published. As a bonus for being an employer on Hasjob, "
                 "you can now see how your post is performing relative to others. Look in the sidebar of any post.",
                 "interactive")
+    # cache bust
+    dogpile.invalidate_region('hasjob_index')
     return redirect(post.url_for(), code=302)
 
 
@@ -777,6 +796,8 @@ def withdraw(domain, hashid, key):
         post.closed_datetime = datetime.utcnow()
         db.session.commit()
         flash("Your job post has been withdrawn and is no longer available", "info")
+        # cache bust
+        dogpile.invalidate_region('hasjob_index')
         return redirect(url_for('index'), code=303)
     return render_template("withdraw.html", post=post, form=form)
 
@@ -936,6 +957,8 @@ def editjob(hashid, key, domain=None, form=None, validated=False, newpost=None):
             post.uncache_viewcounts('pay_label')
             session.pop('userkeys', None)  # Remove legacy userkeys dict
             session.permanent = True
+            # cache bust
+            dogpile.invalidate_region('hasjob_index')
             return redirect(post.url_for(), code=303)
     elif request.method == 'POST':
         flash("Please review the indicated issues", category='interactive')
@@ -968,9 +991,13 @@ def newjob():
     form.job_category.choices = JobCategory.choices(g.board)
 
     if request.method == 'GET':
+        header_campaign = Campaign.for_context(CAMPAIGN_POSITION.BEFOREPOST, board=g.board, user=g.user,
+                anon_user=g.anon_user, geonameids=g.user_geonameids)
         if g.user:
             # form.poster_name.data = g.user.fullname  # Deprecated 2013-11-20
             form.poster_email.data = g.user.email
+    else:
+        header_campaign = None
 
     # Job Reposting
     if request.method == 'GET' and request.args.get('template'):
@@ -983,6 +1010,7 @@ def newjob():
             flash("This post is currently active and cannot be posted again.")
             return redirect(archived_post.url_for(), code=303)
         form.populate_from(archived_post)
+        header_campaign = None
 
     if form.validate_on_submit():
         # POST request from new job page, with successful validation
@@ -1001,7 +1029,8 @@ def newjob():
     # Render page. Execution reaches here under three conditions:
     # 1. GET request, page loaded for the first time
     # 2. POST request from this page, with errors
-    return render_template('postjob.html', form=form, no_removelogo=True, archived_post=archived_post)
+    return render_template('postjob.html', form=form, no_removelogo=True, archived_post=archived_post,
+        header_campaign=header_campaign)
 
 
 @app.route('/<domain>/<hashid>/close', methods=('GET', 'POST'), defaults={'key': None}, subdomain='<subdomain>')
@@ -1022,6 +1051,8 @@ def close(domain, hashid, key):
         post.close()
         post.closed_datetime = datetime.utcnow()
         db.session.commit()
+        # cache bust
+        dogpile.invalidate_region('hasjob_index')
         return redirect(post.url_for(), code=303)
     return render_template("close.html", post=post, form=form)
 
@@ -1043,5 +1074,7 @@ def reopen(domain, hashid, key):
         post.confirm()
         post.closed_datetime = datetime.utcnow()
         db.session.commit()
+        # cache bust
+        dogpile.invalidate_region('hasjob_index')
         return redirect(post.url_for(), code=303)
     return render_template("reopen.html", post=post, form=form)

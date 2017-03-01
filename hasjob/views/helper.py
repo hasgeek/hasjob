@@ -95,24 +95,24 @@ def load_user_data(user):
                 session['au'] = u'test-' + unicode(uuid1mc())
                 g.esession = EventSessionBase.new_from_request(request)
                 g.event_data['anon_cookie_test'] = session['au']
-            elif session['au'] == 'test':  # Legacy test cookie, original request now lost
-                g.anon_user = AnonUser()
-                db.session.add(g.anon_user)
-                g.esession = EventSession.new_from_request(request)
-                g.esession.anon_user = g.anon_user
-                db.session.add(g.esession)
-                # We'll update session['au'] below after database commit
-            elif unicode(session['au']).startswith('test-'):  # Newer redis-backed test cookie
-                # This client sent us back our test cookie, so set a real value now
-                g.anon_user = AnonUser()
-                db.session.add(g.anon_user)
-                g.esession = EventSession.new_from_request(request)
-                g.esession.anon_user = g.anon_user
-                db.session.add(g.esession)
-                g.esession.load_from_cache(session['au'], UserEvent)
-                # We'll update session['au'] below after database commit
+            # elif session['au'] == 'test':  # Legacy test cookie, original request now lost
+            #     g.anon_user = AnonUser()
+            #     db.session.add(g.anon_user)
+            #     g.esession = EventSession.new_from_request(request)
+            #     g.esession.anon_user = g.anon_user
+            #     db.session.add(g.esession)
+            #     # We'll update session['au'] below after database commit
+            # elif unicode(session['au']).startswith('test-'):  # Newer redis-backed test cookie
+            #     # This client sent us back our test cookie, so set a real value now
+            #     g.anon_user = AnonUser()
+            #     db.session.add(g.anon_user)
+            #     g.esession = EventSession.new_from_request(request)
+            #     g.esession.anon_user = g.anon_user
+            #     db.session.add(g.esession)
+            #     g.esession.load_from_cache(session['au'], UserEvent)
+            #     # We'll update session['au'] below after database commit
             else:
-                anon_user = AnonUser.query.get(session['au'])
+                anon_user = None  # AnonUser.query.get(session['au'])
                 if not anon_user:
                     # XXX: We got a fake value? This shouldn't happen
                     g.event_data['anon_cookie_test'] = session['au']
@@ -293,7 +293,7 @@ def record_views_and_events(response):
                 save_jobview.delay(
                     viewed_time=now,
                     event_session_id=g.esession.id,
-                    jobpost_id=g.jobpost_viewed[0].id,
+                    jobpost_id=g.jobpost_viewed[0],
                     bgroup=g.jobpost_viewed[1])
         else:
             g.esession.save_to_cache(session['au'])
@@ -320,9 +320,69 @@ def bgroup(jobpost_ab, post):
     return (jobpost_ab.get(post.id) or cointoss()) if post.headlineb else None
 
 
-def cache_viewcounts(posts):
+def get_jobpost_impressions(jobpost_id):
+    return db.session.query(db.func.count(db.func.distinct(EventSession.user_id)).label('count')).join(
+        JobImpression).filter(JobImpression.jobpost_id == jobpost_id).scalar()
+
+
+def get_post_viewcounts(jobpost_id):
+    cache_key = JobPost.viewcounts_key(jobpost_id)
+    values = g.viewcounts.get(cache_key)
+    jobpost = None
+    if not values:
+        # `values` is always a dict, even on a cache miss
+        values = redis_store.hgetall(cache_key)
+        jobpost = JobPost.query.get(jobpost_id)
+    if 'impressions' not in values:
+        jobpost = jobpost or JobPost.query.get(jobpost_id)
+        values['impressions'] = get_jobpost_impressions(jobpost.id)
+        redis_store.hset(cache_key, 'impressions', values['impressions'])
+        redis_store.expire(cache_key, 86400)
+    else:
+        values['impressions'] = int(values['impressions'])
+    if 'viewed' not in values:
+        # values['viewed'] = UserJobView.query.filter_by(jobpost=jobpost).count()
+        jobpost = jobpost or JobPost.query.get(jobpost_id)
+        values['viewed'] = jobpost.viewcounts_viewed
+        redis_store.hset(cache_key, 'viewed', values['viewed'])
+        redis_store.expire(cache_key, 86400)
+    else:
+        values['viewed'] = int(values['viewed'])
+    if 'opened' not in values:
+        # values['opened'] = UserJobView.query.filter_by(jobpost=jobpost, applied=True).count()
+        jobpost = jobpost or JobPost.query.get(jobpost_id)
+        values['opened'] = jobpost.viewcounts_opened
+        redis_store.hset(cache_key, 'opened', values['opened'])
+        redis_store.expire(cache_key, 86400)
+    else:
+        values['opened'] = int(values['opened'])
+    if 'applied' not in values:
+        # values['applied'] = JobApplication.query.filter_by(jobpost=jobpost).count()
+        jobpost = jobpost or JobPost.query.get(jobpost_id)
+        values['applied'] = jobpost.viewcounts_applied
+        redis_store.hset(cache_key, 'applied', values['applied'])
+        redis_store.expire(cache_key, 86400)
+    else:
+        values['applied'] = int(values['applied'])
+    # pay_label rendering is extraordinarily slow. We don't know why yet, but it's static data, so cache it
+    if 'pay_label' not in values:
+        jobpost = jobpost or JobPost.query.get(jobpost_id)
+        values['pay_label'] = jobpost.pay_label()
+        redis_store.hset(cache_key, 'pay_label', values['pay_label'].encode('utf-8'))
+        redis_store.expire(cache_key, 86400)
+    elif isinstance(values['pay_label'], str):  # Redis appears to return bytestrings, not Unicode
+        values['pay_label'] = unicode(values['pay_label'], 'utf-8')
+    return values
+
+
+@app.context_processor
+def inject_post_viewcounts():
+    return {'get_post_viewcounts': get_post_viewcounts}
+
+
+def load_viewcounts(posts):
     redis_pipe = redis_store.pipeline()
-    viewcounts_keys = [p.viewcounts_key for p in posts]
+    viewcounts_keys = JobPost.viewcounts_key([p.id for p in posts])
     for key in viewcounts_keys:
         redis_pipe.hgetall(key)
     viewcounts_values = redis_pipe.execute()
@@ -343,12 +403,6 @@ def getposts(basequery=None, pinned=False, showall=False, statuses=None, ageless
     now = datetime.utcnow()
 
     if g.board:
-        # Load into cache
-        g.board_jobs = {r.jobpost_id: r for r in
-            BoardJobPost.query.join(BoardJobPost.jobpost).filter(
-                BoardJobPost.board == g.board, JobPost.datetime > now - agelimit).options(
-                    db.load_only('jobpost_id', 'pinned')).all()
-        }
         query = query.join(JobPost.postboards).filter(BoardJobPost.board == g.board)
 
     if not ageless:
@@ -495,11 +549,9 @@ def list_dirty_impression_counts():
 
 def update_impression_counts(jobpost_ids):
     for jobpost_id in jobpost_ids:
-        # Replicate post.viewcounts's query here because we don't want to load the post from db just to
-        # access a class instance method
-        redis_store.hset('hasjob/viewcounts/%d' % jobpost_id, 'impressions',
-            db.session.query(db.func.count(db.func.distinct(EventSession.user_id)).label('count')
-            ).join(JobImpression).filter(JobImpression.jobpost_id == jobpost_id).first().count)
+        redis_store.hset(JobPost.viewcounts_key(jobpost_id),
+            'impressions',
+            get_jobpost_impressions(jobpost_id))
 
 
 def update_dirty_impression_counts():
@@ -779,11 +831,11 @@ def filter_categories(basequery, board, filters):
 @app.context_processor
 def inject_filter_options():
     def get_job_filters():
-        basequery = getposts(showall=True, order=False, limit=False)
         filters = g.get('event_data', {}).get('filters', {})
         cache_key = 'jobfilters/' + (g.board.name + '/' if g.board else '') + hashlib.sha1(repr(filters)).hexdigest()
         result = cache.get(cache_key)
         if not result:
+            basequery = getposts(showall=True, order=False, limit=False)
             result = dict(job_location_filters=filter_locations(g.board, filters),
                 job_type_filters=filter_types(basequery, board=g.board, filters=filters),
                 job_category_filters=filter_categories(basequery, board=g.board, filters=filters))

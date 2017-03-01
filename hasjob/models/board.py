@@ -257,7 +257,7 @@ class BoardJobPost(TimestampMixin, db.Model):
     pinned = db.Column(db.Boolean, default=False, nullable=False)
 
     def __repr__(self):
-        return '<BoardJobPost %s: %s>' % (self.board.name, repr(self.jobpost)[1:-1])
+        return '<BoardJobPost {board_id}: {jobpost_id}>'.format(board_id=self.board_id, jobpost_id=self.jobpost_id)
 
 
 def _jobpost_link_to_board(self, board):
