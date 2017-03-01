@@ -427,7 +427,7 @@ def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, tit
 @lastuser.requires_login
 def browse_drafts():
     basequery = JobPost.query.filter_by(user=g.user)
-    return index(basequery=basequery, ageless=True, statuses=[POSTSTATUS.DRAFT, POSTSTATUS.PENDING])
+    return index(basequery=basequery, ageless=True, statuses=[POSTSTATUS.DRAFT, POSTSTATUS.PENDING], cached=False)
 
 
 @app.route('/my', methods=['GET', 'POST'], subdomain='<subdomain>')
@@ -435,7 +435,7 @@ def browse_drafts():
 @lastuser.requires_login
 def my_posts():
     basequery = JobPost.query.filter_by(user=g.user)
-    return index(basequery=basequery, ageless=True, statuses=POSTSTATUS.MY)
+    return index(basequery=basequery, ageless=True, statuses=POSTSTATUS.MY, cached=False)
 
 
 @app.route('/bookmarks', subdomain='<subdomain>')
@@ -443,7 +443,7 @@ def my_posts():
 @lastuser.requires_login
 def bookmarks():
     basequery = JobPost.query.join(starred_job_table).filter(starred_job_table.c.user_id == g.user.id)
-    return index(basequery=basequery, ageless=True, statuses=POSTSTATUS.ARCHIVED)
+    return index(basequery=basequery, ageless=True, statuses=POSTSTATUS.ARCHIVED, cached=False)
 
 
 @app.route('/applied', subdomain='<subdomain>')
