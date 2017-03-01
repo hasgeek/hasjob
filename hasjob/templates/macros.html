@@ -15,17 +15,17 @@
           <span title="Listed › Viewed › Opened form › Applied">
             {{ post_viewcounts['impressions'] }} › {{ post_viewcounts['viewed'] }} › {{ post_viewcounts['opened'] }} › {{ post_viewcounts['applied'] }}
           </span>
-        {% endif %}
-        {%- if show_viewcounts and show_pay %} &middot; {% endif %}
-        {%- if show_pay %}{{ post_viewcounts['pay_label'] }}{% endif %}
+        {%- endif %}
+        {%- if show_viewcounts and show_pay %} &middot; {%- endif %}
+        {%- if show_pay %}{{ post_viewcounts['pay_label'] }}{%- endif %}
       </span>
-      {% endwith %}
-    {% endif %}
+      {%- endwith %}
+    {%- endif %}
     <span class="annotation bottom-right">{{ post.company_name }}</span>
     <span class="annotation bottom-left">
       {%- if starred is not none %}
         <span class="pstar"><i class="fa fa-star{% if not starred %}-o{% endif %}" data-id="{{ post.hashid }}"></i></span>
-      {% endif %}
+      {%- endif %}
       {%- with status_label = post.status_label() -%}
         {%- if status_label -%}
           <span class="new">{{ status_label }}</span>
