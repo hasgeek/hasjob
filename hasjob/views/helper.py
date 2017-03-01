@@ -330,6 +330,7 @@ def get_post_viewcounts(jobpost_id):
     values = g.viewcounts.get(cache_key)
     jobpost = None
     if not values:
+        # `values` is always a dict, even on a cache miss
         values = redis_store.hgetall(cache_key)
         jobpost = JobPost.query.get(jobpost_id)
     if 'impressions' not in values:
