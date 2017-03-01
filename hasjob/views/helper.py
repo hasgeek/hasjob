@@ -548,7 +548,7 @@ def list_dirty_impression_counts():
 
 def update_impression_counts(jobpost_ids):
     for jobpost_id in jobpost_ids:
-        redis_store.hset('hasjob/viewcounts/%d' % jobpost_id,
+        redis_store.hset(JobPost.viewcounts_key(jobpost_id),
             'impressions',
             get_jobpost_impressions(jobpost_id))
 
