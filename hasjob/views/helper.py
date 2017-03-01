@@ -322,7 +322,7 @@ def bgroup(jobpost_ab, post):
 
 def get_jobpost_impressions(jobpost_id):
     return db.session.query(db.func.count(db.func.distinct(EventSession.user_id)).label('count')).join(
-        JobImpression).filter(JobImpression.jobpost_id == jobpost_id).first().count
+        JobImpression).filter(JobImpression.jobpost_id == jobpost_id).scalar()
 
 
 def get_post_viewcounts(jobpost_id):
