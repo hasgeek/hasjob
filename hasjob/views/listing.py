@@ -42,7 +42,7 @@ from hasjob.uploads import uploaded_logos
 from hasjob.utils import get_word_bag, redactemail, random_long_key, common_legal_names
 from hasjob.views import ALLOWED_TAGS
 from hasjob.nlp import identify_language
-from hasjob.views.helper import gif1x1, cache_viewcounts, session_jobpost_ab, bgroup
+from hasjob.views.helper import gif1x1, load_viewcounts, session_jobpost_ab, bgroup, get_post_viewcounts
 
 
 @app.route('/<domain>/<hashid>', methods=('GET', 'POST'), subdomain='<subdomain>')
@@ -88,7 +88,6 @@ def jobdetail(domain, hashid):
                 db.session.commit()
             except IntegrityError:
                 db.session.rollback()
-            post.viewcounts  # Re-populate cache
     else:
         jobview = None
 
@@ -162,13 +161,16 @@ def jobdetail(domain, hashid):
 
     is_bgroup = getbool(request.args.get('b'))
     headline = post.headlineb if is_bgroup and post.headlineb else post.headline
+    if is_siteadmin or post.admin_is(g.user) or (g.user and g.user.flags.get('is_employer_month')):
+        post_viewcounts = get_post_viewcounts(post.id)
+    else:
+        post_viewcounts = None
 
     return render_template('detail.html', post=post, headline=headline, reportform=reportform, rejectform=rejectform,
         pinnedform=pinnedform,
         jobview=jobview, report=report, moderateform=moderateform,
         domain_mismatch=domain_mismatch, header_campaign=header_campaign,
-        is_bgroup=is_bgroup, is_siteadmin=is_siteadmin
-        )
+        is_bgroup=is_bgroup, is_siteadmin=is_siteadmin, post_viewcounts=post_viewcounts)
 
 
 @app.route('/<domain>/<hashid>/related', subdomain='<subdomain>')
@@ -178,13 +180,11 @@ def jobdetail(domain, hashid):
 def job_related_posts(domain, hashid):
     is_siteadmin = lastuser.has_permission('siteadmin')
     post = JobPost.query.filter_by(hashid=hashid).options(*JobPost._defercols).first_or_404()
-
     jobpost_ab = session_jobpost_ab()
     related_posts = post.related_posts().all()
     if is_siteadmin or (g.user and g.user.flags.get('is_employer_month')):
-        cache_viewcounts(related_posts)
+        load_viewcounts(related_posts)
     g.impressions = {rp.id: (False, rp.id, bgroup(jobpost_ab, rp)) for rp in related_posts}
-
     return render_template('related_posts.html', post=post,
         related_posts=related_posts, is_siteadmin=is_siteadmin)
 
@@ -243,7 +243,6 @@ def revealjob(domain, hashid):
             cache.delete_memoized(viewstats_by_id_qhour, post.id)
             cache.delete_memoized(viewstats_by_id_hour, post.id)
             cache.delete_memoized(viewstats_by_id_day, post.id)
-            post.viewcounts  # Re-populate cache
         except IntegrityError:
             db.session.rollback()
             pass  # User double-clicked. Ignore.
@@ -254,7 +253,6 @@ def revealjob(domain, hashid):
         cache.delete_memoized(viewstats_by_id_qhour, post.id)
         cache.delete_memoized(viewstats_by_id_hour, post.id)
         cache.delete_memoized(viewstats_by_id_day, post.id)
-        post.viewcounts  # Re-populate cache
 
     applyform = None
     job_application = JobApplication.query.filter_by(user=g.user, jobpost=post).first()
