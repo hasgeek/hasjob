@@ -12,14 +12,16 @@ from baseframe import _, dogpile
 from .. import app, lastuser
 from ..models import (db, JobCategory, JobPost, JobType, POSTSTATUS, newlimit, agelimit, JobLocation, Board,
     Domain, Location, Tag, JobPostTag, Campaign, CAMPAIGN_POSITION, CURRENCY, JobApplication, starred_job_table, BoardJobPost)
-from ..views.helper import (getposts, getallposts, gettags, location_geodata, cache_viewcounts, session_jobpost_ab,
-    bgroup, make_pay_graph, index_is_paginated)
+from ..views.helper import (getposts, getallposts, gettags, location_geodata, load_viewcounts, session_jobpost_ab,
+    bgroup, make_pay_graph, index_is_paginated, get_post_viewcounts)
 from ..uploads import uploaded_logos
 from ..utils import string_to_number
 
 
 def stickie_dict(post, url, pinned=False, show_viewcounts=False, show_pay=False,
         starred=False, is_bgroup=None):
+    if show_viewcounts or show_pay:
+        post_viewcounts = get_post_viewcounts(post.id)
     result = {
         'headline': post.headlineb if is_bgroup else post.headline,
         'url': url,
@@ -33,13 +35,13 @@ def stickie_dict(post, url, pinned=False, show_viewcounts=False, show_pay=False,
         }
     if show_viewcounts:
         result['viewcounts'] = {
-            'listed': post.viewcounts['impressions'],
-            'viewed': post.viewcounts['viewed'],
-            'opened': post.viewcounts['opened'],
-            'applied': post.viewcounts['applied']
-            }
+            'listed': post_viewcounts['impressions'],
+            'viewed': post_viewcounts['viewed'],
+            'opened': post_viewcounts['opened'],
+            'applied': post_viewcounts['applied']
+        }
     if show_pay:
-        result['pay'] = post.viewcounts['pay_label']
+        result['pay'] = post_viewcounts['pay_label']
     return result
 
 
@@ -73,7 +75,7 @@ def json_index(data):
             for pinned, post, is_bgroup in group:
                 rgroup['posts'].append(stickie_dict(
                     post=post, url=post.url_for(b=is_bgroup), pinned=pinned, is_bgroup=is_bgroup,
-                    show_viewcounts=is_siteadmin or g.user and g.user.flags.is_employer_month,
+                    show_viewcounts=is_siteadmin or g.user and g.user.flags.get('is_employer_month'),
                     show_pay=is_siteadmin, starred=g.user and post.id in g.starred_ids
                     ))
             result['grouped'].append(rgroup)
@@ -81,7 +83,7 @@ def json_index(data):
         for pinned, post, is_bgroup in pinsandposts:
             result['posts'].append(stickie_dict(
                 post=post, url=post.url_for(b=is_bgroup), pinned=pinned, is_bgroup=is_bgroup,
-                show_viewcounts=is_siteadmin or g.user and g.user.flags.is_employer_month,
+                show_viewcounts=is_siteadmin or g.user and g.user.flags.get('is_employer_month'),
                 show_pay=is_siteadmin, starred=g.user and post.id in g.starred_ids
                 ))
 
@@ -370,7 +372,10 @@ def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, tit
         g.starred_ids = set()
 
     if is_siteadmin or (g.user and g.user.flags.get('is_employer_month')):
-        cache_viewcounts(data['posts'])
+        load_viewcounts(data['posts'])
+        show_viewcounts = True
+    else:
+        show_viewcounts = False
 
     if data['grouped']:
         g.impressions = {post.id: (pinflag, post.id, is_bgroup)
@@ -404,6 +409,9 @@ def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, tit
     data['now'] = now
     data['is_siteadmin'] = is_siteadmin
     data['location_prompts'] = location_prompts
+    if data['domain'] and data['domain'] not in db.session:
+        data['domain'] = db.session.merge(data['domain'])
+    data['show_viewcounts'] = show_viewcounts
     return data
 
 

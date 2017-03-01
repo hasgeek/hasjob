@@ -223,7 +223,7 @@
                   <i class="fa fa-fw fa-money"></i>&nbsp;&nbsp; {{ post.pay_label() }}
                 </span>
               {%- endif %}
-              {%- with appl=post.viewcounts['applied'], newappl=post.new_applications, replappl=post.replied_applications %}{% if appl %}
+              {%- with appl=post_viewcounts['applied'], newappl=post.new_applications, replappl=post.replied_applications %}{% if appl %}
                 <a class="list-group-item" href="{{ post.url_for('manage') }}">
                   <i class="fa fa-fw fa-file-text-o"></i>&nbsp;&nbsp; View candidates
                   {%- if newappl %} <span class="badge badge-new">{{ newappl }}/{{ appl }}{% if is_siteadmin and replappl %} › {{ replappl }}{% endif %}</span>
