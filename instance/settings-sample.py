@@ -64,7 +64,6 @@ SUPPORT_EMAIL = 'person@example.com'
 SITEMAP_KEY = None
 DOGPILE_CACHE_URLS = "http://127.0.0.1:6379"
 DOGPILE_CACHE_REGIONS = [
-    ('hasjob_index', 3600),
-    ('hasjob_viewcounts', 3600)
+    ('hasjob_index', 3600)
 ]
 DOGPILE_CACHE_BACKEND = 'dogpile.cache.redis'
