@@ -161,7 +161,7 @@ def jobdetail(domain, hashid):
 
     is_bgroup = getbool(request.args.get('b'))
     headline = post.headlineb if is_bgroup and post.headlineb else post.headline
-    if is_siteadmin or post.admin_is(g.user) or (g.user and g.user.flags.is_employer_month):
+    if is_siteadmin or post.admin_is(g.user) or (g.user and g.user.flags.get('is_employer_month')):
         post_viewcounts = get_post_viewcounts(post.id)
     else:
         post_viewcounts = None
