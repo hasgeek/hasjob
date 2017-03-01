@@ -320,6 +320,11 @@ def bgroup(jobpost_ab, post):
     return (jobpost_ab.get(post.id) or cointoss()) if post.headlineb else None
 
 
+def get_jobpost_impressions(jobpost_id):
+    return db.session.query(db.func.count(db.func.distinct(EventSession.user_id)).label('count')).join(
+        JobImpression).filter(JobImpression.jobpost_id == jobpost_id).first().count
+
+
 @dogpile.region('hasjob_viewcounts')
 def get_post_viewcounts(jobpost):
     # The result for this function is cached for a period
@@ -331,11 +336,7 @@ def get_post_viewcounts(jobpost):
     if values is None:
         values = redis_store.hgetall(cache_key)
     if 'impressions' not in values:
-        # Also see views.helper.update_impression_counts for a copy of this query
-        # values['impressions'] = db.session.query(db.func.count(
-        #     db.func.distinct(EventSession.user_id)).label('count')).join(
-        #     JobImpression).filter(JobImpression.jobpost == jobpost).first().count
-        values['impressions'] = jobpost.viewcounts_impressions
+        values['impressions'] = get_jobpost_impressions(jobpost.id)
         redis_store.hset(cache_key, 'impressions', values['impressions'])
         redis_store.expire(cache_key, 86400)
     else:
@@ -545,11 +546,9 @@ def list_dirty_impression_counts():
 
 def update_impression_counts(jobpost_ids):
     for jobpost_id in jobpost_ids:
-        # Replicate viewcounts query from JobPost here because we don't want to load the post from db just to
-        # access a class instance method
-        redis_store.hset('hasjob/viewcounts/%d' % jobpost_id, 'impressions',
-            db.session.query(db.func.count(db.func.distinct(EventSession.user_id)).label('count')
-            ).join(JobImpression).filter(JobImpression.jobpost_id == jobpost_id).first().count)
+        redis_store.hset('hasjob/viewcounts/%d' % jobpost_id,
+            'impressions',
+            get_jobpost_impressions(jobpost_id))
 
 
 def update_dirty_impression_counts():

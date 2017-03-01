@@ -187,7 +187,6 @@ class JobPost(BaseMixin, db.Model):
         # These are defined below JobApplication
         defer('new_applications'),
         defer('replied_applications'),
-        defer('viewcounts_impressions'),
         defer('viewcounts_viewed'),
         defer('viewcounts_opened'),
         defer('viewcounts_applied'),
@@ -854,11 +853,6 @@ JobPost.new_applications = db.column_property(
 JobPost.replied_applications = db.column_property(
     db.select([db.func.count(JobApplication.id)]).where(
         db.and_(JobApplication.jobpost_id == JobPost.id, JobApplication.response == EMPLOYER_RESPONSE.REPLIED)))
-
-
-JobPost.viewcounts_impressions = db.column_property(
-    db.select([db.func.count(db.func.distinct(EventSession.user_id))]).where(
-        db.and_(JobImpression.event_session_id == EventSession.id, JobImpression.jobpost_id == JobPost.id)))
 
 
 JobPost.viewcounts_viewed = db.column_property(
