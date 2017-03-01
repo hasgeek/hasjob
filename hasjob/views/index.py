@@ -404,6 +404,8 @@ def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, tit
     data['now'] = now
     data['is_siteadmin'] = is_siteadmin
     data['location_prompts'] = location_prompts
+    if data['domain'] and data['domain'] not in db.session:
+        data['domain'] = db.session.merge(data['domain'])
     return data
 
 
