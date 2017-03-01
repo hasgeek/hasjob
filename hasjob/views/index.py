@@ -20,6 +20,8 @@ from ..utils import string_to_number
 
 def stickie_dict(post, url, pinned=False, show_viewcounts=False, show_pay=False,
         starred=False, is_bgroup=None):
+    if show_viewcounts or show_pay:
+        post_viewcounts = get_post_viewcounts(post)
     result = {
         'headline': post.headlineb if is_bgroup else post.headline,
         'url': url,
@@ -33,13 +35,13 @@ def stickie_dict(post, url, pinned=False, show_viewcounts=False, show_pay=False,
         }
     if show_viewcounts:
         result['viewcounts'] = {
-            'listed': get_post_viewcounts(post)['impressions'],
-            'viewed': get_post_viewcounts(post)['viewed'],
-            'opened': get_post_viewcounts(post)['opened'],
-            'applied': get_post_viewcounts(post)['applied']
-            }
+            'listed': post_viewcounts['impressions'],
+            'viewed': post_viewcounts['viewed'],
+            'opened': post_viewcounts['opened'],
+            'applied': post_viewcounts['applied']
+        }
     if show_pay:
-        result['pay'] = get_post_viewcounts(post)['pay_label']
+        result['pay'] = post_viewcounts['pay_label']
     return result
 
 
