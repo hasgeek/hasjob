@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
-from flask import Markup
+# from flask import Markup
 from baseframe import __
 import baseframe.forms as forms
 
@@ -17,12 +17,12 @@ class DomainForm(forms.Form):
         validators=[forms.validators.Optional(),
             forms.validators.Length(min=1, max=250, message=__("%%(max)d characters maximum"))],
         description=__(u"Optional — The full legal name of your organization"))
-    logo_url = forms.URLField(__("Logo URL"),  # TODO: Use ImgeeField
-        validators=[forms.validators.Optional(),
-            forms.validators.Length(min=0, max=250, message=__("%%(max)d characters maximum"))],
-        description=Markup(__(u"Optional — Your organization’s logo. "
-            u"Upload at <a target='_blank' href='https://images.hasgeek.com/'>images.hasgeek.com</a> "
-            u"and use the Direct Link URL")))
+    # logo_url = forms.URLField(__("Logo URL"),  # TODO: Use ImgeeField
+    #     validators=[forms.validators.Optional(),
+    #         forms.validators.Length(min=0, max=250, message=__("%%(max)d characters maximum"))],
+    #     description=Markup(__(u"Optional — Your organization’s logo. "
+    #         u"Upload at <a target='_blank' href='https://images.hasgeek.com/'>images.hasgeek.com</a> "
+    #         u"and use the Direct Link URL")))
     description = forms.TinyMce4Field(__("Description"),
         description=__("Who are you and why should someone work for you? Tell your story"),
         content_css=content_css, validators=[
