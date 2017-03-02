@@ -498,7 +498,7 @@ def browse_by_email(md5sum):
     basequery = JobPost.query.filter_by(md5sum=md5sum)
     jobpost = basequery.first_or_404()
     jobpost_user = jobpost.user
-    return index(basequery=basequery, md5sum=md5sum, showall=True, template_vars={'jobpost_user': jobpost_user})
+    return index(basequery=basequery, md5sum=md5sum, showall=True, cached=False, template_vars={'jobpost_user': jobpost_user})
 
 
 @app.route('/in/<location>', methods=['GET', 'POST'], subdomain='<subdomain>')
