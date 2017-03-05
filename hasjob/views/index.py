@@ -322,7 +322,7 @@ def fetch_jobposts(request_args, request_values, is_index, board, board_jobs, gk
 
 @dogpile.region('hasjob_index')
 def fetch_cached_jobposts(request_args, request_values, is_index, board, board_jobs, gkiosk, basequery, md5sum, domain, location, title, showall, statuses, batched, ageless, template_vars, search_query=None):
-    return fetch_jobposts(request_args, request_values, is_index, board, board_jobs, gkiosk, basequery, md5sum, domain, location, title, showall, statuses, batched, ageless, template_vars, search_query=None)
+    return fetch_jobposts(request_args, request_values, is_index, board, board_jobs, gkiosk, basequery, md5sum, domain, location, title, showall, statuses, batched, ageless, template_vars, search_query)
 
 
 @app.route('/', methods=['GET', 'POST'], subdomain='<subdomain>')
