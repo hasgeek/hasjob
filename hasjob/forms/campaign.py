@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from flask import g
-from baseframe import _, __
+from baseframe import __
 import baseframe.forms as forms
 from wtforms.widgets import CheckboxInput, ListWidget
 from wtforms.ext.sqlalchemy.fields import QuerySelectMultipleField
@@ -33,7 +33,8 @@ class CampaignForm(forms.Form):
     title = forms.StringField(__("Title"), description=__("A reference name for looking up this campaign again"),
         validators=[forms.validators.DataRequired(__("A title is required")), forms.validators.StripWhitespace()])
     start_at = forms.DateTimeField(__("Start at"), timezone=lambda: g.user.timezone if g.user else None)
-    end_at = forms.DateTimeField(__("End at"), timezone=lambda: g.user.timezone if g.user else None)
+    end_at = forms.DateTimeField(__("End at"), timezone=lambda: g.user.timezone if g.user else None,
+        validators=[forms.validators.GreaterThan('start_at', __(u"The campaign can’t end before it starts"))])
     public = forms.BooleanField(__("This campaign is live"))
     position = forms.RadioField(__("Display position"), choices=CAMPAIGN_POSITION.items(), coerce=int)
     priority = forms.IntegerField(__("Priority"), default=0,
@@ -58,10 +59,6 @@ class CampaignForm(forms.Form):
 
     def validate_geonameids(self, field):
         field.data = [int(x) for x in field.data if x.isdigit()]
-
-    def validate_end_at(self, field):
-        if field.data <= self.start_at.data:
-            raise forms.ValidationError(_(u"The campaign can’t end before it starts"))
 
 
 class CampaignActionForm(forms.Form):
