@@ -7,7 +7,7 @@ from urllib import quote, quote_plus
 import hashlib
 import bleach
 import requests
-from pytz import utc, timezone
+from pytz import utc
 from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
 from geoip2.errors import AddressNotFoundError
@@ -16,7 +16,7 @@ from flask.ext.rq import job
 from flask.ext.lastuser import signal_user_looked_up
 from coaster.utils import uuid1mc
 from coaster.sqlalchemy import failsafe_add
-from baseframe import _, cache
+from baseframe import _, cache, get_timezone
 from baseframe.signals import form_validation_error, form_validation_success
 
 from .. import app, redis_store
@@ -670,21 +670,14 @@ def jobpost_location_hierarchy(self):
 JobPost.location_hierarchy = property(jobpost_location_hierarchy)
 
 
-def use_timezone():
-    if g and g.user:
-        return g.user.tz
-    else:
-        return timezone(app.config['TIMEZONE'])
-
-
 @app.template_filter('shortdate')
 def shortdate(date):
-    return utc.localize(date).astimezone(use_timezone()).strftime('%b %e')
+    return utc.localize(date).astimezone(get_timezone()).strftime('%b %e')
 
 
 @app.template_filter('longdate')
 def longdate(date):
-    return utc.localize(date).astimezone(use_timezone()).strftime('%B %e, %Y')
+    return utc.localize(date).astimezone(get_timezone()).strftime('%B %e, %Y')
 
 
 @app.template_filter('cleanurl')
