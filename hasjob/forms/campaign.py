@@ -14,7 +14,7 @@ from . import content_css, optional_url
 
 class CampaignContentForm(forms.Form):
     subject = forms.StringField(__("Subject"), description=__("A subject title shown to viewers"),
-        validators=[forms.validators.Optional()], filters=[forms.filters.strip(), forms.filters.nullblank()])
+        validators=[forms.validators.Optional()], filters=[forms.filters.strip(), forms.filters.none_if_empty()])
     blurb = forms.TinyMce4Field(__("Blurb"),
         description=__("Teaser to introduce the campaign and convince users to interact"),
         content_css=content_css,
@@ -66,12 +66,12 @@ class CampaignActionForm(forms.Form):
     title = forms.StringField(__("Title"), description=__("Contents of the call to action button"),
         validators=[forms.validators.DataRequired("You must provide some text")],
         filters=[forms.filters.strip()])
-    icon = forms.StringField(__("Icon"), validators=[forms.validators.Optional()], filters=[forms.filters.nullblank()],
+    icon = forms.StringField(__("Icon"), validators=[forms.validators.Optional()], filters=[forms.filters.none_if_empty()],
         description=__("Optional Font-Awesome icon name"))
     public = forms.BooleanField(__("This action is live"))
     type = forms.RadioField(__("Type"), choices=CAMPAIGN_ACTION.items(), validators=[forms.validators.DataRequired(__("This is required"))])
     group = forms.StringField(__("RSVP group"), validators=[forms.validators.Optional()],
-        filters=[forms.filters.nullblank()],
+        filters=[forms.filters.none_if_empty()],
         description=__("If you have multiple RSVP actions, add an optional group name"))
     category = forms.RadioField(__("Category"), validators=[forms.validators.DataRequired(__("This is required"))],
         widget=forms.InlineListWidget(class_='button-bar', class_prefix='btn btn-'), choices=[

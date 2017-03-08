@@ -55,7 +55,7 @@ class ListingForm(forms.Form):
         validators=[forms.validators.Optional(),
             forms.validators.Length(min=1, max=100, message=__("%%(max)d characters maximum")),
             forms.validators.NoObfuscatedEmail(__(u"Do not include contact information in the post"))],
-        filters=[forms.filters.strip(), forms.filters.nullblank()])
+        filters=[forms.filters.strip(), forms.filters.none_if_empty()])
     job_type = forms.RadioField(__("Type"), coerce=int,
         validators=[forms.validators.InputRequired(__("The job type must be specified"))])
     job_category = forms.RadioField(__("Category"), coerce=int,
@@ -139,7 +139,7 @@ class ListingForm(forms.Form):
         prefix='@', validators=[
             forms.validators.Optional(),
             forms.validators.Length(min=0, max=15, message=__(u"Twitter accounts can’t be over %%(max)d characters long"))],
-        filters=[forms.filters.strip(), forms.filters.nullblank()])
+        filters=[forms.filters.strip(), forms.filters.none_if_empty()])
     collaborators = forms.UserSelectMultiField(__(u"Collaborators"),
         description=__(u"If someone is helping you evaluate candidates, type their names here. "
                        u"They must have a HasGeek account. They will not receive email notifications "

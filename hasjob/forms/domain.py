@@ -17,7 +17,7 @@ class DomainForm(forms.Form):
     legal_title = forms.StringField(__("Legal name"),
         validators=[forms.validators.Optional(),
             forms.validators.Length(min=1, max=250, message=__("%%(max)d characters maximum"))],
-        filters=[forms.filters.nullblank()],
+        filters=[forms.filters.none_if_empty()],
         description=__(u"Optional — The full legal name of your organization"))
     # logo_url = forms.URLField(__("Logo URL"),  # TODO: Use ImgeeField
     #     validators=[forms.validators.Optional(),
