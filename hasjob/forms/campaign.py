@@ -12,8 +12,8 @@ from . import content_css, optional_url
 
 
 class CampaignContentForm(forms.Form):
-    subject = forms.NullTextField(__("Subject"), description=__("A subject title shown to viewers"),
-        validators=[forms.validators.Optional(), forms.validators.StripWhitespace()])
+    subject = forms.StringField(__("Subject"), description=__("A subject title shown to viewers"),
+        validators=[forms.validators.Optional()], filters=[forms.filters.strip(), forms.filters.none_if_empty()])
     blurb = forms.TinyMce4Field(__("Blurb"),
         description=__("Teaser to introduce the campaign and convince users to interact"),
         content_css=content_css,
@@ -30,7 +30,8 @@ class CampaignContentForm(forms.Form):
 
 class CampaignForm(forms.Form):
     title = forms.StringField(__("Title"), description=__("A reference name for looking up this campaign again"),
-        validators=[forms.validators.DataRequired(__("A title is required")), forms.validators.StripWhitespace()])
+        validators=[forms.validators.DataRequired(__("A title is required"))],
+        filters=[forms.filters.strip()])
     start_at = forms.DateTimeField(__("Start at"))
     end_at = forms.DateTimeField(__("End at"),
         validators=[forms.validators.GreaterThan('start_at', __(u"The campaign can’t end before it starts"))])
@@ -62,12 +63,14 @@ class CampaignForm(forms.Form):
 
 class CampaignActionForm(forms.Form):
     title = forms.StringField(__("Title"), description=__("Contents of the call to action button"),
-        validators=[forms.validators.DataRequired("You must provide some text"), forms.validators.StripWhitespace()])
-    icon = forms.NullTextField(__("Icon"), validators=[forms.validators.Optional()],
+        validators=[forms.validators.DataRequired("You must provide some text")],
+        filters=[forms.filters.strip()])
+    icon = forms.StringField(__("Icon"), validators=[forms.validators.Optional()], filters=[forms.filters.none_if_empty()],
         description=__("Optional Font-Awesome icon name"))
     public = forms.BooleanField(__("This action is live"))
     type = forms.RadioField(__("Type"), choices=CAMPAIGN_ACTION.items(), validators=[forms.validators.DataRequired(__("This is required"))])
-    group = forms.NullTextField(__("RSVP group"), validators=[forms.validators.Optional()],
+    group = forms.StringField(__("RSVP group"), validators=[forms.validators.Optional()],
+        filters=[forms.filters.none_if_empty()],
         description=__("If you have multiple RSVP actions, add an optional group name"))
     category = forms.RadioField(__("Category"), validators=[forms.validators.DataRequired(__("This is required"))],
         widget=forms.InlineListWidget(class_='button-bar', class_prefix='btn btn-'), choices=[
@@ -84,10 +87,10 @@ class CampaignActionForm(forms.Form):
         validators=[forms.validators.Optional(), forms.validators.AllUrlsValid()])
     link = forms.URLField(__("Link"), description=__(u"URL to redirect to, if type is “follow link”"),
         validators=[
-            forms.validators.StripWhitespace(),
             optional_url,
             forms.validators.Length(min=0, max=250, message=__("%%(max)d characters maximum")),
-            forms.validators.ValidUrl()])
+            forms.validators.ValidUrl()],
+        filters=[forms.filters.strip()])
     form = forms.TextAreaField(__("Form JSON"), description=__("Form definition (for form type)"),
         validators=[forms.validators.Optional()])
     seq = forms.IntegerField(__("Sequence #"), validators=[forms.validators.DataRequired(__("This is required"))],

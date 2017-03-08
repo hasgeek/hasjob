@@ -46,16 +46,16 @@ class ListingForm(forms.Form):
         description=Markup(__("A single-line summary. This goes to the front page and across the network. "
             """<a id="abtest" class="no-jshidden" href="#">A/B test it?</a>""")),
         validators=[forms.validators.DataRequired(__("A headline is required")),
-            forms.validators.StripWhitespace(),
             forms.validators.Length(min=1, max=100, message=__("%%(max)d characters maximum")),
-            forms.validators.NoObfuscatedEmail(__(u"Do not include contact information in the post"))])
-    job_headlineb = forms.NullTextField(__("Headline B"),
+            forms.validators.NoObfuscatedEmail(__(u"Do not include contact information in the post"))],
+        filters=[forms.filters.strip()])
+    job_headlineb = forms.StringField(__("Headline B"),
         description=__(u"An alternate headline that will be shown to 50%% of users. "
             u"You’ll get a count of views per headline"),
         validators=[forms.validators.Optional(),
-            forms.validators.StripWhitespace(),
             forms.validators.Length(min=1, max=100, message=__("%%(max)d characters maximum")),
-            forms.validators.NoObfuscatedEmail(__(u"Do not include contact information in the post"))])
+            forms.validators.NoObfuscatedEmail(__(u"Do not include contact information in the post"))],
+        filters=[forms.filters.strip(), forms.filters.none_if_empty()])
     job_type = forms.RadioField(__("Type"), coerce=int,
         validators=[forms.validators.InputRequired(__("The job type must be specified"))])
     job_category = forms.RadioField(__("Category"), coerce=int,
@@ -63,8 +63,8 @@ class ListingForm(forms.Form):
     job_location = forms.StringField(__("Location"),
         description=__(u'“Bangalore”, “Chennai”, “Pune”, etc or “Anywhere” (without quotes)'),
         validators=[forms.validators.DataRequired(__(u"If this job doesn’t have a fixed location, use “Anywhere”")),
-            forms.validators.StripWhitespace(),
-            forms.validators.Length(min=3, max=80, message=__("%%(max)d characters maximum"))])
+            forms.validators.Length(min=3, max=80, message=__("%%(max)d characters maximum"))],
+        filters=[forms.filters.strip()])
     job_relocation_assist = forms.BooleanField(__("Relocation assistance available"))
     job_description = forms.TinyMce4Field(__("Description"),
         content_css=content_css,
@@ -102,16 +102,17 @@ class ListingForm(forms.Form):
                        u"yet. We do not accept posts from third parties such as recruitment consultants. Such posts "
                        u"may be removed without notice"),
         validators=[forms.validators.DataRequired(__(u"This is required. Posting any name other than that of the actual organization is a violation of the ToS")),
-            forms.validators.StripWhitespace(),
-            forms.validators.Length(min=4, max=80, message=__("The name must be within %%(min)d to %%(max)d characters"))])
+            forms.validators.Length(min=4, max=80, message=__("The name must be within %%(min)d to %%(max)d characters"))],
+        filters=[forms.filters.strip()])
     company_logo = forms.FileField(__("Logo"),
         description=__(u"Optional — Your organization’s logo will appear at the top of your post."),
         )  # validators=[file_allowed(uploaded_logos, "That image type is not supported")])
     company_logo_remove = forms.BooleanField(__("Remove existing logo"))
     company_url = forms.URLField(__("URL"),
         description=__(u"Your organization’s website"),
-        validators=[forms.validators.DataRequired(), forms.validators.StripWhitespace(), optional_url,
-            forms.validators.Length(max=255, message=__("%%(max)d characters maximum")), forms.validators.ValidUrl()])
+        validators=[forms.validators.DataRequired(), optional_url,
+            forms.validators.Length(max=255, message=__("%%(max)d characters maximum")), forms.validators.ValidUrl()],
+        filters=[forms.filters.strip()])
     hr_contact = forms.RadioField(__(u"Is it okay for recruiters and other "
         u"intermediaries to contact you about this post?"), coerce=getbool,
         description=__(u"We’ll display a notice to this effect on the post"),
@@ -129,16 +130,16 @@ class ListingForm(forms.Form):
                     u"Your email address will not be revealed to applicants until you respond")),
         validators=[
             forms.validators.DataRequired(__("We need to confirm your email address before the job can be listed")),
-            forms.validators.StripWhitespace(),
             forms.validators.Length(min=5, max=80, message=__("%%(max)d characters maximum")),
-            forms.validators.ValidEmail(__("This does not appear to be a valid email address"))])
-    twitter = forms.AnnotatedNullTextField(__("Twitter"),
+            forms.validators.ValidEmail(__("This does not appear to be a valid email address"))],
+        filters=[forms.filters.strip()])
+    twitter = forms.AnnotatedTextField(__("Twitter"),
         description=__(u"Optional — your organization’s Twitter account. "
             u"We’ll tweet mentioning you so you get included on replies"),
         prefix='@', validators=[
             forms.validators.Optional(),
-            forms.validators.StripWhitespace(),
-            forms.validators.Length(min=0, max=15, message=__(u"Twitter accounts can’t be over %%(max)d characters long"))])
+            forms.validators.Length(min=0, max=15, message=__(u"Twitter accounts can’t be over %%(max)d characters long"))],
+        filters=[forms.filters.strip(), forms.filters.none_if_empty()])
     collaborators = forms.UserSelectMultiField(__(u"Collaborators"),
         description=__(u"If someone is helping you evaluate candidates, type their names here. "
                        u"They must have a HasGeek account. They will not receive email notifications "
@@ -365,8 +366,8 @@ class ApplicationForm(forms.Form):
         description=__("Add new email addresses from your profile"))
     apply_phone = forms.StringField(__("Phone"),
         validators=[forms.validators.DataRequired(__("Specify a phone number")),
-            forms.validators.StripWhitespace(),
             forms.validators.Length(min=1, max=15, message=__("%%(max)d characters maximum"))],
+        filters=[forms.filters.strip()],
         description=__("A phone number the employer can reach you at"))
     apply_message = forms.TinyMce4Field(__("Job application"),
         content_css=content_css,
