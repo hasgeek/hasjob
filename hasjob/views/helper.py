@@ -672,12 +672,12 @@ JobPost.location_hierarchy = property(jobpost_location_hierarchy)
 
 @app.template_filter('shortdate')
 def shortdate(date):
-    return utc.localize(date).astimezone(get_timezone()).strftime('%b %e')
+    return utc.localize(date).astimezone(get_timezone()).strftime('%e %b')
 
 
 @app.template_filter('longdate')
 def longdate(date):
-    return utc.localize(date).astimezone(get_timezone()).strftime('%B %e, %Y')
+    return utc.localize(date).astimezone(get_timezone()).strftime('%e %B %Y')
 
 
 @app.template_filter('cleanurl')
