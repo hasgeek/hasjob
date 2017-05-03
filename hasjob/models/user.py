@@ -2,7 +2,7 @@
 
 from datetime import datetime, timedelta
 from flask import request
-from flask.ext.lastuser.sqlalchemy import UserBase2
+from flask_lastuser.sqlalchemy import UserBase2
 from sqlalchemy_utils.types import UUIDType
 from coaster.utils import unicode_http_header, uuid1mc
 from coaster.sqlalchemy import JsonDict

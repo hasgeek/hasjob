@@ -9,7 +9,7 @@ from baseframe import _, __
 import baseframe.forms as forms
 from baseframe.staticdata import webmail_domains
 from coaster.utils import getbool, get_email_domain
-from flask.ext.lastuser import LastuserResourceException
+from flask_lastuser import LastuserResourceException
 
 from ..models import User, JobType, JobApplication, EMPLOYER_RESPONSE, PAY_TYPE, CURRENCY, Domain
 from ..uploads import process_image, UploadNotAllowed

@@ -2,7 +2,7 @@ from __future__ import with_statement
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 from logging.config import fileConfig
-from flask.ext.alembic import FlaskAlembicConfig
+from flask_alembic import FlaskAlembicConfig
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

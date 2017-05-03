@@ -3,12 +3,12 @@
 import os.path
 import geoip2.database
 from flask import Flask
-from flask.ext.assets import Bundle
-from flask.ext.rq import RQ
-from flask.ext.mail import Mail
-from flask.ext.redis import Redis
-from flask.ext.lastuser import Lastuser
-from flask.ext.lastuser.sqlalchemy import UserManager
+from flask_assets import Bundle
+from flask_rq import RQ
+from flask_mail import Mail
+from flask_redis import Redis
+from flask_lastuser import Lastuser
+from flask_lastuser.sqlalchemy import UserManager
 from baseframe import baseframe, assets, Version
 import coaster.app
 from ._version import __version__

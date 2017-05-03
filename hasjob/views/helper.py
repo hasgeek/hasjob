@@ -12,8 +12,8 @@ from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
 from geoip2.errors import AddressNotFoundError
 from flask import Markup, request, g, session
-from flask.ext.rq import job
-from flask.ext.lastuser import signal_user_looked_up
+from flask_rq import job
+from flask_lastuser import signal_user_looked_up
 from coaster.utils import uuid1mc
 from coaster.sqlalchemy import failsafe_add
 from baseframe import _, cache, get_timezone
