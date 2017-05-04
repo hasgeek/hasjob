@@ -32,35 +32,33 @@ assets['hasjob.css'][version] = 'css/app.css'
 from . import models, views  # NOQA
 from .models import db  # NOQA
 
-
 # Configure the app
-def init_for(env):
-    coaster.app.init_app(app, env)
-    db.init_app(app)
-    db.app = app
+coaster.app.init_app(app)
+db.init_app(app)
+db.app = app
 
-    app.geoip = None
-    if 'GEOIP_PATH' in app.config:
-        if not os.path.exists(app.config['GEOIP_PATH']):
-            app.logger.warn("GeoIP database missing at " + app.config['GEOIP_PATH'])
-        else:
-            app.geoip = geoip2.database.Reader(app.config['GEOIP_PATH'])
+app.geoip = None
+if 'GEOIP_PATH' in app.config:
+    if not os.path.exists(app.config['GEOIP_PATH']):
+        app.logger.warn("GeoIP database missing at " + app.config['GEOIP_PATH'])
+    else:
+        app.geoip = geoip2.database.Reader(app.config['GEOIP_PATH'])
 
-    RQ(app)
+RQ(app)
 
-    baseframe.init_app(app, requires=['hasjob'],
-        ext_requires=['baseframe-bs3',
-            ('jquery.autosize', 'jquery.sparkline', 'jquery.liblink', 'jquery.wnumb', 'jquery.nouislider'),
-            'baseframe-firasans', 'fontawesome>=4.3.0', 'bootstrap-multiselect', 'nprogress', 'ractive',
-            'jquery.appear', 'hammer'])
-    # TinyMCE has to be loaded by itself, unminified, or it won't be able to find its assets
-    app.assets.register('js_tinymce', assets.require('!jquery.js', 'tinymce.js>=4.0.0', 'jquery.tinymce.js>=4.0.0'))
-    app.assets.register('css_editor', Bundle('css/editor.css',
-        filters=['cssrewrite', 'cssmin'], output='css/editor.packed.css'))
+baseframe.init_app(app, requires=['hasjob'],
+    ext_requires=['baseframe-bs3',
+        ('jquery.autosize', 'jquery.sparkline', 'jquery.liblink', 'jquery.wnumb', 'jquery.nouislider'),
+        'baseframe-firasans', 'fontawesome>=4.3.0', 'bootstrap-multiselect', 'nprogress', 'ractive',
+        'jquery.appear', 'hammer'])
+# TinyMCE has to be loaded by itself, unminified, or it won't be able to find its assets
+app.assets.register('js_tinymce', assets.require('!jquery.js', 'tinymce.js>=4.0.0', 'jquery.tinymce.js>=4.0.0'))
+app.assets.register('css_editor', Bundle('css/editor.css',
+    filters=['cssrewrite', 'cssmin'], output='css/editor.packed.css'))
 
-    from hasjob.uploads import configure as uploads_configure
-    uploads_configure()
-    mail.init_app(app)
-    redis_store.init_app(app)
-    lastuser.init_app(app)
-    lastuser.init_usermanager(UserManager(db, models.User))
+from hasjob.uploads import configure as uploads_configure
+uploads_configure()
+mail.init_app(app)
+redis_store.init_app(app)
+lastuser.init_app(app)
+lastuser.init_usermanager(UserManager(db, models.User))

@@ -7,7 +7,7 @@ import hasjob.models as models
 import hasjob.forms as forms
 import hasjob.views as views
 from hasjob.models import db
-from hasjob import app, init_for
+from hasjob import app
 from datetime import datetime, timedelta
 
 periodic = Manager(usage="Periodic tasks from cron (with recommended intervals)")
@@ -16,7 +16,6 @@ periodic = Manager(usage="Periodic tasks from cron (with recommended intervals)"
 @periodic.option('-e', '--env', default='dev', help="runtime env [default 'dev']")
 def sessions(env):
     """Sweep user sessions to close all inactive sessions (10m)"""
-    manager.init_for(env)
     es = models.EventSession
     # Close all sessions that have been inactive for >= 30 minutes
     es.query.filter(es.ended_at == None,  # NOQA
@@ -41,6 +40,6 @@ def impressions(env):
 
 if __name__ == '__main__':
     db.init_app(app)
-    manager = init_manager(app, db, init_for, hasjob=hasjob, models=models, forms=forms, views=views)
+    manager = init_manager(app, db, hasjob=hasjob, models=models, forms=forms, views=views)
     manager.add_command('periodic', periodic)
     manager.run()
