@@ -1,14 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from baseframe.staticdata import webmail_domains
-from hasjob import app, init_for, models
+from hasjob import app, models
 from hasjob.models import db
 
 if __name__ == '__main__':
 
     import sys
     webmail_domains = set(['gmail.com', 'hotmail.com'])
-    init_for('testing')
     # Seed with sample data
     with app.test_request_context():
         if not models.JobType.query.notempty():
