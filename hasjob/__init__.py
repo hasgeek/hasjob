@@ -3,6 +3,7 @@
 import os.path
 import geoip2.database
 from flask import Flask
+from flask_migrate import Migrate
 from flask_assets import Bundle
 from flask_rq import RQ
 from flask_mail import Mail
@@ -36,7 +37,7 @@ from .models import db  # NOQA
 coaster.app.init_app(app)
 db.init_app(app)
 db.app = app
-
+migrate = Migrate(app, db)
 app.geoip = None
 if 'GEOIP_PATH' in app.config:
     if not os.path.exists(app.config['GEOIP_PATH']):
