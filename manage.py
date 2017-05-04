@@ -7,21 +7,19 @@ import hasjob.models as models
 import hasjob.forms as forms
 import hasjob.views as views
 from hasjob.models import db
+from hasjob.models.user import EventSession, session_save_active_at
 from hasjob import app, init_for
-from datetime import datetime, timedelta
 
 periodic = Manager(usage="Periodic tasks from cron (with recommended intervals)")
 
 
 @periodic.option('-e', '--env', default='dev', help="runtime env [default 'dev']")
 def sessions(env):
-    """Sweep user sessions to close all inactive sessions (10m)"""
+    """Update activity timestamps and close inactive sessions (5m)"""
     manager.init_for(env)
-    es = models.EventSession
+    session_save_active_at()
     # Close all sessions that have been inactive for >= 30 minutes
-    es.query.filter(es.ended_at == None,  # NOQA
-        es.active_at < (datetime.utcnow() - timedelta(minutes=30))).update(
-        {es.ended_at: es.active_at})
+    EventSession.close_all_inactive()
     db.session.commit()
 
 
