@@ -1,6 +1,6 @@
 import re
 from random import randint, choice
-from coaster import simplify_text
+from coaster.utils import simplify_text
 
 NO_NUM_RE = re.compile('[^0-9]+', re.UNICODE)
 
