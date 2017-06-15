@@ -2,6 +2,7 @@
 
 from os import path
 from datetime import datetime, timedelta
+from uuid import uuid4
 from urlparse import urljoin
 from urllib import quote, quote_plus
 import hashlib
@@ -14,7 +15,6 @@ from geoip2.errors import AddressNotFoundError
 from flask import Markup, request, g, session
 from flask_rq import job
 from flask_lastuser import signal_user_looked_up
-from coaster.utils import uuid1mc
 from coaster.sqlalchemy import failsafe_add
 from baseframe import _, cache, get_timezone
 from baseframe.signals import form_validation_error, form_validation_success
@@ -92,7 +92,7 @@ def load_user_data(user):
             session.pop('au', None)
         else:
             if not session.get('au'):
-                session['au'] = u'test-' + unicode(uuid1mc())
+                session['au'] = u'test-' + unicode(uuid4())
                 g.esession = EventSessionBase.new_from_request(request)
                 g.event_data['anon_cookie_test'] = session['au']
             # elif session['au'] == 'test':  # Legacy test cookie, original request now lost
@@ -116,7 +116,7 @@ def load_user_data(user):
                 if not anon_user:
                     # XXX: We got a fake value? This shouldn't happen
                     g.event_data['anon_cookie_test'] = session['au']
-                    session['au'] = u'test-' + unicode(uuid1mc())  # Try again
+                    session['au'] = u'test-' + unicode(uuid4())  # Try again
                     g.esession = EventSessionBase.new_from_request(request)
                 else:
                     g.anon_user = anon_user

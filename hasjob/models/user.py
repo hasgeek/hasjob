@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
 from datetime import datetime, timedelta
+from uuid import uuid4
 from flask import request
 from flask_lastuser.sqlalchemy import UserBase2
 from sqlalchemy_utils.types import UUIDType
-from coaster.utils import unicode_http_header, uuid1mc
+from coaster.utils import unicode_http_header
 from coaster.sqlalchemy import JsonDict
 from baseframe import _, cache
 from . import db, BaseMixin
@@ -69,7 +70,7 @@ class EventSessionBase(object):
     @classmethod
     def new_from_request(cls, request):
         instance = cls()
-        instance.uuid = uuid1mc()  # Don't wait for database commit to generate this
+        instance.uuid = uuid4()  # Don't wait for database commit to generate this
         instance.created_at = datetime.utcnow()
         instance.referrer = unicode_http_header(request.referrer)[:2083] if request.referrer else None
         instance.utm_source = request.args.get('utm_source', u'')[:250] or None
@@ -120,7 +121,7 @@ class EventSession(EventSessionBase, BaseMixin, db.Model):
     # See https://support.google.com/analytics/answer/2731565?hl=en for source of inspiration
     __tablename__ = 'event_session'
     # UUID for public lookup
-    uuid = db.Column(UUIDType(binary=False), nullable=True, default=uuid1mc, unique=True)
+    uuid = db.Column(UUIDType(binary=False), nullable=True, default=uuid4, unique=True)
     # Who is this user? If known
     user_id = db.Column(None, db.ForeignKey('user.id'), nullable=True, index=True)
     user = db.relationship(User)
