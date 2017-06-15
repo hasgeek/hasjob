@@ -7,7 +7,7 @@ from flask_migrate import Migrate
 from flask_assets import Bundle
 from flask_rq import RQ
 from flask_mail import Mail
-from flask_redis import Redis
+from flask_redis import FlaskRedis
 from flask_lastuser import Lastuser
 from flask_lastuser.sqlalchemy import UserManager
 from baseframe import baseframe, assets, Version
@@ -21,7 +21,7 @@ app = Flask(__name__, instance_relative_config=True, static_folder=None)
 app.static_folder = 'static'
 mail = Mail()
 lastuser = Lastuser()
-redis_store = Redis()
+redis_store = FlaskRedis()
 
 # Second, setup assets
 version = Version(__version__)
