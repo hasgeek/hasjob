@@ -6,7 +6,7 @@ from cStringIO import StringIO
 from pytz import UTC
 import unicodecsv
 from flask import g, request, flash, url_for, redirect, render_template, Markup, abort
-from coaster.utils import buid, make_name
+from coaster.utils import suuid, make_name
 from coaster.views import load_model, load_models
 from baseframe.forms import render_form, render_delete_sqla, render_redirect
 from .. import app, lastuser
@@ -44,7 +44,7 @@ def campaign_new():
     if form.validate_on_submit():
         campaign = Campaign(user=g.user)
         form.populate_obj(campaign)
-        campaign.name = buid()  # Use a random name since it's also used in user action submit forms
+        campaign.name = suuid()  # Use a random name since it's also used in user action submit forms
         db.session.add(campaign)
         db.session.commit()
         flash(u"Created a campaign", 'success')
@@ -98,7 +98,7 @@ def campaign_action_new(campaign):
         action = CampaignAction(campaign=campaign)
         db.session.add(action)
         form.populate_obj(action)
-        action.make_name()
+        action.name = suuid()  # Use a random name since it needs to be permanent
         db.session.commit()
         flash(u"Added campaign action ‘%s’" % action.title, 'interactive')
         return redirect(url_for('campaign_view', campaign=campaign.name), code=303)
@@ -116,7 +116,6 @@ def campaign_action_edit(campaign, action):
     form = CampaignActionForm(obj=action)
     if form.validate_on_submit():
         form.populate_obj(action)
-        action.make_name()
         db.session.commit()
         flash(u"Edited campaign action ‘%s’" % action.title, 'interactive')
         return redirect(url_for('campaign_view', campaign=campaign.name), code=303)
