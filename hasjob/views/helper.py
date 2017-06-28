@@ -536,11 +536,13 @@ def save_jobview(event_session_id, jobpost_id, bgroup, viewed_time):
 
 
 def mark_dirty_impression_counts(jobpost_ids):
-    redis_store.sadd('hasjob/dirty_impression_counts', *jobpost_ids)
+    if jobpost_ids:
+        redis_store.sadd('hasjob/dirty_impression_counts', *jobpost_ids)
 
 
 def remove_dirty_impression_counts(jobpost_ids):
-    redis_store.srem('hasjob/dirty_impression_counts', *jobpost_ids)
+    if jobpost_ids:
+        redis_store.srem('hasjob/dirty_impression_counts', *jobpost_ids)
 
 
 def list_dirty_impression_counts():
