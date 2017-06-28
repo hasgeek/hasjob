@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from coaster.manage import init_manager, manager, Manager
+from coaster.manage import init_manager, Manager
 
 import hasjob
 import hasjob.models as models
@@ -13,8 +13,8 @@ from datetime import datetime, timedelta
 periodic = Manager(usage="Periodic tasks from cron (with recommended intervals)")
 
 
-@periodic.option('-e', '--env', default='dev', help="runtime env [default 'dev']")
-def sessions(env):
+@periodic.command
+def sessions():
     """Sweep user sessions to close all inactive sessions (10m)"""
     es = models.EventSession
     # Close all sessions that have been inactive for >= 30 minutes
@@ -24,17 +24,9 @@ def sessions(env):
     db.session.commit()
 
 
-# Legacy call
-@manager.option('-e', '--env', default='dev', help="runtime env [default 'dev']")
-def sweep(env):
-    """Sweep user sessions to close all inactive sessions [deprecated]"""
-    sessions(env)
-
-
-@periodic.option('-e', '--env', default='dev', help="runtime env [default 'dev']")
-def impressions(env):
+@periodic.command
+def impressions():
     """Recount impressions for jobposts in the dirty list (5m)"""
-    manager.init_for(env)
     views.helper.update_dirty_impression_counts()
 
 
