@@ -3,7 +3,7 @@
 from collections import defaultdict
 from urlparse import urljoin
 import requests
-from flask.ext.rq import job
+from flask_rq import job
 from coaster.utils import text_blocks
 from coaster.nlp import extract_named_entities
 from . import app

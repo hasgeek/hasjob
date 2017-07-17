@@ -11,12 +11,12 @@ revision = 'ec6faeb2eec'
 down_revision = '34e1d4b2f636'
 
 from alembic import op
-import sqlalchemy as sa
 
 
 def upgrade():
     op.drop_constraint('board_userid_key', 'board')
     op.create_index('ix_board_userid', 'board', ['userid'])
+
 
 def downgrade():
     op.drop_index('ix_board_userid', 'board')

@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from hasjob import app, init_for, models
+from hasjob import app, models
 from hasjob.models import db
 
 if __name__ == '__main__':
 
     import sys
-    init_for('dev')
     # Seed with sample data
     with app.test_request_context():
         if not models.JobType.query.notempty():
@@ -36,4 +35,4 @@ if __name__ == '__main__':
             db.session.add(models.ReportCode(seq=30, name=u'anon', title=u'Organization is not clearly identified'))
             db.session.add(models.ReportCode(seq=40, name=u'unclear', title=u'Job position is not properly described'))
             db.session.commit()
-    app.run('0.0.0.0', debug=True)
+    app.run('0.0.0.0', debug=True, port=5000)

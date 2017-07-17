@@ -3,7 +3,7 @@ Hasjob
 
 Code for Hasjob, HasGeek’s job board at https://hasjob.co/
 
-Copyright © 2010-2016 by HasGeek
+Copyright © 2010-2017 by HasGeek
 
 Hasjob’s code is open source under the AGPL v3 license (see LICENSE.txt),
 but the name ‘Hasjob’ and the distinctive appearance of the job board are
@@ -24,11 +24,20 @@ To have your contributions merged back into the master repository, you must
 agree to assign copyright to HasGeek and must assert that you have
 the right to make this assignment.
 
------
+## Installation
 
-Hasjob can be used with Docker (recommended for quick start) or the harder way with a manual setup (recommended for getting involved).
+Hasjob can be used with Docker (recommended for quick start) or the harder way with a manual setup (recommended for getting involved). The Docker approach is unmaintained at this time. Let us know if something doesn't work.
 
-## With Docker
+### Pick an environment
+
+Hasjob requires a `FLASK_ENV` environment variable set to one of the following values, depending on whether the deployment is in development or production:
+
+* `DEVELOPMENT` or `development` or `dev` (default)
+* `PRODUCTION` or `production` or `prod`
+
+In a production environment, you must set `FLASK_ENV` globally for it to be available across processes. On Ubuntu/Debian systems, add it to `/etc/environment` and reboot.
+
+### With Docker
 
 #### Install and run with Docker
 
@@ -58,11 +67,11 @@ Hasjob can be used with Docker (recommended for quick start) or the harder way w
 
 * You can edit the server name and Lastuser settings in `docker-compose.yml`
 
-## Without Docker
+### Without Docker
 
 Hasjob without Docker requires manual installation of all dependencies.
 
-### Postgres and Redis
+#### Postgres and Redis
 
 Hasjob requires Postgres >= 9.4 and Redis. To set up a Postgres DB:
 
@@ -83,7 +92,7 @@ Edit `instance/development.py` to set the variable `SQLALCHEMY_DATABASE_URI` to 
 
 Redis does not require special configuration, but must listen on localhost and port 6379 (default).
 
-### Local URLs
+#### Local URLs
 
 Hasjob makes use of subdomains to serve different sub-boards for jobs. To set it up:
 
@@ -97,11 +106,11 @@ Hasjob makes use of subdomains to serve different sub-boards for jobs. To set it
 
 * Edit `instance/development.py` and change `SERVER_NAME` to `'hasjob.your-machine.local:5000'`
 
-### Install dependencies
+#### Install dependencies
 
 Hasjob runs on [Python](https://www.python.org) with the [Flask](http://flask.pocoo.org/) microframework.
 
-#### Virutalenv + pip
+##### Virutalenv + pip
 
 If you are going to use a computer on which you would work on multiple Python based projects, [Virtualenv](docs.python-guide.org/en/latest/dev/virtualenvs/) is strongly recommended to ensure Hasjob’s elaborate and sometimes version-specific requirements doesn't clash with anything else.
 
@@ -127,20 +136,18 @@ Before you run the server in development mode, make sure you have Postgres serve
 
     $ python runserver.py
 
-## Create root board
+### Create root board
 
 Some functionality in Hasjob requires the presence of a sub-board named `www`. Create it by visiting `http://hasjob.your-machine.local:5000/board` (or the `/board` page on whatever hostname and port you used for your installation). The `www` board is a special-case to refer to the root website.
 
-## Periodic jobs
+### Periodic jobs
 
 Hasjob requires some tasks to be run in periodic background jobs. These can be called from cron. Use `crontab -e` as the user account running Hasjob and add:
 
-    */10 * * * * cd /path/to/hasjob; python manage.py periodic sessions -e dev
-    */5  * * * * cd /path/to/hasjob; python manage.py periodic impressions -e dev
+    */10 * * * * cd /path/to/hasjob; python manage.py periodic sessions
+    */5  * * * * cd /path/to/hasjob; python manage.py periodic impressions
 
-Switch from `dev` to `production` in a production environment.
-
-## Testing
+### Testing
 
 Tests are outdated at this time, but whatever tests exist are written in [CasperJS](http://casperjs.org/).
 
@@ -150,14 +157,14 @@ Edit the top few lines of test file `tests/test_job_post.js` with the URL, usern
 
 Run the test with `casperjs test tests/test_job_post.js`.
 
-## Disabling Cache
+### Disabling Cache
 
 If you ever want to disable caching when developing, inside your `development.py`, add these lines -
 
     CACHE_TYPE = 'null'
     CACHE_NO_NULL_WARNING = False
 
-## Other notes
+### Other notes
 
 If you encounter a problem setting up, please look at existing issue reports
 on GitHub before filing a new issue. This code is the same version used in

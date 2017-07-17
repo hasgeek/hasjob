@@ -4,7 +4,7 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 from werkzeug import cached_property
 from flask import url_for, escape, Markup
-from flask.ext.babelex import format_datetime
+from flask_babelex import format_datetime
 from sqlalchemy import event, DDL
 from sqlalchemy.orm import defer, deferred, load_only
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -505,7 +505,7 @@ class JobPost(BaseMixin, db.Model):
     def viewstats(self):
         now = datetime.utcnow()
         delta = now - self.datetime
-        hourly_stat_limit = 2 # days
+        hourly_stat_limit = 2  # days
         if delta.days < hourly_stat_limit:  # Less than {limit} days
             return 'h', viewstats_by_id_hour(self.id, hourly_stat_limit * 24)
         else:
@@ -546,11 +546,11 @@ def viewstats_helper(jobpost_id, interval, limit, daybatch=False):
     capplied = batches * [0]
     cbuckets = batches * ['']
 
-    interval_hour = interval/3600
+    interval_hour = interval / 3600
     # these are used as initial values for hourly stats
     # buckets are like "HH:00 - HH:00"
-    to_datetime = (now + timedelta(hours=1)) # if now is 09:45, bucket ending hour will be 10:00
-    from_datetime = to_datetime - timedelta(hours=interval_hour) # starting hour will be, 06:00, if interval is 4 hours
+    to_datetime = (now + timedelta(hours=1))  # if now is 09:45, bucket ending hour will be 10:00
+    from_datetime = to_datetime - timedelta(hours=interval_hour)  # starting hour will be, 06:00, if interval is 4 hours
 
     for delta in range(batches):
         if daybatch:
@@ -609,7 +609,7 @@ def viewstats_helper(jobpost_id, interval, limit, daybatch=False):
 
 @cache.memoize(timeout=3600)
 def viewstats_by_id_hour(jobpost_id, limit=48):
-    return viewstats_helper(jobpost_id, 4 * 3600, limit) # 4 hours interval
+    return viewstats_helper(jobpost_id, 4 * 3600, limit)  # 4 hours interval
 
 
 @cache.memoize(timeout=86400)

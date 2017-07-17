@@ -2,7 +2,7 @@
 # flake8: noqa
 
 from datetime import timedelta
-from coaster import LabeledEnum
+from coaster.utils import LabeledEnum
 from coaster.db import db
 from coaster.sqlalchemy import (BaseMixin, BaseNameMixin, TimestampMixin, BaseScopedIdMixin,
     BaseScopedNameMixin, CoordinatesMixin, make_timestamp_columns)

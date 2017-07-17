@@ -9,7 +9,7 @@ from premailer import transform as email_transform
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import StaleDataError
 from flask import abort, flash, g, redirect, render_template, request, url_for, session, Markup, jsonify
-from flask.ext.mail import Message
+from flask_mail import Message
 from baseframe import cache, dogpile
 from baseframe.forms import Form
 from coaster.utils import getbool, get_email_domain, md5sum, base_domain_matches

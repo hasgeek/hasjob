@@ -29,5 +29,6 @@ def upgrade():
     op.execute(job_application.update().where(job_application.c.user_id == user.c.id).values(fullname=user.c.fullname))
     op.alter_column('job_application', 'fullname', server_default=None)
 
+
 def downgrade():
     op.drop_column('job_application', 'fullname')

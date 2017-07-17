@@ -15,8 +15,9 @@ import sqlalchemy as sa
 
 
 def upgrade():
-	op.add_column('jobpost', sa.Column('remote_location', sa.Boolean, nullable=False, server_default='0'))
-	op.alter_column('jobpost', 'remote_location', server_default=None)
+    op.add_column('jobpost', sa.Column('remote_location', sa.Boolean, nullable=False, server_default='0'))
+    op.alter_column('jobpost', 'remote_location', server_default=None)
+
 
 def downgrade():
     op.drop_column('jobpost', 'remote_location')

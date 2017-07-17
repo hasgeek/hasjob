@@ -90,7 +90,6 @@ def json_index(data):
     return jsonify(result)
 
 
-@dogpile.region('hasjob_index')
 def fetch_jobposts(request_args, request_values, is_index, board, board_jobs, gkiosk, basequery, md5sum, domain, location, title, showall, statuses, batched, ageless, template_vars, search_query=None):
     if basequery is None:
         basequery = JobPost.query
@@ -321,10 +320,15 @@ def fetch_jobposts(request_args, request_values, is_index, board, board_jobs, gk
         pay_graph_data=pay_graph_data, paginated=index_is_paginated(), template_vars=template_vars)
 
 
+@dogpile.region('hasjob_index')
+def fetch_cached_jobposts(request_args, request_values, is_index, board, board_jobs, gkiosk, basequery, md5sum, domain, location, title, showall, statuses, batched, ageless, template_vars, search_query=None):
+    return fetch_jobposts(request_args, request_values, is_index, board, board_jobs, gkiosk, basequery, md5sum, domain, location, title, showall, statuses, batched, ageless, template_vars, search_query)
+
+
 @app.route('/', methods=['GET', 'POST'], subdomain='<subdomain>')
 @app.route('/', methods=['GET', 'POST'])
 @render_with({'text/html': 'index.html', 'application/json': json_index}, json=False)
-def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, title=None, showall=True, statuses=None, batched=True, ageless=False, template_vars={}):
+def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, title=None, showall=True, statuses=None, batched=True, ageless=False, cached=False, template_vars={}):
     now = datetime.utcnow()
     is_siteadmin = lastuser.has_permission('siteadmin')
     board = g.board
@@ -360,7 +364,10 @@ def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, tit
                 flash(_(u"Search terms ignored because this didn’t parse: {query}").format(query=search_query), 'danger')
             search_query = None
 
-    data = fetch_jobposts(request.args, request.values, is_index, board, board_jobs, g.kiosk, basequery, md5sum, domain, location, title, showall, statuses, batched, ageless, template_vars, search_query)
+    if cached:
+        data = fetch_cached_jobposts(request.args, request.values, is_index, board, board_jobs, g.kiosk, basequery, md5sum, domain, location, title, showall, statuses, batched, ageless, template_vars, search_query)
+    else:
+        data = fetch_jobposts(request.args, request.values, is_index, board, board_jobs, g.kiosk, basequery, md5sum, domain, location, title, showall, statuses, batched, ageless, template_vars, search_query)
 
     if data['data_filters']:
         # For logging
@@ -420,7 +427,7 @@ def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, tit
 @lastuser.requires_login
 def browse_drafts():
     basequery = JobPost.query.filter_by(user=g.user)
-    return index(basequery=basequery, ageless=True, statuses=[POSTSTATUS.DRAFT, POSTSTATUS.PENDING])
+    return index(basequery=basequery, ageless=True, statuses=[POSTSTATUS.DRAFT, POSTSTATUS.PENDING], cached=False)
 
 
 @app.route('/my', methods=['GET', 'POST'], subdomain='<subdomain>')
@@ -428,7 +435,7 @@ def browse_drafts():
 @lastuser.requires_login
 def my_posts():
     basequery = JobPost.query.filter_by(user=g.user)
-    return index(basequery=basequery, ageless=True, statuses=POSTSTATUS.MY)
+    return index(basequery=basequery, ageless=True, statuses=POSTSTATUS.MY, cached=False)
 
 
 @app.route('/bookmarks', subdomain='<subdomain>')
@@ -436,7 +443,7 @@ def my_posts():
 @lastuser.requires_login
 def bookmarks():
     basequery = JobPost.query.join(starred_job_table).filter(starred_job_table.c.user_id == g.user.id)
-    return index(basequery=basequery, ageless=True, statuses=POSTSTATUS.ARCHIVED)
+    return index(basequery=basequery, ageless=True, statuses=POSTSTATUS.ARCHIVED, cached=False)
 
 
 @app.route('/applied', subdomain='<subdomain>')
@@ -444,7 +451,7 @@ def bookmarks():
 @lastuser.requires_login
 def applied():
     basequery = JobPost.query.join(JobApplication).filter(JobApplication.user == g.user)
-    return index(basequery=basequery, ageless=True, statuses=POSTSTATUS.ARCHIVED)
+    return index(basequery=basequery, ageless=True, statuses=POSTSTATUS.ARCHIVED, cached=False)
 
 
 @app.route('/type/<name>', methods=['GET', 'POST'], subdomain='<subdomain>')
@@ -491,7 +498,7 @@ def browse_by_email(md5sum):
     basequery = JobPost.query.filter_by(md5sum=md5sum)
     jobpost = basequery.first_or_404()
     jobpost_user = jobpost.user
-    return index(basequery=basequery, md5sum=md5sum, showall=True, template_vars={'jobpost_user': jobpost_user})
+    return index(basequery=basequery, md5sum=md5sum, showall=True, cached=False, template_vars={'jobpost_user': jobpost_user})
 
 
 @app.route('/in/<location>', methods=['GET', 'POST'], subdomain='<subdomain>')
