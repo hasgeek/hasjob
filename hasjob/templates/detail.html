@@ -456,7 +456,7 @@
       if (!triggered_viewstats) {
         triggered_viewstats = true;
         var UNITTYPE = {
-          'h': 'hour',
+          'h': 'four hours',
           'd': 'day'
         }
         $.get("{{ post.url_for('viewstats') }}", function(data) {

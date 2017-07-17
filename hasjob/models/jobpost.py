@@ -555,11 +555,11 @@ def viewstats_helper(jobpost_id, interval, limit, daybatch=False):
     for delta in range(batches):
         if daybatch:
             # here delta=0 at first, and last item is the latest date/hour
-            cbuckets[batches - delta - 1] = format_datetime((now - timedelta(days=delta)), 'MMM d')
+            cbuckets[batches - delta - 1] = format_datetime((now - timedelta(days=delta)), 'd MMM')
         else:
-            from_hour = format_datetime(from_datetime, 'H:00')
-            to_hour = format_datetime(to_datetime, 'H:00')
-            cbuckets[batches - delta - 1] = "{} - {}".format(from_hour, to_hour)
+            from_hour = format_datetime(from_datetime, 'd MMM HH:00')
+            to_hour = format_datetime(to_datetime, 'HH:00')
+            cbuckets[batches - delta - 1] = u"{from_hour} — {to_hour}".format(from_hour=from_hour, to_hour=to_hour)
             # if current bucket was 18:00-22:00, then
             # previous bucket becomes 14:00-18:00
             to_datetime = from_datetime
