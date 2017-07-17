@@ -166,7 +166,7 @@ def jobdetail(domain, hashid):
 def job_viewstats(domain, hashid):
     is_siteadmin = lastuser.has_permission('siteadmin')
     post = JobPost.query.filter_by(hashid=hashid).options(db.load_only('id', 'datetime')).first_or_404()
-    if is_siteadmin or post.admin_is(g.user) or (g.user and g.user.flags.is_employer_month):
+    if is_siteadmin or post.admin_is(g.user) or (g.user and g.user.flags.get('is_employer_month')):
         return jsonify({
             "unittype": post.viewstats[0],
             "stats": post.viewstats[1],
