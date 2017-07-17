@@ -24,6 +24,9 @@
   {%- if post.is_old() %}
     <meta name="robots" content="nofollow" />
   {%- endif %}
+  {%- if can_see_post_stats %}
+    <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/c3/0.4.14/c3.css">
+  {%- endif %}
 {% endblock %}
 {% block content %}
   {% if post.is_unpublished() %}
@@ -229,18 +232,6 @@
                 </a>
               {%- endif %}{% endwith -%}
             {%- endif %}
-            {%- if is_siteadmin or post.admin_is(g.user) or (g.user and g.user.flags.is_employer_month) %}
-              <div class="list-group-item no-border">
-                <i class="fa fa-fw fa-bar-chart-o"></i>&nbsp;&nbsp; <span title="Viewed › Opened form › Applied">{{ post_viewcounts['viewed'] }} › {{ post_viewcounts['opened'] }} › {{ post_viewcounts['applied'] }}</span> &middot;
-                {%- with unittype = post.viewstats[0] %}
-                  {%- if unittype == 'q' %} Per 15m:
-                  {%- elif unittype == 'h' %} Per hour:
-                  {%- elif unittype == 'd' %} Per day:
-                  {%- endif %}
-                {%- endwith %}<br>
-                <div id="statsline" class="hidden"></div>
-              </div>
-            {%- endif %}
           </div>
         {% endif %}</div>
       </div>
@@ -321,6 +312,12 @@
         </p>
       </div>
     {%- endif %}
+    <div class="section hidden" id="viewstats">
+      <div><span id="post-viewed">⋯</span> viewed › <span id="post-opened">⋯</span> opened form › <span id="post-applied">⋯</span> applied. Per <span id="post-stats-unit"></span>:</div>
+      <div id="viewstats-chart"></div>
+
+      <div class="section unmarked"><p></p></div>
+    </div>
   </div>
   {%- if post.headlineb and (is_siteadmin or post.admin_is(g.user)) %}
     <div class="post-guide">
@@ -374,6 +371,12 @@
   </ul>
 {% endblock %}
 {% block footerscripts %}
+
+{%- if can_see_post_stats %}
+  <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
+  <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/c3/0.4.14/c3.min.js"></script>
+{%- endif %}
+
 <script type="text/javascript">
   $(function() {
     {%- if g.kiosk %}
@@ -396,8 +399,7 @@
       e.preventDefault();
       return false;
     });
-  });
-  $(function() {
+    // ================
     $('span[data-toggle="tooltip"]').tooltip();
     $(".popup-box").hide();
     $(".popup-box:target").show();
@@ -417,8 +419,7 @@
       $(event.target).closest('.popup-box').fadeOut("fast");
       return false;
     });
-  });
-  $(function() {
+    // ===============
     $("#reveal-button").on('click dblclick', function(e) {
       var reveal_button = this;
       e.preventDefault();
@@ -436,20 +437,75 @@
       });
       return false;
     });
-  });
-  $(function () {
-    var triggered_related = false;
+    // ===============
     // Fetch the related posts once the given view is on the display.
     // triggered_related is a boolean that makes sure we dont call the
     // related posts endpoint more than once.
+    var triggered_related = false;
+    var triggered_viewstats = false;
     $('#apply-info').appear().on('appear', function(event, element) {
-      if(!triggered_related) {
+      if (!triggered_related) {
         triggered_related = true;
-        $.get(window.location.pathname + '/related', function (data) {
+        $.get("{{ post.url_for('related_posts') }}", function (data) {
             $('#stickie-area').html(data);
           }
         );
       }
+
+      {%- if can_see_post_stats %}
+      if (!triggered_viewstats) {
+        triggered_viewstats = true;
+        var UNITTYPE = {
+          'h': 'hour',
+          'd': 'day'
+        }
+        $.get("{{ post.url_for('viewstats') }}", function(data) {
+          $('#post-viewed').text(data['counts']['viewed']);
+          $('#post-opened').text(data['counts']['opened']);
+          $('#post-applied').text(data['counts']['applied']);
+          $('#post-stats-unit').text(UNITTYPE[data['unittype']]);
+
+          c3.generate({
+            bindto: '#viewstats-chart',
+            size: {
+              height: 200
+            },
+            data: {
+              type: 'spline',
+              x: 'datehour',
+              columns: [
+                ['datehour'].concat(data['stats']['buckets']),
+                ['viewed'].concat(data['stats']['viewed']),
+                ['opened'].concat(data['stats']['opened']),
+                ['applied'].concat(data['stats']['applied'])
+              ],
+              names: {
+                viewed: "Viewed",
+                opened: "Opened",
+                applied: "Applied"
+              }
+            },
+            axis: {
+              x: {
+                type: 'category',
+                height: 60
+              },
+              y: {
+                tick: {
+                  format: d3.format('d'),
+                  values: data['stats']['max']<10?(function (max) {for(var i,a=[i=0];i<=max;a[i]=i++); return a})(data['stats']['max']):undefined
+                }
+              }
+            }
+          });
+          $('#viewstats').removeClass('hidden');
+          // c3 initially draws the width too big,
+          // a window resize event forces it to redraw the chart properly
+          // http://stackoverflow.com/a/27180464/257944
+          $(window).trigger('resize');
+        })
+      }
+      {%- endif %}
     });
   });
 </script>
@@ -458,22 +514,6 @@
 {{ ajaxform('pinnedform', request, force=true) }}
 {{ ajaxform('moderateform', request, force=true) }}
 {% assets "js_tinymce" %}<script src="{{ ASSET_URL }}" type="text/javascript"></script>{% endassets %}
-{%- if is_siteadmin or post.admin_is(g.user) or (g.user and g.user.flags.is_employer_month) %}{% with stats = post.viewstats[1] %}{% with max = stats.max|tojson %}
-  <script type="text/javascript">
-    $(function() {
-      $("#statsline").removeClass('hidden').sparkline(
-        {{ stats.viewed|tojson }},
-        {type: 'line', chartRangeMin: 0, chartRangeMax: {{ max }}, lineColor: '#f0a40c', fillColor: false, tooltipSuffix: ' viewed', height: '2em', width: {{ stats.length|tojson }} * 4}
-      ).sparkline(
-        {{ stats.opened|tojson }},
-        {type: 'line', chartRangeMin: 0, chartRangeMax: {{ max }}, lineColor: '#df5e0e', fillColor: false, tooltipSuffix: ' opened', composite: true}
-      ).sparkline(
-        {{ stats.applied|tojson }},
-        {type: 'bar', chartRangeMin: 0, chartRangeMax: {{ max }}, barColor: '#816894', tooltipSuffix: ' applied', barWidth: 3, barSpacing: 1, composite: true}
-      );
-    });
-  </script>
-{%- endwith %}{% endwith %}{%- endif %}
 {%- if g.kiosk and g.peopleflow_url %}
   <script src="http://127.0.0.1:8008/assets/js/lib.js"></script>
   <script type="text/javascript" src="{{ g.peopleflow_url }}"></script>

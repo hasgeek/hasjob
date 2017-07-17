@@ -16,33 +16,19 @@ from coaster.utils import getbool, get_email_domain, md5sum, base_domain_matches
 from coaster.views import load_model
 from hasjob import app, forms, mail, lastuser
 from hasjob.models import (
-    agelimit,
-    db,
-    Domain,
-    JobCategory,
-    JobType,
-    JobPost,
-    JobPostReport,
-    POSTSTATUS,
-    EMPLOYER_RESPONSE,
-    PAY_TYPE,
-    ReportCode,
-    UserJobView,
-    AnonJobView,
-    JobApplication,
-    Campaign, CAMPAIGN_POSITION,
-    unique_hash,
-    viewstats_by_id_qhour,
-    viewstats_by_id_hour,
-    viewstats_by_id_day,
-    )
+    agelimit, db, Domain, JobCategory, JobType, JobPost, JobPostReport,
+    POSTSTATUS, EMPLOYER_RESPONSE, PAY_TYPE, ReportCode, UserJobView,
+    AnonJobView, JobApplication, Campaign, CAMPAIGN_POSITION, unique_hash,
+    viewstats_by_id_hour, viewstats_by_id_day)
 from hasjob.twitter import tweet
 from hasjob.tagging import tag_locations, add_to_boards, tag_jobpost
 from hasjob.uploads import uploaded_logos
 from hasjob.utils import get_word_bag, redactemail, random_long_key, common_legal_names
 from hasjob.views import ALLOWED_TAGS
 from hasjob.nlp import identify_language
-from hasjob.views.helper import gif1x1, load_viewcounts, session_jobpost_ab, bgroup, get_post_viewcounts
+from hasjob.views.helper import (
+    gif1x1, load_viewcounts, session_jobpost_ab, bgroup, has_post_stats,
+    get_post_viewcounts)
 
 
 @app.route('/<domain>/<hashid>', methods=('GET', 'POST'), subdomain='<subdomain>')
@@ -80,7 +66,6 @@ def jobdetail(domain, hashid):
         if jobview is None:
             jobview = UserJobView(user=g.user, jobpost=post)
             post.uncache_viewcounts('viewed')
-            cache.delete_memoized(viewstats_by_id_qhour, post.id)
             cache.delete_memoized(viewstats_by_id_hour, post.id)
             cache.delete_memoized(viewstats_by_id_day, post.id)
             db.session.add(jobview)
@@ -166,11 +151,29 @@ def jobdetail(domain, hashid):
     else:
         post_viewcounts = None
 
-    return render_template('detail.html', post=post, headline=headline, reportform=reportform, rejectform=rejectform,
-        pinnedform=pinnedform,
+    return render_template('detail.html', post=post, headline=headline,
+        reportform=reportform, rejectform=rejectform, pinnedform=pinnedform,
         jobview=jobview, report=report, moderateform=moderateform,
         domain_mismatch=domain_mismatch, header_campaign=header_campaign,
-        is_bgroup=is_bgroup, is_siteadmin=is_siteadmin, post_viewcounts=post_viewcounts)
+        is_bgroup=is_bgroup, is_siteadmin=is_siteadmin,
+        can_see_post_stats=has_post_stats(post), post_viewcounts=post_viewcounts)
+
+
+@app.route('/<domain>/<hashid>/viewstats', subdomain='<subdomain>')
+@app.route('/<domain>/<hashid>/viewstats')
+@app.route('/view/<hashid>/viewstats', defaults={'domain': None}, subdomain='<subdomain>')
+@app.route('/view/<hashid>/viewstats', defaults={'domain': None})
+def job_viewstats(domain, hashid):
+    is_siteadmin = lastuser.has_permission('siteadmin')
+    post = JobPost.query.filter_by(hashid=hashid).options(db.load_only('id', 'datetime')).first_or_404()
+    if is_siteadmin or post.admin_is(g.user) or (g.user and g.user.flags.is_employer_month):
+        return jsonify({
+            "unittype": post.viewstats[0],
+            "stats": post.viewstats[1],
+            "counts": get_post_viewcounts(post.id)
+        })
+    else:
+        return abort(403)
 
 
 @app.route('/<domain>/<hashid>/related', subdomain='<subdomain>')
@@ -240,7 +243,6 @@ def revealjob(domain, hashid):
         try:
             db.session.commit()
             post.uncache_viewcounts('opened')
-            cache.delete_memoized(viewstats_by_id_qhour, post.id)
             cache.delete_memoized(viewstats_by_id_hour, post.id)
             cache.delete_memoized(viewstats_by_id_day, post.id)
         except IntegrityError:
@@ -250,7 +252,6 @@ def revealjob(domain, hashid):
         jobview.applied = True
         db.session.commit()
         post.uncache_viewcounts('opened')
-        cache.delete_memoized(viewstats_by_id_qhour, post.id)
         cache.delete_memoized(viewstats_by_id_hour, post.id)
         cache.delete_memoized(viewstats_by_id_day, post.id)
 

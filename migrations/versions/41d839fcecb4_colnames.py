@@ -50,4 +50,3 @@ def downgrade():
     op.alter_column('jobcategory', 'name', new_column_name='slug')
     op.drop_column('jobcategory', 'updated_at')
     op.drop_column('jobcategory', 'created_at')
-    ### end Alembic commands ###

@@ -19,7 +19,7 @@ from coaster.sqlalchemy import failsafe_add
 from baseframe import _, cache, get_timezone
 from baseframe.signals import form_validation_error, form_validation_success
 
-from .. import app, redis_store
+from .. import app, redis_store, lastuser
 from ..models import (agelimit, newlimit, db, JobCategory, JobPost, JobType, POSTSTATUS, BoardJobPost, Tag, JobPostTag,
     Campaign, CampaignView, CampaignAnonView, EventSessionBase, EventSession, UserEventBase, UserEvent, JobImpression,
     JobViewSession, AnonUser, campaign_event_session_table, JobLocation, PAY_TYPE)
@@ -41,6 +41,11 @@ def sniffle():
 
 def index_is_paginated():
     return request.method == 'POST' and 'startdate' in request.values
+
+
+def has_post_stats(post):
+    is_siteadmin = lastuser.has_permission('siteadmin')
+    return is_siteadmin or post.admin_is(g.user) or (g.user and g.user.flags.is_employer_month)
 
 
 @form_validation_success.connect
