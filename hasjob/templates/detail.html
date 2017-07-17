@@ -465,6 +465,7 @@
           $('#post-applied').text(data['counts']['applied']);
           $('#post-stats-unit').text(UNITTYPE[data['unittype']]);
 
+          $('#viewstats').removeClass('hidden');
           c3.generate({
             bindto: '#viewstats-chart',
             size: {
@@ -498,7 +499,6 @@
               }
             }
           });
-          $('#viewstats').removeClass('hidden');
           // c3 initially draws the width too big,
           // a window resize event forces it to redraw the chart properly
           // http://stackoverflow.com/a/27180464/257944
