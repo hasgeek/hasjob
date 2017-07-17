@@ -472,7 +472,11 @@
               height: 200
             },
             data: {
-              type: 'spline',
+              types: {
+                viewed: 'spline',
+                opened: 'area-spline',
+                applied: 'bar'
+              },
               x: 'datehour',
               columns: [
                 ['datehour'].concat(data['stats']['buckets']),
