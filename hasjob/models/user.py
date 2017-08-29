@@ -155,8 +155,7 @@ class EventSession(EventSessionBase, UuidMixin, BaseMixin, db.Model):
         ues = cls.query.filter_by(uuid=uuid).one_or_none() if uuid else None
 
         # We no longer hard-link sessions to users, so this is commented out:
-        # if (not not user) + (not not anon_user) != 1:
-        #     raise ValueError("Either user or anon_user must be specified")
+        # require_one_of(user=user, anon_user=anon_user)
         # ues = cls.query.filter_by(
         #     user=user, anon_user=anon_user).filter(
         #     cls.ended_at == None).order_by(cls.created_at.desc()).first()  # NOQA
