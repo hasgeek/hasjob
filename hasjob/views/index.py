@@ -743,7 +743,11 @@ def sitemap(key):
                       '  </url>\n'
     if authorized_sitemap:
         # Add domains to sitemap
-        for domain in Domain.query.filter(Domain.title != None).order_by('updated_at desc').all():  # NOQA
+        for domain in Domain.query.filter(
+                Domain.title != None,
+                Domain.description != None,
+                Domain.description != ''
+                ).order_by('updated_at desc').all():  # NOQA
             sitemapxml += '  <url>\n'\
                           '    <loc>%s</loc>\n' % domain.url_for(_external=True) + \
                           '    <lastmod>%s</lastmod>\n' % (domain.updated_at.isoformat() + 'Z') + \
