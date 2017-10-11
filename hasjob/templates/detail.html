@@ -312,57 +312,56 @@
         </p>
       </div>
     {%- endif %}
-    <div class="section hidden" id="viewstats">
-      <div><span id="post-viewed">⋯</span> viewed › <span id="post-opened">⋯</span> opened form › <span id="post-applied">⋯</span> applied &middot; Per <span id="post-stats-unit"></span>:</div>
-      <div id="viewstats-chart"></div>
-
-      <div class="section unmarked"><p></p></div>
-    </div>
   </div>
-  {%- if post.headlineb and (is_siteadmin or post.admin_is(g.user)) %}
-    <div class="post-guide">
-      <h2>A/B test results</h2>
-      <table class="table">
-        <thead>
-          <tr>
-            <th></th>
-            <th><span data-toggle="tooltip" data-placement="bottom" title="No A/B test flag was included (shown default headline A)">N/A</span></th>
-            <th><span data-toggle="tooltip" data-placement="bottom" title="{{ post.headline }}">A</span></th>
-            <th><span data-toggle="tooltip" data-placement="bottom" title="{{ post.headlineb }}">B</span></th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>{% with abi = post.ab_impressions, abv=post.ab_views %}
-          <tr>
-            <th>Impressions</th>
-            <td>{{ abi.NA }}</td>
-            <td>{{ abi.A }}</td>
-            <td>{{ abi.B }}</td>
-            <td>Number of sessions in which the job post was listed</td>
-          </tr>
-          <tr>
-            <th>Conversions</th>
-            <td>{{ abv.C_NA }}</td>
-            <td>{{ abv.C_A }}{% if abi.A > 0 %} <small>({{ (abv.C_A*100/abi.A)|round(1) }}%)</small>{% endif %}</td>
-            <td>{{ abv.C_B }}{% if abi.B > 0 %} <small>({{ (abv.C_B*100/abi.B)|round(1) }}%)</small>{% endif %}</td>
-            <td>Views from an A/B tested listing</td>
-          </tr>
-          <tr>
-            <th>External</th>
-            <td>{{ abv.E_NA }}</td>
-            <td>{{ abv.E_A }}</td>
-            <td>{{ abv.E_B }}</td>
-            <td>Views from external links with a static A/B group</td>
-          </tr>
-          <tr>
-            <th>Second times</th>
-            <td>{{ abv.X_NA }}</td>
-            <td>{{ abv.X_A }}</td>
-            <td>{{ abv.X_B }}</td>
-            <td>Shown both and only responded the second time</td>
-          </tr>
-        {% endwith %}</tbody>
-      </table>
+  {%- if can_see_post_stats %}
+    <div class="post-guide hidden" id="viewstats">
+      <h2>Statistics</h2>
+      <div>Logged-in users: <span id="post-viewed">⋯</span> viewed › <span id="post-opened">⋯</span> opened form › <span id="post-applied">⋯</span> applied &middot; Per <span id="post-stats-unit"></span>:</div>
+      <div id="viewstats-chart"></div>
+      {%- if post.headlineb and (is_siteadmin or post.admin_is(g.user)) %}
+        <h2>A/B test results</h2>
+        <table class="table">
+          <thead>
+            <tr>
+              <th></th>
+              <th><span data-toggle="tooltip" data-placement="bottom" title="No A/B test flag was included (shown default headline A)">N/A</span></th>
+              <th><span data-toggle="tooltip" data-placement="bottom" title="{{ post.headline }}">A</span></th>
+              <th><span data-toggle="tooltip" data-placement="bottom" title="{{ post.headlineb }}">B</span></th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>{% with abi = post.ab_impressions, abv=post.ab_views %}
+            <tr>
+              <th>Impressions</th>
+              <td>{{ abi.NA }}</td>
+              <td>{{ abi.A }}</td>
+              <td>{{ abi.B }}</td>
+              <td>Number of sessions in which the job post was listed</td>
+            </tr>
+            <tr>
+              <th>Conversions</th>
+              <td>{{ abv.C_NA }}</td>
+              <td>{{ abv.C_A }}{% if abi.A > 0 %} <small>({{ (abv.C_A*100/abi.A)|round(1) }}%)</small>{% endif %}</td>
+              <td>{{ abv.C_B }}{% if abi.B > 0 %} <small>({{ (abv.C_B*100/abi.B)|round(1) }}%)</small>{% endif %}</td>
+              <td>Views from an A/B tested listing</td>
+            </tr>
+            <tr>
+              <th>External</th>
+              <td>{{ abv.E_NA }}</td>
+              <td>{{ abv.E_A }}</td>
+              <td>{{ abv.E_B }}</td>
+              <td>Views from external links with a static A/B group</td>
+            </tr>
+            <tr>
+              <th>Second times</th>
+              <td>{{ abv.X_NA }}</td>
+              <td>{{ abv.X_A }}</td>
+              <td>{{ abv.X_B }}</td>
+              <td>Shown both and only responded the second time</td>
+            </tr>
+          {% endwith %}</tbody>
+        </table>
+      {%- endif %}
     </div>
   {%- endif %}
 {% endblock %}
@@ -465,7 +464,7 @@
           $('#post-applied').text(data['counts']['applied']);
           $('#post-stats-unit').text(UNITTYPE[data['unittype']]);
 
-          $('#viewstats').removeClass('hidden');
+          $('#viewstats').hide().removeClass('hidden').slideDown();
           c3.generate({
             bindto: '#viewstats-chart',
             size: {
