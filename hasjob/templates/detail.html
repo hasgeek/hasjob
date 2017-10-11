@@ -333,30 +333,30 @@
           <tbody>{% with abi = post.ab_impressions, abv=post.ab_views %}
             <tr>
               <th>Impressions</th>
-              <td>{{ abi.NA }}</td>
-              <td>{{ abi.A }}</td>
-              <td>{{ abi.B }}</td>
+              <td>{{ abi.NA|numberformat }}</td>
+              <td>{{ abi.A|numberformat }}</td>
+              <td>{{ abi.B|numberformat }}</td>
               <td>Number of sessions in which the job post was listed</td>
             </tr>
             <tr>
               <th>Conversions</th>
-              <td>{{ abv.C_NA }}</td>
-              <td>{{ abv.C_A }}{% if abi.A > 0 %} <small>({{ (abv.C_A*100/abi.A)|round(1) }}%)</small>{% endif %}</td>
-              <td>{{ abv.C_B }}{% if abi.B > 0 %} <small>({{ (abv.C_B*100/abi.B)|round(1) }}%)</small>{% endif %}</td>
+              <td>{{ abv.C_NA|numberformat }}</td>
+              <td>{{ abv.C_A|numberformat }}{% if abi.A > 0 %} <small>({{ (abv.C_A/abi.A)|decimalformat('##0.0%') }})</small>{% endif %}</td>
+              <td>{{ abv.C_B|numberformat }}{% if abi.B > 0 %} <small>({{ (abv.C_B/abi.B)|decimalformat('##0.0%') }})</small>{% endif %}</td>
               <td>Views from an A/B tested listing</td>
             </tr>
             <tr>
               <th>External</th>
-              <td>{{ abv.E_NA }}</td>
-              <td>{{ abv.E_A }}</td>
-              <td>{{ abv.E_B }}</td>
+              <td>{{ abv.E_NA|numberformat }}</td>
+              <td>{{ abv.E_A|numberformat }}</td>
+              <td>{{ abv.E_B|numberformat }}</td>
               <td>Views from external links with a static A/B group</td>
             </tr>
             <tr>
               <th>Second times</th>
-              <td>{{ abv.X_NA }}</td>
-              <td>{{ abv.X_A }}</td>
-              <td>{{ abv.X_B }}</td>
+              <td>{{ abv.X_NA|numberformat }}</td>
+              <td>{{ abv.X_A|numberformat }}</td>
+              <td>{{ abv.X_B|numberformat }}</td>
               <td>Shown both and only responded the second time</td>
             </tr>
           {% endwith %}</tbody>
