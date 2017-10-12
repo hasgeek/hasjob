@@ -11,13 +11,13 @@ from .. import app, lastuser
 @app.route('/admin/dashboard')
 @lastuser.requires_permission('siteadmin')
 def admin_dashboard():
-    return render_template('admin_dashboard.html')
+    return render_template('admin_dashboard.html.jinja2')
 
 
 @app.route('/admin/dashboard/historical')
 @lastuser.requires_permission('siteadmin')
 def admin_dashboard_historical():
-    return render_template('admin_historical.html')
+    return render_template('admin_historical.html.jinja2')
 
 
 @app.route('/admin/dashboard/daystats.csv', defaults={'period': 'day'})

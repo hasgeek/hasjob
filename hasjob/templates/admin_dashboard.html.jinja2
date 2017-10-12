@@ -1,0 +1,56 @@
+{% extends "dashlayout.html.jinja2" %}
+{% block title %}Admin dashboard{% endblock %}
+
+{% block tabcontent %}
+  <div class="section first">
+    <h1>{{ self.title() }}</h1>
+    <p>Realtime stats for Hasjob</p>
+  </div>
+  <div class="section">
+    <div id="chart1"></div>
+    <div id="chart2"></div>
+  </div>
+{% endblock %}
+
+{% block footerscripts %}
+  <script type="text/javascript">
+  {%- for period, divid, format in (('day', 'chart1', '%Hh'), ('week', 'chart2', '%a %d')) %}
+    c3.generate({
+      bindto: '#{{ divid }}',
+      data: {
+        url: {{ url_for('admin_dashboard_daystats', period=period)|tojson }},
+        x: 'slot',
+        xFormat: '%Y-%m-%dT%H:%M:%S',
+        type: 'spline',
+        types: {
+          jobs: 'bar',
+          applications: 'bar',
+          replies: 'bar',
+          rejections: 'bar'
+        },
+        names: {
+          newusers: "New users",
+          users: "Active users",
+          anon_users: "Anon users",
+          jobs: "New jobs",
+          applications: "Applications",
+          replies: "Replies",
+          rejections: "Rejections"
+        },
+        groups: [
+          ['replies', 'rejections']
+        ]
+      },
+      axis: {
+        x: {
+          type: 'timeseries',
+          localtime: true,
+          tick: {
+            format: {{ format|tojson }}
+          }
+        }
+      },
+    });
+  {%- endfor %}
+  </script>
+{% endblock %}

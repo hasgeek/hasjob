@@ -1,0 +1,27 @@
+{% extends "sheet.html.jinja2" %}
+{% from "baseframe/forms.html.jinja2" import renderfield %}
+{% block title %}{{ post.headline|e }}{% endblock %}
+{% block content %}
+  <div class="sheet">
+    <div class="section first">
+      <h1>Reopen job post?</h1>
+      <h2>{{ post.headline }}</h2>
+      <p>
+        This post is currently not accepting applications. Reopen it?
+        {%- if post.is_old() %}
+          This post is over 30 days old and will not be listed on the website,
+          but anyone visiting with the URL can apply if you reopen. You should
+          consider <a href="{{ url_for('newjob', template=post.hashid) }}">reposting it</a> instead.
+        {%- else %}
+          The post will be listed on Hasjob until {{ post.expiry_date|longdate }}.
+        {%- endif %}
+      </p>
+      <form method="POST" class="form-horizontal">
+        <input type="hidden" name="_charset_"/>
+        {{ form.hidden_tag() }}
+        <button type="submit" class="btn btn-primary">Reopen</button>
+        <a class="btn btn-default" href="{{ post.url_for() }}">Cancel</a>
+      </form>
+    </div>
+  </div>
+{% endblock %}

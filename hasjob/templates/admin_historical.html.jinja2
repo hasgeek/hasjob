@@ -1,0 +1,71 @@
+{% extends "dashlayout.html.jinja2" %}
+{% block title %}Historical trend{% endblock %}
+
+{% block tabcontent %}
+  <div class="section first">
+    <h1>{{ self.title() }}</h1>
+    <p>Trend charts for all time</p>
+  </div>
+  <div class="section">
+    <h2>Number of days active per month by centile</h2>
+    <ul class="nav nav-pills">
+        <li role="presentation" class="active"><a href="#userdays-a" aria-controls="userdays-a" role="tab" data-toggle="pill">All users</a></li>
+        <li role="presentation"><a href="#userdays-c" aria-controls="userdays-c" role="tab" data-toggle="pill">Candidates</a></li>
+        <li role="presentation"><a href="#userdays-r" aria-controls="userdays-r" role="tab" data-toggle="pill">Candidates with responses</a></li>
+    </ul>
+    <div class="tab-content">
+      <div role="tabpanel" class="tab-pane active" id="userdays-a">
+        <div id="chart-a"></div>
+      </div>
+      <div role="tabpanel" class="tab-pane" id="userdays-c">
+        <div id="chart-c"></div>
+      </div>
+      <div role="tabpanel" class="tab-pane" id="userdays-r">
+        <div id="chart-r"></div>
+      </div>
+  </div>
+{% endblock %}
+
+{% block footerscripts %}
+  <script type="text/javascript">
+  {% for q in ('a', 'c', 'r') %}
+    c3.generate({
+      bindto: '#chart-{{ q }}',
+      data: {
+        url: {{ url_for('admin_dashboard_historical_userdays', q=q)|tojson }},
+        x: 'month',
+        xFormat: '%Y-%m',
+        type: 'spline',
+        types: {
+          users: 'bar'
+        },
+        names: {
+          users: "Active users"
+        },
+        colors: {
+          users: '#eeeeee'
+        },
+        axes: {
+          users: 'y2'
+        }
+      },
+      axis: {
+        x: {
+          type: 'timeseries',
+          localtime: true,
+          tick: {
+            format: '%Y-%m'
+          }
+        },
+        y: {
+          label: "Days active"
+        },
+        y2: {
+          show: true,
+          label: "Active users"
+        }
+      },
+    });
+  {% endfor %}
+  </script>
+{% endblock %}

@@ -327,7 +327,7 @@ def fetch_cached_jobposts(request_args, request_values, is_index, board, board_j
 
 @app.route('/', methods=['GET', 'POST'], subdomain='<subdomain>')
 @app.route('/', methods=['GET', 'POST'])
-@render_with({'text/html': 'index.html', 'application/json': json_index}, json=False)
+@render_with({'text/html': 'index.html.jinja2', 'application/json': json_index}, json=False)
 def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, title=None, showall=True, statuses=None, batched=True, ageless=False, cached=False, template_vars={}):
     now = datetime.utcnow()
     is_siteadmin = lastuser.has_permission('siteadmin')
@@ -532,7 +532,7 @@ def browse_by_tag(tag):
 @app.route('/tag', subdomain='<subdomain>')
 @app.route('/tag')
 def browse_tags():
-    return render_template('tags.html', tags=gettags(alltime=getbool(request.args.get('all'))))
+    return render_template('tags.html.jinja2', tags=gettags(alltime=getbool(request.args.get('all'))))
 
 
 @app.route('/opensearch.xml', subdomain='<subdomain>')
@@ -700,9 +700,9 @@ def archive():
     count, posts = getallposts(order_by=order_by, desc=reverse, start=start, limit=limit)
 
     if request.is_xhr:
-        tmpl = 'archive_inner.html'
+        tmpl = 'archive_inner.html.jinja2'
     else:
-        tmpl = 'archive.html'
+        tmpl = 'archive.html.jinja2'
     return render_template(tmpl, order_by=request.args.get('order_by'),
         posts=posts, start=start, limit=limit, count=count,
         # Pass some functions
