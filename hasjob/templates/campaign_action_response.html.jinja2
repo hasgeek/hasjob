@@ -1,0 +1,3 @@
+{% from "macros.html.jinja2" import campaign_action_form, campaign_header_postscript -%}
+{{ campaign_action_form(campaign, g.user, g.anon_user, message, redirect, dismiss) }}
+{{ campaign_header_postscript() }}

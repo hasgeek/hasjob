@@ -1,0 +1,29 @@
+{% extends "inc/email_layout_lite.html.jinja2" %}
+{% block content %}
+  <div itemscope itemtype="http://schema.org/EmailMessage">
+    <div itemprop="action" itemscope itemtype="http://schema.org/ViewAction">
+      <meta itemprop="name" content="Respond to Candidate"/>
+      <link itemprop="url" href="{{ archive_url }}"/>
+    </div>
+    <meta itemprop="description" content="View candidate details."/>
+    <div itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="{{ config['SITE_TITLE'] }}"/>
+      <link itemprop="url" href="{{ url_for('index', subdomain=none, _external=true) }}"/>
+    </div>
+  </div>
+  <p>
+    <em>{{ job_application.fullname }}</strong> has applied for <a href="{{ post.url_for(_external=true) }}" target="_blank">{{ post.headline }}</a>:</em>
+  </p>
+  <hr>
+  {{ job_application.message|safe }}
+  <hr>
+  <p>
+    <a class="btn" href="{{ archive_url }}" target="_blank">Respond to candidate</a>
+    or
+    <a class="btn" href="{{ archive_url }}" target="_blank">Report this</a>
+  </p>
+  <p>
+    <strong>Note:</strong> The message above is exactly as the candidate submitted it. We do not accept attachments or reformat documents.
+    <img src="{{ job_application.url_for('track-open', _external=true) }}" alt="" width="1" height="1">
+  </p>
+{% endblock %}

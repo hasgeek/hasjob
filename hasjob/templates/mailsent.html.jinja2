@@ -1,0 +1,41 @@
+{% extends "sheet.html.jinja2" %}
+{%- from "macros.html.jinja2" import campaign_header, campaign_header_postscript %}
+{% block title %}One last step…{% endblock %}
+{% block content %}
+  <div class="sheet">
+    <div class="section first">
+      <div class="page-header">
+        <h1>One last step…</h1>
+      </div>
+      <p>
+        We sent you an email to confirm your email address.
+        Please click on the link within and your job will
+        be published. The email also contains information
+        on how you may edit or close the job post.
+      </p>
+      <p>
+        If you do not receive this email within the next hour,
+        one of two things may have happened:
+      </p>
+      <ol>
+        <li>The email has landed in your Spam or Junk folder, or</li>
+        <li>Your email address was incorrect and the mail bounced.</li>
+      </ol>
+      <p>
+        The latter is a very likely scenario if this is the first time
+        you are using Hasjob. Please edit the post again from
+        <a href="{{ url_for('browse_drafts') }}">your drafts</a> and check
+        the email address. If you made a group email in Google Apps, it may
+        not be configured to receive email from outside your domain.
+      </p>
+    </div>
+  </div>
+{% endblock %}
+{% block postcontent %}
+  {%- if footer_campaign %}
+    {{ campaign_header(g, footer_campaign) }}
+  {% endif %}
+{% endblock %}
+{% block footerscripts %}
+  {%- if footer_campaign %}{{ campaign_header_postscript() }}{% endif %}
+{% endblock %}
