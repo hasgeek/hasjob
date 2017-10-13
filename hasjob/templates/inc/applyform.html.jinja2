@@ -1,4 +1,4 @@
-{% from "baseframe/forms.html" import renderfield, rendersubmit, ajaxform %}
+{% from "baseframe/forms.html.jinja2" import renderfield, rendersubmit, ajaxform %}
 <form id="applyform" method="POST" class="form-horizontal" action="{{ post.url_for('apply') }}">
   <input type="hidden" name="_charset_"/>
   <input type="hidden" name="form.id" value="applyform"/>

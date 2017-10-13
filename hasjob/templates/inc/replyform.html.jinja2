@@ -1,4 +1,4 @@
-{% from "baseframe/forms.html" import renderfield %}
+{% from "baseframe/forms.html.jinja2" import renderfield %}
 <form id="replyform" method="POST" class="form-horizontal" action="{{ job_application.url_for('process') }}">
   <input type="hidden" name="_charset_"/>
   <input type="hidden" name="form.id" value="response_form"/>
