@@ -266,7 +266,7 @@ class JobPost(BaseMixin, db.Model):
         return self.status == POSTSTATUS.CLOSED
 
     def is_unacceptable(self):
-        return self.status in [POSTSTATUS.REJECTED, POSTSTATUS.SPAM]
+        return self.status in POSTSTATUS.UNACCEPTABLE
 
     def is_old(self):
         return self.datetime <= datetime.utcnow() - agelimit

@@ -642,9 +642,9 @@ def rejectjob(domain, hashid):
 @lastuser.requires_permission('siteadmin')
 def moderatejob(domain, hashid):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
-    if post.status in [POSTSTATUS.DRAFT, POSTSTATUS.PENDING]:
+    if post.status in POSTSTATUS.UNPUBLISHED:
         abort(403)
-    if post.status in [POSTSTATUS.REJECTED, POSTSTATUS.WITHDRAWN, POSTSTATUS.SPAM]:
+    if post.status in POSTSTATUS.GONE:
         abort(410)
     moderateform = forms.ModerateForm()
     if moderateform.validate_on_submit():

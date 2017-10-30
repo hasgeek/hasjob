@@ -24,7 +24,7 @@ class TAG_TYPE(LabeledEnum):
     # in the latest results and so removed it
     REMOVED = (5, 'removed', __("Removed"))
     # Tag is currently present
-    TAG_PRESENT = [0, 1, 2, 3]
+    TAG_PRESENT = {AUTO, CONFIRMED, MANUAL, REVIEWED}
 
 
 class Tag(BaseNameMixin, db.Model):
@@ -96,6 +96,6 @@ def related_posts(self, limit=12):
                 AND jobpost_tag.status IN :tag_present
                 GROUP BY jobpost_tag.jobpost_id ORDER BY count DESC LIMIT :limit) AS matches, jobpost
             WHERE jobpost.id = matches.jobpost_id;'''
-        )).params(id=self.id, listed=POSTSTATUS.LISTED, limit=limit, tag_present=tuple(TAG_TYPE.TAG_PRESENT))
+        )).params(id=self.id, listed=tuple(POSTSTATUS.LISTED), limit=limit, tag_present=tuple(TAG_TYPE.TAG_PRESENT))
 
 JobPost.related_posts = related_posts
