@@ -98,9 +98,9 @@ class ListingForm(forms.Form):
             forms.validators.NoObfuscatedEmail(__(u"Do not include contact information in the post"))])
     company_name = forms.StringField(__("Employer name"),
         description=__(u"The name of the organization where the position is. "
-                       u"No intermediaries or unnamed stealth startups. Use your own real name if the organization isn’t named "
-                       u"yet. We do not accept posts from third parties such as recruitment consultants. Such posts "
-                       u"may be removed without notice"),
+                       u"If your stealth startup doesn't have a name yet, use your own. "
+                       u"We do not accept posts from third parties such as recruitment consultants. "
+                       u"Such posts may be removed without notice"),
         validators=[forms.validators.DataRequired(__(u"This is required. Posting any name other than that of the actual organization is a violation of the ToS")),
             forms.validators.Length(min=4, max=80, message=__("The name must be within %%(min)d to %%(max)d characters"))],
         filters=[forms.filters.strip()])
