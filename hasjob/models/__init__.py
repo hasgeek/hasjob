@@ -24,7 +24,7 @@ class POSTSTATUS(LabeledEnum):
     SPAM =         (7,  __("Spam"))          # Marked as spam
     MODERATED =    (8,  __("Moderated"))     # Moderated, needs edit
     ANNOUNCEMENT = (9,  __("Announcement"))  # Special announcement
-    CLOSED =       (10, __("Closed"))       # Not accepting applications, but publicly viewable
+    CLOSED =       (10, __("Closed"))        # Not accepting applications, but publicly viewable
 
     UNPUBLISHED = {DRAFT, PENDING}
     GONE = {REJECTED, WITHDRAWN, SPAM}
