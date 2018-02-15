@@ -2,7 +2,7 @@
 
 from sqlalchemy.exc import IntegrityError
 from flask import g, Response, redirect, flash
-from flask.ext.lastuser import signal_user_session_refreshed
+from flask_lastuser import signal_user_session_refreshed
 from coaster.views import get_next_url
 
 from .. import app, lastuser

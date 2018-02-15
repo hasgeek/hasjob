@@ -2,7 +2,7 @@
 
 from flask import g, abort, flash, url_for, redirect, request
 from coaster.views import load_model, load_models
-from baseframe import dogpile
+# from baseframe import dogpile
 from baseframe.forms import render_form, render_delete_sqla, render_redirect
 from .. import app, lastuser
 from ..models import db, Board, JobPost
@@ -118,6 +118,6 @@ def board_add(board, jobpost):
     board.add(jobpost)
     db.session.commit()
     # cache bust
-    dogpile.invalidate_region('hasjob_index')
+    # dogpile.invalidate_region('hasjob_index')
     flash(u"You’ve added this job to %s" % board.title, 'interactive')
     return redirect(jobpost.url_for(subdomain=board.name))

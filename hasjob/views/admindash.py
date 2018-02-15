@@ -11,13 +11,13 @@ from .. import app, lastuser
 @app.route('/admin/dashboard')
 @lastuser.requires_permission('siteadmin')
 def admin_dashboard():
-    return render_template('admin_dashboard.html')
+    return render_template('admin_dashboard.html.jinja2')
 
 
 @app.route('/admin/dashboard/historical')
 @lastuser.requires_permission('siteadmin')
 def admin_dashboard_historical():
-    return render_template('admin_historical.html')
+    return render_template('admin_historical.html.jinja2')
 
 
 @app.route('/admin/dashboard/daystats.csv', defaults={'period': 'day'})
@@ -47,7 +47,7 @@ def admin_dashboard_daystats(period):
 
     statsq = db.session.query('slot', 'count').from_statement(
         '''SELECT DATE_TRUNC(:trunc, jobpost.datetime AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS slot, COUNT(*) AS count FROM jobpost WHERE jobpost.status IN :listed AND jobpost.datetime AT TIME ZONE 'UTC' AT TIME ZONE :timezone > DATE_TRUNC(:trunc, NOW() AT TIME ZONE :timezone - INTERVAL :interval) GROUP BY slot ORDER BY slot'''
-        ).params(trunc=trunc, interval=interval, timezone=g.user.timezone, listed=POSTSTATUS.LISTED)
+        ).params(trunc=trunc, interval=interval, timezone=g.user.timezone, listed=tuple(POSTSTATUS.LISTED))
     for slot, count in statsq:
         stats[slot]['jobs'] = count
 

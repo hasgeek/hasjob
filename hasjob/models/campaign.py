@@ -284,7 +284,7 @@ class Campaign(BaseNameMixin, db.Model):
 
     @classmethod
     def all(cls):
-        return cls.query.order_by('start_at desc, priority desc').all()
+        return cls.query.order_by(db.text('start_at desc, priority desc')).all()
 
     @classmethod
     def get(cls, name):

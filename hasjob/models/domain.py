@@ -54,7 +54,7 @@ class Domain(BaseMixin, db.Model):
             return self.title
         if self.is_webmail:
             return self.name
-        post = self.jobposts.filter(JobPost.status.in_(POSTSTATUS.POSTPENDING)).order_by('datetime desc').first()
+        post = self.jobposts.filter(JobPost.status.in_(POSTSTATUS.ARCHIVED)).order_by('datetime desc').first()
         if post:
             return post.company_name
         return self.name
