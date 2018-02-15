@@ -1,0 +1,21 @@
+{% extends "sheet.html.jinja2" %}
+{% from "baseframe/forms.html.jinja2" import renderfield %}
+{% block title %}{{ post.headline|e }}{% endblock %}
+{% block content %}
+  <div class="sheet">
+    <div class="section first">
+      <h1>Close this job post?</h1>
+      <h2>{{ post.headline }}</h2>
+      <p>
+        You can stop accepting applications if the position has been filled or otherwise closed.
+        The post will remain visible to anyone visiting with the URL, but they will no longer be
+        able to apply.
+      </p>
+      <form method="POST" class="form-horizontal">
+        {{ form.hidden_tag() }}
+        <button type="submit" class="btn btn-danger">Close</button>
+        <a class="btn btn-default" href="{{ post.url_for() }}">Cancel</a>
+      </form>
+    </div>
+  </div>
+{% endblock %}

@@ -9,40 +9,26 @@ from premailer import transform as email_transform
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import StaleDataError
 from flask import abort, flash, g, redirect, render_template, request, url_for, session, Markup, jsonify
-from flask.ext.mail import Message
-from baseframe import cache, dogpile
+from flask_mail import Message
+from baseframe import cache  # , dogpile
 from baseframe.forms import Form
 from coaster.utils import getbool, get_email_domain, md5sum, base_domain_matches
 from coaster.views import load_model
 from hasjob import app, forms, mail, lastuser
 from hasjob.models import (
-    agelimit,
-    db,
-    Domain,
-    JobCategory,
-    JobType,
-    JobPost,
-    JobPostReport,
-    POSTSTATUS,
-    EMPLOYER_RESPONSE,
-    PAY_TYPE,
-    ReportCode,
-    UserJobView,
-    AnonJobView,
-    JobApplication,
-    Campaign, CAMPAIGN_POSITION,
-    unique_hash,
-    viewstats_by_id_qhour,
-    viewstats_by_id_hour,
-    viewstats_by_id_day,
-    )
+    agelimit, db, Domain, JobCategory, JobType, JobPost, JobPostReport,
+    POSTSTATUS, EMPLOYER_RESPONSE, PAY_TYPE, ReportCode, UserJobView,
+    AnonJobView, JobApplication, Campaign, CAMPAIGN_POSITION, unique_hash,
+    viewstats_by_id_hour, viewstats_by_id_day)
 from hasjob.twitter import tweet
 from hasjob.tagging import tag_locations, add_to_boards, tag_jobpost
 from hasjob.uploads import uploaded_logos
 from hasjob.utils import get_word_bag, redactemail, random_long_key, common_legal_names
 from hasjob.views import ALLOWED_TAGS
 from hasjob.nlp import identify_language
-from hasjob.views.helper import gif1x1, load_viewcounts, session_jobpost_ab, bgroup, get_post_viewcounts
+from hasjob.views.helper import (
+    gif1x1, load_viewcounts, session_jobpost_ab, bgroup, has_post_stats,
+    get_post_viewcounts)
 
 
 @app.route('/<domain>/<hashid>', methods=('GET',), subdomain='<subdomain>')
@@ -80,7 +66,6 @@ def jobdetail(domain, hashid):
         if jobview is None:
             jobview = UserJobView(user=g.user, jobpost=post)
             post.uncache_viewcounts('viewed')
-            cache.delete_memoized(viewstats_by_id_qhour, post.id)
             cache.delete_memoized(viewstats_by_id_hour, post.id)
             cache.delete_memoized(viewstats_by_id_day, post.id)
             db.session.add(jobview)
@@ -146,11 +131,29 @@ def jobdetail(domain, hashid):
     else:
         post_viewcounts = None
 
-    return render_template('detail.html', post=post, headline=headline, reportform=reportform, rejectform=rejectform,
-        pinnedform=pinnedform,
+    return render_template('detail.html.jinja2', post=post, headline=headline,
+        reportform=reportform, rejectform=rejectform, pinnedform=pinnedform,
         jobview=jobview, report=report, moderateform=moderateform,
         domain_mismatch=domain_mismatch, header_campaign=header_campaign,
-        is_bgroup=is_bgroup, is_siteadmin=is_siteadmin, post_viewcounts=post_viewcounts)
+        is_bgroup=is_bgroup, is_siteadmin=is_siteadmin,
+        can_see_post_stats=has_post_stats(post), post_viewcounts=post_viewcounts)
+
+
+@app.route('/<domain>/<hashid>/viewstats', subdomain='<subdomain>')
+@app.route('/<domain>/<hashid>/viewstats')
+@app.route('/view/<hashid>/viewstats', defaults={'domain': None}, subdomain='<subdomain>')
+@app.route('/view/<hashid>/viewstats', defaults={'domain': None})
+def job_viewstats(domain, hashid):
+    is_siteadmin = lastuser.has_permission('siteadmin')
+    post = JobPost.query.filter_by(hashid=hashid).options(db.load_only('id', 'datetime')).first_or_404()
+    if is_siteadmin or post.admin_is(g.user) or (g.user and g.user.flags.get('is_employer_month')):
+        return jsonify({
+            "unittype": post.viewstats[0],
+            "stats": post.viewstats[1],
+            "counts": get_post_viewcounts(post.id)
+        })
+    else:
+        return abort(403)
 
 
 @app.route('/<domain>/<hashid>/related', subdomain='<subdomain>')
@@ -165,7 +168,7 @@ def job_related_posts(domain, hashid):
     if is_siteadmin or (g.user and g.user.flags.get('is_employer_month')):
         load_viewcounts(related_posts)
     g.impressions = {rp.id: (False, rp.id, bgroup(jobpost_ab, rp)) for rp in related_posts}
-    return render_template('related_posts.html', post=post,
+    return render_template('related_posts.html.jinja2', post=post,
         related_posts=related_posts, is_siteadmin=is_siteadmin)
 
 
@@ -249,7 +252,6 @@ def revealjob(domain, hashid):
         try:
             db.session.commit()
             post.uncache_viewcounts('opened')
-            cache.delete_memoized(viewstats_by_id_qhour, post.id)
             cache.delete_memoized(viewstats_by_id_hour, post.id)
             cache.delete_memoized(viewstats_by_id_day, post.id)
         except IntegrityError:
@@ -259,7 +261,6 @@ def revealjob(domain, hashid):
         jobview.applied = True
         db.session.commit()
         post.uncache_viewcounts('opened')
-        cache.delete_memoized(viewstats_by_id_qhour, post.id)
         cache.delete_memoized(viewstats_by_id_hour, post.id)
         cache.delete_memoized(viewstats_by_id_day, post.id)
 
@@ -269,7 +270,7 @@ def revealjob(domain, hashid):
         applyform = forms.ApplicationForm()
         applyform.apply_phone.data = g.user.phone
 
-    return render_template('jobpost_reveal.html',
+    return render_template('jobpost_reveal.html.jinja2',
         post=post,
         instructions=redactemail(post.how_to_apply),
         applyform=applyform,
@@ -329,7 +330,7 @@ def applyjob(domain, hashid):
                 db.session.commit()
                 post.uncache_viewcounts('applied')
                 email_html = email_transform(
-                    render_template('apply_email.html',
+                    render_template('apply_email.html.jinja2',
                         post=post, job_application=job_application,
                         archive_url=job_application.url_for(_external=True)),
                     base_url=request.url_root)
@@ -354,7 +355,7 @@ def applyjob(domain, hashid):
                 return redirect(post.url_for(), 303)
 
         if request.is_xhr:
-            return render_template('inc/applyform.html', post=post, applyform=applyform)
+            return render_template('inc/applyform.html.jinja2', post=post, applyform=applyform)
         else:
             return redirect(post.url_for(), 303)
 
@@ -445,7 +446,7 @@ def view_application(domain, hashid, application):
     else:
         header_campaign = None
 
-    return render_template('application.html', post=post, job_application=job_application,
+    return render_template('application.html.jinja2', post=post, job_application=job_application,
         header_campaign=header_campaign,
         response_form=response_form, statuses=statuses, is_siteadmin=lastuser.has_permission('siteadmin'))
 
@@ -480,7 +481,7 @@ def process_application(domain, hashid, application):
                 job_application.replied_at = datetime.utcnow()
 
                 email_html = email_transform(
-                    render_template('respond_email.html',
+                    render_template('respond_email.html.jinja2',
                         post=post, job_application=job_application,
                         archive_url=job_application.url_for(_external=True)),
                     base_url=request.url_root)
@@ -550,7 +551,7 @@ def pinnedjob(domain, hashid):
         else:
             msg = "This post is no longer pinned."
         # cache bust
-        dogpile.invalidate_region('hasjob_index')
+        # dogpile.invalidate_region('hasjob_index')
     else:
         msg = "Invalid submission"
     if request.is_xhr:
@@ -572,11 +573,11 @@ def rejectjob(domain, hashid):
         mail_meta = {
             'reject': {
                 'subject': "About your job post on Hasjob",
-                'template': "reject_email.html"
+                'template': "reject_email.html.jinja2"
             },
             'ban': {
                 'subject': "About your account and job posts on Hasjob",
-                'template': "reject_domain_email.html"
+                'template': "reject_domain_email.html.jinja2"
             }
         }
         msg = Message(subject=mail_meta[reject_type]['subject'], recipients=[post.email])
@@ -633,13 +634,13 @@ def rejectjob(domain, hashid):
         db.session.commit()
         send_reject_mail(request.form.get('submit'), post, banned_posts)
         # cache bust
-        dogpile.invalidate_region('hasjob_index')
+        # dogpile.invalidate_region('hasjob_index')
         if request.is_xhr:
             return "<p>%s</p>" % flashmsg
         else:
             flash(flashmsg, "interactive")
     elif request.method == 'POST' and request.is_xhr:
-        return render_template('inc/rejectform.html', post=post, rejectform=rejectform)
+        return render_template('inc/rejectform.html.jinja2', post=post, rejectform=rejectform)
     return redirect(post.url_for(), code=303)
 
 
@@ -650,9 +651,9 @@ def rejectjob(domain, hashid):
 @lastuser.requires_permission('siteadmin')
 def moderatejob(domain, hashid):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
-    if post.status in [POSTSTATUS.DRAFT, POSTSTATUS.PENDING]:
+    if post.status in POSTSTATUS.UNPUBLISHED:
         abort(403)
-    if post.status in [POSTSTATUS.REJECTED, POSTSTATUS.WITHDRAWN, POSTSTATUS.SPAM]:
+    if post.status in POSTSTATUS.GONE:
         abort(410)
     moderateform = forms.ModerateForm()
     if moderateform.validate_on_submit():
@@ -664,16 +665,16 @@ def moderatejob(domain, hashid):
         post.status = POSTSTATUS.MODERATED
         msg = Message(subject="About your job post on Hasjob",
             recipients=[post.email])
-        msg.html = email_transform(render_template('moderate_email.html', post=post), base_url=request.url_root)
+        msg.html = email_transform(render_template('moderate_email.html.jinja2', post=post), base_url=request.url_root)
         msg.body = html2text(msg.html)
         mail.send(msg)
         db.session.commit()
         # cache bust
-        dogpile.invalidate_region('hasjob_index')
+        # dogpile.invalidate_region('hasjob_index')
         if request.is_xhr:
             return "<p>%s</p>" % flashmsg
     elif request.method == 'POST' and request.is_xhr:
-        return render_template('inc/moderateform.html', post=post, moderateform=moderateform)
+        return render_template('inc/moderateform.html.jinja2', post=post, moderateform=moderateform)
     return redirect(post.url_for(), code=303)
 
 
@@ -697,7 +698,7 @@ def confirm(domain, hashid):
         # User has accepted terms of service. Now send email and/or wait for payment
         msg = Message(subject="Confirmation of your job post at Hasjob",
             recipients=[post.email])
-        msg.html = email_transform(render_template('confirm_email.html', post=post), base_url=request.url_root)
+        msg.html = email_transform(render_template('confirm_email.html.jinja2', post=post), base_url=request.url_root)
         msg.body = html2text(msg.html)
         mail.send(msg)
         post.email_sent = True
@@ -707,8 +708,8 @@ def confirm(domain, hashid):
         footer_campaign = Campaign.for_context(CAMPAIGN_POSITION.AFTERPOST, board=g.board, user=g.user,
                     anon_user=g.anon_user, geonameids=g.user_geonameids)
 
-        return render_template('mailsent.html', footer_campaign=footer_campaign)
-    return render_template('confirm.html', post=post, form=form)
+        return render_template('mailsent.html.jinja2', footer_campaign=footer_campaign)
+    return render_template('confirm.html.jinja2', post=post, form=form)
 
 
 @app.route('/confirm/demo', defaults={'domain': None}, methods=('GET', 'POST'), subdomain='<subdomain>')
@@ -717,7 +718,7 @@ def confirm_demo(domain):
     footer_campaign = Campaign.for_context(CAMPAIGN_POSITION.AFTERPOST, board=g.board, user=g.user,
                 anon_user=g.anon_user, geonameids=g.user_geonameids)
 
-    return render_template('mailsent.html', footer_campaign=footer_campaign)
+    return render_template('mailsent.html.jinja2', footer_campaign=footer_campaign)
 
 
 @app.route('/<domain>/<hashid>/confirm/<key>', subdomain='<subdomain>')
@@ -740,7 +741,7 @@ def confirm_email(domain, hashid, key):
         return redirect(post.url_for('confirm'), code=302)
     elif post.status == POSTSTATUS.PENDING:
         if key != post.email_verify_key:
-            return render_template('403.html', description=u"This link has expired or is malformed. Check if you have received a newer email from us.")
+            return render_template('403.html.jinja2', description=u"This link has expired or is malformed. Check if you have received a newer email from us.")
         else:
             if app.config.get('THROTTLE_LIMIT', 0) > 0:
                 post_count = JobPost.query.filter(JobPost.email_domain == post.email_domain).filter(
@@ -770,7 +771,7 @@ def confirm_email(domain, hashid, key):
                 "you can now see how your post is performing relative to others. Look in the sidebar of any post.",
                 "interactive")
     # cache bust
-    dogpile.invalidate_region('hasjob_index')
+    # dogpile.invalidate_region('hasjob_index')
     return redirect(post.url_for(), code=302)
 
 
@@ -797,9 +798,9 @@ def withdraw(domain, hashid, key):
         db.session.commit()
         flash("Your job post has been withdrawn and is no longer available", "info")
         # cache bust
-        dogpile.invalidate_region('hasjob_index')
+        # dogpile.invalidate_region('hasjob_index')
         return redirect(url_for('index'), code=303)
-    return render_template("withdraw.html", post=post, form=form)
+    return render_template("withdraw.html.jinja2", post=post, form=form)
 
 
 @app.route('/<domain>/<hashid>/edit', methods=('GET', 'POST'), defaults={'key': None}, subdomain='<subdomain>')
@@ -942,7 +943,7 @@ def editjob(hashid, key, domain=None, form=None, validated=False, newpost=None):
             if post.status == POSTSTATUS.MODERATED:
                 post.status = POSTSTATUS.CONFIRMED
 
-            if request.files['company_logo']:
+            if 'company_logo' in request.files and request.files['company_logo']:
                 # The form's validator saved the processed logo in g.company_logo.
                 thumbnail = g.company_logo
                 logofilename = uploaded_logos.save(thumbnail, name='%s.' % post.hashid)
@@ -958,13 +959,13 @@ def editjob(hashid, key, domain=None, form=None, validated=False, newpost=None):
             session.pop('userkeys', None)  # Remove legacy userkeys dict
             session.permanent = True
             # cache bust
-            dogpile.invalidate_region('hasjob_index')
+            # dogpile.invalidate_region('hasjob_index')
             return redirect(post.url_for(), code=303)
     elif request.method == 'POST':
         flash("Please review the indicated issues", category='interactive')
     elif request.method == 'GET':
         form.populate_from(post)
-    return render_template('postjob.html', form=form, no_email=no_email)
+    return render_template('postjob.html.jinja2', form=form, no_email=no_email)
 
 
 @app.route('/new', methods=('GET', 'POST'), subdomain='<subdomain>')
@@ -1029,7 +1030,7 @@ def newjob():
     # Render page. Execution reaches here under three conditions:
     # 1. GET request, page loaded for the first time
     # 2. POST request from this page, with errors
-    return render_template('postjob.html', form=form, no_removelogo=True, archived_post=archived_post,
+    return render_template('postjob.html.jinja2', form=form, no_removelogo=True, archived_post=archived_post,
         header_campaign=header_campaign)
 
 
@@ -1052,9 +1053,9 @@ def close(domain, hashid, key):
         post.closed_datetime = datetime.utcnow()
         db.session.commit()
         # cache bust
-        dogpile.invalidate_region('hasjob_index')
+        # dogpile.invalidate_region('hasjob_index')
         return redirect(post.url_for(), code=303)
-    return render_template("close.html", post=post, form=form)
+    return render_template("close.html.jinja2", post=post, form=form)
 
 
 @app.route('/<domain>/<hashid>/reopen', methods=('GET', 'POST'), defaults={'key': None}, subdomain='<subdomain>')
@@ -1075,6 +1076,6 @@ def reopen(domain, hashid, key):
         post.closed_datetime = datetime.utcnow()
         db.session.commit()
         # cache bust
-        dogpile.invalidate_region('hasjob_index')
+        # dogpile.invalidate_region('hasjob_index')
         return redirect(post.url_for(), code=303)
-    return render_template("reopen.html", post=post, form=form)
+    return render_template("reopen.html.jinja2", post=post, form=form)

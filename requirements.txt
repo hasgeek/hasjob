@@ -6,7 +6,7 @@ Flask-Assets
 Flask-Uploads
 Flask-RQ
 Flask-Testing
-Flask-Redis
+Flask-Redis>=0.3.0
 Pillow
 sqlalchemy_utils
 SQLAlchemy>=1.0.0
@@ -26,8 +26,8 @@ langid>=1.1.4dev
 tldextract
 unicodecsv
 geoip2
-Flask-Script==0.5.3
 git+https://github.com/hasgeek/coaster
 git+https://github.com/hasgeek/flask-lastuser
 git+https://github.com/hasgeek/baseframe
-git+https://github.com/jace/flask-alembic
+Flask-Migrate
+progressbar2

@@ -1,0 +1,11 @@
+{% from "baseframe/forms.html.jinja2" import renderfield, ajaxform %}
+<form id="reportform" method="POST" class="form-horizontal" action="{{ post.url_for('report') }}">
+  <input type="hidden" name="_charset_"/>
+  <input type="hidden" name="form.id" value="reportform"/>
+  {{ reportform.hidden_tag() }}
+  {{ renderfield(reportform.report_code, style="wide", nolabel=True) }}
+  <input type="submit" class="btn btn-primary btn-sm" value="Report this"/>
+</form>
+{%- if request.is_xhr %}
+  {{ ajaxform("reportform", request) }}
+{%- endif %}

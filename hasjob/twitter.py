@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from flask.ext.rq import job
+from flask_rq import job
 from tweepy import OAuthHandler, API
 import bitlyapi
 import urllib2

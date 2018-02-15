@@ -2,24 +2,24 @@
 
 from os import path
 from datetime import datetime, timedelta
+from uuid import uuid4
 from urlparse import urljoin
 from urllib import quote, quote_plus
 import hashlib
 import bleach
 import requests
-from pytz import utc, timezone
+from pytz import utc
 from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
 from geoip2.errors import AddressNotFoundError
 from flask import Markup, request, g, session
-from flask.ext.rq import job
-from flask.ext.lastuser import signal_user_looked_up
-from coaster.utils import uuid1mc
+from flask_rq import job
+from flask_lastuser import signal_user_looked_up
 from coaster.sqlalchemy import failsafe_add
-from baseframe import _, cache
+from baseframe import _, cache, get_timezone
 from baseframe.signals import form_validation_error, form_validation_success
 
-from .. import app, redis_store
+from .. import app, redis_store, lastuser
 from ..models import (agelimit, newlimit, db, JobCategory, JobPost, JobType, POSTSTATUS, BoardJobPost, Tag, JobPostTag,
     Campaign, CampaignView, CampaignAnonView, EventSessionBase, EventSession, UserEventBase, UserEvent, JobImpression,
     JobViewSession, AnonUser, campaign_event_session_table, JobLocation, PAY_TYPE)
@@ -41,6 +41,11 @@ def sniffle():
 
 def index_is_paginated():
     return request.method == 'POST' and 'startdate' in request.values
+
+
+def has_post_stats(post):
+    is_siteadmin = lastuser.has_permission('siteadmin')
+    return is_siteadmin or post.admin_is(g.user) or (g.user and g.user.flags.get('is_employer_month'))
 
 
 @form_validation_success.connect
@@ -92,7 +97,7 @@ def load_user_data(user):
             session.pop('au', None)
         else:
             if not session.get('au'):
-                session['au'] = u'test-' + unicode(uuid1mc())
+                session['au'] = u'test-' + unicode(uuid4())
                 g.esession = EventSessionBase.new_from_request(request)
                 g.event_data['anon_cookie_test'] = session['au']
             # elif session['au'] == 'test':  # Legacy test cookie, original request now lost
@@ -116,7 +121,7 @@ def load_user_data(user):
                 if not anon_user:
                     # XXX: We got a fake value? This shouldn't happen
                     g.event_data['anon_cookie_test'] = session['au']
-                    session['au'] = u'test-' + unicode(uuid1mc())  # Try again
+                    session['au'] = u'test-' + unicode(uuid4())  # Try again
                     g.esession = EventSessionBase.new_from_request(request)
                 else:
                     g.anon_user = anon_user
@@ -536,11 +541,13 @@ def save_jobview(event_session_id, jobpost_id, bgroup, viewed_time):
 
 
 def mark_dirty_impression_counts(jobpost_ids):
-    redis_store.sadd('hasjob/dirty_impression_counts', *jobpost_ids)
+    if jobpost_ids:
+        redis_store.sadd('hasjob/dirty_impression_counts', *jobpost_ids)
 
 
 def remove_dirty_impression_counts(jobpost_ids):
-    redis_store.srem('hasjob/dirty_impression_counts', *jobpost_ids)
+    if jobpost_ids:
+        redis_store.srem('hasjob/dirty_impression_counts', *jobpost_ids)
 
 
 def list_dirty_impression_counts():
@@ -670,21 +677,19 @@ def jobpost_location_hierarchy(self):
 JobPost.location_hierarchy = property(jobpost_location_hierarchy)
 
 
-def use_timezone():
-    if g and g.user:
-        return g.user.tz
-    else:
-        return timezone(app.config['TIMEZONE'])
-
-
 @app.template_filter('shortdate')
 def shortdate(date):
-    return utc.localize(date).astimezone(use_timezone()).strftime('%b %e')
+    if date > (datetime.utcnow() - timedelta(days=30)):
+        return utc.localize(date).astimezone(get_timezone()).strftime('%e %b')
+    else:
+        # The string replace hack is to deal with inconsistencies in the underlying
+        # implementation of strftime. See https://bugs.python.org/issue8304
+        return unicode(utc.localize(date).astimezone(get_timezone()).strftime("%e %b '%y")).replace(u"'", u"’")
 
 
 @app.template_filter('longdate')
 def longdate(date):
-    return utc.localize(date).astimezone(use_timezone()).strftime('%B %e, %Y')
+    return utc.localize(date).astimezone(get_timezone()).strftime('%e %B %Y')
 
 
 @app.template_filter('cleanurl')

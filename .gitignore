@@ -4,6 +4,7 @@ test.db
 *.wpr
 .project
 .pydevproject
+.vscode
 .settings
 .sass-cache
 .webassets-cache
