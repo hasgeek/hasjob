@@ -934,7 +934,7 @@ def editjob(hashid, key, domain=None, form=None, validated=False, newpost=None):
             if post.status == POSTSTATUS.MODERATED:
                 post.status = POSTSTATUS.CONFIRMED
 
-            if request.files['company_logo']:
+            if 'company_logo' in request.files and request.files['company_logo']:
                 # The form's validator saved the processed logo in g.company_logo.
                 thumbnail = g.company_logo
                 logofilename = uploaded_logos.save(thumbnail, name='%s.' % post.hashid)
