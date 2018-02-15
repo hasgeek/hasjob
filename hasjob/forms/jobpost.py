@@ -170,7 +170,7 @@ class ListingForm(forms.Form):
                 raise forms.ValidationError(_(u"Surely your organization isn’t named in uppercase?"))
 
     def validate_company_logo(form, field):
-        if 'company_logo' in request.files:
+        if not ('company_logo' in request.files and request.files['company_logo']):
             return
         try:
             g.company_logo = process_image(request.files['company_logo'])
