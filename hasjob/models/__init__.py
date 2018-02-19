@@ -39,6 +39,7 @@ class CURRENCY(LabeledEnum):
     INR = ('INR', 'INR')
     USD = ('USD', 'USD')
     EUR = ('EUR', 'EUR')
+
     __order__ = (INR, USD, EUR)
 
 
@@ -51,11 +52,15 @@ class EMPLOYER_RESPONSE(LabeledEnum):
     SPAM =     (5, __("Spam"))      # Admin marked this as spam
     REJECTED = (6, __("Rejected"))  # Employer rejected candidate with a message
 
+    __order__ = (NEW, PENDING, IGNORED, REPLIED, FLAGGED, SPAM, REJECTED)
+
 
 class PAY_TYPE(LabeledEnum):
     NOCASH    = (0, __("Nothing"))
     ONETIME   = (1, __("One-time"))
     RECURRING = (2, __("Recurring"))
+
+    __order__ = (NOCASH, ONETIME, RECURRING)
 
 
 class CANDIDATE_FEEDBACK(LabeledEnum):
@@ -64,6 +69,8 @@ class CANDIDATE_FEEDBACK(LabeledEnum):
     DID_NOT_GET =    (2, __("Did not get the job"))
     DID_NOT_ACCEPT = (3, __("Got offer, did not accept"))
     GOT_JOB =        (4, __("Got the job"))
+
+    __order__ = (NORESPONSE, INPROCESS, DID_NOT_GET, DID_NOT_ACCEPT, GOT_JOB)
 
 
 from .user import *

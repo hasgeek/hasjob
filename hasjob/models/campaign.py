@@ -42,6 +42,8 @@ class CAMPAIGN_POSITION(LabeledEnum):
     BEFOREPOST = (2, __("Before posting a job"))  # Upsell something before the employer posts a job
     AFTERPOST = (3, __("After posting a job"))    # Shown in the body after the employer posts a job
 
+    __order__ = (HEADER, SIDEBAR, BEFOREPOST, AFTERPOST)
+
 
 class CAMPAIGN_ACTION(LabeledEnum):
     LINK = ('L', __("Follow link"))
@@ -51,12 +53,16 @@ class CAMPAIGN_ACTION(LabeledEnum):
     FORM = ('F', __("Show a form"))
     DISMISS = ('D', __("Dismiss campaign"))
 
+    __order__ = (LINK, RSVP_Y, RSVP_N, RSVP_M, FORM, DISMISS)
+
 
 class BANNER_LOCATION(LabeledEnum):
     TOP = (0, __("Top"))
     RIGHT = (1, __("Right"))
     BOTTOM = (2, __("Bottom"))
     LEFT = (3, __("Left"))
+
+    __order__ = (TOP, RIGHT, BOTTOM, LEFT)
 
 
 class Campaign(BaseNameMixin, db.Model):
