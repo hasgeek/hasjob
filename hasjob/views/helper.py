@@ -403,7 +403,7 @@ def getposts(basequery=None, pinned=False, showall=False, statuses=None, ageless
     if basequery is None:
         basequery = JobPost.query
 
-    query = basequery.filter(statuses).options(*JobPost._defercols).options(db.joinedload('domain'))
+    query = basequery.filter(JobPost._state.in_(statuses)).options(*JobPost._defercols).options(db.joinedload('domain'))
 
     now = datetime.utcnow()
 

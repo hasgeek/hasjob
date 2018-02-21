@@ -231,6 +231,8 @@ class JobPost(BaseMixin, db.Model):
     def is_old(self):
         return self.datetime <= datetime.utcnow() - agelimit
 
+    state.add_conditional_state('OLD', state.LISTED, lambda jobpost: jobpost.is_old(), label=('old', __("Old")))
+
     @state.transition(state.UNPUBLISHED, state.WITHDRAWN, title=__("Withdraw"), message=__("This job post has been withdrawn"), type='danger')
     def withdraw(self):
         self.closed_datetime = db.func.utcnow()

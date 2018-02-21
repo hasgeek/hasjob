@@ -993,7 +993,7 @@ def newjob():
             abort(404)
         if not archived_post.admin_is(g.user):
             abort(403)
-        if not archived_post.is_old():
+        if not archived_post.state.OLD:
             flash("This post is currently active and cannot be posted again.")
             return redirect(archived_post.url_for(), code=303)
         form.populate_from(archived_post)
