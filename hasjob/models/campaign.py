@@ -7,7 +7,7 @@ from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.orderinglist import ordering_list
 from flask import request, Markup, url_for
 from coaster.utils import LabeledEnum
-from coaster.sqlalchemy import JsonDict
+from coaster.sqlalchemy import JsonDict, StateManager
 from baseframe import __
 from baseframe.forms import Form
 from . import db, TimestampMixin, BaseNameMixin, BaseScopedNameMixin, make_timestamp_columns
@@ -34,6 +34,12 @@ campaign_event_session_table = db.Table('campaign_event_session', db.Model.metad
     db.Column('event_session_id', None, db.ForeignKey('event_session.id'), primary_key=True, index=True),
     db.Column('created_at', db.DateTime, nullable=False, default=db.func.utcnow())
     )
+
+
+class CAMPAIGN_STATE(LabeledEnum):
+    DISABLED = (False, __("Disabled"))
+    ENABLED = (True, __("Offline"))
+    # LIVE is a conditional state in the model
 
 
 class CAMPAIGN_POSITION(LabeledEnum):
@@ -83,6 +89,8 @@ class Campaign(BaseNameMixin, db.Model):
     end_at = db.Column(db.DateTime, nullable=False, index=True)
     #: Is this campaign live?
     public = db.Column(db.Boolean, nullable=False, default=False)
+    #: StateManager for campaign's state
+    state = StateManager('public', CAMPAIGN_STATE)
     #: Position to display campaign in
     position = db.Column(db.SmallInteger, nullable=False, default=CAMPAIGN_POSITION.HEADER)
     #: Boards to run this campaign on
@@ -151,6 +159,12 @@ class Campaign(BaseNameMixin, db.Model):
 
     __table_args__ = (db.CheckConstraint('end_at > start_at', name='campaign_start_at_end_at'),)
 
+    # Campaign conditional states
+    state.add_conditional_state('LIVE', state.ENABLED,
+        lambda obj: obj.start_at <= datetime.utcnow() < obj.end_at,
+        lambda cls: db.and_(cls.start_at <= db.func.utcnow(), cls.end_at > db.func.utcnow()),
+        label=__("Live"))
+
     @property
     def content(self):
         """Form helper method"""
@@ -164,11 +178,6 @@ class Campaign(BaseNameMixin, db.Model):
     def __repr__(self):
         return '<Campaign %s "%s" %s:%s>' % (
             self.name, self.title, self.start_at.strftime('%Y-%m-%d'), self.end_at.strftime('%Y-%m-%d'))
-
-    @property
-    def is_live(self):
-        now = datetime.utcnow()
-        return self.public and self.start_at <= now and self.end_at >= now
 
     def useractions(self, user):
         if user is not None:
@@ -227,9 +236,7 @@ class Campaign(BaseNameMixin, db.Model):
         """
         Return a campaign suitable for this board, user and locations (as geonameids).
         """
-        now = datetime.utcnow()
-        basequery = cls.query.filter(
-            cls.start_at <= now, cls.end_at >= now, cls.position == position).filter_by(public=True)
+        basequery = cls.query.filter(cls.state.LIVE, cls.position == position)
 
         if board:
             basequery = basequery.filter(cls.boards.any(id=board.id))
@@ -244,6 +251,9 @@ class Campaign(BaseNameMixin, db.Model):
                 cls.user_required == None, cls.user_required == False))  # NOQA
 
         if geonameids:
+            # TODO: The query for CampaignLocation.campaign_id here does not consider
+            # if the campaign id is currently live. This will become inefficient as the
+            # number of location-targeted campaigns grows. This should be cached.
             basequery = basequery.filter(db.or_(
                 cls.geotargeted == False,
                 db.and_(
@@ -267,7 +277,7 @@ class Campaign(BaseNameMixin, db.Model):
 
         # Don't show campaigns that (a) the user has dismissed or (b) the user has encountered on >2 event sessions
         if user is not None:
-            # XXX: The more campaigns we run, the more longer this list gets
+            # TODO: The more campaigns we run, the more longer this list gets. Find something more efficient
             basequery = basequery.filter(~cls.id.in_(db.session.query(CampaignView.campaign_id).filter(
                 CampaignView.user == user,
                 db.or_(CampaignView.dismissed == True, CampaignView.session_count > 2))))  # NOQA
@@ -335,6 +345,7 @@ class CampaignAction(BaseScopedNameMixin, db.Model):
     Actions available to a user in a campaign
     """
     __tablename__ = 'campaign_action'
+    # TODO: Enable UUID primary keys and switch /go URLs to suuid
     #: Campaign
     campaign_id = db.Column(None, db.ForeignKey('campaign.id'), nullable=False)
     campaign = db.relationship(Campaign,
@@ -403,6 +414,14 @@ class CampaignView(TimestampMixin, db.Model):
     #: Number of sessions in which the user was shown this (null = unknown)
     #: Updated via a background job
     session_count = db.Column(db.Integer, nullable=False, default=0)
+    #: The last time this campaign was viewed. If the campaign has a refresh time (say, 30 days)
+    #: and the view is older than that, we'll reset the session_count and dismissed flag (via a
+    #: background job) so that the campaign shows again.
+    last_viewed_at = db.Column(db.DateTime, default=db.func.utcnow(), nullable=False)
+    #: The last time view counts were reset
+    reset_at = db.Column(db.DateTime, default=db.func.utcnow(), nullable=False)
+    #: TODO: Maybe we need a permanently dismissed flag now, for when a user indicates they really
+    #: don't want to see this again, and not just because they want it "done for now".
 
     @classmethod
     def get(cls, campaign, user):
@@ -436,6 +455,14 @@ class CampaignAnonView(TimestampMixin, db.Model):
     #: Number of sessions in which the anon user was shown this (null = unknown)
     #: Updated via a background job
     session_count = db.Column(db.Integer, nullable=False, default=0)
+    #: The last time this campaign was viewed. If the campaign has a refresh time (say, 30 days)
+    #: and the view is older than that, we'll reset the session_count and dismissed flag (via a
+    #: background job) so that the campaign shows again.
+    last_viewed_at = db.Column(db.DateTime, default=db.func.utcnow(), nullable=False)
+    #: The last time view counts were reset
+    reset_at = db.Column(db.DateTime, default=db.func.utcnow(), nullable=False)
+    #: TODO: Maybe we need a permanently dismissed flag now, for when a user indicates they really
+    #: don't want to see this again, and not just because they want it "done for now".
 
     @classmethod
     def get(cls, campaign, anon_user):
