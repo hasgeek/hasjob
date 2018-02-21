@@ -228,7 +228,8 @@ class JobPost(BaseMixin, db.Model):
     def after_expiry_date(self):
         return self.expiry_date + timedelta(days=1)
 
-    state.add_conditional_state('OLD', state.LISTED, lambda proposal: proposal.datetime < datetime.utcnow() - agelimit, label=('old', __("Old")))
+    def is_old(self):
+        return self.datetime < datetime.utcnow() - agelimit
 
     @state.transition(state.UNPUBLISHED, state.WITHDRAWN, title=__("Withdraw"), message=__("This job post has been withdrawn"), type='danger')
     def withdraw(self):

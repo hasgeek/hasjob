@@ -21,7 +21,7 @@
   {%- endif %}
 {%- endblock %}
 {% block pageheaders %}
-  {%- if post.state.OLD %}
+  {%- if post.is_old() %}
     <meta name="robots" content="nofollow" />
   {%- endif %}
   {%- if can_see_post_stats %}
@@ -55,7 +55,7 @@
       information. Please proceed with caution
     </p>
   </div>
-  {% elif post.state.OLD %}
+  {% elif post.is_old() %}
   <div class="guide">
     <p>
       This post is over 30 days old. The position may no longer be available
@@ -162,7 +162,7 @@
                   <i class="fa fa-fw fa-trash-o"></i>&nbsp;&nbsp; Withdraw this
                 </a>
               {%- endif %}
-              {%- if post.state.OLD %}
+              {%- if post.is_old() %}
                 <a class="list-group-item" href="{{ url_for('newjob', template=post.hashid) }}">
                   <i class="fa fa-fw fa-refresh"></i>&nbsp;&nbsp; Repost this
                 </a>
