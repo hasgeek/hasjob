@@ -578,10 +578,7 @@ def rejectjob(domain, hashid):
 
     def reject_post(post, reason, spam=False):
         post.mark_spam() if spam else post.reject()
-        post.closed_datetime = db.func.utcnow()
         post.review_comments = reason
-        post.review_datetime = db.func.utcnow()
-        post.reviewer = g.user
 
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
     if post.state.UNPUBLISHED and not post.admin_is(g.user):
@@ -648,12 +645,9 @@ def moderatejob(domain, hashid):
         abort(410)
     moderateform = forms.ModerateForm()
     if moderateform.validate_on_submit():
-        post.closed_datetime = datetime.utcnow()
         post.review_comments = moderateform.reason.data
-        post.review_datetime = datetime.utcnow()
-        post.reviewer = g.user
-        flashmsg = "This job post has been moderated."
         post.moderate()
+        flashmsg = post.moderate.data['message']
         msg = Message(subject="About your job post on Hasjob",
             recipients=[post.email])
         msg.html = email_transform(render_template('moderate_email.html.jinja2', post=post), base_url=request.url_root)
@@ -736,7 +730,7 @@ def confirm_email(domain, hashid, key):
         else:
             if app.config.get('THROTTLE_LIMIT', 0) > 0:
                 post_count = JobPost.query.filter(
-                    JobPost.email_domain == post.email_domain
+                        JobPost.email_domain == post.email_domain
                     ).filter(JobPost.state.POSTPENDING).filter(
                         JobPost.datetime > datetime.utcnow() - timedelta(days=1)
                     ).count()
@@ -787,7 +781,6 @@ def withdraw(domain, hashid, key):
         return redirect(url_for('index'), code=303)
     if form.validate_on_submit():
         post.withdraw()
-        post.closed_datetime = datetime.utcnow()
         db.session.commit()
         flash("Your job post has been withdrawn and is no longer available", "info")
         # cache bust
@@ -1043,8 +1036,8 @@ def close(domain, hashid, key):
     form = Form()
     if form.validate_on_submit():
         post.close()
-        post.closed_datetime = datetime.utcnow()
         db.session.commit()
+        flash(post.close.data['message'], "success")
         # cache bust
         # dogpile.invalidate_region('hasjob_index')
         return redirect(post.url_for(), code=303)
@@ -1066,7 +1059,6 @@ def reopen(domain, hashid, key):
     form = Form()
     if form.validate_on_submit():
         post.confirm()
-        post.closed_datetime = datetime.utcnow()
         db.session.commit()
         # cache bust
         # dogpile.invalidate_region('hasjob_index')

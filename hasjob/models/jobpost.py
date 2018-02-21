@@ -3,7 +3,7 @@
 from collections import defaultdict
 from datetime import datetime, timedelta
 from werkzeug import cached_property
-from flask import url_for, escape, Markup
+from flask import g, url_for, escape, Markup
 from flask_babelex import format_datetime
 from sqlalchemy import event, DDL
 from sqlalchemy.orm import defer, deferred, load_only
@@ -232,11 +232,11 @@ class JobPost(BaseMixin, db.Model):
 
     @state.transition(state.UNPUBLISHED, state.WITHDRAWN, title=__("Withdraw"), message=__("This job post has been withdrawn"), type='danger')
     def withdraw(self):
-        pass
+        self.closed_datetime = db.func.utcnow()
 
     @state.transition(state.LISTED, state.CLOSED, title=__("Close"), message=__("This job post has been closed"), type='danger')
     def close(self):
-        pass
+        self.closed_datetime = datetime.utcnow()
 
     @state.transition(state.UNPUBLISHED, state.CONFIRMED, title=__("Confirm"), message=__("This job post has been confirmed"), type='success')
     def confirm(self):
@@ -244,7 +244,9 @@ class JobPost(BaseMixin, db.Model):
 
     @state.transition(state.LISTED, state.SPAM, title=__("Mark as spam"), message=__("This job post has been marked as spam"), type='danger')
     def mark_spam(self):
-        pass
+        self.closed_datetime = db.func.utcnow()
+        self.review_datetime = db.func.utcnow()
+        self.reviewer = g.user
 
     @state.transition(state.LISTED, state.SPAM, title=__("Mark as pending"), message=__("This job post is awaiting email verification"), type='danger')
     def mark_pending(self):
@@ -252,11 +254,15 @@ class JobPost(BaseMixin, db.Model):
 
     @state.transition(state.LISTED, state.REJECTED, title=__("Reject"), message=__("This job post has been rejected"), type='danger')
     def reject(self):
-        pass
+        self.closed_datetime = db.func.utcnow()
+        self.review_datetime = db.func.utcnow()
+        self.reviewer = g.user
 
     @state.transition(state.LISTED, state.MODERATED, title=__("Moderate"), message=__("This job post has been moderated"), type='primary')
     def moderate(self):
-        pass
+        self.closed_datetime = datetime.utcnow()
+        self.review_datetime = db.func.utcnow()
+        self.reviewer = g.user
 
     def url_for(self, action='view', _external=False, **kwargs):
         if self.state.UNPUBLISHED and action in ('view', 'edit'):
