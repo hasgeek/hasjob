@@ -229,7 +229,7 @@ class JobPost(BaseMixin, db.Model):
         return self.expiry_date + timedelta(days=1)
 
     def is_old(self):
-        return self.datetime < datetime.utcnow() - agelimit
+        return self.datetime <= datetime.utcnow() - agelimit
 
     @state.transition(state.UNPUBLISHED, state.WITHDRAWN, title=__("Withdraw"), message=__("This job post has been withdrawn"), type='danger')
     def withdraw(self):
