@@ -1030,7 +1030,7 @@ def close(domain, hashid, key):
         abort(403)
     if request.method == 'GET' and post.state.CLOSED:
         return redirect(post.url_for('reopen'), code=303)
-    if not post.state.PUBLIC:
+    if not post.state.LISTED:
         flash("Your job post can't be closed.", "info")
         return redirect(post.url_for(), code=303)
     form = Form()

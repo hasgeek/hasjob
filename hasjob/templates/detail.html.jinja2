@@ -154,7 +154,7 @@
                 <a class="list-group-item" href="{{ post.url_for('reopen') }}">
                   <i class="fa fa-fw fa-check"></i>&nbsp;&nbsp; Reopen this
                 </a>
-              {%- elif post.state.PUBLIC %}
+              {%- elif post.state.LISTED %}
                 <a class="list-group-item" href="{{ post.url_for('close') }}">
                   <i class="fa fa-fw fa-times"></i>&nbsp;&nbsp; Close this
                 </a>
