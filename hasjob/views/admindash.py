@@ -4,7 +4,7 @@ from collections import defaultdict
 from cStringIO import StringIO
 import unicodecsv
 from flask import g, render_template
-from ..models import db, POSTSTATUS, EMPLOYER_RESPONSE
+from ..models import db, POST_STATE, EMPLOYER_RESPONSE
 from .. import app, lastuser
 
 
@@ -47,7 +47,7 @@ def admin_dashboard_daystats(period):
 
     statsq = db.session.query('slot', 'count').from_statement(
         '''SELECT DATE_TRUNC(:trunc, jobpost.datetime AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS slot, COUNT(*) AS count FROM jobpost WHERE jobpost.status IN :listed AND jobpost.datetime AT TIME ZONE 'UTC' AT TIME ZONE :timezone > DATE_TRUNC(:trunc, NOW() AT TIME ZONE :timezone - INTERVAL :interval) GROUP BY slot ORDER BY slot'''
-        ).params(trunc=trunc, interval=interval, timezone=g.user.timezone, listed=tuple(POSTSTATUS.LISTED))
+        ).params(trunc=trunc, interval=interval, timezone=g.user.timezone, listed=tuple(POST_STATE.LISTED))
     for slot, count in statsq:
         stats[slot]['jobs'] = count
 

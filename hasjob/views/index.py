@@ -10,7 +10,7 @@ from coaster.views import render_with
 from baseframe import _  # , dogpile
 
 from .. import app, lastuser
-from ..models import (db, JobCategory, JobPost, JobType, POSTSTATUS, newlimit, agelimit, JobLocation, Board,
+from ..models import (db, JobCategory, JobPost, JobType, POST_STATE, newlimit, agelimit, JobLocation, Board,
     Domain, Location, Tag, JobPostTag, Campaign, CAMPAIGN_POSITION, CURRENCY, JobApplication, starred_job_table, BoardJobPost)
 from ..views.helper import (getposts, getallposts, gettags, location_geodata, load_viewcounts, session_jobpost_ab,
     bgroup, make_pay_graph, index_is_paginated, get_post_viewcounts)
@@ -177,7 +177,7 @@ def fetch_jobposts(request_args, request_values, is_index, board, board_jobs, gk
     if getbool(request_args.get('archive')):
         ageless = True
         data_filters['archive'] = True
-        statuses = POSTSTATUS.ARCHIVED
+        statuses = POST_STATE.ARCHIVED
 
     search_domains = None
     if search_query:
@@ -212,7 +212,7 @@ def fetch_jobposts(request_args, request_values, is_index, board, board_jobs, gk
                 # Make pinned posts appear in a group of one
                 grouped.setdefault(('s', post.hashid), []).append(
                     (pinned, post, bgroup(jobpost_ab, post)))
-            elif post.status == POSTSTATUS.ANNOUNCEMENT:
+            elif post.state.ANNOUNCEMENT:
                 # Make announcements also appear in a group of one
                 grouped.setdefault(('a', post.hashid), []).append(
                     (pinned, post, bgroup(jobpost_ab, post)))
@@ -427,7 +427,7 @@ def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, tit
 @lastuser.requires_login
 def browse_drafts():
     basequery = JobPost.query.filter_by(user=g.user)
-    return index(basequery=basequery, ageless=True, statuses=[POSTSTATUS.DRAFT, POSTSTATUS.PENDING], cached=False)
+    return index(basequery=basequery, ageless=True, statuses=[POST_STATE.DRAFT, POST_STATE.PENDING], cached=False)
 
 
 @app.route('/my', methods=['GET', 'POST'], subdomain='<subdomain>')
@@ -435,7 +435,7 @@ def browse_drafts():
 @lastuser.requires_login
 def my_posts():
     basequery = JobPost.query.filter_by(user=g.user)
-    return index(basequery=basequery, ageless=True, statuses=POSTSTATUS.MY, cached=False)
+    return index(basequery=basequery, ageless=True, statuses=POST_STATE.MY, cached=False)
 
 
 @app.route('/bookmarks', subdomain='<subdomain>')
@@ -443,7 +443,7 @@ def my_posts():
 @lastuser.requires_login
 def bookmarks():
     basequery = JobPost.query.join(starred_job_table).filter(starred_job_table.c.user_id == g.user.id)
-    return index(basequery=basequery, ageless=True, statuses=POSTSTATUS.ARCHIVED, cached=False)
+    return index(basequery=basequery, ageless=True, statuses=POST_STATE.ARCHIVED, cached=False)
 
 
 @app.route('/applied', subdomain='<subdomain>')
@@ -451,7 +451,7 @@ def bookmarks():
 @lastuser.requires_login
 def applied():
     basequery = JobPost.query.join(JobApplication).filter(JobApplication.user == g.user)
-    return index(basequery=basequery, ageless=True, statuses=POSTSTATUS.ARCHIVED, cached=False)
+    return index(basequery=basequery, ageless=True, statuses=POST_STATE.ARCHIVED, cached=False)
 
 
 @app.route('/type/<name>', methods=['GET', 'POST'], subdomain='<subdomain>')
@@ -766,7 +766,7 @@ def logoimage(domain, hashid):
     if not post.company_logo:
         # If there's no logo (perhaps it was deleted), don't try to show one
         abort(404)
-    if post.status in POSTSTATUS.UNACCEPTABLE:
+    if post.state.UNACCEPTABLE:
         # Don't show logo if post has been rejected. Could be spam
         abort(410)
     return redirect(uploaded_logos.url(post.company_logo))

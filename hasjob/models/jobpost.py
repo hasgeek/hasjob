@@ -10,11 +10,11 @@ from sqlalchemy.orm import defer, deferred, load_only
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.dialects.postgresql import TSVECTOR
 import tldextract
-from coaster.sqlalchemy import make_timestamp_columns, Query, JsonDict
-from baseframe import cache, _
+from coaster.sqlalchemy import make_timestamp_columns, Query, JsonDict, StateManager
+from baseframe import cache, _, __
 from baseframe.staticdata import webmail_domains
 from .. import redis_store
-from . import newlimit, agelimit, db, POSTSTATUS, EMPLOYER_RESPONSE, PAY_TYPE, BaseMixin, TimestampMixin
+from . import newlimit, agelimit, db, POST_STATE, EMPLOYER_RESPONSE, PAY_TYPE, BaseMixin, TimestampMixin
 from .jobtype import JobType
 from .jobcategory import JobCategory
 from .user import User, AnonUser, EventSession
@@ -129,7 +129,6 @@ class JobPost(BaseMixin, db.Model):
     # Payment, audit and workflow fields
     words = db.Column(db.UnicodeText, nullable=True)  # All words in description, perks and how_to_apply
     promocode = db.Column(db.String(40), nullable=True)
-    status = db.Column(db.Integer, nullable=False, default=POSTSTATUS.DRAFT)
     ipaddr = db.Column(db.String(45), nullable=False)
     useragent = db.Column(db.Unicode(250), nullable=True)
     edit_key = db.Column(db.String(40), nullable=False, default=random_long_key)
@@ -144,6 +143,10 @@ class JobPost(BaseMixin, db.Model):
     review_comments = db.Column(db.Unicode(250), nullable=True)
 
     search_vector = deferred(db.Column(TSVECTOR, nullable=True))
+
+    _state = db.Column('status', db.Integer, StateManager.check_constraint('status', POST_STATE),
+                       default=POST_STATE.DRAFT, nullable=False)
+    state = StateManager('_state', POST_STATE, doc="Current state of the job post")
 
     # Metadata for classification
     language = db.Column(db.CHAR(2), nullable=True)
@@ -207,7 +210,7 @@ class JobPost(BaseMixin, db.Model):
     @classmethod
     def fetch(cls, hashid):
         """Returns a SQLAlchemy query object for JobPost"""
-        return cls.query.filter_by(hashid=hashid).options(load_only("id", "headline", "headlineb", "hashid", "datetime", "status", "email_domain", "review_comments", "company_url"))
+        return cls.query.filter_by(hashid=hashid).options(load_only("id", "headline", "headlineb", "hashid", "datetime", "email_domain", "review_comments", "company_url"))
 
     def __repr__(self):
         return '<JobPost {hashid} "{headline}">'.format(hashid=self.hashid, headline=self.headline.encode('utf-8'))
@@ -225,66 +228,38 @@ class JobPost(BaseMixin, db.Model):
     def after_expiry_date(self):
         return self.expiry_date + timedelta(days=1)
 
-    def status_label(self):
-        if self.status == POSTSTATUS.DRAFT:
-            return _("Draft")
-        elif self.status == POSTSTATUS.PENDING:
-            return _("Pending")
-        elif self.is_new():
-            return _("New!")
+    state.add_conditional_state('OLD', state.LISTED, lambda proposal: proposal.datetime < datetime.utcnow() - agelimit, label=('old', __("Old")))
 
-    def is_draft(self):
-        return self.status == POSTSTATUS.DRAFT
-
-    def is_pending(self):
-        return self.status == POSTSTATUS.PENDING
-
-    def is_unpublished(self):
-        return self.status in POSTSTATUS.UNPUBLISHED
-
-    def is_listed(self):
-        now = datetime.utcnow()
-        return (self.status in POSTSTATUS.LISTED) and (
-            self.datetime > now - agelimit)
-
-    def is_public(self):
-        return self.status in POSTSTATUS.LISTED
-
-    def is_flagged(self):
-        return self.status == POSTSTATUS.FLAGGED
-
-    def is_moderated(self):
-        return self.status == POSTSTATUS.MODERATED
-
-    def is_announcement(self):
-        return self.status == POSTSTATUS.ANNOUNCEMENT
-
-    def is_new(self):
-        return self.datetime >= datetime.utcnow() - newlimit
-
-    def is_closed(self):
-        return self.status == POSTSTATUS.CLOSED
-
-    def is_unacceptable(self):
-        return self.status in POSTSTATUS.UNACCEPTABLE
-
-    def is_old(self):
-        return self.datetime <= datetime.utcnow() - agelimit
-
-    def pay_type_label(self):
-        return PAY_TYPE.get(self.pay_type)
-
+    @state.transition(state.UNPUBLISHED, state.WITHDRAWN, title=__("Withdraw"), message=__("This job post has been withdrawn"), type='danger')
     def withdraw(self):
-        self.status = POSTSTATUS.WITHDRAWN
+        pass
 
+    @state.transition(state.LISTED, state.CLOSED, title=__("Close"), message=__("This job post has been closed"), type='danger')
     def close(self):
-        self.status = POSTSTATUS.CLOSED
+        pass
 
+    @state.transition(state.UNPUBLISHED, state.CONFIRMED, title=__("Confirm"), message=__("This job post has been confirmed"), type='success')
     def confirm(self):
-        self.status = POSTSTATUS.CONFIRMED
+        pass
+
+    @state.transition(state.LISTED, state.SPAM, title=__("Mark as spam"), message=__("This job post has been marked as spam"), type='danger')
+    def mark_spam(self):
+        pass
+
+    @state.transition(state.LISTED, state.SPAM, title=__("Mark as pending"), message=__("This job post is awaiting email verification"), type='danger')
+    def mark_pending(self):
+        pass
+
+    @state.transition(state.LISTED, state.REJECTED, title=__("Reject"), message=__("This job post has been rejected"), type='danger')
+    def reject(self):
+        pass
+
+    @state.transition(state.LISTED, state.MODERATED, title=__("Moderate"), message=__("This job post has been moderated"), type='primary')
+    def moderate(self):
+        pass
 
     def url_for(self, action='view', _external=False, **kwargs):
-        if self.status in POSTSTATUS.UNPUBLISHED and action in ('view', 'edit'):
+        if self.state.UNPUBLISHED and action in ('view', 'edit'):
             domain = None
         else:
             domain = self.email_domain
@@ -339,10 +314,10 @@ class JobPost(BaseMixin, db.Model):
 
     def permissions(self, user, inherited=None):
         perms = super(JobPost, self).permissions(user, inherited)
-        if self.status in POSTSTATUS.LISTED:
+        if self.state.LISTED:
             perms.add('view')
         if self.admin_is(user):
-            if self.status in POSTSTATUS.UNPUBLISHED:
+            if self.state.UNPUBLISHED:
                 perms.add('view')
             perms.add('edit')
             perms.add('manage')

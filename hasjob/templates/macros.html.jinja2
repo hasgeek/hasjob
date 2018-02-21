@@ -1,8 +1,8 @@
 {%- macro stickie(post, url, pinned, get_post_viewcounts, groupedunder=false, dataurl=none, show_viewcounts=false, show_pay=false, starred=none, is_bgroup=none) %}
   {%- if groupedunder %}
-    <div class="stickie {%- if post.is_announcement() %} announcement{% endif %} grouped under" {%- if dataurl %} data-href="{{ dataurl }}"{% endif %}>
+    <div class="stickie {%- if post.state.ANNOUNCEMENT %} announcement{% endif %} grouped under" {%- if dataurl %} data-href="{{ dataurl }}"{% endif %}>
   {%- else %}
-    <a class="stickie {%- if post.is_announcement() %} announcement{% endif %}" href="{{ url }}" rel="bookmark" {%- if dataurl %} data-href="{{ dataurl }}"{% endif %}>
+    <a class="stickie {%- if post.state.ANNOUNCEMENT %} announcement{% endif %}" href="{{ url }}" rel="bookmark" {%- if dataurl %} data-href="{{ dataurl }}"{% endif %}>
   {%- endif %}
     {%- if pinned %}<span class="pinned">Pinned!</span>{% endif %}
     <span class="annotation top-left">{{ post.location }}</span>
@@ -26,11 +26,7 @@
       {%- if starred is not none %}
         <span class="pstar"><i class="fa fa-star{% if not starred %}-o{% endif %}" data-id="{{ post.hashid }}"></i></span>
       {%- endif %}
-      {%- with status_label = post.status_label() -%}
-        {%- if status_label -%}
-          <span class="new">{{ status_label }}</span>
-        {%- endif -%}
-      {%- endwith -%}
+      <span class="new">{{ post.state.label.title }}</span>
     </span>
   {%- if groupedunder %}
     </div>
@@ -77,7 +73,7 @@
       {%- if post.company_url %}
         &middot; {% if kiosk %}{{ post.company_url|cleanurl }}{% else %}<a href="{{ post.company_url }}" target="_blank" rel="nofollow noopener">{{ post.company_url|cleanurl }}</a>{% endif %}
       {%- endif %}
-      {% if not post.is_announcement() %}
+      {% if not post.state.ANNOUNCEMENT %}
         &middot; <a href="{{url_for('index', t=post.type.name)}}">{{ post.type.title }}</a>
         &middot; <a href="{{url_for('index', c=post.category.name)}}">{{ post.category.title }}</a>
       {%- endif %}

@@ -17,7 +17,7 @@ from coaster.views import load_model
 from hasjob import app, forms, mail, lastuser
 from hasjob.models import (
     agelimit, db, Domain, JobCategory, JobType, JobPost, JobPostReport,
-    POSTSTATUS, EMPLOYER_RESPONSE, PAY_TYPE, ReportCode, UserJobView,
+    POST_STATE, EMPLOYER_RESPONSE, PAY_TYPE, ReportCode, UserJobView,
     AnonJobView, JobApplication, Campaign, CAMPAIGN_POSITION, unique_hash,
     viewstats_by_id_hour, viewstats_by_id_day)
 from hasjob.twitter import tweet
@@ -53,13 +53,13 @@ def jobdetail(domain, hashid):
             return redirect(post.url_for(subdomain=None, _external=True))
 
     # If this post is past pending state and the domain doesn't match, redirect there
-    if post.status not in POSTSTATUS.UNPUBLISHED and post.email_domain != domain:
+    if not post.state.UNPUBLISHED and post.email_domain != domain:
         return redirect(post.url_for(), code=301)
 
-    if post.status in POSTSTATUS.UNPUBLISHED:
+    if post.state.UNPUBLISHED:
         if not ((g.user and post.admin_is(g.user))):
             abort(403)
-    if post.status in POSTSTATUS.GONE:
+    if post.state.GONE:
         abort(410)
     if g.user:
         jobview = UserJobView.get(post, g.user)
@@ -125,7 +125,7 @@ def jobdetail(domain, hashid):
     elif request.method == 'POST' and request.is_xhr:
         return render_template('inc/reportform.html.jinja2', reportform=reportform)
 
-    if post.company_url and post.status != POSTSTATUS.ANNOUNCEMENT:
+    if post.company_url and not post.state.ANNOUNCEMENT:
         domain_mismatch = not base_domain_matches(post.company_url.lower(), post.email_domain.lower())
     else:
         domain_mismatch = False
@@ -234,7 +234,7 @@ def revealjob(domain, hashid):
     Reveal job application form
     """
     post = JobPost.query.filter_by(hashid=hashid).options(db.load_only('id', 'status', 'how_to_apply')).first_or_404()
-    if post.status in POSTSTATUS.GONE:
+    if post.state.GONE:
         abort(410)
     jobview = UserJobView.query.get((post.id, g.user.id))
     if jobview is None:
@@ -577,16 +577,16 @@ def rejectjob(domain, hashid):
         mail.send(msg)
 
     def reject_post(post, reason, spam=False):
-        post.status = POSTSTATUS.SPAM if spam else POSTSTATUS.REJECTED
+        post.mark_spam() if spam else post.reject()
         post.closed_datetime = db.func.utcnow()
         post.review_comments = reason
         post.review_datetime = db.func.utcnow()
         post.reviewer = g.user
 
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
-    if post.status in POSTSTATUS.UNPUBLISHED and not post.admin_is(g.user):
+    if post.state.UNPUBLISHED and not post.admin_is(g.user):
         abort(403)
-    if post.status in POSTSTATUS.GONE:
+    if post.state.GONE:
         abort(410)
     rejectform = forms.RejectForm()
 
@@ -615,7 +615,7 @@ def rejectjob(domain, hashid):
                 post.domain.banned_reason = rejectform.reason.data
 
                 for jobpost in post.domain.jobposts:
-                    if jobpost.status in POSTSTATUS.LISTED:
+                    if jobpost.state.LISTED:
                         reject_post(jobpost, rejectform.reason.data)
                         banned_posts.append(jobpost)
         else:
@@ -642,9 +642,9 @@ def rejectjob(domain, hashid):
 @lastuser.requires_permission('siteadmin')
 def moderatejob(domain, hashid):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
-    if post.status in POSTSTATUS.UNPUBLISHED:
+    if post.state.UNPUBLISHED:
         abort(403)
-    if post.status in POSTSTATUS.GONE:
+    if post.state.GONE:
         abort(410)
     moderateform = forms.ModerateForm()
     if moderateform.validate_on_submit():
@@ -653,7 +653,7 @@ def moderatejob(domain, hashid):
         post.review_datetime = datetime.utcnow()
         post.reviewer = g.user
         flashmsg = "This job post has been moderated."
-        post.status = POSTSTATUS.MODERATED
+        post.moderate()
         msg = Message(subject="About your job post on Hasjob",
             recipients=[post.email])
         msg.html = email_transform(render_template('moderate_email.html.jinja2', post=post), base_url=request.url_root)
@@ -676,15 +676,15 @@ def moderatejob(domain, hashid):
 def confirm(domain, hashid):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
     form = forms.ConfirmForm()
-    if post.status in POSTSTATUS.GONE:
+    if post.state.GONE:
         abort(410)
-    elif post.status in POSTSTATUS.UNPUBLISHED and not post.admin_is(g.user):
+    elif post.state.UNPUBLISHED and not post.admin_is(g.user):
             abort(403)
-    elif post.status not in POSTSTATUS.UNPUBLISHED:
+    elif not post.state.UNPUBLISHED:
         # Any other status: no confirmation required (via this handler)
         return redirect(post.url_for(), code=302)
 
-    # We get here if it's (a) POSTSTATUS.UNPUBLISHED and (b) the user is confirmed authorised
+    # We get here if it's (a) POST_STATE.UNPUBLISHED and (b) the user is confirmed authorised
     if 'form.id' in request.form and form.validate_on_submit():
         # User has accepted terms of service. Now send email and/or wait for payment
         msg = Message(subject="Confirmation of your job post at Hasjob",
@@ -693,7 +693,7 @@ def confirm(domain, hashid):
         msg.body = html2text(msg.html)
         mail.send(msg)
         post.email_sent = True
-        post.status = POSTSTATUS.PENDING
+        post.mark_pending()
         db.session.commit()
 
         footer_campaign = Campaign.for_context(CAMPAIGN_POSITION.AFTERPOST, board=g.board, user=g.user,
@@ -721,23 +721,25 @@ def confirm_email(domain, hashid, key):
     # and update post.datetime to utcnow() so it'll show on top of the stack
     # This function expects key to be email_verify_key, not edit_key like the others
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
-    if post.status in POSTSTATUS.GONE:
+    if post.state.GONE:
         abort(410)
-    elif post.status in POSTSTATUS.LISTED:
+    elif post.state.LISTED:
         flash("This job post has already been confirmed and published", "interactive")
         return redirect(post.url_for(), code=302)
-    elif post.status == POSTSTATUS.DRAFT:
+    elif post.state.DRAFT:
         # This should not happen. The user doesn't have this URL until they
         # pass the confirm form
         return redirect(post.url_for('confirm'), code=302)
-    elif post.status == POSTSTATUS.PENDING:
+    elif post.state.PENDING:
         if key != post.email_verify_key:
             return render_template('403.html.jinja2', description=u"This link has expired or is malformed. Check if you have received a newer email from us.")
         else:
             if app.config.get('THROTTLE_LIMIT', 0) > 0:
-                post_count = JobPost.query.filter(JobPost.email_domain == post.email_domain).filter(
-                    JobPost.status.in_(POSTSTATUS.POSTPENDING)).filter(
-                        JobPost.datetime > datetime.utcnow() - timedelta(days=1)).count()
+                post_count = JobPost.query.filter(
+                    JobPost.email_domain == post.email_domain
+                    ).filter(JobPost.state.POSTPENDING).filter(
+                        JobPost.datetime > datetime.utcnow() - timedelta(days=1)
+                    ).count()
                 if post_count > app.config['THROTTLE_LIMIT']:
                     flash(u"We have received too many posts with %s addresses in the last 24 hours. "
                         u"Posts are rate-limited per domain, so yours was not confirmed for now. "
@@ -745,7 +747,7 @@ def confirm_email(domain, hashid, key):
                         % post.email_domain, category='info')
                     return redirect(url_for('index'))
             post.email_verified = True
-            post.status = POSTSTATUS.CONFIRMED
+            post.confirm()
             post.datetime = datetime.utcnow()
             db.session.commit()
             if app.config['TWITTER_ENABLED']:
@@ -777,14 +779,14 @@ def withdraw(domain, hashid, key):
     form = forms.WithdrawForm()
     if not ((key is None and g.user is not None and post.admin_is(g.user)) or (key == post.edit_key)):
         abort(403)
-    if post.status == POSTSTATUS.WITHDRAWN:
+    if post.state.WITHDRAWN:
         flash("Your job post has already been withdrawn", "info")
         return redirect(url_for('index'), code=303)
-    if post.status not in POSTSTATUS.LISTED:
+    if not post.state.LISTED:
         flash("Your post cannot be withdrawn because it is not public", "info")
         return redirect(url_for('index'), code=303)
     if form.validate_on_submit():
-        post.status = POSTSTATUS.WITHDRAWN
+        post.withdraw()
         post.closed_datetime = datetime.utcnow()
         db.session.commit()
         flash("Your job post has been withdrawn and is no longer available", "info")
@@ -817,7 +819,7 @@ def editjob(hashid, key, domain=None, form=None, validated=False, newpost=None):
             abort(403)
 
         # Once this post is published, require editing at /domain/<hashid>/edit
-        if not key and post.status not in POSTSTATUS.UNPUBLISHED and post.email_domain != domain:
+        if not key and not post.state.UNPUBLISHED and post.email_domain != domain:
             return redirect(post.url_for('edit'), code=301)
 
         # Don't allow editing jobs that aren't on this board as that may be a loophole when
@@ -831,10 +833,10 @@ def editjob(hashid, key, domain=None, form=None, validated=False, newpost=None):
                     return redirect(post.url_for('edit', subdomain=None, _external=True))
 
         # Don't allow email address to be changed once it's confirmed
-        if post.status in POSTSTATUS.POSTPENDING:
+        if post.state.POSTPENDING:
             no_email = True
 
-    if request.method == 'POST' and post and post.status in POSTSTATUS.POSTPENDING:
+    if request.method == 'POST' and post and post.state.POSTPENDING:
         # del form.poster_name  # Deprecated 2013-11-20
         form.poster_email.data = post.email
     if request.method == 'POST' and (validated or form.validate()):
@@ -849,8 +851,8 @@ def editjob(hashid, key, domain=None, form=None, validated=False, newpost=None):
             for oldpost in JobPost.query.filter(db.or_(
                 db.and_(
                     JobPost.email_domain == form_email_domain,
-                    JobPost.status.in_(POSTSTATUS.POSTPENDING)),
-                JobPost.status == POSTSTATUS.SPAM)).filter(
+                    JobPost.state.POSTPENDING),
+                Jobpost.state.SPAM)).filter(
                     JobPost.datetime > datetime.utcnow() - agelimit).all():
                 if not post or (oldpost.id != post.id):
                     if oldpost.words:
@@ -923,7 +925,7 @@ def editjob(hashid, key, domain=None, form=None, validated=False, newpost=None):
                         post.domain.title, post.domain.legal_title = common_legal_names(post.company_name)
             # To protect from gaming, don't allow words to be removed in edited posts once the post
             # has been confirmed. Just add the new words.
-            if post.status in POSTSTATUS.POSTPENDING:
+            if post.state.POSTPENDING:
                 prev_words = post.words or u''
             else:
                 prev_words = u''
@@ -931,8 +933,8 @@ def editjob(hashid, key, domain=None, form=None, validated=False, newpost=None):
 
             post.language, post.language_confidence = identify_language(post)
 
-            if post.status == POSTSTATUS.MODERATED:
-                post.status = POSTSTATUS.CONFIRMED
+            if post.state.MODERATED:
+                post.confirm()
 
             if 'company_logo' in request.files and request.files['company_logo']:
                 # The form's validator saved the processed logo in g.company_logo.
@@ -998,7 +1000,7 @@ def newjob():
             abort(404)
         if not archived_post.admin_is(g.user):
             abort(403)
-        if not archived_post.is_old():
+        if not archived_post.state.OLD:
             flash("This post is currently active and cannot be posted again.")
             return redirect(archived_post.url_for(), code=303)
         form.populate_from(archived_post)
@@ -1033,9 +1035,9 @@ def close(domain, hashid, key):
         abort(404)
     if not post.admin_is(g.user):
         abort(403)
-    if request.method == 'GET' and post.is_closed():
+    if request.method == 'GET' and post.state.CLOSED:
         return redirect(post.url_for('reopen'), code=303)
-    if not post.is_public():
+    if not post.state.PUBLIC:
         flash("Your job post can't be closed.", "info")
         return redirect(post.url_for(), code=303)
     form = Form()
@@ -1058,7 +1060,7 @@ def reopen(domain, hashid, key):
     if not post.admin_is(g.user):
         abort(403)
     # Only closed posts can be reopened
-    if not post.is_closed():
+    if not post.state.CLOSED:
         flash("Your job post can't be reopened.", "info")
         return redirect(post.url_for(), code=303)
     form = Form()

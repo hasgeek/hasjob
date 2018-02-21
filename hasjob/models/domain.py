@@ -6,7 +6,7 @@ from sqlalchemy.orm import deferred
 from sqlalchemy.dialects.postgresql import TSVECTOR
 from flask import url_for
 from baseframe.staticdata import webmail_domains
-from . import db, BaseMixin, POSTSTATUS
+from . import db, BaseMixin, POST_STATE
 from .user import User
 from .jobpost import JobPost
 
@@ -54,7 +54,7 @@ class Domain(BaseMixin, db.Model):
             return self.title
         if self.is_webmail:
             return self.name
-        post = self.jobposts.filter(JobPost.status.in_(POSTSTATUS.ARCHIVED)).order_by('datetime desc').first()
+        post = self.jobposts.filter(JobPost.state.ARCHIVED).order_by('datetime desc').first()
         if post:
             return post.company_name
         return self.name
@@ -74,8 +74,9 @@ class Domain(BaseMixin, db.Model):
         else:
             if self.is_webmail:
                 return None
-            post = self.jobposts.filter(JobPost.company_logo != None,
-                JobPost.status.in_(POSTSTATUS.ARCHIVED)).order_by('datetime desc').first()  # NOQA
+            post = self.jobposts.filter(
+                JobPost.company_logo != None, JobPost.state.ARCHIVED
+            ).order_by('datetime desc').first()  # NOQA
             return post.url_for('logo', _external=True) if post else None
 
     def editor_is(self, user):
@@ -84,7 +85,7 @@ class Domain(BaseMixin, db.Model):
         """
         if not user:
             return False
-        if JobPost.query.filter_by(domain=self, user=user).filter(JobPost.status.in_(POSTSTATUS.POSTPENDING)).notempty():
+        if JobPost.query.filter_by(domain=self, user=user).filter(JobPost.state.POSTPENDING).notempty():
             return True
         return False
 

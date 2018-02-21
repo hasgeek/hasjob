@@ -3,7 +3,7 @@
 from coaster.sqlalchemy import Query, failsafe_add
 from coaster.utils import make_name, LabeledEnum
 from baseframe import __
-from . import db, TimestampMixin, BaseNameMixin, POSTSTATUS
+from . import db, TimestampMixin, BaseNameMixin, POST_STATE
 from .jobpost import JobPost
 
 __all__ = ['TAG_TYPE', 'Tag', 'JobPostTag']
@@ -96,6 +96,6 @@ def related_posts(self, limit=12):
                 AND jobpost_tag.status IN :tag_present
                 GROUP BY jobpost_tag.jobpost_id ORDER BY count DESC LIMIT :limit) AS matches, jobpost
             WHERE jobpost.id = matches.jobpost_id;'''
-        )).params(id=self.id, listed=tuple(POSTSTATUS.LISTED), limit=limit, tag_present=tuple(TAG_TYPE.TAG_PRESENT))
+        )).params(id=self.id, listed=tuple(POST_STATE.LISTED), limit=limit, tag_present=tuple(TAG_TYPE.TAG_PRESENT))
 
 JobPost.related_posts = related_posts
