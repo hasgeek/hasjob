@@ -31,10 +31,10 @@ from hasjob.views.helper import (
     get_post_viewcounts)
 
 
-@app.route('/<domain>/<hashid>', methods=('GET', 'POST'), subdomain='<subdomain>')
-@app.route('/<domain>/<hashid>', methods=('GET', 'POST'))
-@app.route('/view/<hashid>', defaults={'domain': None}, methods=('GET', 'POST'), subdomain='<subdomain>')
-@app.route('/view/<hashid>', defaults={'domain': None}, methods=('GET', 'POST'))
+@app.route('/<domain>/<hashid>', methods=('GET',), subdomain='<subdomain>')
+@app.route('/<domain>/<hashid>', methods=('GET',))
+@app.route('/view/<hashid>', defaults={'domain': None}, methods=('GET',), subdomain='<subdomain>')
+@app.route('/view/<hashid>', defaults={'domain': None}, methods=('GET',))
 def jobdetail(domain, hashid):
     is_siteadmin = lastuser.has_permission('siteadmin')
     query = JobPost.fetch(hashid).options(
@@ -95,6 +95,7 @@ def jobdetail(domain, hashid):
 
     reportform = forms.ReportForm(obj=report)
     reportform.report_code.choices = [(ob.id, ob.title) for ob in ReportCode.query.filter_by(public=True).order_by('seq')]
+
     rejectform = forms.RejectForm()
     moderateform = forms.ModerateForm()
     if request.method == 'GET':
@@ -103,27 +104,6 @@ def jobdetail(domain, hashid):
         pinnedform = forms.PinnedForm(obj=post.link_to_board(g.board))
     else:
         pinnedform = forms.PinnedForm(obj=post)
-
-    if reportform.validate_on_submit():
-        if g.user:
-            if report is None:
-                report = JobPostReport(post=post, user=g.user)
-            report.reportcode_id = reportform.report_code.data
-            report.ipaddr = request.environ['REMOTE_ADDR']
-            report.useragent = request.user_agent.string
-            db.session.add(report)
-            db.session.commit()
-            if request.is_xhr:
-                return "<p>Thanks! This post has been flagged for review</p>"  # FIXME: Ugh!
-            else:
-                flash("Thanks! This post has been flagged for review", "interactive")
-        else:
-            if request.is_xhr:
-                return "<p>You need to be logged in to report a post</p>"  # FIXME: Ugh!
-            else:
-                flash("You need to be logged in to report a post", "interactive")
-    elif request.method == 'POST' and request.is_xhr:
-        return render_template('inc/reportform.html.jinja2', reportform=reportform)
 
     if post.company_url and post.status != POSTSTATUS.ANNOUNCEMENT:
         domain_mismatch = not base_domain_matches(post.company_url.lower(), post.email_domain.lower())
@@ -190,6 +170,35 @@ def job_related_posts(domain, hashid):
     g.impressions = {rp.id: (False, rp.id, bgroup(jobpost_ab, rp)) for rp in related_posts}
     return render_template('related_posts.html.jinja2', post=post,
         related_posts=related_posts, is_siteadmin=is_siteadmin)
+
+
+@app.route('/<domain>/<hashid>/report', methods=('POST',), subdomain='<subdomain>')
+@app.route('/<domain>/<hashid>/report', methods=('POST',))
+@app.route('/report/<hashid>', defaults={'domain': None}, methods=('POST',), subdomain='<subdomain>')
+@app.route('/report/<hashid>', defaults={'domain': None}, methods=('POST',))
+@lastuser.requires_login
+def reportjob(domain, hashid):
+    post = JobPost.fetch(hashid).options(db.load_only('id')).first_or_404()
+
+    if g.user:
+        report = JobPostReport.query.filter_by(post=post, user=g.user).first()
+    else:
+        report = None
+
+    reportform = forms.ReportForm(obj=report)
+    reportform.report_code.choices = [(ob.id, ob.title) for ob in ReportCode.query.filter_by(public=True).order_by('seq')]
+
+    if reportform.validate_on_submit():
+        if report is None:
+            report = JobPostReport(post=post, user=g.user)
+        report.reportcode_id = reportform.report_code.data
+        report.ipaddr = request.environ['REMOTE_ADDR']
+        report.useragent = request.user_agent.string
+        db.session.add(report)
+        db.session.commit()
+        return "<p>Thanks! This post has been flagged for review</p>"  # FIXME: Ugh!
+    else:
+        return render_template('inc/reportform.html', reportform=reportform)
 
 
 @app.route('/<domain>/<hashid>/star', defaults={'domain': None}, methods=['POST'], subdomain='<subdomain>')
