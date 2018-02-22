@@ -7,7 +7,7 @@ from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.orderinglist import ordering_list
 from flask import request, Markup, url_for
 from coaster.utils import LabeledEnum
-from coaster.sqlalchemy import JsonDict, StateManager
+from coaster.sqlalchemy import JsonDict, StateManager, cached
 from baseframe import __
 from baseframe.forms import Form
 from . import db, TimestampMixin, BaseNameMixin, BaseScopedNameMixin, make_timestamp_columns
@@ -413,7 +413,7 @@ class CampaignView(TimestampMixin, db.Model):
     dismissed = db.Column(db.Boolean, nullable=False, default=False)
     #: Number of sessions in which the user was shown this (null = unknown)
     #: Updated via a background job
-    session_count = db.Column(db.Integer, nullable=False, default=0)
+    session_count = cached(db.Column(db.Integer, nullable=False, default=0))
     #: The last time this campaign was viewed. If the campaign has a refresh time (say, 30 days)
     #: and the view is older than that, we'll reset the session_count and dismissed flag (via a
     #: background job) so that the campaign shows again.
@@ -454,7 +454,7 @@ class CampaignAnonView(TimestampMixin, db.Model):
     dismissed = db.Column(db.Boolean, nullable=False, default=False)
     #: Number of sessions in which the anon user was shown this (null = unknown)
     #: Updated via a background job
-    session_count = db.Column(db.Integer, nullable=False, default=0)
+    session_count = cached(db.Column(db.Integer, nullable=False, default=0))
     #: The last time this campaign was viewed. If the campaign has a refresh time (say, 30 days)
     #: and the view is older than that, we'll reset the session_count and dismissed flag (via a
     #: background job) so that the campaign shows again.
