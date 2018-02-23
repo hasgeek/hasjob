@@ -1,0 +1,19 @@
+{% extends "sheet.html" %}
+{% from "baseframe/forms.html" import renderfield %}
+{% block title %}{{ post.headline|e }}{% endblock %}
+{% block content %}
+  <div class="sheet">
+    <div class="section first">
+      <h1>Delete this draft?</h1>
+      <h2>{{ post.headline }}</h2>
+      <p>
+        Deleted drafts will be gone forever, with no undo. Are you sure you want to delete?
+      </p>
+      <form method="POST" class="form-horizontal">
+        {{ form.hidden_tag() }}
+        <button type="submit" class="btn btn-danger">Delete</button>
+        <a class="btn btn-default" href="{{ post.url_for() }}">Cancel</a>
+      </form>
+    </div>
+  </div>
+{% endblock %}

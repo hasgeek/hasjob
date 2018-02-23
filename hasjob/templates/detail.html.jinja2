@@ -161,6 +161,10 @@
                 <a class="list-group-item" href="{{ post.url_for('withdraw') }}">
                   <i class="fa fa-fw fa-trash-o"></i>&nbsp;&nbsp; Withdraw this
                 </a>
+              {%- elif post.is_draft() %}
+                <a class="list-group-item" href="{{ post.url_for('delete') }}">
+                  <i class="fa fa-fw fa-trash-o"></i>&nbsp;&nbsp; Delete this draft
+                </a>
               {%- endif %}
               {%- if post.is_old() %}
                 <a class="list-group-item" href="{{ url_for('newjob', template=post.hashid) }}">

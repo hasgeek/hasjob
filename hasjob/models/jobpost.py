@@ -279,6 +279,11 @@ class JobPost(BaseMixin, db.Model):
 
     def close(self):
         self.status = POSTSTATUS.CLOSED
+        self.closed_datetime = db.func.utcnow()
+
+    def delete(self):
+        self.status = POSTSTATUS.DELETED
+        self.closed_datetime = db.func.utcnow()
 
     def confirm(self):
         self.status = POSTSTATUS.CONFIRMED
