@@ -1,0 +1,34 @@
+{%- extends "layout.html.jinja2" -%}
+{% block pageheaders %}
+  <link href="//cdnjs.cloudflare.com/ajax/libs/c3/0.4.14/c3.min.css" rel="stylesheet"/>
+{% endblock %}
+
+{% block basecontent %}
+  {%- if header_campaign %}<div id="header-campaign"></div>{% endif %}
+  <div class="row">
+    <div class="col-md-10 col-md-offset-1 col-xs-12 col-sm-12">
+      {%- for category, msg in get_flashed_messages(with_categories=true) %}
+        <div class="flash flash-{{ category }}"><p>{{ msg }}</p></div>
+      {%- endfor %}
+
+      <div class="sheet">
+        <ul class="nav nav-tabs nav-tabs-top">
+          {%- for name, tab_title, view in current_view.tabs %}
+            <li role="presentation" {%- if name == current_view.current_tab %} class="active"{% endif %}><a href="{{ url_for(view.endpoint) }}" role="tab">{{ tab_title }}</a></li>
+          {%- endfor %}
+        </ul>
+       {% block pagecontent %}{% block content %}{% endblock %}{% endblock %}
+      </div>
+
+    </div>
+  </div>
+  {% block postcontent %}{% endblock %}
+  {%- if header_campaign %}{{ campaign_header(g, header_campaign) }}{% endif %}
+{% endblock %}
+
+{% block layoutscripts %}
+  {%- if header_campaign %}{{ campaign_script() }}{% endif %}
+  <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
+  <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/c3/0.4.14/c3.min.js"></script>
+  {% block footerscripts %}{% endblock %}
+{% endblock %}

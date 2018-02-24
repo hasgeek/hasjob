@@ -1,7 +1,7 @@
-{% extends "dashlayout.html.jinja2" %}
+{% extends "tablayout.html.jinja2" %}
 {% block title %}Admin dashboard{% endblock %}
 
-{% block tabcontent %}
+{% block content %}
   <div class="section first">
     <h1>{{ self.title() }}</h1>
     <p>Realtime stats for Hasjob</p>
@@ -18,7 +18,7 @@
     c3.generate({
       bindto: '#{{ divid }}',
       data: {
-        url: {{ url_for('admin_dashboard_daystats', period=period)|tojson }},
+        url: {{ url_for(current_view.daystats.endpoint, period=period)|tojson }},
         x: 'slot',
         xFormat: '%Y-%m-%dT%H:%M:%S',
         type: 'spline',

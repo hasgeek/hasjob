@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from sqlalchemy import event
 from sqlalchemy.orm import deferred
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.orderinglist import ordering_list
-from flask import request, Markup, url_for
+from flask import request, Markup
 from coaster.utils import LabeledEnum
 from coaster.sqlalchemy import JsonDict, StateManager, cached
 from baseframe import __
@@ -38,7 +38,7 @@ campaign_event_session_table = db.Table('campaign_event_session', db.Model.metad
 
 class CAMPAIGN_STATE(LabeledEnum):
     DISABLED = (False, __("Disabled"))
-    ENABLED = (True, __("Offline"))
+    ENABLED = (True, __("Enabled"))
     # LIVE is a conditional state in the model
 
 
@@ -164,6 +164,21 @@ class Campaign(BaseNameMixin, db.Model):
         lambda obj: obj.start_at <= datetime.utcnow() < obj.end_at,
         lambda cls: db.and_(cls.start_at <= db.func.utcnow(), cls.end_at > db.func.utcnow()),
         label=__("Live"))
+    state.add_conditional_state('CURRENT', state.ENABLED,
+        lambda obj: obj.start_at <= obj.start_at <= datetime.utcnow() < obj.end_at <= datetime.utcnow() + timedelta(days=30),
+        lambda cls: db.and_(
+            cls.start_at <= db.func.utcnow(),
+            cls.end_at > db.func.utcnow(),
+            cls.end_at <= datetime.utcnow() + timedelta(days=30)),
+        label=__("Current"))
+    state.add_conditional_state('LONGTERM', state.ENABLED,
+        lambda obj: obj.start_at <= obj.start_at <= datetime.utcnow() < datetime.utcnow() + timedelta(days=30) < obj.end_at,
+        lambda cls: db.and_(cls.start_at <= datetime.utcnow(), cls.end_at > datetime.utcnow() + timedelta(days=30)),
+        label=__("Long term"))
+    state.add_conditional_state('OFFLINE', state.ENABLED,
+        lambda obj: obj.start_at > datetime.utcnow() or obj.end_at <= datetime.utcnow(),
+        lambda cls: db.or_(cls.start_at > db.func.utcnow(), cls.end_at <= db.func.utcnow()),
+        label=__("Offline"))
 
     @property
     def content(self):
@@ -299,10 +314,6 @@ class Campaign(BaseNameMixin, db.Model):
         return basequery.order_by(cls.priority.desc()).first()
 
     @classmethod
-    def all(cls):
-        return cls.query.order_by(db.text('start_at desc, priority desc')).all()
-
-    @classmethod
     def get(cls, name):
         return cls.query.filter_by(name=name).one_or_none()
 
@@ -382,17 +393,6 @@ class CampaignAction(BaseScopedNameMixin, db.Model):
     @classmethod
     def get(cls, campaign, name):
         return cls.query.filter_by(campaign=campaign, name=name).one_or_none()
-
-    def url_for(self, action='view', _external=False, **kwargs):
-        if action == 'edit':
-            return url_for('campaign_action_edit', campaign=self.campaign.name, action=self.name,
-                _external=_external, **kwargs)
-        elif action == 'delete':
-            return url_for('campaign_action_delete', campaign=self.campaign.name, action=self.name,
-                _external=_external, **kwargs)
-        elif action == 'csv':
-            return url_for('campaign_action_csv', campaign=self.campaign.name, action=self.name,
-                _external=_external, **kwargs)
 
 
 class CampaignView(TimestampMixin, db.Model):

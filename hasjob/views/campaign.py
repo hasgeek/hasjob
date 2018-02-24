@@ -1,18 +1,81 @@
 # -*- coding: utf-8 -*-
 
 from collections import defaultdict
+from functools import wraps
 from datetime import timedelta
 from cStringIO import StringIO
 from pytz import UTC
 import unicodecsv
 from flask import g, request, flash, url_for, redirect, render_template, Markup, abort
-from coaster.utils import suuid, make_name
-from coaster.views import load_model, load_models
+from coaster.utils import suuid, make_name, classmethodproperty
+from coaster.auth import current_auth
+from coaster.views import load_model, load_models, ModelView, InstanceLoader, UrlForView, route, viewdata
+from baseframe import __
 from baseframe.forms import render_form, render_delete_sqla, render_redirect
 from .. import app, lastuser
 from ..models import (db, Campaign, CampaignView, CampaignAction, CampaignUserAction, CampaignAnonUserAction,
     CAMPAIGN_ACTION)
 from ..forms import CampaignForm, CampaignActionForm
+from .admin import AdminView
+
+
+@route('/admin/campaign')
+class AdminCampaignList(AdminView):
+    __decorators__ = [lastuser.requires_permission('siteadmin')]
+
+    @property
+    def listquery(self):
+        return Campaign.query.order_by(db.text('start_at desc, priority desc')).options(
+            db.load_only('title', 'start_at', 'end_at', 'public'))
+
+    @route('')
+    @viewdata(tab=True, index=0, title=__("Current"))
+    def list_current(self):
+        return render_template('campaign_list.html.jinja2',
+            title="Current campaigns",
+            campaigns=self.listquery.filter(Campaign.state.is_current).all())
+
+    @route('longterm', methods=['GET'])
+    @viewdata(tab=True, index=1, title=__("Long term"))
+    def list_longterm(self):
+        return render_template('campaign_list.html.jinja2',
+            title="Long term campaigns",
+            campaigns=self.listquery.filter(Campaign.state.is_longterm).all())
+
+    @route('offline', methods=['GET'])
+    @viewdata(tab=True, index=2, title=__("Offline"))
+    def list_offline(self):
+        return render_template('campaign_list.html.jinja2',
+            title="Offline campaigns",
+            campaigns=self.listquery.filter(Campaign.state.is_offline).all())
+
+    @route('disabled', methods=['GET'])
+    @viewdata(tab=True, index=3, title=__("Disabled"))
+    def list_disabled(self):
+        return render_template('campaign_list.html.jinja2',
+            title="Disabled campaigns",
+            campaigns=self.listquery.filter(Campaign.state.is_disabled).all())
+
+    @route('new', methods=['GET', 'POST'])
+    @viewdata(tab=True, index=4, title=__("New"))
+    def new(self):
+        self.message = u"Campaigns appear around the job board and provide a call to action for users"
+        form = CampaignForm()
+        if request.method == 'GET' and g.board:
+            form.boards.data = [g.board]
+        if form.validate_on_submit():
+            campaign = Campaign(user=g.user)
+            form.populate_obj(campaign)
+            campaign.name = suuid()  # Use a random name since it's also used in user action submit forms
+            db.session.add(campaign)
+            db.session.commit()
+            flash(u"Created a campaign", 'success')
+            return render_redirect(url_for('campaign_view', campaign=campaign.name), code=303)
+
+        return render_form(form=form, title=u"Create a campaign…", submit="Next",
+            formid="campaign_new", cancel_url=url_for(self.list_current.endpoint), ajax=False)
+
+AdminCampaignList.init_app(app)
 
 
 def chart_interval_for(campaign, default='hour'):
@@ -29,222 +92,233 @@ def chart_interval_for(campaign, default='hour'):
     return interval
 
 
-@app.route('/admin/campaign', methods=['GET'])
-@lastuser.requires_permission('siteadmin')
-def campaign_list():
-    return render_template('campaign_list.html.jinja2', campaigns=Campaign.all())
+def campaign_current_tab(f):
+    @wraps(f)
+    def wrapper(self, *args, **kwargs):
+        if self.obj:
+            if self.obj.state.is_current:
+                self.current_tab = 'list_current'
+            elif self.obj.state.is_longterm:
+                self.current_tab = 'list_longterm'
+            elif self.obj.state.is_offline:
+                self.current_tab = 'list_offline'
+            elif self.obj.state.is_disabled:
+                self.current_tab = 'list_disabled'
+        return f(self, *args, **kwargs)
+    return wrapper
 
 
-@app.route('/admin/campaign/new', methods=['GET', 'POST'])
-@lastuser.requires_permission('siteadmin')
-def campaign_new():
-    form = CampaignForm()
-    if request.method == 'GET' and g.board:
-        form.boards.data = [g.board]
-    if form.validate_on_submit():
-        campaign = Campaign(user=g.user)
-        form.populate_obj(campaign)
-        campaign.name = suuid()  # Use a random name since it's also used in user action submit forms
-        db.session.add(campaign)
-        db.session.commit()
-        flash(u"Created a campaign", 'success')
-        return render_redirect(url_for('campaign_view', campaign=campaign.name), code=303)
-
-    return render_form(form=form, title=u"Create a campaign…", submit="Next",
-        message=u"Campaigns appear around the job board and provide a call to action for users",
-        formid="campaign_new", cancel_url=url_for('campaign_list'), ajax=False)
+def campaign_action_current_tab(f):
+    @wraps(f)
+    def wrapper(self, *args, **kwargs):
+        if self.obj:
+            if self.obj.parent.state.is_current:
+                self.current_tab = 'list_current'
+            elif self.obj.parent.state.is_longterm:
+                self.current_tab = 'list_longterm'
+            elif self.obj.parent.state.is_offline:
+                self.current_tab = 'list_offline'
+            elif self.obj.parent.state.is_disabled:
+                self.current_tab = 'list_disabled'
+        return f(self, *args, **kwargs)
+    return wrapper
 
 
-@app.route('/admin/campaign/<campaign>')
-@lastuser.requires_permission('siteadmin')
-@load_model(Campaign, {'name': 'campaign'}, 'campaign')
-def campaign_view(campaign):
-    return render_template('campaign_info.html.jinja2', campaign=campaign, interval=chart_interval_for(campaign, default=None))
+@route('/admin/campaign/<campaign>')
+class AdminCampaignView(UrlForView, InstanceLoader, ModelView):
+    __decorators__ = [lastuser.requires_permission('siteadmin'), campaign_current_tab]
+    model = Campaign
+    route_model_map = {'campaign': 'name'}
 
+    @classmethodproperty
+    def tabs(cls):
+        return AdminCampaignList.tabs
 
-@app.route('/admin/campaign/<campaign>/edit', methods=['GET', 'POST'])
-@lastuser.requires_permission('siteadmin')
-@load_model(Campaign, {'name': 'campaign'}, 'campaign')
-def campaign_edit(campaign):
-    form = CampaignForm(obj=campaign)
-    if form.validate_on_submit():
-        form.populate_obj(campaign)
-        db.session.commit()
-        flash(u"Edited campaign settings", 'success')
-        return render_redirect(url_for('campaign_view', campaign=campaign.name), code=303)
+    @route('')
+    def view(self, **kwargs):
+        return render_template('campaign_info.html.jinja2',
+            campaign=self.obj, interval=chart_interval_for(self.obj, default=None))
 
-    return render_form(form=form, title=u"Edit campaign settings", submit="Save",
-        formid="campaign_edit", cancel_url=url_for('campaign_view', campaign=campaign.name), ajax=False)
+    @route('edit', methods=['GET', 'POST'])
+    def edit(self, **kwargs):
+        form = CampaignForm(obj=self.obj)
+        if form.validate_on_submit():
+            form.populate_obj(self.obj)
+            db.session.commit()
+            flash(u"Edited campaign settings", 'success')
+            return render_redirect(self.obj.url_for(), code=303)
 
+        return render_form(form=form, title=u"Edit campaign settings", submit="Save",
+            formid="campaign_edit", cancel_url=self.obj.url_for(), ajax=False)
 
-@app.route('/admin/campaign/<campaign>/delete', methods=['GET', 'POST'])
-@lastuser.requires_permission('siteadmin')
-@load_model(Campaign, {'name': 'campaign'}, 'campaign')
-def campaign_delete(campaign):
-    return render_delete_sqla(campaign, db, title=u"Confirm delete",
-        message=u"Delete campaign '%s'?" % campaign.title,
-        success=u"You have deleted campaign '%s'." % campaign.title,
-        next=url_for('campaign_list'))
+    @route('delete', methods=['GET', 'POST'])
+    def delete(self, **kwargs):
+        return render_delete_sqla(self.obj, db, title=u"Confirm delete",
+            message=u"Delete campaign '%s'?" % self.obj.title,
+            success=u"You have deleted campaign '%s'." % self.obj.title,
+            next=url_for(getattr(self, self.current_tab).endpoint),
+            cancel_url=self.obj.url_for())
 
+    @route('new', methods=['GET', 'POST'])
+    def action_new(self, **kwargs):
+        self.form_header = Markup(render_template('campaign_action_edit_header.html.jinja2', campaign=self.obj))
+        form = CampaignActionForm()
+        if request.method == 'GET':
+            form.seq.data = max([a.seq for a in self.obj.actions] or [0]) + 1
+        if form.validate_on_submit():
+            action = CampaignAction(campaign=self.obj)
+            db.session.add(action)
+            form.populate_obj(action)
+            action.name = suuid()  # Use a random name since it needs to be permanent
+            db.session.commit()
+            flash(u"Added campaign action ‘%s’" % action.title, 'interactive')
+            return redirect(self.obj.url_for(), code=303)
 
-@app.route('/admin/campaign/<campaign>/new', methods=['GET', 'POST'])
-@lastuser.requires_permission('siteadmin')
-@load_model(Campaign, {'name': 'campaign'}, 'campaign')
-def campaign_action_new(campaign):
-    form = CampaignActionForm()
-    if request.method == 'GET':
-        form.seq.data = max([a.seq for a in campaign.actions] or [0]) + 1
-    if form.validate_on_submit():
-        action = CampaignAction(campaign=campaign)
-        db.session.add(action)
-        form.populate_obj(action)
-        action.name = suuid()  # Use a random name since it needs to be permanent
-        db.session.commit()
-        flash(u"Added campaign action ‘%s’" % action.title, 'interactive')
-        return redirect(url_for('campaign_view', campaign=campaign.name), code=303)
+        return render_form(form=form, title=u"Add a new campaign action…", submit="Save",
+            formid="campaign_action_new", cancel_url=self.obj.url_for(), ajax=False)
 
-    return render_form(form=form, title=u"Add a new campaign action…", submit="Save",
-        formid="campaign_action_new", cancel_url=url_for('campaign_view', campaign=campaign.name), ajax=False)
+    @route('views.csv')
+    def view_counts(self, **kwargs):
+        campaign = self.obj
+        timezone = current_auth.actor.timezone if current_auth.is_authenticated else 'UTC'
+        viewdict = defaultdict(dict)
 
-
-@app.route('/admin/campaign/<campaign>/<action>/edit', methods=['GET', 'POST'])
-@lastuser.requires_permission('siteadmin')
-@load_models(
-    (Campaign, {'name': 'campaign'}, 'campaign'),
-    (CampaignAction, {'name': 'action', 'campaign': 'campaign'}, 'action'))
-def campaign_action_edit(campaign, action):
-    form = CampaignActionForm(obj=action)
-    if form.validate_on_submit():
-        form.populate_obj(action)
-        db.session.commit()
-        flash(u"Edited campaign action ‘%s’" % action.title, 'interactive')
-        return redirect(url_for('campaign_view', campaign=campaign.name), code=303)
-
-    return render_form(form=form, title=u"Edit campaign action", submit="Save",
-        formid="campaign_action_edit", cancel_url=url_for('campaign_view', campaign=campaign.name), ajax=False)
-
-
-@app.route('/admin/campaign/<campaign>/<action>/delete', methods=['GET', 'POST'])
-@lastuser.requires_permission('siteadmin')
-@load_models(
-    (Campaign, {'name': 'campaign'}, 'campaign'),
-    (CampaignAction, {'name': 'action', 'campaign': 'campaign'}, 'action'))
-def campaign_action_delete(campaign, action):
-    return render_delete_sqla(action, db, title=u"Confirm delete",
-        message=u"Delete campaign action '%s'?" % campaign.title,
-        success=u"You have deleted campaign action '%s'." % campaign.title,
-        next=url_for('campaign_view', campaign=campaign.name))
-
-
-@app.route('/admin/campaign/<campaign>/<action>/csv', methods=['GET', 'POST'])
-@lastuser.requires_permission('siteadmin')
-@load_models(
-    (Campaign, {'name': 'campaign'}, 'campaign'),
-    (CampaignAction, {'name': 'action', 'campaign': 'campaign'}, 'action'))
-def campaign_action_csv(campaign, action):
-    if action.type not in ('Y', 'N', 'M', 'F'):
-        abort(403)
-    outfile = StringIO()
-    out = unicodecsv.writer(outfile, 'excel')
-    out.writerow(['fullname', 'username', 'email', 'phone'])
-    for ua in action.useractions:
-        out.writerow([ua.user.fullname, ua.user.username, ua.user.email, ua.user.phone])
-    return outfile.getvalue(), 200, {'Content-Type': 'text/csv',
-        'Content-Disposition': 'attachment; filename="%s-%s.csv"' % (
-            make_name(campaign.title), make_name(action.title))}
-
-
-# --- Campaign charts ---------------------------------------------------------
-
-@app.route('/admin/campaign/<campaign>/views.csv')
-@lastuser.requires_permission('siteadmin')
-@load_model(Campaign, {'name': 'campaign'}, 'campaign')
-def campaign_view_counts(campaign):
-    timezone = g.user.timezone if g.user else 'UTC'
-    viewdict = defaultdict(dict)
-
-    interval = chart_interval_for(campaign)
-
-    hourly_views = db.session.query('hour', 'count').from_statement(db.text(
-        '''SELECT date_trunc(:interval, campaign_view.datetime AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS hour, COUNT(*) AS count FROM campaign_view WHERE campaign_id=:campaign_id GROUP BY hour ORDER BY hour;'''
-    )).params(interval=interval, timezone=timezone, campaign_id=campaign.id)
-
-    for hour, count in hourly_views:
-        viewdict[hour]['_views'] = count
-
-    hourly_views = db.session.query('hour', 'count').from_statement(db.text(
-        '''SELECT date_trunc(:interval, campaign_anon_view.datetime AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS hour, COUNT(*) AS count FROM campaign_anon_view WHERE campaign_id=:campaign_id GROUP BY hour ORDER BY hour;'''
-    )).params(interval=interval, timezone=timezone, campaign_id=campaign.id)
-
-    for hour, count in hourly_views:
-        viewdict[hour]['_views'] = viewdict[hour].setdefault('_views', 0) + count
-
-    hourly_views = db.session.query('hour', 'count').from_statement(db.text(
-        '''SELECT date_trunc(:interval, campaign_user_action.created_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS hour, COUNT(DISTINCT(user_id)) AS count FROM campaign_user_action WHERE action_id IN (SELECT id FROM campaign_action WHERE campaign_id = :campaign_id AND type != :dismiss_type) GROUP BY hour ORDER BY hour;'''
-        )).params(interval=interval, timezone=timezone, campaign_id=campaign.id, dismiss_type=CAMPAIGN_ACTION.DISMISS)
-
-    for hour, count in hourly_views:
-        viewdict[hour]['_combined'] = count
-
-    hourly_views = db.session.query('hour', 'count').from_statement(db.text(
-        '''SELECT date_trunc(:interval, campaign_anon_user_action.created_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS hour, COUNT(DISTINCT(anon_user_id)) AS count FROM campaign_anon_user_action WHERE action_id IN (SELECT id FROM campaign_action WHERE campaign_id = :campaign_id AND type != :dismiss_type) GROUP BY hour ORDER BY hour;'''
-        )).params(interval=interval, timezone=timezone, campaign_id=campaign.id, dismiss_type=CAMPAIGN_ACTION.DISMISS)
-
-    for hour, count in hourly_views:
-        viewdict[hour]['_combined'] = viewdict[hour].setdefault('_combined', 0) + count
-
-    action_names = []
-
-    for action in campaign.actions:
-        action_names.append(action.name)
-        hourly_views = db.session.query('hour', 'count').from_statement(db.text(
-            '''SELECT date_trunc(:interval, campaign_user_action.created_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS hour, COUNT(*) AS count FROM campaign_user_action WHERE action_id=:action_id GROUP BY hour ORDER BY hour;'''
-        )).params(interval=interval, timezone=timezone, action_id=action.id)
-        for hour, count in hourly_views:
-            viewdict[hour][action.name] = count
+        interval = chart_interval_for(campaign)
 
         hourly_views = db.session.query('hour', 'count').from_statement(db.text(
-            '''SELECT date_trunc(:interval, campaign_anon_user_action.created_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS hour, COUNT(*) AS count FROM campaign_anon_user_action WHERE action_id=:action_id GROUP BY hour ORDER BY hour;'''
-        )).params(interval=interval, timezone=timezone, action_id=action.id)
-        for hour, count in hourly_views:
-            viewdict[hour][action.name] = viewdict[hour].setdefault(action.name, 0) + count
+            '''SELECT date_trunc(:interval, campaign_view.datetime AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS hour, COUNT(*) AS count FROM campaign_view WHERE campaign_id=:campaign_id GROUP BY hour ORDER BY hour;'''
+        )).params(interval=interval, timezone=timezone, campaign_id=campaign.id)
 
-    if viewdict:
-        # Top-off with site-wide user presence (available since 31 Jan 2015 in user_active_at)
-        minhour = g.user.tz.localize(min(viewdict.keys())).astimezone(UTC).replace(tzinfo=None)
-        maxhour = g.user.tz.localize(max(viewdict.keys()) + timedelta(seconds=3599)).astimezone(UTC).replace(tzinfo=None)
+        for hour, count in hourly_views:
+            viewdict[hour]['_views'] = count
 
         hourly_views = db.session.query('hour', 'count').from_statement(db.text(
-            '''SELECT date_trunc(:interval, user_active_at.active_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS hour, COUNT(DISTINCT(user_active_at.user_id)) AS count FROM user_active_at WHERE user_active_at.active_at >= :min AND user_active_at.active_at <= :max GROUP BY hour ORDER BY hour;'''
-            )).params(interval=interval, timezone=timezone, min=minhour, max=maxhour)
+            '''SELECT date_trunc(:interval, campaign_anon_view.datetime AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS hour, COUNT(*) AS count FROM campaign_anon_view WHERE campaign_id=:campaign_id GROUP BY hour ORDER BY hour;'''
+        )).params(interval=interval, timezone=timezone, campaign_id=campaign.id)
 
         for hour, count in hourly_views:
-            viewdict[hour]['_site'] = count
+            viewdict[hour]['_views'] = viewdict[hour].setdefault('_views', 0) + count
 
-        hourly_views = db.session.query('hour', 'count').from_statement(
-            '''SELECT DATE_TRUNC(:interval, event_session.created_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS hour, COUNT(DISTINCT(anon_user_id)) AS count FROM event_session WHERE event_session.anon_user_id IS NOT NULL AND event_session.created_at >= :min AND event_session.created_at <= :max GROUP BY hour ORDER BY hour'''
-            ).params(interval=interval, timezone=timezone, min=minhour, max=maxhour)
+        hourly_views = db.session.query('hour', 'count').from_statement(db.text(
+            '''SELECT date_trunc(:interval, campaign_user_action.created_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS hour, COUNT(DISTINCT(user_id)) AS count FROM campaign_user_action WHERE action_id IN (SELECT id FROM campaign_action WHERE campaign_id = :campaign_id AND type != :dismiss_type) GROUP BY hour ORDER BY hour;'''
+            )).params(interval=interval, timezone=timezone, campaign_id=campaign.id, dismiss_type=CAMPAIGN_ACTION.DISMISS)
 
         for hour, count in hourly_views:
-            viewdict[hour]['_site'] = viewdict[hour].setdefault('_site', 0) + count
+            viewdict[hour]['_combined'] = count
 
-    viewlist = []
-    for slot in viewdict:
-        row = [slot, viewdict[slot].get('_site', 0), viewdict[slot].get('_views', 0), viewdict[slot].get('_combined', 0)]
-        for name in action_names:
-            row.append(viewdict[slot].get(name, 0))
-        viewlist.append(row)
+        hourly_views = db.session.query('hour', 'count').from_statement(db.text(
+            '''SELECT date_trunc(:interval, campaign_anon_user_action.created_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS hour, COUNT(DISTINCT(anon_user_id)) AS count FROM campaign_anon_user_action WHERE action_id IN (SELECT id FROM campaign_action WHERE campaign_id = :campaign_id AND type != :dismiss_type) GROUP BY hour ORDER BY hour;'''
+            )).params(interval=interval, timezone=timezone, campaign_id=campaign.id, dismiss_type=CAMPAIGN_ACTION.DISMISS)
 
-    viewlist.sort()  # Sorts by first column, the hour slot (datetime)
-    for row in viewlist:
-        row[0] = row[0].isoformat()
+        for hour, count in hourly_views:
+            viewdict[hour]['_combined'] = viewdict[hour].setdefault('_combined', 0) + count
 
-    outfile = StringIO()
-    out = unicodecsv.writer(outfile, 'excel')
-    out.writerow(['_hour', '_site', '_views', '_combined'] + action_names)
-    out.writerows(viewlist)
+        action_names = []
 
-    return outfile.getvalue(), 200, {'Content-Type': 'text/plain'}
+        for action in campaign.actions:
+            action_names.append(action.name)
+            hourly_views = db.session.query('hour', 'count').from_statement(db.text(
+                '''SELECT date_trunc(:interval, campaign_user_action.created_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS hour, COUNT(*) AS count FROM campaign_user_action WHERE action_id=:action_id GROUP BY hour ORDER BY hour;'''
+            )).params(interval=interval, timezone=timezone, action_id=action.id)
+            for hour, count in hourly_views:
+                viewdict[hour][action.name] = count
+
+            hourly_views = db.session.query('hour', 'count').from_statement(db.text(
+                '''SELECT date_trunc(:interval, campaign_anon_user_action.created_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS hour, COUNT(*) AS count FROM campaign_anon_user_action WHERE action_id=:action_id GROUP BY hour ORDER BY hour;'''
+            )).params(interval=interval, timezone=timezone, action_id=action.id)
+            for hour, count in hourly_views:
+                viewdict[hour][action.name] = viewdict[hour].setdefault(action.name, 0) + count
+
+        if viewdict:
+            # Top-off with site-wide user presence (available since 31 Jan 2015 in user_active_at)
+            minhour = g.user.tz.localize(min(viewdict.keys())).astimezone(UTC).replace(tzinfo=None)
+            maxhour = g.user.tz.localize(max(viewdict.keys()) + timedelta(seconds=3599)).astimezone(UTC).replace(tzinfo=None)
+
+            hourly_views = db.session.query('hour', 'count').from_statement(db.text(
+                '''SELECT date_trunc(:interval, user_active_at.active_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS hour, COUNT(DISTINCT(user_active_at.user_id)) AS count FROM user_active_at WHERE user_active_at.active_at >= :min AND user_active_at.active_at <= :max GROUP BY hour ORDER BY hour;'''
+                )).params(interval=interval, timezone=timezone, min=minhour, max=maxhour)
+
+            for hour, count in hourly_views:
+                viewdict[hour]['_site'] = count
+
+            hourly_views = db.session.query('hour', 'count').from_statement(
+                '''SELECT DATE_TRUNC(:interval, event_session.created_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS hour, COUNT(DISTINCT(anon_user_id)) AS count FROM event_session WHERE event_session.anon_user_id IS NOT NULL AND event_session.created_at >= :min AND event_session.created_at <= :max GROUP BY hour ORDER BY hour'''
+                ).params(interval=interval, timezone=timezone, min=minhour, max=maxhour)
+
+            for hour, count in hourly_views:
+                viewdict[hour]['_site'] = viewdict[hour].setdefault('_site', 0) + count
+
+        viewlist = []
+        for slot in viewdict:
+            row = [slot, viewdict[slot].get('_site', 0), viewdict[slot].get('_views', 0), viewdict[slot].get('_combined', 0)]
+            for name in action_names:
+                row.append(viewdict[slot].get(name, 0))
+            viewlist.append(row)
+
+        viewlist.sort()  # Sorts by first column, the hour slot (datetime)
+        for row in viewlist:
+            row[0] = row[0].isoformat()
+
+        outfile = StringIO()
+        out = unicodecsv.writer(outfile, 'excel')
+        out.writerow(['_hour', '_site', '_views', '_combined'] + action_names)
+        out.writerows(viewlist)
+
+        return outfile.getvalue(), 200, {'Content-Type': 'text/plain'}
+
+AdminCampaignView.init_app(app)
+
+
+@route('/admin/campaign/<campaign>/<action>')
+class AdminCampaignActionView(UrlForView, InstanceLoader, ModelView):
+    __decorators__ = [lastuser.requires_permission('siteadmin'), campaign_action_current_tab]
+    model = CampaignAction
+    route_model_map = {
+        'action': 'name',
+        'campaign': 'parent.name'
+        }
+
+    @classmethodproperty
+    def tabs(cls):
+        return AdminCampaignList.tabs
+
+    @property
+    def form_header(self):
+        return Markup(render_template('campaign_action_edit_header.html.jinja2', campaign=self.obj.parent))
+
+    @route('edit', methods=['GET', 'POST'])
+    def edit(self, **kwargs):
+        form = CampaignActionForm(obj=self.obj)
+        if form.validate_on_submit():
+            form.populate_obj(self.obj)
+            db.session.commit()
+            flash(u"Edited campaign action ‘%s’" % self.obj.title, 'interactive')
+            return redirect(self.obj.parent.url_for(), code=303)
+
+        return render_form(form=form, title=u"Edit campaign action", submit="Save",
+            formid="campaign_action_edit", cancel_url=self.obj.parent.url_for(), ajax=False)
+
+    @route('delete', methods=['GET', 'POST'])
+    def delete(self, **kwargs):
+        return render_delete_sqla(self.obj, db, title=u"Confirm delete",
+            message=u"Delete campaign action '%s'?" % self.obj.title,
+            success=u"You have deleted campaign action '%s'." % self.obj.title,
+            next=self.obj.parent.url_for())
+
+    @route('csv', methods=['GET', 'POST'])
+    def csv(self, **kwargs):
+        if self.obj.type not in ('Y', 'N', 'M', 'F'):
+            abort(403)
+        outfile = StringIO()
+        out = unicodecsv.writer(outfile, 'excel')
+        out.writerow(['fullname', 'username', 'email', 'phone'])
+        for ua in self.obj.useractions:
+            out.writerow([ua.user.fullname, ua.user.username, ua.user.email, ua.user.phone])
+        return outfile.getvalue(), 200, {'Content-Type': 'text/csv',
+            'Content-Disposition': 'attachment; filename="%s-%s.csv"' % (
+                make_name(self.obj.parent.title), make_name(self.obj.title))}
+
+AdminCampaignActionView.init_app(app)
 
 
 # --- Campaign actions --------------------------------------------------------

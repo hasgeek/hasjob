@@ -1,5 +1,5 @@
-{% extends "layout.html.jinja2" -%}
-{% from "macros.html.jinja2" import campaign_header, campaign_script %}
+{%- extends "layout.html.jinja2" -%}
+{%- from "macros.html.jinja2" import campaign_header, campaign_script -%}
 {% block messages %}{% endblock %}
 {% block basecontent %}
   {%- if header_campaign %}<div id="header-campaign"></div>{% endif %}
@@ -8,7 +8,13 @@
       {%- for category, msg in get_flashed_messages(with_categories=true) %}
         <div class="flash flash-{{ category }}"><p>{{ msg }}</p></div>
       {%- endfor %}
-      {% block content %}{% endblock %}
+      {% block presheet %}{% endblock %}
+      {% block sheet %}
+      <div itemscope itemtype="http://schema.org/Article" class="sheet">
+        {% block pagecontent %}{% block content %}{% endblock %}{% endblock %}
+      </div>
+      {% endblock %}
+      {% block postsheet %}{% endblock %}
     </div>
   </div>
   {% block postcontent %}{% endblock %}
