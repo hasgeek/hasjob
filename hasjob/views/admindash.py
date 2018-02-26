@@ -17,7 +17,6 @@ class AdminDashboard(AdminView):
 
     @route('')
     @viewdata(tab=True, index=0, title=__("Dashboard"))
-    @lastuser.requires_permission('siteadmin')
     def dashboard(self):
         return render_template('admin_dashboard.html.jinja2')
 
