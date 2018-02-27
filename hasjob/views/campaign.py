@@ -397,10 +397,9 @@ def campaign_action(campaign):
             return render_template('campaign_action_response.html.jinja2', campaign=campaign,
                 redirect=url_for('login', next=request.referrer, message=u"Please login so we can save your preferences"))
 
-    if action.type in (CAMPAIGN_ACTION.RSVP_Y, CAMPAIGN_ACTION.RSVP_N, CAMPAIGN_ACTION.RSVP_M):
+    if action.is_rsvp_type:
         for cua in campaign.useractions(g.user).values():
-            if cua.action != action and cua.action.group == action.group and cua.action.type in (
-                    CAMPAIGN_ACTION.RSVP_Y, CAMPAIGN_ACTION.RSVP_N, CAMPAIGN_ACTION.RSVP_M):
+            if cua.action != action and cua.action.group == action.group and cua.action.is_rsvp_type:
                 db.session.delete(cua)  # If user changed their RSVP answer, delete old answer
         db.session.commit()
         return render_template('campaign_action_response.html.jinja2', campaign=campaign,

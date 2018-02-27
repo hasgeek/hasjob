@@ -61,6 +61,9 @@ class CAMPAIGN_ACTION(LabeledEnum):
 
     __order__ = (LINK, RSVP_Y, RSVP_N, RSVP_M, FORM, DISMISS)
 
+    RSVP_TYPES = {RSVP_Y, RSVP_N, RSVP_M}
+    DATA_TYPES = {RSVP_Y, RSVP_N, RSVP_M, FORM}
+
 
 class BANNER_LOCATION(LabeledEnum):
     TOP = (0, __("Top"))
@@ -369,12 +372,10 @@ class CampaignAction(BaseScopedNameMixin, db.Model):
     #: Is this action live?
     public = db.Column(db.Boolean, nullable=False, default=False)
     #: Action type
-    type = db.Column(db.Enum(*CAMPAIGN_ACTION.keys(), name='campaign_action_type_enum'), nullable=False,
-        default=CAMPAIGN_ACTION)
+    type = db.Column(db.Enum(*CAMPAIGN_ACTION.keys(), name='campaign_action_type_enum'), nullable=False)
     # type = db.Column(db.Char(1),
     #     db.CheckConstraint('type IN (%s)' % ', '.join(["'%s'" % k for k in CAMPAIGN_ACTION.keys()])),
-    #     nullable=False,
-    #     default=CAMPAIGN_ACTION)
+    #     nullable=False)
     #: Action category (for buttons)
     category = db.Column(db.Unicode(20), nullable=False, default=u'default')
     #: Icon to accompany text
@@ -393,6 +394,14 @@ class CampaignAction(BaseScopedNameMixin, db.Model):
     @classmethod
     def get(cls, campaign, name):
         return cls.query.filter_by(campaign=campaign, name=name).one_or_none()
+
+    @property
+    def is_data_type(self):
+        return self.type in CAMPAIGN_ACTION.DATA_TYPES
+
+    @property
+    def is_rsvp_type(self):
+        return self.type in CAMPAIGN_ACTION.RSVP_TYPES
 
 
 class CampaignView(TimestampMixin, db.Model):
