@@ -5,7 +5,7 @@
   <div class="col-xs-12 col-sm-9 col-sm-pull-3">
     <h1><a href="{{ campaign.url_for() }}">{{ campaign.title }}</a></h1>
     <p class="post-date">
-      {%- if campaign.state.is_live %}<strong>Live</strong>{% else %}{{ campaign.state.label }}{% endif %} —
+      {%- if campaign.state.is_live %}<strong>Live</strong>{% else %}{{ campaign.state.label.title }}{% endif %} —
       <time datetime="{{ campaign.start_at.isoformat() }}Z">{{ campaign.start_at|longdate }}</time> –
       <time datetime="{{ campaign.end_at.isoformat() }}Z">{{ campaign.end_at|longdate }}</time>
     </p>

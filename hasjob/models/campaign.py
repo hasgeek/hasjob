@@ -37,9 +37,9 @@ campaign_event_session_table = db.Table('campaign_event_session', db.Model.metad
 
 
 class CAMPAIGN_STATE(LabeledEnum):
-    DISABLED = (False, __("Disabled"))
-    ENABLED = (True, __("Enabled"))
-    # LIVE is a conditional state in the model
+    DISABLED = (False, 'disabled', __("Disabled"))
+    ENABLED = (True, 'enabled', __("Enabled"))
+    # LIVE (and others) are conditional states in the model
 
 
 class CAMPAIGN_POSITION(LabeledEnum):
@@ -163,22 +163,22 @@ class Campaign(BaseNameMixin, db.Model):
     state.add_conditional_state('LIVE', state.ENABLED,
         lambda obj: obj.start_at <= datetime.utcnow() < obj.end_at,
         lambda cls: db.and_(cls.start_at <= db.func.utcnow(), cls.end_at > db.func.utcnow()),
-        label=__("Live"))
+        label=('live', __("Live")))
     state.add_conditional_state('CURRENT', state.ENABLED,
         lambda obj: obj.start_at <= obj.start_at <= datetime.utcnow() < obj.end_at <= datetime.utcnow() + timedelta(days=30),
         lambda cls: db.and_(
             cls.start_at <= db.func.utcnow(),
             cls.end_at > db.func.utcnow(),
             cls.end_at <= datetime.utcnow() + timedelta(days=30)),
-        label=__("Current"))
+        label=('current', __("Current")))
     state.add_conditional_state('LONGTERM', state.ENABLED,
         lambda obj: obj.start_at <= obj.start_at <= datetime.utcnow() < datetime.utcnow() + timedelta(days=30) < obj.end_at,
         lambda cls: db.and_(cls.start_at <= datetime.utcnow(), cls.end_at > datetime.utcnow() + timedelta(days=30)),
-        label=__("Long term"))
+        label=('longterm', __("Long term")))
     state.add_conditional_state('OFFLINE', state.ENABLED,
         lambda obj: obj.start_at > datetime.utcnow() or obj.end_at <= datetime.utcnow(),
         lambda cls: db.or_(cls.start_at > db.func.utcnow(), cls.end_at <= db.func.utcnow()),
-        label=__("Offline"))
+        label=('offline', __("Offline")))
 
     @property
     def content(self):
