@@ -241,9 +241,9 @@ class AdminCampaignView(UrlForView, InstanceLoader, ModelView):
             for hour, count in hourly_views:
                 viewdict[hour]['_site'] = count
 
-            hourly_views = db.session.query('hour', 'count').from_statement(
+            hourly_views = db.session.query('hour', 'count').from_statement(db.text(
                 '''SELECT DATE_TRUNC(:interval, event_session.created_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS hour, COUNT(DISTINCT(anon_user_id)) AS count FROM event_session WHERE event_session.anon_user_id IS NOT NULL AND event_session.created_at >= :min AND event_session.created_at <= :max GROUP BY hour ORDER BY hour'''
-                ).params(interval=interval, timezone=timezone, min=minhour, max=maxhour)
+                )).params(interval=interval, timezone=timezone, min=minhour, max=maxhour)
 
             for hour, count in hourly_views:
                 viewdict[hour]['_site'] = viewdict[hour].setdefault('_site', 0) + count

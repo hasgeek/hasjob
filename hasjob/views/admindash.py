@@ -37,45 +37,45 @@ class AdminDashboard(AdminView):
 
         stats = defaultdict(dict)
 
-        statsq = db.session.query('slot', 'count').from_statement(
+        statsq = db.session.query('slot', 'count').from_statement(db.text(
             '''SELECT DATE_TRUNC(:trunc, user_active_at.active_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS slot, COUNT(DISTINCT(user_active_at.user_id)) AS count FROM user_active_at WHERE user_active_at.active_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone > DATE_TRUNC(:trunc, NOW() AT TIME ZONE :timezone - INTERVAL :interval) GROUP BY slot ORDER BY slot'''
-            ).params(trunc=trunc, interval=interval, timezone=g.user.timezone)
+            )).params(trunc=trunc, interval=interval, timezone=g.user.timezone)
         for slot, count in statsq:
             stats[slot]['users'] = count
 
-        statsq = db.session.query('slot', 'count').from_statement(
+        statsq = db.session.query('slot', 'count').from_statement(db.text(
             '''SELECT DATE_TRUNC(:trunc, "user".created_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS slot, COUNT(*) AS count FROM "user" WHERE "user".created_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone > DATE_TRUNC(:trunc, NOW() AT TIME ZONE :timezone - INTERVAL :interval) GROUP BY slot ORDER BY slot'''
-            ).params(trunc=trunc, interval=interval, timezone=g.user.timezone)
+            )).params(trunc=trunc, interval=interval, timezone=g.user.timezone)
         for slot, count in statsq:
             stats[slot]['newusers'] = count
 
-        statsq = db.session.query('slot', 'count').from_statement(
+        statsq = db.session.query('slot', 'count').from_statement(db.text(
             '''SELECT DATE_TRUNC(:trunc, jobpost.datetime AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS slot, COUNT(*) AS count FROM jobpost WHERE jobpost.status IN :listed AND jobpost.datetime AT TIME ZONE 'UTC' AT TIME ZONE :timezone > DATE_TRUNC(:trunc, NOW() AT TIME ZONE :timezone - INTERVAL :interval) GROUP BY slot ORDER BY slot'''
-            ).params(trunc=trunc, interval=interval, timezone=g.user.timezone, listed=tuple(POSTSTATUS.LISTED))
+            )).params(trunc=trunc, interval=interval, timezone=g.user.timezone, listed=tuple(POSTSTATUS.LISTED))
         for slot, count in statsq:
             stats[slot]['jobs'] = count
 
-        statsq = db.session.query('slot', 'count').from_statement(
+        statsq = db.session.query('slot', 'count').from_statement(db.text(
             '''SELECT DATE_TRUNC(:trunc, event_session.created_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS slot, COUNT(DISTINCT(anon_user_id)) AS count FROM event_session WHERE event_session.anon_user_id IS NOT NULL AND event_session.created_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone > DATE_TRUNC(:trunc, NOW() AT TIME ZONE :timezone - INTERVAL :interval) GROUP BY slot ORDER BY slot'''
-            ).params(trunc=trunc, interval=interval, timezone=g.user.timezone)
+            )).params(trunc=trunc, interval=interval, timezone=g.user.timezone)
         for slot, count in statsq:
             stats[slot]['anon_users'] = count
 
-        statsq = db.session.query('slot', 'count').from_statement(
+        statsq = db.session.query('slot', 'count').from_statement(db.text(
             '''SELECT DATE_TRUNC(:trunc, job_application.created_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS slot, COUNT(*) AS count FROM job_application WHERE job_application.created_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone > DATE_TRUNC(:trunc, NOW() AT TIME ZONE :timezone - INTERVAL :interval) GROUP BY slot ORDER BY slot'''
-            ).params(trunc=trunc, interval=interval, timezone=g.user.timezone)
+            )).params(trunc=trunc, interval=interval, timezone=g.user.timezone)
         for slot, count in statsq:
             stats[slot]['applications'] = count
 
-        statsq = db.session.query('slot', 'count').from_statement(
+        statsq = db.session.query('slot', 'count').from_statement(db.text(
             '''SELECT DATE_TRUNC(:trunc, job_application.replied_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS slot, COUNT(*) AS count FROM job_application WHERE job_application.response = :response AND job_application.replied_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone > DATE_TRUNC(:trunc, NOW() AT TIME ZONE :timezone - INTERVAL :interval) GROUP BY slot ORDER BY slot'''
-            ).params(trunc=trunc, interval=interval, timezone=g.user.timezone, response=EMPLOYER_RESPONSE.REPLIED)
+            )).params(trunc=trunc, interval=interval, timezone=g.user.timezone, response=EMPLOYER_RESPONSE.REPLIED)
         for slot, count in statsq:
             stats[slot]['replies'] = count
 
-        statsq = db.session.query('slot', 'count').from_statement(
+        statsq = db.session.query('slot', 'count').from_statement(db.text(
             '''SELECT DATE_TRUNC(:trunc, job_application.replied_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS slot, COUNT(*) AS count FROM job_application WHERE job_application.response = :response AND job_application.replied_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone > DATE_TRUNC(:trunc, NOW() AT TIME ZONE :timezone - INTERVAL :interval) GROUP BY slot ORDER BY slot'''
-            ).params(trunc=trunc, interval=interval, timezone=g.user.timezone, response=EMPLOYER_RESPONSE.REJECTED)
+            )).params(trunc=trunc, interval=interval, timezone=g.user.timezone, response=EMPLOYER_RESPONSE.REJECTED)
         for slot, count in statsq:
             stats[slot]['rejections'] = count
 
@@ -101,14 +101,14 @@ class AdminDashboard(AdminView):
     @route('historical/userdays_responses.csv', defaults={'q': 'r'})
     def historical_userdays(self, q):
         if q == 'a':
-            userdays = db.session.query('month', 'users', 'centile').from_statement(
-                '''SELECT month, COUNT(user_id) AS users, PERCENTILE_CONT(ARRAY [0.5, 0.6, 0.7, 0.8, 0.9, 0.91, 0.92, 0.93, 0.94, 0.95, 0.96, 0.97, 0.98, 0.99, 1.0]) WITHIN GROUP (ORDER BY count) AS centile FROM (SELECT month, COUNT(day) AS count, user_id FROM (SELECT DATE_TRUNC('month', user_active_at.active_at) AS month, DATE_TRUNC('day', user_active_at.active_at) AS day, user_id FROM user_active_at GROUP BY month, day, user_id) AS month_day_user GROUP BY month, user_id ORDER BY month, user_id) AS daycounts WHERE month > '2013-01-01' GROUP BY month ORDER BY month;''')
+            userdays = db.session.query('month', 'users', 'centile').from_statement(db.text(
+                '''SELECT month, COUNT(user_id) AS users, PERCENTILE_CONT(ARRAY [0.5, 0.6, 0.7, 0.8, 0.9, 0.91, 0.92, 0.93, 0.94, 0.95, 0.96, 0.97, 0.98, 0.99, 1.0]) WITHIN GROUP (ORDER BY count) AS centile FROM (SELECT month, COUNT(day) AS count, user_id FROM (SELECT DATE_TRUNC('month', user_active_at.active_at) AS month, DATE_TRUNC('day', user_active_at.active_at) AS day, user_id FROM user_active_at GROUP BY month, day, user_id) AS month_day_user GROUP BY month, user_id ORDER BY month, user_id) AS daycounts WHERE month > '2013-01-01' GROUP BY month ORDER BY month;'''))
         elif q == 'c':
-            userdays = db.session.query('month', 'users', 'centile').from_statement(
-                '''SELECT month, COUNT(user_id) AS users, PERCENTILE_CONT(ARRAY [0.5, 0.6, 0.7, 0.8, 0.9, 0.91, 0.92, 0.93, 0.94, 0.95, 0.96, 0.97, 0.98, 0.99, 1.0]) WITHIN GROUP (ORDER BY count) AS centile FROM (SELECT month, COUNT(day) AS count, user_id FROM (SELECT DATE_TRUNC('month', user_active_at.active_at) AS month, DATE_TRUNC('day', user_active_at.active_at) AS day, user_active_at.user_id FROM user_active_at, job_application WHERE user_active_at.user_id = job_application.user_id AND DATE_TRUNC('month', user_active_at.active_at) = DATE_TRUNC('month', job_application.created_at) GROUP BY month, day, user_active_at.user_id) AS month_day_user GROUP BY month, user_id ORDER BY month, user_id) AS daycounts WHERE month > '2013-01-01' GROUP BY month ORDER BY month;''')
+            userdays = db.session.query('month', 'users', 'centile').from_statement(db.text(
+                '''SELECT month, COUNT(user_id) AS users, PERCENTILE_CONT(ARRAY [0.5, 0.6, 0.7, 0.8, 0.9, 0.91, 0.92, 0.93, 0.94, 0.95, 0.96, 0.97, 0.98, 0.99, 1.0]) WITHIN GROUP (ORDER BY count) AS centile FROM (SELECT month, COUNT(day) AS count, user_id FROM (SELECT DATE_TRUNC('month', user_active_at.active_at) AS month, DATE_TRUNC('day', user_active_at.active_at) AS day, user_active_at.user_id FROM user_active_at, job_application WHERE user_active_at.user_id = job_application.user_id AND DATE_TRUNC('month', user_active_at.active_at) = DATE_TRUNC('month', job_application.created_at) GROUP BY month, day, user_active_at.user_id) AS month_day_user GROUP BY month, user_id ORDER BY month, user_id) AS daycounts WHERE month > '2013-01-01' GROUP BY month ORDER BY month;'''))
         elif q == 'r':
-            userdays = db.session.query('month', 'users', 'centile').from_statement(
-                '''SELECT month, COUNT(user_id) AS users, PERCENTILE_CONT(ARRAY [0.5, 0.6, 0.7, 0.8, 0.9, 0.91, 0.92, 0.93, 0.94, 0.95, 0.96, 0.97, 0.98, 0.99, 1.0]) WITHIN GROUP (ORDER BY count) AS centile FROM (SELECT month, COUNT(day) AS count, user_id FROM (SELECT DATE_TRUNC('month', user_active_at.active_at) AS month, DATE_TRUNC('day', user_active_at.active_at) AS day, user_active_at.user_id FROM user_active_at, job_application WHERE user_active_at.user_id = job_application.user_id AND job_application.response = :response AND DATE_TRUNC('month', user_active_at.active_at) = DATE_TRUNC('month', job_application.replied_at) GROUP BY month, day, user_active_at.user_id) AS month_day_user GROUP BY month, user_id ORDER BY month, user_id) AS daycounts WHERE month > '2013-01-01' GROUP BY month ORDER BY month;''').params(
+            userdays = db.session.query('month', 'users', 'centile').from_statement(db.text(
+                '''SELECT month, COUNT(user_id) AS users, PERCENTILE_CONT(ARRAY [0.5, 0.6, 0.7, 0.8, 0.9, 0.91, 0.92, 0.93, 0.94, 0.95, 0.96, 0.97, 0.98, 0.99, 1.0]) WITHIN GROUP (ORDER BY count) AS centile FROM (SELECT month, COUNT(day) AS count, user_id FROM (SELECT DATE_TRUNC('month', user_active_at.active_at) AS month, DATE_TRUNC('day', user_active_at.active_at) AS day, user_active_at.user_id FROM user_active_at, job_application WHERE user_active_at.user_id = job_application.user_id AND job_application.response = :response AND DATE_TRUNC('month', user_active_at.active_at) = DATE_TRUNC('month', job_application.replied_at) GROUP BY month, day, user_active_at.user_id) AS month_day_user GROUP BY month, user_id ORDER BY month, user_id) AS daycounts WHERE month > '2013-01-01' GROUP BY month ORDER BY month;''')).params(
                 response=EMPLOYER_RESPONSE.REPLIED)
 
         outfile = StringIO()
