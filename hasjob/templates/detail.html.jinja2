@@ -28,7 +28,7 @@
     <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/c3/0.4.14/c3.css">
   {%- endif %}
 {% endblock %}
-{% block content %}
+{% block presheet %}
   {% if post.is_unpublished() %}
   <div class="guide">
     <div class="page-header"><h2>Review this post</h2></div>
@@ -83,8 +83,8 @@
     </p>
   </div>
   {% endif %}
-
-  <div itemscope itemtype="http://schema.org/Article" class="sheet">
+{% endblock %}
+{% block content %}
     <div class="section first">
       {{ jobheader(post, kiosk=g.kiosk, user=g.user, headline=headline) }}
     </div>
@@ -312,7 +312,8 @@
         </p>
       </div>
     {%- endif %}
-  </div>
+{% endblock %}
+{% block postsheet %}
   {%- if can_see_post_stats %}
     <div class="post-guide hidden" id="viewstats">
       <h2>Statistics</h2>

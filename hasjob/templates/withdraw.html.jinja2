@@ -2,7 +2,6 @@
 {% from "baseframe/forms.html.jinja2" import renderfield %}
 {% block title %}{{ post.headline|e }}{% endblock %}
 {% block content %}
-  <div class="sheet">
     <div class="section first">
       <h1>Withdraw job post?</h1>
       <h2>{{ post.headline }}</h2>
@@ -21,5 +20,4 @@
         <a class="btn btn-default" href="{{ post.url_for() }}">Cancel</a>
       </form>
     </div>
-  </div>
 {% endblock %}

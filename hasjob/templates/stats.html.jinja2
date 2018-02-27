@@ -2,7 +2,6 @@
 {% from "baseframe/forms.html.jinja2" import renderfield %}
 {% block title %}Job post statistics{% endblock %}
 {% block content %}
-  <div class="sheet">
     <div class="section first">
       <h1>
         {{ self.title()|e }}
@@ -21,7 +20,6 @@
       <div class="chart" id="posts-by-type" style="height: 300px">
       </div>
     </div>
-  </div>
 {% endblock %}
 {% block footerscripts %}
 <script type="text/javascript" src="{{ url_for('static', filename='js/libs/jquery.flot.min.js') }}"></script>
