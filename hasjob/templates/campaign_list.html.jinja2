@@ -1,28 +1,26 @@
-{% extends "sheet.html.jinja2" %}
-{% block title %}Campaign archive{% endblock %}
+{% extends "tablayout.html.jinja2" %}
+{% block title %}{{ title }}{% endblock %}
 
 {% block content %}
-  <div class="sheet">
-    <div class="section first">
-      <h1>{{ self.title() }}</h1>
-      <p>
-      All campaigns, future and past.
-      </p>
+  <div class="section first">
+    <h1>{{ self.title() }}</h1>
+  </div>
+  <div class="section">
+    {%- if campaigns %}
       <ol>
         {%- for campaign in campaigns %}
           <li>
-            <a href="{{ url_for('campaign_view', campaign=campaign.name) }}">{{ campaign.title }}</a>
+            <a href="{{ campaign.url_for() }}">{{ campaign.title }}</a>
             <p class="post-date">
-              {%- if campaign.is_live %}<strong>Live</strong>{% elif campaign.public %}Offline{% else %}Disabled{% endif %} —
+              {%- if campaign.state.is_live %}<strong>Live</strong>{% else  %}{{ campaign.state.label.title }}{% endif %} —
               <time datetime="{{ campaign.start_at.isoformat() }}Z">{{ campaign.start_at|longdate }}</time> –
               <time datetime="{{ campaign.end_at.isoformat() }}Z">{{ campaign.end_at|longdate }}</time>
             </p>
           </li>
         {%- endfor %}
-        <li>
-          <a href="{{ url_for('campaign_new') }}">New campaign &rarr;</a>
-        </li>
       </ol>
-    </div>
+    {%- else %}
+      <p><em>(None found)</em></p>
+    {%- endif %}
   </div>
 {% endblock %}

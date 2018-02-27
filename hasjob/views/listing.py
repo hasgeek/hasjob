@@ -755,7 +755,7 @@ def confirm_email(domain, hashid, key):
                         post.location, dict(post.parsed_location or {}), username=post.twitter)
             add_to_boards.delay(post.id)
             flash("Congratulations! Your job post has been published. As a bonus for being an employer on Hasjob, "
-                "you can now see how your post is performing relative to others. Look in the sidebar of any post.",
+                "you can now see how your post is performing relative to others. Look in the footer of any post.",
                 "interactive")
     # cache bust
     # dogpile.invalidate_region('hasjob_index')

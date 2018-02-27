@@ -613,7 +613,8 @@ def campaign_view_count_update(campaign_id, user_id=None, anon_user_id=None):
             cv = CampaignAnonView(campaign_id=campaign_id, anon_user_id=anon_user_id)
             db.session.add(cv)
     query = db.session.query(db.func.count(campaign_event_session_table.c.event_session_id)).filter(
-        campaign_event_session_table.c.campaign_id == campaign_id).join(EventSession)
+        campaign_event_session_table.c.campaign_id == campaign_id).join(EventSession).filter(
+        EventSession.active_at >= (cv.reset_at or datetime.utcnow()))
 
     # FIXME: Run this in a cron job and de-link from post-request processing
     # query = query.filter(
@@ -628,6 +629,25 @@ def campaign_view_count_update(campaign_id, user_id=None, anon_user_id=None):
         query = query.filter(EventSession.anon_user_id == anon_user_id)
 
     cv.session_count = query.first()[0]
+    cv.last_viewed_at = db.func.utcnow()
+    db.session.commit()
+
+
+def reset_campaign_views():  # Periodic job (see manage.py)
+    live_campaigns = Campaign.query.filter(Campaign.state.is_live).options(db.load_only(Campaign.id))
+
+    CampaignView.query.filter(CampaignView.campaign_id.in_(live_campaigns),
+        CampaignView.last_viewed_at < datetime.utcnow() - timedelta(days=30)
+        ).update(
+            {'dismissed': False, 'session_count': 0, 'reset_at': db.func.utcnow()},
+            synchronize_session=False)  # NOQA
+
+    CampaignAnonView.query.filter(CampaignAnonView.campaign_id.in_(live_campaigns),
+        CampaignAnonView.last_viewed_at < datetime.utcnow() - timedelta(days=30)
+        ).update(
+            {'dismissed': False, 'session_count': 0, 'reset_at': db.func.utcnow()},
+            synchronize_session=False)  # NOQA
+
     db.session.commit()
 
 

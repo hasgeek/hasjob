@@ -1,7 +1,7 @@
 {% extends "sheet.html.jinja2" %}
 {% from "baseframe/forms.html.jinja2" import renderfield, rendersubmit, widgetscripts %}
 {% block title %}Post a job{% endblock %}
-{% block content %}
+{% block presheet %}
   {%- if archived_post %}
     <div class="guide">
       <p>
@@ -9,7 +9,8 @@
       </p>
     </div>
   {%- endif %}
-  <div class="sheet">
+{% endblock %}
+{% block content %}
     <div class="section first">
       <div class="page-header"><h1>
         {{ self.title()|e }}
@@ -118,7 +119,6 @@
         {{ rendersubmit([(None, "Review your post…", 'btn-primary')], style="wide", csrf_error=form.csrf_token.errors) }}
       </div>
     </form>
-  </div>
 {% endblock %}
 {% block footerscripts %}
   {% assets "js_tinymce" %}<script src="{{ ASSET_URL }}" type="text/javascript"></script>{% endassets %}

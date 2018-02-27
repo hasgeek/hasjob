@@ -1,4 +1,4 @@
-{%- macro stickie(post, url, pinned, get_post_viewcounts, groupedunder=false, dataurl=none, show_viewcounts=false, show_pay=false, starred=none, is_bgroup=none) %}
+{%- macro stickie(post, url, pinned, get_post_viewcounts, groupedunder=false, dataurl=none, show_viewcounts=false, show_pay=false, starred=none, is_bgroup=none) -%}
   {%- if groupedunder %}
     <div class="stickie {%- if post.state.ANNOUNCEMENT %} announcement{% endif %} grouped under" {%- if dataurl %} data-href="{{ dataurl }}"{% endif %}>
   {%- else %}
@@ -33,9 +33,9 @@
   {%- else %}
     </a>
   {%- endif %}
-{%- endmacro %}
+{%- endmacro -%}
 
-{%- macro joblocation(post) %}
+{%- macro joblocation(post) -%}
   {%- if post.parsed_location %}
     {%- for token in post.parsed_location.get('tokens', []) -%}
       {%- if token['geoname'] -%}
@@ -49,9 +49,9 @@
   {%- else -%}
     {{ post.location }}
   {%- endif -%}
-{%- endmacro %}
+{%- endmacro -%}
 
-{%- macro jobheader(post, kiosk=false, return=false, user=none, headline=none) %}
+{%- macro jobheader(post, kiosk=false, return=false, user=none, headline=none) -%}
   {%- if post.company_logo %}
     <div class="row">
       <div class="img-container col-xs-12 col-sm-3 col-sm-push-9 post-company-logo">
@@ -82,9 +82,9 @@
       </div>
     </div>
   {%- endif %}
-{%- endmacro %}
+{%- endmacro -%}
 
-{% macro campaign_action_form(campaign, user, anon_user, message='', redirect=none, dismiss=false) %}
+{%- macro campaign_action_form(campaign, user, anon_user, message='', redirect=none, dismiss=false) -%}
   {%- with ua=campaign.useractions(user) %}
     <div id="header-campaign-actions">
       <form id="header-campaign-form" action="{{ url_for('campaign_action', campaign=campaign.name) }}" method="POST">
@@ -115,9 +115,9 @@
       {%- endif %}
     </div>
   {%- endwith %}
-{% endmacro %}
+{%- endmacro -%}
 
-{% macro campaign_header(g, campaign) %}
+{%- macro campaign_header(g, campaign) -%}
   {#- In campaign.banner_location, 0 = top, 1 = right, 2 = bottom, 3 = left. In here, add +1 to avoid matching 0 == false #}
   {% with view=campaign.view_for(g.user), i=campaign.banner_image and (campaign.banner_location + 1) %}
     {% if not view or (campaign == g.preview_campaign) or (view and not view.dismissed) %}
@@ -152,9 +152,9 @@
     {%- do g.campaign_views.append(campaign) %}
     {%- endif %}
   {%- endwith %}
-{% endmacro %}
+{%- endmacro -%}
 
-{% macro campaign_header_postscript() %}
+{%- macro campaign_header_postscript() -%}
   <script type="text/javascript">
     $("#header-campaign-form").ajaxForm({
       target: '#header-campaign-actions',
@@ -179,9 +179,9 @@
       } // No comma or semicolon here
     });
   </script>
-{% endmacro %}
+{%- endmacro -%}
 
-{% macro campaign_script() %}
+{%- macro campaign_script() -%}
   <script type="text/javascript">
     $(function() {
       $('#header-campaign').replaceWith($('.campaign-box.move-to-header'));
@@ -193,9 +193,9 @@
     });
   </script>
   {{ campaign_header_postscript() }}
-{% endmacro %}
+{%- endmacro -%}
 
-{% macro filters_setup_script(job_filters) %}
+{%- macro filters_setup_script(job_filters) -%}
   {% with all_jobs_filters=job_filters() %}
     <script type="text/javascript">
       window.Hasjob.Config.jobsArchive = {{request.args.get('archive') | tojson}};
@@ -211,4 +211,4 @@
       window.Hasjob.Config.equity = {{request.args.get('equity') | tojson}};
     </script>
   {%- endwith %}
-{% endmacro %}
+{%- endmacro -%}

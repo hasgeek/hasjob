@@ -30,6 +30,12 @@ def impressions():
     views.helper.update_dirty_impression_counts()
 
 
+@periodic.command
+def campaignviews():
+    """Reset campaign views after more than 30 days since last view (1d)"""
+    views.helper.reset_campaign_views()
+
+
 if __name__ == '__main__':
     db.init_app(app)
     manager = init_manager(app, db, hasjob=hasjob, models=models, forms=forms, views=views)

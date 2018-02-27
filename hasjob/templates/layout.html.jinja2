@@ -1,14 +1,14 @@
-{% extends "baseframe.html.jinja2" -%}
-{% from "baseframe/components.html.jinja2" import hgnav %}
-{% from "macros.html.jinja2" import campaign_header, campaign_script, filters_setup_script %}
+{%- extends "baseframe.html.jinja2" -%}
+{%- from "baseframe/components.html.jinja2" import hgnav -%}
+{%- from "macros.html.jinja2" import campaign_header, campaign_script, filters_setup_script -%}
 
-{% block doctypehtml -%}
+{%- block doctypehtml -%}
 <!DOCTYPE html>
 <!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="en" {% block manifest %}{%- if g.kiosk %} manifest="{{ url_for('kiosk_manifest') }}" {%- endif %}{% endblock %}> <![endif]-->
 <!--[if IE 7]>    <html class="no-js lt-ie9 lt-ie8" lang="en" {{ self.manifest() }}> <![endif]-->
 <!--[if IE 8]>    <html class="no-js lt-ie9" lang="en" {{ self.manifest() }}> <![endif]-->
 <!--[if gt IE 8]><!--> <html lang="en" class="no-js {%- if g.user %} userlogin {%- else %} no-userlogin {%- endif %}" {{ self.manifest() }}> <!--<![endif]-->
-{%- endblock %}
+{%- endblock -%}
 
 {%- block titletags %}
   <title>{% block title %}{{ title }}{% endblock %} | {% if g.board %}{{ g.board.title }}{% if g.board.not_root %} ({{ config['SITE_TITLE'] }}){% endif %}{% else %}{{ config['SITE_TITLE'] }}{% endif %}</title>
@@ -199,7 +199,7 @@
 {% block basecontent -%}
   {%- if header_campaign %}<div id="header-campaign"></div>{% endif %}
   <div id='main-content'>
-  {% block content %}{% endblock %}
+  {% block pagecontent %}{% block content %}{% endblock %}{% endblock %}
   </div>
   {%- if header_campaign %}{{ campaign_header(g, header_campaign) }}{% endif %}
 {%- endblock %}

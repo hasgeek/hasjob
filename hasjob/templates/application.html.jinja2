@@ -5,7 +5,6 @@
 {% block metareferrer %}origin{% endblock %}
 
 {% block content %}
-  <div class="sheet">
     <div class="section first">
       {{ jobheader(post, return=true) }}
     </div>
@@ -111,7 +110,6 @@
         </div>
       </div>
     </div></div>
-  </div>
 {% endblock %}
 {% block footerscripts %}
   {% assets "js_tinymce" %}<script src="{{ ASSET_URL }}" type="text/javascript"></script>{% endassets %}
