@@ -1,7 +1,7 @@
-{% extends "dashlayout.html.jinja2" %}
+{% extends "tablayout.html.jinja2" %}
 {% block title %}Historical trend{% endblock %}
 
-{% block tabcontent %}
+{% block content %}
   <div class="section first">
     <h1>{{ self.title() }}</h1>
     <p>Trend charts for all time</p>
@@ -32,7 +32,7 @@
     c3.generate({
       bindto: '#chart-{{ q }}',
       data: {
-        url: {{ url_for('admin_dashboard_historical_userdays', q=q)|tojson }},
+        url: {{ url_for(current_view.historical_userdays.endpoint, q=q)|tojson }},
         x: 'month',
         xFormat: '%Y-%m',
         type: 'spline',

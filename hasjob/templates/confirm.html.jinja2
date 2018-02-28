@@ -1,8 +1,8 @@
 {% extends "sheet.html.jinja2" %}
 {% from "baseframe/forms.html.jinja2" import renderfield %}
 {% block title %}{{ post.headline|e }}{% endblock %}
-{% block content %}
-  {% if post.is_draft %}
+{% block sheet %}
+  {% if post.is_draft() %}
     <div class="sheet">
       <div class="section first">
         <div class="page-header">

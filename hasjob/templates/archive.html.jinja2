@@ -2,7 +2,6 @@
 {% block title %}Archive{% endblock %}
 
 {% block content %}
-  <div class="sheet">
     <div class="section first">
       <h1>{{ self.title() }}</h1>
       <p>All jobs ever posted on the board.</p>
@@ -10,5 +9,4 @@
         {% include "archive_inner.html.jinja2" %}
       </div>
     </div>
-  </div>
 {% endblock %}
