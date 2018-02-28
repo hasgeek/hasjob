@@ -24,3 +24,4 @@ hasjob/static/gen
 *.sql
 *.gz
 *.bz2
+hasjob/static/node_modules
