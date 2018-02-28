@@ -776,3 +776,18 @@ def logoimage(domain, hashid):
 @app.route('/search')
 def search():
     return redirect(url_for('index', **request.args))
+
+
+@app.route('/service-worker.js', methods=['GET'])
+def sw():
+    return app.send_static_file('service-worker.js')
+
+
+@app.route('/workbox-sw.prod.v2.1.2.js', methods=['GET'])
+def workbox():
+    return app.send_static_file('workbox-sw.prod.v2.1.2.js')
+
+
+@app.route('/manifest.json', methods=['GET'])
+def manifest():
+    return app.send_static_file('manifest.json')

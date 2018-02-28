@@ -17,7 +17,7 @@ from ._version import __version__
 
 # First, make an app and config it
 
-app = Flask(__name__, instance_relative_config=True, static_folder=None)
+app = Flask(__name__, instance_relative_config=True)
 app.static_folder = 'static'
 mail = Mail()
 lastuser = Lastuser()
@@ -25,8 +25,6 @@ redis_store = FlaskRedis()
 
 # Second, setup assets
 version = Version(__version__)
-assets['hasjob.js'][version] = 'js/app.js'
-assets['hasjob.css'][version] = 'css/app.css'
 
 # Third, after config, import the models and views
 
