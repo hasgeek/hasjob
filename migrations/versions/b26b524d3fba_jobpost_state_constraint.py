@@ -16,14 +16,14 @@ import sqlalchemy as sa
 
 def upgrade():
     op.create_check_constraint(
-        'ck_jobpost_state_valid',
+        'jobpost_state_check',
         'jobpost',
-        'status IN (9, 6, 7, 2, 4, 3, 0, 10, 8, 5, 1)'
+        "status IN (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10)"
     )
 
 
 def downgrade():
     op.drop_constraint(
-        'ck_jobpost_state_valid',
+        'jobpost_state_check',
         'jobpost'
     )

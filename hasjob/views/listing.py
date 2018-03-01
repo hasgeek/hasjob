@@ -576,10 +576,6 @@ def rejectjob(domain, hashid):
         msg.body = html2text(msg.html)
         mail.send(msg)
 
-    def reject_post(post, reason, spam=False):
-        post.mark_spam() if spam else post.reject()
-        post.review_comments = reason
-
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
     if post.state.UNPUBLISHED and not post.admin_is(g.user):
         abort(403)
@@ -591,10 +587,10 @@ def rejectjob(domain, hashid):
         banned_posts = []
         if request.form.get('submit') == 'reject':
             flashmsg = "This job post has been rejected"
-            reject_post(post, rejectform.reason.data)
+            post.reject(rejectform.reason.data)
         elif request.form.get('submit') == 'spam':
             flashmsg = "This job post has been marked as spam"
-            reject_post(post, rejectform.reason.data, True)
+            post.mark_spam(rejectform.reason.data)
         elif request.form.get('submit') == 'ban':
             # Moderator asked for a ban, so ban the user and reject
             # all posts from the domain if it's not a webmail domain
@@ -602,7 +598,7 @@ def rejectjob(domain, hashid):
                 post.user.blocked = True
             if post.domain.is_webmail:
                 flashmsg = "This job post has been rejected and the user banned"
-                reject_post(post, rejectform.reason.data)
+                post.reject(rejectform.reason.data)
                 banned_posts = [post]
             else:
                 flashmsg = "This job post has been rejected and the user and domain banned"
@@ -612,8 +608,8 @@ def rejectjob(domain, hashid):
                 post.domain.banned_reason = rejectform.reason.data
 
                 for jobpost in post.domain.jobposts:
-                    if jobpost.state.LISTED:
-                        reject_post(jobpost, rejectform.reason.data)
+                    if jobpost.state.PUBLIC:
+                        jobpost.reject(rejectform.reason.data)
                         banned_posts.append(jobpost)
         else:
             # We're not sure what button the moderator hit
@@ -645,8 +641,7 @@ def moderatejob(domain, hashid):
         abort(410)
     moderateform = forms.ModerateForm()
     if moderateform.validate_on_submit():
-        post.review_comments = moderateform.reason.data
-        post.moderate()
+        post.moderate(moderateform.reason.data)
         flashmsg = post.moderate.data['message']
         msg = Message(subject="About your job post on Hasjob",
             recipients=[post.email])
@@ -672,8 +667,8 @@ def confirm(domain, hashid):
     form = forms.ConfirmForm()
     if post.state.GONE:
         abort(410)
-    elif post.state.UNPUBLISHED and not post.admin_is(g.user):
-            abort(403)
+    elif not post.state.CONFIRMABLE:
+        abort(403)
     elif not post.state.UNPUBLISHED:
         # Any other status: no confirmation required (via this handler)
         return redirect(post.url_for(), code=302)
@@ -717,7 +712,7 @@ def confirm_email(domain, hashid, key):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
     if post.state.GONE:
         abort(410)
-    elif post.state.LISTED:
+    elif post.state.PUBLIC:
         flash("This job post has already been confirmed and published", "interactive")
         return redirect(post.url_for(), code=302)
     elif post.state.DRAFT:
@@ -740,9 +735,7 @@ def confirm_email(domain, hashid, key):
                         u"Please try confirming again in a few hours."
                         % post.email_domain, category='info')
                     return redirect(url_for('index'))
-            post.email_verified = True
             post.confirm()
-            post.datetime = datetime.utcnow()
             db.session.commit()
             if app.config['TWITTER_ENABLED']:
                 if post.headlineb:
@@ -776,7 +769,7 @@ def withdraw(domain, hashid, key):
     if post.state.WITHDRAWN:
         flash("Your job post has already been withdrawn", "info")
         return redirect(url_for('index'), code=303)
-    if not post.state.LISTED:
+    if not post.state.PUBLIC:
         flash("Your post cannot be withdrawn because it is not public", "info")
         return redirect(url_for('index'), code=303)
     if form.validate_on_submit():
@@ -993,7 +986,7 @@ def newjob():
             abort(404)
         if not archived_post.admin_is(g.user):
             abort(403)
-        if not archived_post.state.OLD:
+        if archived_post.state.LISTED:
             flash("This post is currently active and cannot be posted again.")
             return redirect(archived_post.url_for(), code=303)
         form.populate_from(archived_post)
@@ -1030,7 +1023,7 @@ def close(domain, hashid, key):
         abort(403)
     if request.method == 'GET' and post.state.CLOSED:
         return redirect(post.url_for('reopen'), code=303)
-    if not post.state.LISTED:
+    if not post.state.PUBLIC:
         flash("Your job post can't be closed.", "info")
         return redirect(post.url_for(), code=303)
     form = Form()

@@ -177,7 +177,7 @@ def fetch_jobposts(request_args, request_values, is_index, board, board_jobs, gk
     if getbool(request_args.get('archive')):
         ageless = True
         data_filters['archive'] = True
-        statuses = POST_STATE.ARCHIVED
+        statuses = JobPost.state.ARCHIVED
 
     search_domains = None
     if search_query:
@@ -427,7 +427,7 @@ def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, tit
 @lastuser.requires_login
 def browse_drafts():
     basequery = JobPost.query.filter_by(user=g.user)
-    return index(basequery=basequery, ageless=True, statuses=[POST_STATE.DRAFT, POST_STATE.PENDING], cached=False)
+    return index(basequery=basequery, ageless=True, statuses=POST_STATE.UNPUBLISHED, cached=False)
 
 
 @app.route('/my', methods=['GET', 'POST'], subdomain='<subdomain>')

@@ -51,7 +51,7 @@ class AdminDashboard(AdminView):
 
         statsq = db.session.query('slot', 'count').from_statement(db.text(
             '''SELECT DATE_TRUNC(:trunc, jobpost.datetime AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS slot, COUNT(*) AS count FROM jobpost WHERE jobpost.status IN :listed AND jobpost.datetime AT TIME ZONE 'UTC' AT TIME ZONE :timezone > DATE_TRUNC(:trunc, NOW() AT TIME ZONE :timezone - INTERVAL :interval) GROUP BY slot ORDER BY slot'''
-            )).params(trunc=trunc, interval=interval, timezone=g.user.timezone, listed=tuple(POST_STATE.LISTED))
+            )).params(trunc=trunc, interval=interval, timezone=g.user.timezone, listed=tuple(POST_STATE.PUBLIC))
         for slot, count in statsq:
             stats[slot]['jobs'] = count
 

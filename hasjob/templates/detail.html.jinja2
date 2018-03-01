@@ -21,7 +21,7 @@
   {%- endif %}
 {%- endblock %}
 {% block pageheaders %}
-  {%- if post.state.OLD %}
+  {%- if not post.state.LISTED %}
     <meta name="robots" content="nofollow" />
   {%- endif %}
   {%- if can_see_post_stats %}
@@ -55,7 +55,7 @@
       information. Please proceed with caution
     </p>
   </div>
-  {% elif post.state.OLD %}
+  {% elif not post.state.LISTED %}
   <div class="guide">
     <p>
       This post is over 30 days old. The position may no longer be available
@@ -154,7 +154,7 @@
                 <a class="list-group-item" href="{{ post.url_for('reopen') }}">
                   <i class="fa fa-fw fa-check"></i>&nbsp;&nbsp; Reopen this
                 </a>
-              {%- elif post.state.LISTED %}
+              {%- elif post.state.PUBLIC %}
                 <a class="list-group-item" href="{{ post.url_for('close') }}">
                   <i class="fa fa-fw fa-times"></i>&nbsp;&nbsp; Close this
                 </a>
@@ -162,7 +162,7 @@
                   <i class="fa fa-fw fa-trash-o"></i>&nbsp;&nbsp; Withdraw this
                 </a>
               {%- endif %}
-              {%- if post.state.OLD %}
+              {%- if not post.state.LISTED %}
                 <a class="list-group-item" href="{{ url_for('newjob', template=post.hashid) }}">
                   <i class="fa fa-fw fa-refresh"></i>&nbsp;&nbsp; Repost this
                 </a>

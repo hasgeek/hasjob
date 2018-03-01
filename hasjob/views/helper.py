@@ -397,13 +397,14 @@ def load_viewcounts(posts):
 def getposts(basequery=None, pinned=False, showall=False, statuses=None, ageless=False, limit=2000, order=True):
     if ageless:
         pinned = False  # No pinning when browsing archives
-    if not statuses:
-        statuses = POST_STATE.LISTED
+
+    if statuses is None:
+        statuses = JobPost.state.PUBLIC
 
     if basequery is None:
         basequery = JobPost.query
 
-    query = basequery.filter(JobPost._state.in_(statuses)).options(*JobPost._defercols).options(db.joinedload('domain'))
+    query = basequery.filter(statuses).options(*JobPost._defercols).options(db.joinedload('domain'))
 
     now = datetime.utcnow()
 
@@ -442,7 +443,7 @@ def getposts(basequery=None, pinned=False, showall=False, statuses=None, ageless
 def getallposts(order_by=None, desc=False, start=None, limit=None):
     if order_by is None:
         order_by = JobPost.datetime
-    filt = JobPost.query.filter(JobPost.state.LISTED)
+    filt = JobPost.query.filter(JobPost.state.PUBLIC)
     count = filt.count()
     if desc:
         filt = filt.order_by(db.desc(order_by))
@@ -456,9 +457,11 @@ def getallposts(order_by=None, desc=False, start=None, limit=None):
 
 
 def gettags(alltime=False):
-    query = db.session.query(Tag.name.label('name'), Tag.title.label('title'), Tag.public.label('public'),
-        db.func.count(Tag.id).label('count')).join(JobPostTag).join(JobPost).filter(
-        JobPost.state.LISTED).filter(Tag.public == True
+    query = db.session.query(
+            Tag.name.label('name'), Tag.title.label('title'), Tag.public.label('public'),
+            db.func.count(Tag.id).label('count')
+        ).join(JobPostTag).join(JobPost).filter(
+            JobPost.state.PUBLIC, Tag.public == True
         ).group_by(Tag.id).order_by(db.text('count DESC'))  # NOQA
     if not alltime:
         query = query.filter(JobPost.datetime > datetime.utcnow() - agelimit)
@@ -808,7 +811,7 @@ def filter_basequery(basequery, filters, exclude_list=[]):
 def filter_locations(board, filters):
     now = datetime.utcnow()
     basequery = db.session.query(JobLocation.geonameid, db.func.count(JobLocation.geonameid).label('count')
-        ).join(JobPost).filter(JobPost.state.LISTED, JobPost.datetime > now - agelimit,
+        ).join(JobPost).filter(JobPost.state.PUBLIC, JobPost.datetime > now - agelimit,
         JobLocation.primary == True).group_by(JobLocation.geonameid).order_by(db.text('count DESC'))  # NOQA
     if board:
         basequery = basequery.join(BoardJobPost).filter(BoardJobPost.board == board)

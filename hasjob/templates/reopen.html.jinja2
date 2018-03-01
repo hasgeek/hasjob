@@ -7,7 +7,7 @@
       <h2>{{ post.headline }}</h2>
       <p>
         This post is currently not accepting applications. Reopen it?
-        {%- if post.state.OLD %}
+        {%- if not post.state.LISTED %}
           This post is over 30 days old and will not be listed on the website,
           but anyone visiting with the URL can apply if you reopen. You should
           consider <a href="{{ url_for('newjob', template=post.hashid) }}">reposting it</a> instead.

@@ -10,6 +10,7 @@ from sqlalchemy.orm import defer, deferred, load_only
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.dialects.postgresql import TSVECTOR
 import tldextract
+from coaster.auth import current_auth
 from coaster.sqlalchemy import make_timestamp_columns, Query, JsonDict, StateManager
 from baseframe import cache, _, __
 from baseframe.staticdata import webmail_domains
@@ -210,7 +211,7 @@ class JobPost(BaseMixin, db.Model):
     @classmethod
     def fetch(cls, hashid):
         """Returns a SQLAlchemy query object for JobPost"""
-        return cls.query.filter_by(hashid=hashid).options(load_only("id", "headline", "headlineb", "hashid", "datetime", "email_domain", "review_comments", "company_url"))
+        return cls.query.filter_by(hashid=hashid).options(load_only('id', 'headline', 'headlineb', 'hashid', 'datetime', '_state', 'email_domain', 'review_comments', 'company_url'))
 
     def __repr__(self):
         return '<JobPost {hashid} "{headline}">'.format(hashid=self.hashid, headline=self.headline.encode('utf-8'))
@@ -228,43 +229,45 @@ class JobPost(BaseMixin, db.Model):
     def after_expiry_date(self):
         return self.expiry_date + timedelta(days=1)
 
-    def is_old(self):
-        return self.datetime <= datetime.utcnow() - agelimit
-
-    state.add_conditional_state('OLD', state.LISTED, lambda jobpost: jobpost.is_old(), label=('old', __("Old")))
+    state.add_conditional_state('LISTED', state.PUBLIC, lambda jobpost: jobpost.datetime >= datetime.utcnow() - agelimit, label=('listed', __("Listed")))
+    state.add_conditional_state('CONFIRMABLE', state.UNPUBLISHED, lambda jobpost: jobpost.admin_is(current_auth.user), label=('confirmable', __("Confirmable")))
 
     @state.transition(state.UNPUBLISHED, state.WITHDRAWN, title=__("Withdraw"), message=__("This job post has been withdrawn"), type='danger')
     def withdraw(self):
         self.closed_datetime = db.func.utcnow()
 
-    @state.transition(state.LISTED, state.CLOSED, title=__("Close"), message=__("This job post has been closed"), type='danger')
+    @state.transition(state.PUBLIC, state.CLOSED, title=__("Close"), message=__("This job post has been closed"), type='danger')
     def close(self):
         self.closed_datetime = datetime.utcnow()
 
     @state.transition(state.UNPUBLISHED, state.CONFIRMED, title=__("Confirm"), message=__("This job post has been confirmed"), type='success')
     def confirm(self):
-        pass
+        self.email_verified = True
+        self.datetime = datetime.utcnow()
 
-    @state.transition(state.LISTED, state.SPAM, title=__("Mark as spam"), message=__("This job post has been marked as spam"), type='danger')
-    def mark_spam(self):
+    @state.transition(state.PUBLIC, state.SPAM, title=__("Mark as spam"), message=__("This job post has been marked as spam"), type='danger')
+    def mark_spam(self, reason):
         self.closed_datetime = db.func.utcnow()
         self.review_datetime = db.func.utcnow()
+        self.review_comments = reason
         self.reviewer = g.user
 
-    @state.transition(state.LISTED, state.SPAM, title=__("Mark as pending"), message=__("This job post is awaiting email verification"), type='danger')
+    @state.transition(state.DRAFT, state.PENDING, title=__("Mark as pending"), message=__("This job post is awaiting email verification"), type='danger')
     def mark_pending(self):
         pass
 
-    @state.transition(state.LISTED, state.REJECTED, title=__("Reject"), message=__("This job post has been rejected"), type='danger')
-    def reject(self):
+    @state.transition(state.PUBLIC, state.REJECTED, title=__("Reject"), message=__("This job post has been rejected"), type='danger')
+    def reject(self, reason):
         self.closed_datetime = db.func.utcnow()
         self.review_datetime = db.func.utcnow()
+        self.review_comments = reason
         self.reviewer = g.user
 
-    @state.transition(state.LISTED, state.MODERATED, title=__("Moderate"), message=__("This job post has been moderated"), type='primary')
-    def moderate(self):
+    @state.transition(state.PUBLIC, state.MODERATED, title=__("Moderate"), message=__("This job post has been moderated"), type='primary')
+    def moderate(self, reason):
         self.closed_datetime = datetime.utcnow()
         self.review_datetime = db.func.utcnow()
+        self.review_comments = reason
         self.reviewer = g.user
 
     def url_for(self, action='view', _external=False, **kwargs):
@@ -323,7 +326,7 @@ class JobPost(BaseMixin, db.Model):
 
     def permissions(self, user, inherited=None):
         perms = super(JobPost, self).permissions(user, inherited)
-        if self.state.LISTED:
+        if self.state.PUBLIC:
             perms.add('view')
         if self.admin_is(user):
             if self.state.UNPUBLISHED:
