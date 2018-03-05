@@ -1,7 +1,7 @@
 @charset "UTF-8";
 body {
   font-family: "Fira Sans", arial, sans-serif;
-  background: #e8e7e6 url('../img/canvas.jpg?1457700997');
+  background: #e8e7e6 url('../img/canvas.jpg?1461219836');
 }
 
 header {
@@ -104,7 +104,7 @@ header #hgnav .fa {
   overflow: hidden;
   text-align: left;
   text-transform: capitalize;
-  background-image: url('../img/logo-star.png?1457701438');
+  background-image: url('../img/logo-star.png?1461219836');
   background-repeat: no-repeat;
   background-position: 50% 50%;
   width: 170px;
@@ -340,7 +340,7 @@ header #hgnav .fa {
   line-height: 36px;
 }
 #search input[type="text"] {
-  background: white url('../img/search.png?1457712464') 4px center no-repeat;
+  background: white url('../img/search.png?1461219836') 4px center no-repeat;
   padding: 7px 10px 3px 20px;
 }
 #search .btn {
@@ -914,7 +914,7 @@ tr > div {
   display: block;
   font-family: "McLaren", sans-serif;
   overflow: visible;
-  padding: 24px 18px;
+  padding: 24px 0 0;
   word-wrap: break-word;
   -moz-box-sizing: border-box;
   -webkit-box-sizing: border-box;
@@ -934,11 +934,6 @@ tr > div {
 }
 .stickie label {
   font-weight: normal;
-}
-.stickie .count {
-  font-size: 90%;
-  color: #816894;
-  display: block;
 }
 .stickie .annotation {
   font-size: 75%;
@@ -960,18 +955,103 @@ tr > div {
   left: 0.5em;
   width: 75%;
 }
-.stickie .bottom-right {
-  right: 0.5em;
-  bottom: 0.1em;
-  width: 70%;
-  text-align: right;
+.stickie .headline,
+.stickie .pay {
+  display: block;
+  padding: 0 18px;
+  position: static;
 }
-.stickie .bottom-left {
-  left: 0.5em;
-  bottom: 0.1em;
+.stickie .star {
+  position: static;
+  float: left;
+  width: 20%;
+  margin-left: 0.5em;
 }
 .stickie .new {
   color: #df5e0e;
+}
+.stickie .company-name {
+  position: static;
+  float: right;
+  width: 70%;
+  text-align: right;
+  margin-right: 0.5em;
+}
+.stickie .count {
+  margin-top: 5px;
+  color: #816894;
+  display: flex;
+}
+.stickie .count-items {
+  flex: 1;
+  font-size: 9px;
+}
+.stickie .count-text {
+  display: inline-block;
+  width: calc(100% - 3px);
+}
+.stickie .count-items.impressions {
+  flex: 1.5;
+}
+.stickie .count-items.impressions .count-text {
+  padding-left: 0.5em;
+}
+.stickie .count-items.applied .count-text {
+  width: 100%;
+  padding-right: 0.5em;
+}
+.stickie .count-arrow {
+  font-size: 15px;
+  line-height: 0.8;
+  text-align: right;
+  float: right;
+  margin-right: -3px;
+}
+.stickie .count-background {
+  display: flex;
+  height: 7px;
+  margin-top: 4px;
+  border-radius: 0 0 2px 2px;
+  overflow: hidden;
+}
+.stickie .count-background .background {
+  flex: 1;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+.stickie .count-background .impressions.background {
+  background-image: linear-gradient(82deg, #e05f26 0%, #dc228f 76%, #df3499 100%);
+  flex: 1.5;
+  position: relative;
+  z-index: 4;
+}
+.stickie .count-background .viewed.background {
+  background-image: linear-gradient(90deg, #f2984e 7%, #df5c2a 80%);
+  opacity: 0.82;
+  position: relative;
+  z-index: 3;
+}
+.stickie .count-background .opened.background {
+  background-image: linear-gradient(90deg, #f1d564 5%, #f1984d 86%);
+  opacity: 0.48;
+  position: relative;
+  z-index: 2;
+}
+.stickie .count-background .applied.background {
+  background-image: linear-gradient(90deg, #ffffa2 5%, #f1d564 92%);
+  opacity: 0.3;
+  position: relative;
+  z-index: 1;
+}
+.stickie .count-background .background.arrow:before {
+  position: absolute;
+  top: -3.5px;
+  right: -4px;
+  content: "›";
+  color: #fff;
+  font-size: 15px;
+  line-height: 0.8;
 }
 .stickie .pinned {
   text-indent: -10000px;
@@ -1025,6 +1105,11 @@ tr > div {
   bottom: 1.5em;
   left: 1.5em;
   right: 1.5em;
+}
+.stickie.grouped.under .count-background {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
 }
 .no-touch li:hover > .stickie.grouped.under {
   top: 0px;

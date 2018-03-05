@@ -17,7 +17,7 @@
   display: block
   font-family: $font-stickie-headline
   overflow: visible  // To make shadow visible
-  padding: 24px 18px
+  padding: 24px 0 0
   word-wrap: break-word
   +box-sizing(border-box)
   +border-radius(2px)
@@ -32,11 +32,6 @@
   label
     font-weight: normal
 
-  .count
-    font-size: 90%
-    color: $color-stickie-location
-    display: block
-
   .annotation
     font-size: 75%
     display: block
@@ -49,26 +44,111 @@
     height: 1.5em
 
   .top-right
-    top: 0.1em
-    right: 0.5em
+    top: .1em
+    right: .5em
 
   .top-left
-    top: 0.1em
-    left: 0.5em
+    top: .1em
+    left: .5em
     width: 75%
 
-  .bottom-right
-    right: 0.5em
-    bottom: 0.1em
-    width: 70%
-    text-align: right
+  .headline,
+  .pay,
+    display: block
+    padding: 0 18px
+    position: static
 
-  .bottom-left
-    left: 0.5em
-    bottom: 0.1em
+  .star
+    position: static
+    float: left
+    width: 20%
+    margin-left: 0.5em
 
   .new
     color: $color-stickie-new
+
+  .company-name
+    position: static
+    float: right
+    width: 70%
+    text-align: right
+    margin-right: 0.5em
+
+  .count
+    margin-top: 5px
+    color: $color-stickie-location
+    display: flex
+
+  .count-items
+    flex: 1
+    font-size: 9px
+
+  .count-text
+    display: inline-block
+    width: calc(100% - 3px)
+
+  .count-items.impressions
+    flex: 1.5
+
+    .count-text
+      padding-left: 0.5em
+
+  .count-items.applied .count-text
+    width: 100%
+    padding-right: 0.5em
+
+  .count-arrow
+    font-size: 15px
+    line-height: 0.8
+    text-align: right
+    float: right
+    margin-right: -3px
+
+  .count-background 
+    display: flex
+    height: 7px
+    margin-top: 4px
+    border-radius: 0 0 2px 2px
+    overflow: hidden
+
+    .background
+      flex: 1
+      height: 100%
+      margin: 0
+      padding: 0
+
+    .impressions.background
+      background-image: linear-gradient(82deg, #E05F26 0%, #DC228F 76%, #DF3499 100%)
+      flex: 1.5
+      position: relative
+      z-index: 4
+
+    .viewed.background 
+      background-image: linear-gradient(90deg, #F2984E 7%, #DF5C2A 80%)
+      opacity: 0.82
+      position: relative
+      z-index: 3
+
+    .opened.background
+      background-image: linear-gradient(90deg, #F1D564 5%, #F1984D 86%)
+      opacity: 0.48
+      position: relative
+      z-index: 2
+
+    .applied.background
+      background-image: linear-gradient(90deg, #FFFFA2 5%, #F1D564 92%)
+      opacity: 0.3
+      position: relative
+      z-index: 1
+
+    .background.arrow:before
+      position: absolute
+      top: -3.5px
+      right: -4px
+      content: "›"
+      color: #fff
+      font-size: 15px
+      line-height: 0.8
 
   .pinned
     text-indent: -10000px
@@ -105,6 +185,11 @@
     bottom: 1.5em
     left: 1.5em
     right: 1.5em
+
+  .count-background
+    position: absolute
+    bottom: 0
+    width: 100%
 
   // Extra stickies, beyond those specified below.
   // Keep in same position
