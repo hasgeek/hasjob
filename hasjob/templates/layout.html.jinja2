@@ -50,7 +50,7 @@
     }
   </script>
   {%- if not paginated -%}
-    {{ filters_setup_script(job_filters) }}
+    {{ filters_setup_script(job_filters, location) }}
   {%- endif %}
 {%- endblock %}
 
