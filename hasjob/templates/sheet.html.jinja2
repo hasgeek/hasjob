@@ -22,6 +22,9 @@
 {% endblock %}
 
 {% block layoutscripts %}
-  {%- if header_campaign %}{{ campaign_script() }}{% endif %}
-  {% block footerscripts %}{% endblock %}
+  {{ super() }}
+  {% block sheetscripts %}
+    {% block footerscripts %}
+    {% endblock %}
+  {% endblock %}
 {% endblock %}

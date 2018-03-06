@@ -34,6 +34,6 @@
     {{ campaign_header(g, footer_campaign) }}
   {% endif %}
 {% endblock %}
-{% block footerscripts %}
+{% block sheetscripts %}
   {%- if footer_campaign %}{{ campaign_header_postscript() }}{% endif %}
 {% endblock %}

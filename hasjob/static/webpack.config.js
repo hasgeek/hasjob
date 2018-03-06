@@ -110,6 +110,7 @@ module.exports = {
       swDest: './service-worker.js',
       clientsClaim: true,
       skipWaiting: true,
+      navigateFallback: '/',
       runtimeCaching: [
         {
           urlPattern: /^https?\:\/\/static.*/,
@@ -185,6 +186,15 @@ module.exports = {
         },
         {
           urlPattern: '/',
+          handler: 'networkFirst',
+          options: {
+            cache: {
+              name: 'routes'
+            },
+          },
+        },
+        {
+          urlPattern: '/*',
           handler: 'networkFirst',
           options: {
             cache: {

@@ -54,7 +54,7 @@ const workboxSW = new self.WorkboxSW({
   "clientsClaim": true
 });
 workboxSW.precache(fileManifest);
-workboxSW.router.registerRoute(/^https?\:\/\/static.*/, workboxSW.strategies.networkFirst({
+workboxSW.router.registerNavigationRoute("/");workboxSW.router.registerRoute(/^https?\:\/\/static.*/, workboxSW.strategies.networkFirst({
   "cacheName": "assets"
 }), 'GET');
 workboxSW.router.registerRoute(/^http:\/\/localhost:5000\/static/, workboxSW.strategies.networkFirst({
@@ -79,5 +79,8 @@ workboxSW.router.registerRoute(/^https?:\/\/fonts.googleapis.com\/*/, workboxSW.
   "cacheName": "fonts"
 }), 'GET');
 workboxSW.router.registerRoute('/', workboxSW.strategies.networkFirst({
+  "cacheName": "routes"
+}), 'GET');
+workboxSW.router.registerRoute('/*', workboxSW.strategies.networkFirst({
   "cacheName": "routes"
 }), 'GET');

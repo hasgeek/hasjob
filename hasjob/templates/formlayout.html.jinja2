@@ -23,8 +23,12 @@
     {% block content %}{% endblock %}
   </div>
 {% endblock %}
+
 {% block layoutscripts %}
-  {%- if header_campaign %}{{ campaign_script() }}{% endif %}
+  {{ super() }}
+  {% block formlayoutscripts %}
   {% assets "js_tinymce" %}<script src="{{ ASSET_URL }}" type="text/javascript"></script>{% endassets %}
-  {% block footerscripts %}{% endblock %}
+    {% block footerscripts %}
+    {% endblock %}
+  {% endblock %}
 {% endblock %}
