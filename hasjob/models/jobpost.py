@@ -250,7 +250,7 @@ class JobPost(BaseMixin, db.Model):
         self.closed_datetime = db.func.utcnow()
         self.review_datetime = db.func.utcnow()
         self.review_comments = reason
-        self.reviewer = g.user
+        self.reviewer = current_auth.user
 
     @state.transition(state.DRAFT, state.PENDING, title=__("Mark as pending"), message=__("This job post is awaiting email verification"), type='danger')
     def mark_pending(self):
@@ -261,14 +261,14 @@ class JobPost(BaseMixin, db.Model):
         self.closed_datetime = db.func.utcnow()
         self.review_datetime = db.func.utcnow()
         self.review_comments = reason
-        self.reviewer = g.user
+        self.reviewer = current_auth.user
 
     @state.transition(state.PUBLIC, state.MODERATED, title=__("Moderate"), message=__("This job post has been moderated"), type='primary')
     def moderate(self, reason):
         self.closed_datetime = datetime.utcnow()
         self.review_datetime = db.func.utcnow()
         self.review_comments = reason
-        self.reviewer = g.user
+        self.reviewer = current_auth.user
 
     def url_for(self, action='view', _external=False, **kwargs):
         if self.state.UNPUBLISHED and action in ('view', 'edit'):
