@@ -352,7 +352,7 @@ def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, tit
         showall = False
         batched = False
 
-    search_query = ",".join(request.args.getlist('q'))
+    search_query = request.args.get('q')
     if search_query:
         search_query = for_tsquery(search_query)
         try:
