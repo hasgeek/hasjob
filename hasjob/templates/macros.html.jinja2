@@ -206,18 +206,6 @@
       window.Hasjob.Config.jobTypeFilters = {{all_jobs_filters.job_type_filters | tojson}};
       window.Hasjob.Config.jobCategoryFilters = {{all_jobs_filters.job_category_filters | tojson}};
       window.Hasjob.Config.selectedFilters = {{selected_filters | tojson}};
-
-      {% if location %}
-        window.Hasjob.Config.presetLocation = {{location | tojson}};
-      {% else %}
-        window.Hasjob.Config.presetLocation = null;
-      {% endif %}
-
-      if (window.Hasjob.Config.presetLocation) {
-        window.Hasjob.Config.selectedLocations = [window.Hasjob.Config.presetLocation.name];
-      } else {
-        window.Hasjob.Config.selectedLocations = window.Hasjob.Config.selectedFilters.location_names;
-      }
     </script>
   {%- endwith %}
 {%- endmacro -%}

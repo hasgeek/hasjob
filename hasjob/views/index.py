@@ -307,6 +307,7 @@ def fetch_jobposts(request_args, request_values, is_index, board, board_jobs, gk
     if loadmore:
         query_params.update({'startdate': loadmore.isoformat() + 'Z', 'ph': pinned_hashids})
     if location:
+        data_filters['location_names'].append(location['name'])
         query_params.update({'l': location['name']})
 
     if pay_graph:
