@@ -195,6 +195,22 @@ window.Hasjob.Filters = {
   formatQuery: function(query){
     return query ? query.replace(/'/g, '') : "";
   },
+  getCurrentState: function(){
+    return {
+      jobLocations: window.Hasjob.Config.allFilters.job_location_filters,
+      jobTypes: window.Hasjob.Config.allFilters.job_type_filters,
+      jobCategories: window.Hasjob.Config.allFilters.job_category_filters,
+      jobsArchive: window.Hasjob.Config.selectedFilters.archive,
+      selectedLocations: window.Hasjob.Config.selectedFilters.location_names,
+      selectedTypes: window.Hasjob.Config.selectedFilters.types,
+      selectedCategories: window.Hasjob.Config.selectedFilters.categories,
+      selectedQuery: this.formatQuery(window.Hasjob.Config.selectedFilters.query),
+      selectedCurrency: window.Hasjob.Config.selectedFilters.currency,
+      pay: window.Hasjob.Config.selectedFilters.pay,
+      equity: window.Hasjob.Config.selectedFilters.equity,
+      sidebarOn: false
+    }
+  },
   init: function(){
     var filters = this;
     var keywordTimeout;
@@ -206,20 +222,7 @@ window.Hasjob.Filters = {
     filters.ractive = new Ractive({
       el: 'job-filters-ractive-template',
       template: '#filters-ractive',
-      data: {
-        jobsArchive: window.Hasjob.Config.selectedFilters.archive,
-        jobLocations: window.Hasjob.Config.jobLocationFilters,
-        jobTypes: window.Hasjob.Config.jobTypeFilters,
-        jobCategories: window.Hasjob.Config.jobCategoryFilters,
-        selectedLocations: window.Hasjob.Config.selectedFilters.location_names,
-        selectedTypes: window.Hasjob.Config.selectedFilters.types,
-        selectedCategories: window.Hasjob.Config.selectedFilters.categories,
-        selectedQuery: this.formatQuery(window.Hasjob.Config.selectedFilters.query),
-        selectedCurrency: window.Hasjob.Config.selectedFilters.currency,
-        pay: window.Hasjob.Config.selectedFilters.pay,
-        equity: window.Hasjob.Config.selectedFilters.equity,
-        sidebarOn: false
-      },
+      data: this.getCurrentState(),
       showSidebar: function() {
         filters.ractive.set('sidebarOn', true);
       },
@@ -447,19 +450,7 @@ window.Hasjob.Filters = {
     var initialKeywordPos = keywordsField.selectionEnd;
 
     // reset pre-selected values in filters
-    this.ractive.set({
-      jobsArchive: window.Hasjob.Config.selectedFilters.archive,
-      jobLocations: window.Hasjob.Config.jobLocationFilters,
-      jobTypes: window.Hasjob.Config.jobTypeFilters,
-      jobCategories: window.Hasjob.Config.jobCategoryFilters,
-      selectedLocations: window.Hasjob.Config.selectedFilters.location_names,
-      selectedTypes: window.Hasjob.Config.selectedFilters.types,
-      selectedCategories: window.Hasjob.Config.selectedFilters.categories,
-      selectedQuery: this.formatQuery(window.Hasjob.Config.selectedFilters.query),
-      selectedCurrency: window.Hasjob.Config.selectedFilters.currency,
-      pay: window.Hasjob.Config.selectedFilters.pay,
-      equity: window.Hasjob.Config.selectedFilters.equity
-    }).then(function() {
+    this.ractive.set(this.getCurrentState()).then(function() {
       // Since the data may have changed, multiselect requires a rebuild
       $('#job-filters-location').multiselect('rebuild');
       $('#job-filters-type').multiselect('rebuild');
