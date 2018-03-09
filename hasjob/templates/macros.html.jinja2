@@ -199,13 +199,14 @@
   {{ campaign_header_postscript() }}
 {%- endmacro -%}
 
-{%- macro filters_setup_script(job_filters, location) -%}
+{%- macro filters_setup_script(job_filters, selected_filters, location) -%}
   {% with all_jobs_filters=job_filters() %}
     <script type="text/javascript">
-      window.Hasjob.Config.jobsArchive = {{request.args.get('archive') | tojson}};
       window.Hasjob.Config.jobLocationFilters = {{all_jobs_filters.job_location_filters | tojson}};
       window.Hasjob.Config.jobTypeFilters = {{all_jobs_filters.job_type_filters | tojson}};
       window.Hasjob.Config.jobCategoryFilters = {{all_jobs_filters.job_category_filters | tojson}};
+      window.Hasjob.Config.selectedFilters = {{selected_filters | tojson}};
+
       {% if location %}
         window.Hasjob.Config.presetLocation = {{location | tojson}};
       {% else %}
@@ -215,14 +216,8 @@
       if (window.Hasjob.Config.presetLocation) {
         window.Hasjob.Config.selectedLocations = [window.Hasjob.Config.presetLocation.name];
       } else {
-        window.Hasjob.Config.selectedLocations = {{request.args.getlist('l') | tojson}};
+        window.Hasjob.Config.selectedLocations = window.Hasjob.Config.selectedFilters.location_names;
       }
-      window.Hasjob.Config.selectedTypes = {{request.args.getlist('t') | tojson}};
-      window.Hasjob.Config.selectedCategories = {{request.args.getlist('c') | tojson}};
-      window.Hasjob.Config.selectedQuery = {{request.args.getlist('q') | tojson}};
-      window.Hasjob.Config.selectedCurrency = {{request.args.get('currency') | tojson}};
-      window.Hasjob.Config.pay = {{request.args.get('pay') | tojson}};
-      window.Hasjob.Config.equity = {{request.args.get('equity') | tojson}};
     </script>
   {%- endwith %}
 {%- endmacro -%}

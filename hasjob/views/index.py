@@ -108,7 +108,7 @@ def fetch_jobposts(request_args, request_values, is_index, board, board_jobs, gk
     if f_categories:
         data_filters['categories'] = f_categories
         basequery = basequery.join(JobCategory).filter(JobCategory.name.in_(f_categories))
-    r_locations = request_args.getlist('l')
+    data_filters['location_names'] = r_locations = request_args.getlist('l')
     if location:
         r_locations.append(location['geonameid'])
     f_locations = []
@@ -351,9 +351,9 @@ def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, tit
         showall = False
         batched = False
 
-    search_query = request.args.get('q')
+    search_query = ",".join(request.args.getlist('q'))
     if search_query:
-        search_query = for_tsquery(request.args.get('q'))
+        search_query = for_tsquery(search_query)
         try:
             # TODO: Can we do syntax validation without a database roundtrip?
             db.session.query(db.func.to_tsquery(search_query)).all()

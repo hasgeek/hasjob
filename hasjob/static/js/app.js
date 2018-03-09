@@ -192,6 +192,9 @@ window.Hasjob.Filters = {
       return '';
     }
   },
+  formatQuery: function(query){
+    return query ? query.replace(/'/g, '') : "";
+  },
   init: function(){
     var filters = this;
     var keywordTimeout;
@@ -204,17 +207,17 @@ window.Hasjob.Filters = {
       el: 'job-filters-ractive-template',
       template: '#filters-ractive',
       data: {
-        jobsArchive: window.Hasjob.Config.jobsArchive,
+        jobsArchive: window.Hasjob.Config.selectedFilters.archive,
         jobLocations: window.Hasjob.Config.jobLocationFilters,
         jobTypes: window.Hasjob.Config.jobTypeFilters,
         jobCategories: window.Hasjob.Config.jobCategoryFilters,
         selectedLocations: window.Hasjob.Config.selectedLocations,
-        selectedTypes: window.Hasjob.Config.selectedTypes,
-        selectedCategories: window.Hasjob.Config.selectedCategories,
-        selectedQuery: window.Hasjob.Config.selectedQuery,
-        selectedCurrency: window.Hasjob.Config.selectedCurrency,
-        pay: window.Hasjob.Config.pay,
-        equity: window.Hasjob.Config.equity,
+        selectedTypes: window.Hasjob.Config.selectedFilters.types,
+        selectedCategories: window.Hasjob.Config.selectedFilters.categories,
+        selectedQuery: this.formatQuery(window.Hasjob.Config.selectedFilters.query),
+        selectedCurrency: window.Hasjob.Config.selectedFilters.currency,
+        pay: window.Hasjob.Config.selectedFilters.pay,
+        equity: window.Hasjob.Config.selectedFilters.equity,
         sidebarOn: false
       },
       showSidebar: function() {
@@ -445,17 +448,17 @@ window.Hasjob.Filters = {
 
     // reset pre-selected values in filters
     this.ractive.set({
-      jobsArchive: window.Hasjob.Config.jobsArchive,
+      jobsArchive: window.Hasjob.Config.selectedFilters.archive,
       jobLocations: window.Hasjob.Config.jobLocationFilters,
       jobTypes: window.Hasjob.Config.jobTypeFilters,
       jobCategories: window.Hasjob.Config.jobCategoryFilters,
       selectedLocations: window.Hasjob.Config.selectedLocations,
-      selectedTypes: window.Hasjob.Config.selectedTypes,
-      selectedCategories: window.Hasjob.Config.selectedCategories,
-      selectedQuery: window.Hasjob.Config.selectedQuery,
-      selectedCurrency: window.Hasjob.Config.selectedCurrency,
-      pay: window.Hasjob.Config.pay,
-      equity: window.Hasjob.Config.equity
+      selectedTypes: window.Hasjob.Config.selectedFilters.types,
+      selectedCategories: window.Hasjob.Config.selectedFilters.categories,
+      selectedQuery: this.formatQuery(window.Hasjob.Config.selectedFilters.query),
+      selectedCurrency: window.Hasjob.Config.selectedFilters.currency,
+      pay: window.Hasjob.Config.selectedFilters.pay,
+      equity: window.Hasjob.Config.selectedFilters.equity
     }).then(function() {
       // Since the data may have changed, multiselect requires a rebuild
       $('#job-filters-location').multiselect('rebuild');
@@ -672,7 +675,7 @@ $(function() {
   });
 
   // set initial value for the currency radio button
-  var presetCurrency = (Hasjob.Config && Hasjob.Config.selectedCurrency) || 'NA';
+  var presetCurrency = (window.Hasjob.Config && window.Hasjob.Config.selectedFilters.currency) || 'NA';
   $.each($("input[type='radio'][name='currency']"), function(index, currencyRadio){
     if ($(currencyRadio).val() === presetCurrency) {
       $(currencyRadio).attr('checked', 'checked');
@@ -680,7 +683,7 @@ $(function() {
   });
 
   // preset equity
-  if (Hasjob.Config && parseInt(Hasjob.Config.equity, 10) === 1) {
+  if (window.Hasjob.Config && window.Hasjob.Config.selectedFilters.equity) {
     $("input[type='checkbox'][name='equity']").attr('checked', 'checked');
   }
 
@@ -704,7 +707,7 @@ $(function() {
   };
 
   var paySlider = new Hasjob.PaySlider({
-    start: (Hasjob.Config && Hasjob.Config.pay) || 0,
+    start: (window.Hasjob.Config && window.Hasjob.Config.selectedFilters.pay) || 0,
     selector: '#pay-slider',
     minField: '#job-filters-payval'
   });
