@@ -238,12 +238,12 @@ class JobPost(BaseMixin, db.Model):
 
     @state.transition(state.PUBLIC, state.CLOSED, title=__("Close"), message=__("This job post has been closed"), type='danger')
     def close(self):
-        self.closed_datetime = datetime.utcnow()
+        self.closed_datetime = db.func.utcnow()
 
     @state.transition(state.UNPUBLISHED, state.CONFIRMED, title=__("Confirm"), message=__("This job post has been confirmed"), type='success')
     def confirm(self):
         self.email_verified = True
-        self.datetime = datetime.utcnow()
+        self.datetime = db.func.utcnow()
 
     @state.transition(state.PUBLIC, state.SPAM, title=__("Mark as spam"), message=__("This job post has been marked as spam"), type='danger')
     def mark_spam(self, reason):
@@ -265,7 +265,7 @@ class JobPost(BaseMixin, db.Model):
 
     @state.transition(state.PUBLIC, state.MODERATED, title=__("Moderate"), message=__("This job post has been moderated"), type='primary')
     def moderate(self, reason):
-        self.closed_datetime = datetime.utcnow()
+        self.closed_datetime = db.func.utcnow()
         self.review_datetime = db.func.utcnow()
         self.review_comments = reason
         self.reviewer = current_auth.user
