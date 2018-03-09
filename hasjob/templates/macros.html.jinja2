@@ -40,11 +40,16 @@
             <span class="count-text text-right">{{ post_viewcounts['applied'] }} applied</span>
           </span>
         </span>
+        {% from "macros.html.jinja2" import setFunnelColour %}
         <span class="count-background">
-          <span class="impressions background arrow"></span>
-          <span class="viewed background arrow"></span>
-          <span class="opened background arrow"></span>
-          <span class="applied background"></span>
+          <span class="impressions background arrow" id="impressions-{{post.id}}"></span>
+          {{ setFunnelColour('impressions', post_viewcounts['impressions'], 'impressions-' ~ post.id) }}
+          <span class="viewed background arrow" id="viewed-{{post.id}}"></span>
+          {{ setFunnelColour('viewed', post_viewcounts['viewed'], 'viewed-' ~ post.id) }}
+          <span class="opened background arrow" id="opened-{{post.id}}"></span>
+          {{ setFunnelColour('opened', post_viewcounts['opened'], 'opened-' ~ post.id) }}
+          <span class="applied background" id="applied-{{post.id}}"></span>
+          {{ setFunnelColour('applied', post_viewcounts['applied'], 'applied-' ~ post.id) }}
         </span>
       {%- endif -%}
     {%- endwith %}
@@ -231,4 +236,70 @@
       window.Hasjob.Config.equity = {{request.args.get('equity') | tojson}};
     </script>
   {%- endwith %}
+{%- endmacro -%}
+
+{%- macro conversion_funnel_setup() -%}
+  <script type="text/javascript">
+    window.Hasjob.Util = {
+      /* Takes 'funnelName', 'maxValue', 'firstColour', 'secondColour'
+       'funnelName' - conversion funnel's name. Incase of hasjob "impressions", "viewed", "opened", "applied"
+       'maxValue' - max value of conversion funnel across job posts of last 30 days
+       'firstColour' & 'secondColour' - object containing offset & colour code(in hex)
+        {
+          "offset": 0.8
+          "colour": "#E05F26"
+        }
+        These are colours to define the colour gradient canvas.
+        Creates a linear colour gradient with canvas of width equal to maxValue. The canvas indicates a scale from 0 to maxValue.
+      */
+      createGradientColourBar: function(funnelName, maxValue, firstColour, secondColour){
+        var canvas = document.createElement("canvas");
+        canvas.id = funnelName;
+        canvas.width = maxValue;
+        canvas.height = 10;
+
+        var context = canvas.getContext('2d');
+        context.rect(0, 0, canvas.width, canvas.height);
+        var grd = context.createLinearGradient(0, 0, canvas.width, canvas.height);
+
+        grd.addColorStop(firstColour.offset, firstColour.colour);
+        grd.addColorStop(secondColour.offset, secondColour.colour);
+
+        context.fillStyle = grd;
+        context.fill();
+        //Store the canvas context and end colour of the conversion funnel, later to be used by window.Hasjob.Util.setFunnelColour for picking the colour for a conversion funnel value for a job post.
+        window.Hasjob.Config[funnelName] = {};
+        window.Hasjob.Config[funnelName].canvasContext = context;
+        window.Hasjob.Config[funnelName].maxColour = secondColour.colour;
+      },
+      /* Takes funnelName', 'value, elementId'
+       'funnelName' - conversion funnel's name. 
+       'value' - conversion funnel value for the job post
+       'elementId' - id attribute of the element of which background colour is to be set
+      */
+      // Picks the colour for the value from the colour gradient canvas based on a scale of 0 to maxValue.
+      setFunnelColour: function(funnelName, value, elementId){
+        //rgba - RGBA values at a particular point in the canvas.
+        var rgba = window.Hasjob.Config[funnelName].canvasContext.getImageData(value, 1, 1, 1).data;
+        if (rgba[0] > 255 || rgba[1] > 255 || rgba[2] > 255) {
+          // rgb value is invalid, hence return white
+          colourHex ="#FFFFFF";
+        } else if (rgba[0] == 0 && rgba[1] == 0 && rgba[2] == 0) {
+          // value greater than maxValue hence return the last colour of the gradient
+          colourHex = window.Hasjob.Config[funnelName].maxColour;
+        } else {
+          // Get the colour code in hex from RGB values returned by getImageData
+          colourHex = "#" + (("000000" + (rgba[0] << 16) | (rgba[1] << 8) | rgba[2]).toString(16)).slice(-6);
+        }
+        // Set the background colour of the element
+        document.getElementById(elementId).style.backgroundColor = colourHex;
+      }
+    }
+  </script>
+{%- endmacro -%}
+
+{%- macro setFunnelColour(funnelName, value, elementId) -%}
+  <script type="text/javascript">
+    window.Hasjob.Util.setFunnelColour("{{funnelName}}", {{value}}, "{{elementId}}");
+  </script>
 {%- endmacro -%}

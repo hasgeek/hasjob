@@ -1,17 +1,15 @@
 //window.Hasjob initialized in layout.html
 
-Hasjob.Util = {
-  updateGA: function(){
-    /*
-      Resets the path in the tracker object and updates GA with the current path.
-      To be called after updating the URL with pushState or replaceState.
-      Reference: https://developers.google.com/analytics/devguides/collection/analyticsjs/single-page-applications
-    */
-    if (window.ga) {
-      var path = window.location.href.split(window.location.host)[1];
-      window.ga('set', 'page', path);
-      window.ga('send', 'pageview');
-    }
+window.Hasjob.Util.updateGA = function(){
+  /*
+    Resets the path in the tracker object and updates GA with the current path.
+    To be called after updating the URL with pushState or replaceState.
+    Reference: https://developers.google.com/analytics/devguides/collection/analyticsjs/single-page-applications
+  */
+  if (window.ga) {
+    var path = window.location.href.split(window.location.host)[1];
+    window.ga('set', 'page', path);
+    window.ga('send', 'pageview');
   }
 };
 
