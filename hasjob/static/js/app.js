@@ -192,9 +192,6 @@ window.Hasjob.Filters = {
       return '';
     }
   },
-  formatQuery: function(query){
-    return query ? query.replace(/'/g, '') : "";
-  },
   getCurrentState: function(){
     return {
       jobLocations: window.Hasjob.Config.allFilters.job_location_filters,
@@ -204,7 +201,7 @@ window.Hasjob.Filters = {
       selectedLocations: window.Hasjob.Config.selectedFilters.location_names,
       selectedTypes: window.Hasjob.Config.selectedFilters.types,
       selectedCategories: window.Hasjob.Config.selectedFilters.categories,
-      selectedQuery: this.formatQuery(window.Hasjob.Config.selectedFilters.query),
+      selectedQuery: window.Hasjob.Config.selectedFilters.query,
       selectedCurrency: window.Hasjob.Config.selectedFilters.currency,
       pay: window.Hasjob.Config.selectedFilters.pay,
       equity: window.Hasjob.Config.selectedFilters.equity,

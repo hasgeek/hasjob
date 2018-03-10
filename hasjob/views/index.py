@@ -181,7 +181,7 @@ def fetch_jobposts(request_args, request_values, is_index, board, board_jobs, gk
 
     search_domains = None
     if search_query:
-        data_filters['query'] = search_query
+        data_filters['query'] = request.args.get('q')
         search_domains = Domain.query.filter(
             Domain.search_vector.match(search_query, postgresql_regconfig='english'), Domain.is_banned == False).options(
             db.load_only('name', 'title', 'logo_url')).all()  # NOQA
