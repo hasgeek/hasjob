@@ -330,28 +330,6 @@ def get_jobpost_impressions(jobpost_id):
         JobImpression).filter(JobImpression.jobpost_id == jobpost_id).scalar()
 
 
-def get_max_counts(postids):
-    cache_key = JobPost.max_counts_key(postids)
-    values = redis_store.hgetall(cache_key)
-    if 'max_impressions' not in values:
-        values['max_impressions'] = JobImpression.max_impressions(postids)
-        redis_store.hset(cache_key, 'max_impressions', values['max_impressions'])
-        redis_store.expire(cache_key, 86400)
-    if 'max_views' not in values:
-        values['max_views'] = UserJobView.max_views(postids)
-        redis_store.hset(cache_key, 'max_views', values['max_views'])
-        redis_store.expire(cache_key, 86400)
-    if 'max_opens' not in values:
-        values['max_opens'] = UserJobView.max_opens(postids)
-        redis_store.hset(cache_key, 'max_opens', values['max_opens'])
-        redis_store.expire(cache_key, 86400)
-    if 'max_applied' not in values:
-        values['max_applied'] = JobApplication.max_applications(postids)
-        redis_store.hset(cache_key, 'max_applied', values['max_applied'])
-        redis_store.expire(cache_key, 86400)
-    return values
-
-
 def get_post_viewcounts(jobpost_id):
     cache_key = JobPost.viewcounts_key(jobpost_id)
     values = g.viewcounts.get(cache_key)
@@ -399,6 +377,27 @@ def get_post_viewcounts(jobpost_id):
         redis_store.expire(cache_key, 86400)
     elif isinstance(values['pay_label'], str):  # Redis appears to return bytestrings, not Unicode
         values['pay_label'] = unicode(values['pay_label'], 'utf-8')
+    return values
+
+
+def get_max_counts(postids):
+    cache_key = JobPost.max_counts_key(postids)
+    values = redis_store.hgetall(cache_key)
+    if not values:
+        view_counts = [get_post_viewcounts(post.id) for post in JobPost.query.filter(JobPost.id.in_(postids))]
+
+        values = {
+            'max_impressions': max([vc['impressions'] for vc in view_counts]),
+            'max_views': max([vc['viewed'] for vc in view_counts]),
+            'max_opens': max([vc['opened'] for vc in view_counts]),
+            'max_applied': max([vc['applied'] for vc in view_counts])
+        }
+
+        redis_store.hset(cache_key, 'max_impressions', values['max_impressions'])
+        redis_store.hset(cache_key, 'max_views', values['max_views'])
+        redis_store.hset(cache_key, 'max_opens', values['max_opens'])
+        redis_store.hset(cache_key, 'max_applied', values['max_applied'])
+        redis_store.expire(cache_key, 86400)
     return values
 
 
