@@ -22,7 +22,7 @@ from baseframe.signals import form_validation_error, form_validation_success
 from .. import app, redis_store, lastuser
 from ..models import (agelimit, newlimit, db, JobCategory, JobPost, JobType, POSTSTATUS, BoardJobPost, Tag, JobPostTag,
     Campaign, CampaignView, CampaignAnonView, EventSessionBase, EventSession, UserEventBase, UserEvent, JobImpression,
-    JobViewSession, AnonUser, campaign_event_session_table, JobLocation, PAY_TYPE)
+    JobViewSession, AnonUser, campaign_event_session_table, JobLocation, PAY_TYPE, UserJobView, JobApplication)
 from ..utils import scrubemail, redactemail, cointoss
 
 
@@ -328,6 +328,28 @@ def bgroup(jobpost_ab, post):
 def get_jobpost_impressions(jobpost_id):
     return db.session.query(db.func.count(db.func.distinct(EventSession.user_id)).label('count')).join(
         JobImpression).filter(JobImpression.jobpost_id == jobpost_id).scalar()
+
+
+def get_max_counts(postids):
+    cache_key = JobPost.max_counts_key(postids)
+    values = redis_store.hgetall(cache_key)
+    if 'max_impressions' not in values:
+        values['max_impressions'] = JobImpression.max_impressions(postids)
+        redis_store.hset(cache_key, 'max_impressions', values['max_impressions'])
+        redis_store.expire(cache_key, 86400)
+    if 'max_views' not in values:
+        values['max_views'] = UserJobView.max_views(postids)
+        redis_store.hset(cache_key, 'max_views', values['max_views'])
+        redis_store.expire(cache_key, 86400)
+    if 'max_opens' not in values:
+        values['max_opens'] = UserJobView.max_opens(postids)
+        redis_store.hset(cache_key, 'max_opens', values['max_opens'])
+        redis_store.expire(cache_key, 86400)
+    if 'max_applied' not in values:
+        values['max_applied'] = JobApplication.max_applications(postids)
+        redis_store.hset(cache_key, 'max_applied', values['max_applied'])
+        redis_store.expire(cache_key, 86400)
+    return values
 
 
 def get_post_viewcounts(jobpost_id):

@@ -10,6 +10,7 @@ from sqlalchemy.orm import defer, deferred, load_only
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.dialects.postgresql import TSVECTOR
 import tldextract
+from hashlib import sha256
 from coaster.sqlalchemy import make_timestamp_columns, Query, JsonDict
 from baseframe import cache, _
 from baseframe.staticdata import webmail_domains
@@ -443,6 +444,10 @@ class JobPost(BaseMixin, db.Model):
         else:
             redis_store.hdel(cache_key, key)
 
+    @staticmethod
+    def max_counts_key(postids):
+        return "hasjob/maxcounts/{hash}".format(hash=sha256(','.join(str(postid) for postid in postids)).hexdigest())
+
     @cached_property
     def ab_impressions(self):
         results = {'NA': 0, 'A': 0, 'B': 0}
@@ -655,6 +660,33 @@ class UserJobView(TimestampMixin, db.Model):
     def get(cls, jobpost, user):
         return cls.query.get((jobpost.id, user.id))
 
+    @classmethod
+    def max_views(cls, postids):
+        query = db.session.query('count').from_statement(db.text('''
+            SELECT MAX(count) FROM (
+                SELECT jobpost_id, count(*)
+                FROM userjobview
+                WHERE jobpost_id IN :jobpost_ids
+                GROUP BY jobpost_id
+            ) AS jobpost_views
+        ''')).params(jobpost_ids=tuple(postids))
+        result = db.session.execute(query).fetchone()
+        return result[0] if result else 0
+
+    @classmethod
+    def max_opens(cls, postids):
+        query = db.session.query('count').from_statement(db.text('''
+            SELECT MAX(count) FROM (
+                SELECT jobpost_id, count(*)
+                FROM userjobview
+                WHERE jobpost_id IN :jobpost_ids
+                AND applied = :applied
+                GROUP BY jobpost_id
+            ) AS jobpost_opens
+        ''')).params(jobpost_ids=tuple(postids), applied=True)
+        result = db.session.execute(query).fetchone()
+        return result[0] if result else 0
+
 
 class AnonJobView(db.Model):
     __tablename__ = 'anon_job_view'
@@ -698,6 +730,19 @@ class JobImpression(TimestampMixin, db.Model):
     @classmethod
     def get_by_ids(cls, jobpost_id, event_session_id):
         return cls.query.get((jobpost_id, event_session_id))
+
+    @classmethod
+    def max_impressions(cls, postids):
+        query = db.session.query('count').from_statement(db.text('''
+            SELECT MAX(count) FROM (
+                SELECT jobpost_id, count(*)
+                FROM job_impression
+                WHERE jobpost_id IN :jobpost_ids
+                GROUP BY jobpost_id
+            ) AS jobpost_impressions
+        ''')).params(jobpost_ids=tuple(postids))
+        result = db.session.execute(query).fetchone()
+        return result[0] if result else 0
 
 
 class JobViewSession(TimestampMixin, db.Model):
@@ -838,6 +883,20 @@ class JobApplication(BaseMixin, db.Model):
             'spam': counts[EMPLOYER_RESPONSE.SPAM],
             'rejected': counts[EMPLOYER_RESPONSE.REJECTED],
             }
+
+    @classmethod
+    def max_applications(cls, postids):
+        query = db.session.query('count').from_statement(db.text('''
+            SELECT MAX(count) FROM (
+                SELECT jobpost_id, count(*)
+                FROM job_application
+                WHERE jobpost_id IN :jobpost_ids
+                GROUP BY jobpost_id
+            ) AS jobpost_applications
+        ''')).params(jobpost_ids=tuple(postids))
+        result = db.session.execute(query).fetchone()
+        return result[0] if result else 0
+
 
     def url_for(self, action='view', _external=False, **kwargs):
         domain = self.jobpost.email_domain
