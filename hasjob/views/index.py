@@ -419,12 +419,11 @@ def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, tit
     if data['domain'] and data['domain'] not in db.session:
         data['domain'] = db.session.merge(data['domain'])
     data['show_viewcounts'] = show_viewcounts
-
     max_counts = get_max_counts(g.impressions.keys())
-    data['max_impressions'] = max_counts['max_impressions']
-    data['max_views'] = max_counts['max_views']
-    data['max_opens'] = max_counts['max_opens']
-    data['max_applied'] = max_counts['max_applied']
+    data['max_impressions'] = int(max_counts['max_impressions'])
+    data['max_views'] = int(max_counts['max_views'])
+    data['max_opens'] = int(max_counts['max_opens'])
+    data['max_applied'] = int(max_counts['max_applied'])
     return data
 
 
