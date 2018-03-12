@@ -205,6 +205,7 @@ window.Hasjob.Filters = {
       selectedCurrency: window.Hasjob.Config.selectedFilters.currency,
       pay: window.Hasjob.Config.selectedFilters.pay,
       equity: window.Hasjob.Config.selectedFilters.equity,
+      tags: window.Hasjob.Config.selectedFilters.tags,
       sidebarOn: false
     }
   },
