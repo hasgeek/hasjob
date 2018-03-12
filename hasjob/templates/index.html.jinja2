@@ -57,13 +57,14 @@
     {%- from "macros.html.jinja2" import conversion_funnel_setup %}
     {{ conversion_funnel_setup() }}
     <script type="text/javascript">
-      window.Hasjob.Util.createGradientColourBar('impressions', 700, 
+      //New
+      window.Hasjob.FunnelStat.createGradientColourBar('impressions', {{ max_impressions }},
         {'offset': 0, colour: '#E05F26'}, {'offset': 1, colour: '#DF3499'});
-      window.Hasjob.Util.createGradientColourBar('viewed', 1000, 
+      window.Hasjob.FunnelStat.createGradientColourBar('viewed', {{ max_views }},
         {'offset': 0.07, colour: '#F2984E'}, {'offset': 0.8, colour: '#DF5C2A'});
-      window.Hasjob.Util.createGradientColourBar('opened', 540, 
+      window.Hasjob.FunnelStat.createGradientColourBar('opened', {{ max_opens }},
         {'offset': 0.05, colour: '#F1D564'}, {'offset': 0.86, colour: '#F1984D'});
-      window.Hasjob.Util.createGradientColourBar('applied', 340, 
+      window.Hasjob.FunnelStat.createGradientColourBar('applied', {{ max_applied }},
         {'offset': 0.05, colour: '#FFFFA2'}, {'offset': 0.92, colour: '#F1D564'});
     </script>
   {%- endif %}
