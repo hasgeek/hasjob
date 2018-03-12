@@ -193,6 +193,19 @@ window.Hasjob.Filters = {
     }
   },
   getCurrentState: function(){
+    if (!Object.keys(window.Hasjob.Config.selectedFilters).length) {
+      window.Hasjob.Config.selectedFilters = {
+        selectedLocations: [],
+        selectedTypes: [],
+        selectedCategories: [],
+        selectedQuery: '',
+        selectedCurrency: '',
+        pay: 0,
+        equity: '',
+        tags: [],
+        domains: [],
+      };
+    }
     return {
       jobLocations: window.Hasjob.Config.allFilters.job_location_filters,
       jobTypes: window.Hasjob.Config.allFilters.job_type_filters,
@@ -206,8 +219,9 @@ window.Hasjob.Filters = {
       pay: window.Hasjob.Config.selectedFilters.pay,
       equity: window.Hasjob.Config.selectedFilters.equity,
       tags: window.Hasjob.Config.selectedFilters.tags,
+      domains: window.Hasjob.Config.selectedFilters.domains,
       sidebarOn: false
-    }
+    };
   },
   init: function(){
     var filters = this;

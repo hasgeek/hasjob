@@ -179,14 +179,6 @@ def fetch_jobposts(request_args, request_values, is_index, board, board_jobs, gk
         data_filters['archive'] = True
         statuses = POSTSTATUS.ARCHIVED
 
-    search_domains = None
-    if search_query:
-        data_filters['query'] = request.args.get('q')
-        search_domains = Domain.query.filter(
-            Domain.search_vector.match(search_query, postgresql_regconfig='english'), Domain.is_banned == False).options(
-            db.load_only('name', 'title', 'logo_url')).all()  # NOQA
-        basequery = basequery.filter(JobPost.search_vector.match(search_query, postgresql_regconfig='english'))
-
     if data_filters:
         showall = True
         batched = True
@@ -314,13 +306,13 @@ def fetch_jobposts(request_args, request_values, is_index, board, board_jobs, gk
         pay_graph_data = make_pay_graph(pay_graph, posts, rmin=f_min, rmax=f_max)
 
     postids = [post.id for post in posts]
-    data_filters['tags'] = db.session.query(Tag.name).join(JobPostTag).filter(JobPostTag.jobpost_id.in_(postids)).all()
+    data_filters['tags'] = Tag.filter_by_posts(postids)
+    data_filters['domains'] = Domain.filter_by_posts(postids)
 
     return dict(posts=posts, pinsandposts=pinsandposts, grouped=grouped, newlimit=newlimit, title=title,
         md5sum=md5sum, domain=domain, location=location, employer_name=employer_name,
         showall=showall, f_locations=f_locations, loadmore=loadmore,
-        search_domains=search_domains, query_params=query_params,
-        data_filters=data_filters,
+        query_params=query_params, data_filters=data_filters,
         pay_graph_data=pay_graph_data, paginated=index_is_paginated(), template_vars=template_vars)
 
 

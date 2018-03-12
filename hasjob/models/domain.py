@@ -103,6 +103,11 @@ class Domain(BaseMixin, db.Model):
             db.session.add(result)
         return result
 
+    @classmethod
+    def filter_by_posts(cls, postids):
+        return db.session.query(cls.name).join(JobPost).filter(
+            cls.is_banned == False, JobPost.id.in_(postids)).distinct().all()
+
 
 create_domain_search_trigger = DDL(
     '''

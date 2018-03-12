@@ -203,7 +203,11 @@
   {% with all_jobs_filters=job_filters() %}
     <script type="text/javascript">
       window.Hasjob.Config.allFilters = {{all_jobs_filters | tojson}};
+      {%- if selected_filters %}
       window.Hasjob.Config.selectedFilters = {{selected_filters | tojson}};
+      {%- else %}
+      window.Hasjob.Config.selectedFilters = {};
+      {%- endif %}
     </script>
   {%- endwith %}
 {%- endmacro -%}

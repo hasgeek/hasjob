@@ -56,6 +56,11 @@ class Tag(BaseNameMixin, db.Model):
         search = make_name(prefix) + '%'
         return cls.query.filter(cls.name.like(search), cls.public == True).all()  # NOQA
 
+    @classmethod
+    def filter_by_posts(cls, postids):
+        return db.session.query(cls.name).join(JobPostTag).filter(
+            JobPostTag.jobpost_id.in_(postids)).distinct().all()
+
 
 class JobPostTag(TimestampMixin, db.Model):
     """
