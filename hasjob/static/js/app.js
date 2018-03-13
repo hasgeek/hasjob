@@ -641,7 +641,7 @@ window.Hasjob.FunnelStat = {
     grd.addColorStop(1, '#DF3499');
     grd.addColorStop(0.7, '#E05F26');
     grd.addColorStop(0.5, '#DF5C2A');
-    grd.addColorStop(0.2, '#F1D564');
+    grd.addColorStop(0.1, '#F1D564');
     grd.addColorStop(0, '#FFFFA2');
 
     context.fillStyle = grd;
