@@ -90,13 +90,6 @@
   .count-items.impressions
     flex: 1.5
 
-    .count-text
-      padding-left: 0.5em
-
-  .count-items.applied .count-text
-    width: 100%
-    padding-right: 0.5em
-
   .count-arrow
     float: right
 
@@ -131,6 +124,7 @@
     margin-top: 4px
     border-radius: 0 0 2px 2px
     overflow: hidden
+    padding: 0
 
     .background
       flex: 1
@@ -144,17 +138,14 @@
       z-index: 4
 
     .viewed.background 
-      opacity: 0.82
       position: relative
       z-index: 3
 
     .opened.background
-      opacity: 0.48
       position: relative
       z-index: 2
 
     .applied.background
-      opacity: 0.3
       position: relative
       z-index: 1
 
@@ -165,7 +156,7 @@
       height: 7px
       border-style: solid
       border-width: 2px 2px 0 0
-      border-color: #fff
+      border-color: $color-stickie
       position: absolute
       top: 0
       right: -2px

@@ -993,13 +993,6 @@ tr > div {
 .stickie .count-items.impressions {
   flex: 1.5;
 }
-.stickie .count-items.impressions .count-text {
-  padding-left: 0.5em;
-}
-.stickie .count-items.applied .count-text {
-  width: 100%;
-  padding-right: 0.5em;
-}
 .stickie .count-arrow {
   float: right;
 }
@@ -1037,6 +1030,7 @@ tr > div {
   margin-top: 4px;
   border-radius: 0 0 2px 2px;
   overflow: hidden;
+  padding: 0;
 }
 .stickie .count-background .background {
   flex: 1;
@@ -1050,17 +1044,14 @@ tr > div {
   z-index: 4;
 }
 .stickie .count-background .viewed.background {
-  opacity: 0.82;
   position: relative;
   z-index: 3;
 }
 .stickie .count-background .opened.background {
-  opacity: 0.48;
   position: relative;
   z-index: 2;
 }
 .stickie .count-background .applied.background {
-  opacity: 0.3;
   position: relative;
   z-index: 1;
 }
@@ -1071,7 +1062,7 @@ tr > div {
   height: 7px;
   border-style: solid;
   border-width: 2px 2px 0 0;
-  border-color: #fff;
+  border-color: #ffffa2;
   position: absolute;
   top: 0;
   right: -2px;

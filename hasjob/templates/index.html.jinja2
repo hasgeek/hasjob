@@ -55,18 +55,6 @@
   {%- from "macros.html.jinja2" import stickie %}
   {%- if not paginated -%}
     {%- from "macros.html.jinja2" import conversion_funnel_setup %}
-    {{ conversion_funnel_setup() }}
-    <script type="text/javascript">
-      //New
-      window.Hasjob.FunnelStat.createGradientColourBar('impressions', {{ max_impressions }},
-        {'offset': 0, colour: '#E05F26'}, {'offset': 1, colour: '#DF3499'});
-      window.Hasjob.FunnelStat.createGradientColourBar('viewed', {{ max_views }},
-        {'offset': 0.07, colour: '#F2984E'}, {'offset': 0.8, colour: '#DF5C2A'});
-      window.Hasjob.FunnelStat.createGradientColourBar('opened', {{ max_opens }},
-        {'offset': 0.05, colour: '#F1D564'}, {'offset': 0.86, colour: '#F1984D'});
-      window.Hasjob.FunnelStat.createGradientColourBar('applied', {{ max_applied }},
-        {'offset': 0.05, colour: '#FFFFA2'}, {'offset': 0.92, colour: '#F1D564'});
-    </script>
   {%- endif %}
   {% with gkiosk=g.kiosk, gboard=g.board, guser=g.user, gstarred_ids=g.starred_ids %}
     {%- if gboard and gboard.not_root and not paginated and not (domain or md5sum or location or tag) %}
@@ -191,6 +179,10 @@
       } else {
         window.Hasjob.StickieList.loadmore({enable: false});
       }
+      {%- if not paginated -%}
+        window.Hasjob.FunnelStat.createGradientColourBar({{ max_impressions }});
+      {%- endif %}
+      window.Hasjob.FunnelStat.updateFunnel();
     });
   </script>
   {%- if not paginated -%}

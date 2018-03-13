@@ -621,6 +621,64 @@ window.Hasjob.PaySlider.prototype.resetSlider = function(currency) {
   };
 };
 
+window.Hasjob.FunnelStat = {
+  /*
+    Creates a linear colour gradient with canvas of width equal to maxValue. The canvas indicates a scale  from 0 to maxValue.
+    Takes 'maxValue' -  max value of conversion funnel across job posts of last 30 days
+  */
+  createGradientColourBar: function(maxValue){
+    var canvas = document.createElement("canvas");
+    canvas.id = 'conversionfunnel';
+    canvas.width = maxValue;
+    canvas.height = 10;
+
+    var context = canvas.getContext('2d');
+    context.rect(0, 0, canvas.width, canvas.height);
+    var grd = context.createLinearGradient(0, 0, canvas.width, canvas.height);
+
+    grd.addColorStop(1, '#DF3499');
+    grd.addColorStop(0.7, '#E05F26');
+    grd.addColorStop(0.5, '#DF5C2A');
+    grd.addColorStop(0.2, '#F1D564');
+    grd.addColorStop(0, '#FFFFA2');
+
+    context.fillStyle = grd;
+    context.fill();
+    //Store the canvas context and end colour of the conversion funnel, later to be used by setFunnelColour for picking the colour for a conversion funnel value for a job post.
+    window.Hasjob.FunnelStat['conversionfunnel'] = {
+      canvasContext: context,
+      maxColour: '#DF3499'
+    };
+  },
+  /*
+    Picks the colour for the value from the colour gradient canvas based on a scale of 0 to maxValue.
+    Takes 'value, elementId'
+   'value' - conversion funnel value for the job post
+   'elementId' - id attribute of the element of which background colour is to be set
+  */
+  setFunnelColour: function(value, elementId){
+    //rgba - RGBA values at a particular point in the canvas.
+    var rgba = window.Hasjob.FunnelStat.conversionfunnel.canvasContext.getImageData(value, 1, 1, 1).data;
+    if (rgba[0] > 255 || rgba[1] > 255 || rgba[2] > 255) {
+      // rgb value is invalid, hence return white
+      colourHex ="#FFFFFF";
+    } else if (rgba[0] == 0 && rgba[1] == 0 && rgba[2] == 0) {
+      // value greater than maxValue hence return the last colour of the gradient
+      colourHex = window.Hasjob.FunnelStat.conversionfunnel.maxColour;
+    } else {
+      // Get the colour code in hex from RGB values returned by getImageData
+      colourHex = "#" + (("000000" + (rgba[0] << 16) | (rgba[1] << 8) | rgba[2]).toString(16)).slice(-6);
+    }
+    // Set the background colour of the element
+    document.getElementById(elementId).style.backgroundColor = colourHex;
+  },
+  updateFunnel: function() {
+    $('.js-funnel').each(function() {
+      window.Hasjob.FunnelStat.setFunnelColour($(this).data('funnel'), $(this).attr('id'));
+    });
+  }
+}
+
 $(function() {
   Ractive.DEBUG = false;
 
