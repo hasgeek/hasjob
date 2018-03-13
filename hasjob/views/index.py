@@ -305,6 +305,7 @@ def fetch_jobposts(request_args, request_values, is_index, board, board_jobs, gk
     if pay_graph:
         pay_graph_data = make_pay_graph(pay_graph, posts, rmin=f_min, rmax=f_max)
 
+    data_filters['query'] = search_query
     postids = [post.id for post in posts]
     data_filters['tags'] = Tag.filter_by_posts(postids)
     data_filters['domains'] = Domain.filter_by_posts(postids)
@@ -324,7 +325,7 @@ def fetch_cached_jobposts(request_args, request_values, is_index, board, board_j
 @app.route('/', methods=['GET', 'POST'], subdomain='<subdomain>')
 @app.route('/', methods=['GET', 'POST'])
 @render_with({'text/html': 'index.html.jinja2', 'application/json': json_index}, json=False)
-def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, title=None, showall=True, statuses=None, batched=True, ageless=False, cached=False, template_vars={}):
+def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, title=None, showall=True, statuses=None, batched=True, ageless=False, cached=False, search_query=None, template_vars={}):
     now = datetime.utcnow()
     is_siteadmin = lastuser.has_permission('siteadmin')
     board = g.board
@@ -347,15 +348,17 @@ def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, tit
         showall = False
         batched = False
 
-    search_query = request.args.get('q')
+    if not search_query:
+        search_query = request.args.get('q')
     if search_query:
-        search_query = for_tsquery(search_query)
+        tsquery = for_tsquery(search_query)
+        print tsquery
         try:
             # TODO: Can we do syntax validation without a database roundtrip?
-            db.session.query(db.func.to_tsquery(search_query)).all()
+            db.session.query(db.func.to_tsquery(tsquery)).all()
         except ProgrammingError:
             db.session.rollback()
-            g.event_data['search_syntax_error'] = (request.args['q'], search_query)
+            g.event_data['search_syntax_error'] = (search_query, tsquery)
             if not request.is_xhr:
                 flash(_(u"Search terms ignored because this didn’t parse: {query}").format(query=search_query), 'danger')
             search_query = None
