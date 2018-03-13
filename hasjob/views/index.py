@@ -347,6 +347,8 @@ def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, tit
         showall = False
         batched = False
 
+    # `query_string` is user-supplied
+    # `search_query` is PostgreSQL syntax
     if not query_string:
         query_string = request.args.get('q')
     if query_string:
