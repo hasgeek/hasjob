@@ -180,7 +180,8 @@ def fetch_jobposts(request_args, request_values, is_index, board, board_jobs, gk
         statuses = POSTSTATUS.ARCHIVED
 
     if query_string:
-        data_filters['query'] = query_string
+        data_filters['query'] = search_query
+        data_filters['query_string'] = query_string
         basequery = basequery.filter(JobPost.search_vector.match(search_query, postgresql_regconfig='english'))
 
     if data_filters:
