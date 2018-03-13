@@ -309,10 +309,6 @@ def fetch_jobposts(request_args, request_values, is_index, board, board_jobs, gk
     if pay_graph:
         pay_graph_data = make_pay_graph(pay_graph, posts, rmin=f_min, rmax=f_max)
 
-    postids = [post.id for post in posts]
-    data_filters['tags'] = Tag.filter_by_posts(postids)
-    data_filters['domains'] = Domain.filter_by_posts(postids)
-
     return dict(posts=posts, pinsandposts=pinsandposts, grouped=grouped, newlimit=newlimit, title=title,
         md5sum=md5sum, domain=domain, location=location, employer_name=employer_name,
         showall=showall, f_locations=f_locations, loadmore=loadmore,

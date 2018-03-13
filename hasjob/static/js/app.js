@@ -201,9 +201,7 @@ window.Hasjob.Filters = {
         selectedQuery: '',
         selectedCurrency: '',
         pay: 0,
-        equity: '',
-        tags: [],
-        domains: [],
+        equity: ''
       };
     }
     return {
@@ -218,8 +216,6 @@ window.Hasjob.Filters = {
       selectedCurrency: window.Hasjob.Config.selectedFilters.currency,
       pay: window.Hasjob.Config.selectedFilters.pay,
       equity: window.Hasjob.Config.selectedFilters.equity,
-      tags: window.Hasjob.Config.selectedFilters.tags,
-      domains: window.Hasjob.Config.selectedFilters.domains,
       sidebarOn: false
     };
   },
