@@ -381,23 +381,11 @@ def get_post_viewcounts(jobpost_id):
 
 
 def get_max_counts(postids):
-    cache_key = JobPost.max_counts_key(postids)
-    values = redis_store.hgetall(cache_key)
-    if not values:
-        view_counts = [get_post_viewcounts(post.id) for post in JobPost.query.filter(JobPost.id.in_(postids))]
+    view_counts = [get_post_viewcounts(post.id) for post in JobPost.query.filter(JobPost.id.in_(postids))]
+    values = {
+        'max_impressions': max([vc['impressions'] for vc in view_counts]) if view_counts else 0
+    }
 
-        values = {
-            'max_impressions': max([vc['impressions'] for vc in view_counts]),
-            'max_views': max([vc['viewed'] for vc in view_counts]),
-            'max_opens': max([vc['opened'] for vc in view_counts]),
-            'max_applied': max([vc['applied'] for vc in view_counts])
-        }
-
-        redis_store.hset(cache_key, 'max_impressions', values['max_impressions'])
-        redis_store.hset(cache_key, 'max_views', values['max_views'])
-        redis_store.hset(cache_key, 'max_opens', values['max_opens'])
-        redis_store.hset(cache_key, 'max_applied', values['max_applied'])
-        redis_store.expire(cache_key, 86400)
     return values
 
 
