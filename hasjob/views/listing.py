@@ -679,7 +679,7 @@ def confirm(domain, hashid):
     if post.status in POSTSTATUS.GONE:
         abort(410)
     elif post.status in POSTSTATUS.UNPUBLISHED and not post.admin_is(g.user):
-            abort(403)
+        abort(403)
     elif post.status not in POSTSTATUS.UNPUBLISHED:
         # Any other status: no confirmation required (via this handler)
         return redirect(post.url_for(), code=302)

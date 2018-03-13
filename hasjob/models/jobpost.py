@@ -10,7 +10,6 @@ from sqlalchemy.orm import defer, deferred, load_only
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.dialects.postgresql import TSVECTOR
 import tldextract
-from hashlib import sha256
 from coaster.sqlalchemy import make_timestamp_columns, Query, JsonDict
 from baseframe import cache, _
 from baseframe.staticdata import webmail_domains
@@ -443,10 +442,6 @@ class JobPost(BaseMixin, db.Model):
             redis_store.delete(cache_key)
         else:
             redis_store.hdel(cache_key, key)
-
-    @staticmethod
-    def max_counts_key(postids):
-        return "hasjob/maxcounts/{hash}".format(hash=sha256(','.join(str(postid) for postid in postids)).hexdigest())
 
     @cached_property
     def ab_impressions(self):
