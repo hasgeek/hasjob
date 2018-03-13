@@ -40,16 +40,16 @@
             <span class="count-text text-right">{{ post_viewcounts['applied'] }} applied</span>
           </span>
         </span>
-        {% from "macros.html.jinja2" import setFunnelColour %}
+        {% from "macros.html.jinja2" import set_funnel_colour %}
         <span class="count-background">
           <span class="impressions background arrow" id="impressions-{{post.id}}"></span>
-          {{ setFunnelColour('impressions', post_viewcounts['impressions'], 'impressions-' ~ post.id) }}
+          {{ set_funnel_colour('impressions', post_viewcounts['impressions'], 'impressions-' ~ post.id) }}
           <span class="viewed background arrow" id="viewed-{{post.id}}"></span>
-          {{ setFunnelColour('viewed', post_viewcounts['viewed'], 'viewed-' ~ post.id) }}
+          {{ set_funnel_colour('viewed', post_viewcounts['viewed'], 'viewed-' ~ post.id) }}
           <span class="opened background arrow" id="opened-{{post.id}}"></span>
-          {{ setFunnelColour('opened', post_viewcounts['opened'], 'opened-' ~ post.id) }}
+          {{ set_funnel_colour('opened', post_viewcounts['opened'], 'opened-' ~ post.id) }}
           <span class="applied background" id="applied-{{post.id}}"></span>
-          {{ setFunnelColour('applied', post_viewcounts['applied'], 'applied-' ~ post.id) }}
+          {{ set_funnel_colour('applied', post_viewcounts['applied'], 'applied-' ~ post.id) }}
         </span>
       {%- endif -%}
     {%- endwith %}
@@ -300,7 +300,7 @@
   </script>
 {%- endmacro -%}
 
-{%- macro setFunnelColour(funnelName, value, elementId) -%}
+{%- macro set_funnel_colour(funnelName, value, elementId) -%}
   <script type="text/javascript">
     window.Hasjob.FunnelStat.setFunnelColour("{{funnelName}}", {{value}}, "{{elementId}}");
   </script>
