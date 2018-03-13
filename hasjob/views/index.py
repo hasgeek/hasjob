@@ -90,7 +90,7 @@ def json_index(data):
     return jsonify(result)
 
 
-def fetch_jobposts(request_args, request_values, is_index, board, board_jobs, gkiosk, basequery, md5sum, domain, location, title, showall, statuses, batched, ageless, template_vars, search_query=None):
+def fetch_jobposts(request_args, request_values, is_index, board, board_jobs, gkiosk, basequery, md5sum, domain, location, title, showall, statuses, batched, ageless, template_vars, search_query=None, query_string=None):
     if basequery is None:
         basequery = JobPost.query
 
@@ -108,7 +108,7 @@ def fetch_jobposts(request_args, request_values, is_index, board, board_jobs, gk
     if f_categories:
         data_filters['categories'] = f_categories
         basequery = basequery.join(JobCategory).filter(JobCategory.name.in_(f_categories))
-    r_locations = request_args.getlist('l')
+    data_filters['location_names'] = r_locations = request_args.getlist('l')
     if location:
         r_locations.append(location['geonameid'])
     f_locations = []
@@ -179,12 +179,8 @@ def fetch_jobposts(request_args, request_values, is_index, board, board_jobs, gk
         data_filters['archive'] = True
         statuses = POSTSTATUS.ARCHIVED
 
-    search_domains = None
-    if search_query:
-        data_filters['query'] = search_query
-        search_domains = Domain.query.filter(
-            Domain.search_vector.match(search_query, postgresql_regconfig='english'), Domain.is_banned == False).options(
-            db.load_only('name', 'title', 'logo_url')).all()  # NOQA
+    if query_string:
+        data_filters['query'] = query_string
         basequery = basequery.filter(JobPost.search_vector.match(search_query, postgresql_regconfig='english'))
 
     if data_filters:
@@ -307,6 +303,7 @@ def fetch_jobposts(request_args, request_values, is_index, board, board_jobs, gk
     if loadmore:
         query_params.update({'startdate': loadmore.isoformat() + 'Z', 'ph': pinned_hashids})
     if location:
+        data_filters['location_names'].append(location['name'])
         query_params.update({'l': location['name']})
 
     if pay_graph:
@@ -315,20 +312,19 @@ def fetch_jobposts(request_args, request_values, is_index, board, board_jobs, gk
     return dict(posts=posts, pinsandposts=pinsandposts, grouped=grouped, newlimit=newlimit, title=title,
         md5sum=md5sum, domain=domain, location=location, employer_name=employer_name,
         showall=showall, f_locations=f_locations, loadmore=loadmore,
-        search_domains=search_domains, query_params=query_params,
-        data_filters=data_filters,
+        query_params=query_params, data_filters=data_filters,
         pay_graph_data=pay_graph_data, paginated=index_is_paginated(), template_vars=template_vars)
 
 
 # @dogpile.region('hasjob_index')
-def fetch_cached_jobposts(request_args, request_values, is_index, board, board_jobs, gkiosk, basequery, md5sum, domain, location, title, showall, statuses, batched, ageless, template_vars, search_query=None):
-    return fetch_jobposts(request_args, request_values, is_index, board, board_jobs, gkiosk, basequery, md5sum, domain, location, title, showall, statuses, batched, ageless, template_vars, search_query)
+def fetch_cached_jobposts(request_args, request_values, is_index, board, board_jobs, gkiosk, basequery, md5sum, domain, location, title, showall, statuses, batched, ageless, template_vars, search_query=None, query_string=None):
+    return fetch_jobposts(request_args, request_values, is_index, board, board_jobs, gkiosk, basequery, md5sum, domain, location, title, showall, statuses, batched, ageless, template_vars, search_query, query_string)
 
 
 @app.route('/', methods=['GET', 'POST'], subdomain='<subdomain>')
 @app.route('/', methods=['GET', 'POST'])
 @render_with({'text/html': 'index.html.jinja2', 'application/json': json_index}, json=False)
-def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, title=None, showall=True, statuses=None, batched=True, ageless=False, cached=False, template_vars={}):
+def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, title=None, showall=True, statuses=None, batched=True, ageless=False, cached=False, query_string=None, template_vars={}):
     now = datetime.utcnow()
     is_siteadmin = lastuser.has_permission('siteadmin')
     board = g.board
@@ -351,23 +347,26 @@ def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, tit
         showall = False
         batched = False
 
-    search_query = request.args.get('q')
-    if search_query:
-        search_query = for_tsquery(request.args.get('q'))
+    if not query_string:
+        query_string = request.args.get('q')
+    if query_string:
+        search_query = for_tsquery(query_string)
         try:
             # TODO: Can we do syntax validation without a database roundtrip?
             db.session.query(db.func.to_tsquery(search_query)).all()
         except ProgrammingError:
             db.session.rollback()
-            g.event_data['search_syntax_error'] = (request.args['q'], search_query)
+            g.event_data['search_syntax_error'] = (query_string, search_query)
             if not request.is_xhr:
                 flash(_(u"Search terms ignored because this didn’t parse: {query}").format(query=search_query), 'danger')
             search_query = None
+    else:
+        search_query = None
 
     if cached:
-        data = fetch_cached_jobposts(request.args, request.values, is_index, board, board_jobs, g.kiosk, basequery, md5sum, domain, location, title, showall, statuses, batched, ageless, template_vars, search_query)
+        data = fetch_cached_jobposts(request.args, request.values, is_index, board, board_jobs, g.kiosk, basequery, md5sum, domain, location, title, showall, statuses, batched, ageless, template_vars, search_query, query_string)
     else:
-        data = fetch_jobposts(request.args, request.values, is_index, board, board_jobs, g.kiosk, basequery, md5sum, domain, location, title, showall, statuses, batched, ageless, template_vars, search_query)
+        data = fetch_jobposts(request.args, request.values, is_index, board, board_jobs, g.kiosk, basequery, md5sum, domain, location, title, showall, statuses, batched, ageless, template_vars, search_query, query_string)
 
     if data['data_filters']:
         # For logging
