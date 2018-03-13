@@ -50,7 +50,11 @@
     }
   </script>
   {%- if not paginated -%}
-    {{ filters_setup_script(job_filters, data_filters) }}
+    {%- if data_filters %}
+      {{ filters_setup_script(job_filters, data_filters) }}
+    {%- else %}
+      {{ filters_setup_script(job_filters) }}
+  {%- endif %}
   {%- endif %}
 {%- endblock %}
 

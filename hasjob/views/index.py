@@ -90,7 +90,7 @@ def json_index(data):
     return jsonify(result)
 
 
-def fetch_jobposts(request_args, request_values, is_index, board, board_jobs, gkiosk, basequery, md5sum, domain, location, title, showall, statuses, batched, ageless, template_vars, query_string=None):
+def fetch_jobposts(request_args, request_values, is_index, board, board_jobs, gkiosk, basequery, md5sum, domain, location, title, showall, statuses, batched, ageless, template_vars, search_query=None, query_string=None):
     if basequery is None:
         basequery = JobPost.query
 
@@ -181,7 +181,7 @@ def fetch_jobposts(request_args, request_values, is_index, board, board_jobs, gk
 
     if query_string:
         data_filters['query'] = query_string
-        basequery = basequery.filter(JobPost.search_vector.match(for_tsquery(query_string), postgresql_regconfig='english'))
+        basequery = basequery.filter(JobPost.search_vector.match(search_query, postgresql_regconfig='english'))
 
     if data_filters:
         showall = True
@@ -317,8 +317,8 @@ def fetch_jobposts(request_args, request_values, is_index, board, board_jobs, gk
 
 
 # @dogpile.region('hasjob_index')
-def fetch_cached_jobposts(request_args, request_values, is_index, board, board_jobs, gkiosk, basequery, md5sum, domain, location, title, showall, statuses, batched, ageless, template_vars, query_string=None):
-    return fetch_jobposts(request_args, request_values, is_index, board, board_jobs, gkiosk, basequery, md5sum, domain, location, title, showall, statuses, batched, ageless, template_vars, query_string)
+def fetch_cached_jobposts(request_args, request_values, is_index, board, board_jobs, gkiosk, basequery, md5sum, domain, location, title, showall, statuses, batched, ageless, template_vars, search_query=None, query_string=None):
+    return fetch_jobposts(request_args, request_values, is_index, board, board_jobs, gkiosk, basequery, md5sum, domain, location, title, showall, statuses, batched, ageless, template_vars, search_query, query_string)
 
 
 @app.route('/', methods=['GET', 'POST'], subdomain='<subdomain>')
@@ -360,11 +360,13 @@ def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, tit
             if not request.is_xhr:
                 flash(_(u"Search terms ignored because this didn’t parse: {query}").format(query=search_query), 'danger')
             search_query = None
+    else:
+        search_query = None
 
     if cached:
-        data = fetch_cached_jobposts(request.args, request.values, is_index, board, board_jobs, g.kiosk, basequery, md5sum, domain, location, title, showall, statuses, batched, ageless, template_vars, query_string)
+        data = fetch_cached_jobposts(request.args, request.values, is_index, board, board_jobs, g.kiosk, basequery, md5sum, domain, location, title, showall, statuses, batched, ageless, template_vars, search_query, query_string)
     else:
-        data = fetch_jobposts(request.args, request.values, is_index, board, board_jobs, g.kiosk, basequery, md5sum, domain, location, title, showall, statuses, batched, ageless, template_vars, query_string)
+        data = fetch_jobposts(request.args, request.values, is_index, board, board_jobs, g.kiosk, basequery, md5sum, domain, location, title, showall, statuses, batched, ageless, template_vars, search_query, query_string)
 
     if data['data_filters']:
         # For logging
