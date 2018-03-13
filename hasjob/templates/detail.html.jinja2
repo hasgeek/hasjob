@@ -141,7 +141,7 @@
                     {% include "inc/reportform.html.jinja2" %}
                   {%- else %}
                     <p>You need to be logged in to report a post</p>
-                    <p><a class="btn btn-primary btn-sm" href="{{ url_for('login') }}">Login with Twitter or Google</a></p>
+                    <p><a class="btn btn-primary btn-sm" href="{{ url_for('login') }}">Login with Google or GitHub</a></p>
                   {%- endif %}
                 </div>
               </div>
@@ -272,7 +272,7 @@
             {%- elif g.user %}
               <a class="btn btn-primary" id="reveal-button" href="{{ post.url_for('reveal') }}">Show instructions</a> <span class="loading hidden"></span>
             {%- else %}
-              <a class="btn btn-primary" href="{{ url_for('login') }}">Login with Twitter or Google</a>
+              <a class="btn btn-primary" href="{{ url_for('login') }}">Login with Google or GitHub</a>
               to see instructions on how to apply.
               Your identity will not be revealed to the employer.
             {%- endif %}
