@@ -3,7 +3,7 @@
 from collections import defaultdict
 from datetime import datetime, timedelta
 from werkzeug import cached_property
-from flask import g, url_for, escape, Markup
+from flask import url_for, escape, Markup
 from flask_babelex import format_datetime
 from sqlalchemy import event, DDL
 from sqlalchemy.orm import defer, deferred, load_only
@@ -229,8 +229,9 @@ class JobPost(BaseMixin, db.Model):
     def after_expiry_date(self):
         return self.expiry_date + timedelta(days=1)
 
+    state.add_conditional_state('NEW', state.PUBLIC, lambda jobpost: jobpost.datetime >= datetime.utcnow() - newlimit, label=('new', __("New")))
     state.add_conditional_state('LISTED', state.PUBLIC, lambda jobpost: jobpost.datetime >= datetime.utcnow() - agelimit, label=('listed', __("Listed")))
-    state.add_conditional_state('CONFIRMABLE', state.UNPUBLISHED, lambda jobpost: jobpost.admin_is(current_auth.user), label=('confirmable', __("Confirmable")))
+    state.add_conditional_state('CONFIRMABLE', state.UNPUBLISHED, lambda jobpost: jobpost.current_permissions.edit, label=('confirmable', __("Confirmable")))
 
     @state.transition(state.UNPUBLISHED, state.WITHDRAWN, title=__("Withdraw"), message=__("This job post has been withdrawn"), type='danger')
     def withdraw(self):
@@ -246,29 +247,29 @@ class JobPost(BaseMixin, db.Model):
         self.datetime = db.func.utcnow()
 
     @state.transition(state.PUBLIC, state.SPAM, title=__("Mark as spam"), message=__("This job post has been marked as spam"), type='danger')
-    def mark_spam(self, reason):
+    def mark_spam(self, reason, user):
         self.closed_datetime = db.func.utcnow()
         self.review_datetime = db.func.utcnow()
         self.review_comments = reason
-        self.reviewer = current_auth.user
+        self.reviewer = user
 
     @state.transition(state.DRAFT, state.PENDING, title=__("Mark as pending"), message=__("This job post is awaiting email verification"), type='danger')
     def mark_pending(self):
         pass
 
     @state.transition(state.PUBLIC, state.REJECTED, title=__("Reject"), message=__("This job post has been rejected"), type='danger')
-    def reject(self, reason):
+    def reject(self, reason, user):
         self.closed_datetime = db.func.utcnow()
         self.review_datetime = db.func.utcnow()
         self.review_comments = reason
-        self.reviewer = current_auth.user
+        self.reviewer = user
 
     @state.transition(state.PUBLIC, state.MODERATED, title=__("Moderate"), message=__("This job post has been moderated"), type='primary')
-    def moderate(self, reason):
+    def moderate(self, reason, user):
         self.closed_datetime = db.func.utcnow()
         self.review_datetime = db.func.utcnow()
         self.review_comments = reason
-        self.reviewer = current_auth.user
+        self.reviewer = user
 
     def url_for(self, action='view', _external=False, **kwargs):
         if self.state.UNPUBLISHED and action in ('view', 'edit'):

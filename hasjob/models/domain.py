@@ -85,7 +85,7 @@ class Domain(BaseMixin, db.Model):
         """
         if not user:
             return False
-        if JobPost.query.filter_by(domain=self, user=user).filter(JobPost.state.POSTPENDING).notempty():
+        if JobPost.query.filter_by(domain=self, user=user).filter(~JobPost.state.UNPUBLISHED).notempty():
             return True
         return False
 

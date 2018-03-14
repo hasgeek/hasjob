@@ -12,6 +12,7 @@ from flask import abort, flash, g, redirect, render_template, request, url_for, 
 from flask_mail import Message
 from baseframe import cache  # , dogpile
 from baseframe.forms import Form
+from coaster.auth import current_auth
 from coaster.utils import getbool, get_email_domain, md5sum, base_domain_matches
 from coaster.views import load_model
 from hasjob import app, forms, mail, lastuser
@@ -587,10 +588,10 @@ def rejectjob(domain, hashid):
         banned_posts = []
         if request.form.get('submit') == 'reject':
             flashmsg = "This job post has been rejected"
-            post.reject(rejectform.reason.data)
+            post.reject(rejectform.reason.data, current_auth.user)
         elif request.form.get('submit') == 'spam':
             flashmsg = "This job post has been marked as spam"
-            post.mark_spam(rejectform.reason.data)
+            post.mark_spam(rejectform.reason.data, current_auth.user)
         elif request.form.get('submit') == 'ban':
             # Moderator asked for a ban, so ban the user and reject
             # all posts from the domain if it's not a webmail domain
@@ -598,7 +599,7 @@ def rejectjob(domain, hashid):
                 post.user.blocked = True
             if post.domain.is_webmail:
                 flashmsg = "This job post has been rejected and the user banned"
-                post.reject(rejectform.reason.data)
+                post.reject(rejectform.reason.data, current_auth.user)
                 banned_posts = [post]
             else:
                 flashmsg = "This job post has been rejected and the user and domain banned"
@@ -609,7 +610,7 @@ def rejectjob(domain, hashid):
 
                 for jobpost in post.domain.jobposts:
                     if jobpost.state.PUBLIC:
-                        jobpost.reject(rejectform.reason.data)
+                        jobpost.reject(rejectform.reason.data, current_auth.user)
                         banned_posts.append(jobpost)
         else:
             # We're not sure what button the moderator hit
@@ -641,7 +642,7 @@ def moderatejob(domain, hashid):
         abort(410)
     moderateform = forms.ModerateForm()
     if moderateform.validate_on_submit():
-        post.moderate(moderateform.reason.data)
+        post.moderate(moderateform.reason.data, current_auth.user)
         flashmsg = post.moderate.data['message']
         msg = Message(subject="About your job post on Hasjob",
             recipients=[post.email])
@@ -726,7 +727,7 @@ def confirm_email(domain, hashid, key):
             if app.config.get('THROTTLE_LIMIT', 0) > 0:
                 post_count = JobPost.query.filter(
                         JobPost.email_domain == post.email_domain
-                    ).filter(JobPost.state.POSTPENDING).filter(
+                    ).filter(~JobPost.state.UNPUBLISHED).filter(
                         JobPost.datetime > datetime.utcnow() - timedelta(days=1)
                     ).count()
                 if post_count > app.config['THROTTLE_LIMIT']:
@@ -819,10 +820,10 @@ def editjob(hashid, key, domain=None, form=None, validated=False, newpost=None):
                     return redirect(post.url_for('edit', subdomain=None, _external=True))
 
         # Don't allow email address to be changed once it's confirmed
-        if post.state.POSTPENDING:
+        if not post.state.UNPUBLISHED:
             no_email = True
 
-    if request.method == 'POST' and post and post.state.POSTPENDING:
+    if request.method == 'POST' and post and not post.state.UNPUBLISHED:
         # del form.poster_name  # Deprecated 2013-11-20
         form.poster_email.data = post.email
     if request.method == 'POST' and (validated or form.validate()):
@@ -837,7 +838,7 @@ def editjob(hashid, key, domain=None, form=None, validated=False, newpost=None):
             for oldpost in JobPost.query.filter(db.or_(
                 db.and_(
                     JobPost.email_domain == form_email_domain,
-                    JobPost.state.POSTPENDING),
+                    ~JobPost.state.UNPUBLISHED),
                 Jobpost.state.SPAM)).filter(
                     JobPost.datetime > datetime.utcnow() - agelimit).all():
                 if not post or (oldpost.id != post.id):
@@ -911,7 +912,7 @@ def editjob(hashid, key, domain=None, form=None, validated=False, newpost=None):
                         post.domain.title, post.domain.legal_title = common_legal_names(post.company_name)
             # To protect from gaming, don't allow words to be removed in edited posts once the post
             # has been confirmed. Just add the new words.
-            if post.state.POSTPENDING:
+            if not post.state.UNPUBLISHED:
                 prev_words = post.words or u''
             else:
                 prev_words = u''

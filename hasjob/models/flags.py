@@ -143,10 +143,10 @@ class UserFlags(object):
         __("Is an employer (posted at any time)"),
         lambda user: JobPost.query.filter(
             JobPost.user == user,
-            JobPost.state.POSTPENDING
+            ~JobPost.state.UNPUBLISHED
             ).notempty(),
         lambda: db.session.query(db.distinct(JobPost.user_id).label('id')).filter(
-            JobPost.state.POSTPENDING
+            ~JobPost.state.UNPUBLISHED
             )
         )
 
@@ -155,11 +155,11 @@ class UserFlags(object):
         lambda user: JobPost.query.filter(
             JobPost.user == user,
             JobPost.datetime >= datetime.utcnow() - newlimit,
-            JobPost.state.POSTPENDING
+            ~JobPost.state.UNPUBLISHED
             ).notempty(),
         lambda: db.session.query(db.distinct(JobPost.user_id).label('id')).filter(
             JobPost.datetime >= datetime.utcnow() - newlimit,
-            JobPost.state.POSTPENDING
+            ~JobPost.state.UNPUBLISHED
             )
         )
 
@@ -168,11 +168,11 @@ class UserFlags(object):
         lambda user: JobPost.query.filter(
             JobPost.user == user,
             JobPost.datetime >= datetime.utcnow() - agelimit,
-            JobPost.state.POSTPENDING
+            ~JobPost.state.UNPUBLISHED
             ).notempty(),
         lambda: db.session.query(db.distinct(JobPost.user_id).label('id')).filter(
             JobPost.datetime >= datetime.utcnow() - agelimit,
-            JobPost.state.POSTPENDING
+            ~JobPost.state.UNPUBLISHED
             )
         )
 
@@ -181,11 +181,11 @@ class UserFlags(object):
         lambda user: JobPost.query.filter(
             JobPost.user == user,
             JobPost.datetime < datetime.utcnow() - agelimit,
-            JobPost.state.POSTPENDING
+            ~JobPost.state.UNPUBLISHED
             ).notempty(),
         lambda: db.session.query(db.distinct(JobPost.user_id).label('id')).filter(
             JobPost.datetime < datetime.utcnow() - agelimit,
-            JobPost.state.POSTPENDING
+            ~JobPost.state.UNPUBLISHED
             )
         )
 
@@ -198,7 +198,7 @@ class UserFlags(object):
             JobPost.state.UNPUBLISHED
             ).notempty(),
         lambda: db.session.query(db.distinct(JobPost.user_id).label('id')).filter(
-            JobPost.state.POSTPENDING
+            ~JobPost.state.UNPUBLISHED
             )
         )
 
@@ -211,7 +211,7 @@ class UserFlags(object):
             ).notempty(),
         lambda: db.session.query(db.distinct(JobPost.user_id).label('id')).filter(
             JobPost.datetime >= datetime.utcnow() - newlimit,
-            JobPost.state.POSTPENDING
+            ~JobPost.state.UNPUBLISHED
             )
         )
 
@@ -224,7 +224,7 @@ class UserFlags(object):
             ).notempty(),
         lambda: db.session.query(db.distinct(JobPost.user_id).label('id')).filter(
             JobPost.datetime >= datetime.utcnow() - agelimit,
-            JobPost.state.POSTPENDING
+            ~JobPost.state.UNPUBLISHED
             )
         )
 

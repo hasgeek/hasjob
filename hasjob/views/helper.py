@@ -394,19 +394,17 @@ def load_viewcounts(posts):
     g.viewcounts = dict(zip(viewcounts_keys, viewcounts_values))
 
 
-def getposts(basequery=None, pinned=False, showall=False, statuses=None, ageless=False, limit=2000, order=True):
+def getposts(basequery=None, pinned=False, showall=False, statusfilter=None, ageless=False, limit=2000, order=True):
     if ageless:
         pinned = False  # No pinning when browsing archives
 
-    if statuses is None:
-        statuses = JobPost.state.PUBLIC
+    if statusfilter is None:
+        statusfilter = JobPost.state.PUBLIC
 
     if basequery is None:
         basequery = JobPost.query
 
-    query = basequery.filter(statuses).options(*JobPost._defercols).options(db.joinedload('domain'))
-
-    now = datetime.utcnow()
+    query = basequery.filter(statusfilter).options(*JobPost._defercols).options(db.joinedload('domain'))
 
     if g.board:
         query = query.join(JobPost.postboards).filter(BoardJobPost.board == g.board)
@@ -419,15 +417,15 @@ def getposts(basequery=None, pinned=False, showall=False, statuses=None, ageless
                 if g.board:
                     query = query.filter(
                         db.or_(
-                            db.and_(BoardJobPost.pinned == True, JobPost.datetime > now - agelimit),
-                            db.and_(BoardJobPost.pinned == False, JobPost.datetime > now - newlimit)))  # NOQA
+                            db.and_(BoardJobPost.pinned == True, JobPost.state.LISTED),
+                            db.and_(BoardJobPost.pinned == False, JobPost.state.NEW)))  # NOQA
                 else:
                     query = query.filter(
                         db.or_(
-                            db.and_(JobPost.pinned == True, JobPost.datetime > now - agelimit),
-                            db.and_(JobPost.pinned == False, JobPost.datetime > now - newlimit)))  # NOQA
+                            db.and_(JobPost.pinned == True, JobPost.state.LISTED),
+                            db.and_(JobPost.pinned == False, JobPost.state.NEW)))  # NOQA
             else:
-                query = query.filter(JobPost.datetime > datetime.utcnow() - newlimit)
+                query = query.filter(JobPost.state.NEW)
 
     if pinned:
         if g.board:
