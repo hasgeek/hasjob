@@ -835,12 +835,11 @@ def editjob(hashid, key, domain=None, form=None, validated=False, newpost=None):
 
         similar = False
         with db.session.no_autoflush:
-            for oldpost in JobPost.query.filter(db.or_(
-                db.and_(
-                    JobPost.email_domain == form_email_domain,
-                    ~JobPost.state.UNPUBLISHED),
-                Jobpost.state.SPAM)).filter(
-                    JobPost.datetime > datetime.utcnow() - agelimit).all():
+            for oldpost in JobPost.query.filter(
+                db.or_(
+                    db.and_(JobPost.email_domain == form_email_domain, ~JobPost.state.UNPUBLISHED),
+                    JobPost.state.SPAM)
+                ).filter(JobPost.state.LISTED).all():
                 if not post or (oldpost.id != post.id):
                     if oldpost.words:
                         s = SequenceMatcher(None, form_words, oldpost.words)

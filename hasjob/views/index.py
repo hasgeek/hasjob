@@ -132,7 +132,7 @@ def fetch_jobposts(request_args, request_values, is_index, board, board_jobs, gk
     if f_locations and remote_location:
         data_filters['locations'] = f_locations
         data_filters['anywhere'] = True
-        recency = JobPost.datetime > datetime.utcnow() - agelimit
+        recency = JobPost.state.LISTED
         basequery = locations_query.filter(recency).union(remote_location_query.filter(recency))
     elif f_locations:
         data_filters['locations'] = f_locations
@@ -333,7 +333,7 @@ def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, tit
     if board:
         board_jobs = {r.jobpost_id: r for r in
             BoardJobPost.query.join(BoardJobPost.jobpost).filter(
-                BoardJobPost.board == g.board, JobPost.datetime > now - agelimit).options(
+                BoardJobPost.board == g.board, JobPost.state.LISTED).options(
                     db.load_only('jobpost_id', 'pinned')).all()
         }
 

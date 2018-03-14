@@ -18,9 +18,11 @@ def location_new():
         abort(403)
     now = datetime.utcnow()
     geonames = OrderedDict([(r.geonameid, None) for r in
-        db.session.query(JobLocation.geonameid, db.func.count(JobLocation.geonameid).label('count')).join(
-            JobPost).filter(JobPost.state.PUBLIC, JobPost.datetime > now - agelimit,
-            ~JobLocation.geonameid.in_(db.session.query(Location.id).filter(Location.board == g.board))
+        db.session.query(
+                JobLocation.geonameid, db.func.count(JobLocation.geonameid).label('count')
+            ).join(JobPost).filter(
+                JobPost.state.LISTED,
+                ~JobLocation.geonameid.in_(db.session.query(Location.id).filter(Location.board == g.board))
             ).group_by(JobLocation.geonameid).order_by(db.text('count DESC')).limit(100)])
     data = location_geodata(geonames.keys())
     for row in data.values():

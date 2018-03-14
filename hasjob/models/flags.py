@@ -154,11 +154,11 @@ class UserFlags(object):
         __("Is an employer (posted <= a day ago)"),
         lambda user: JobPost.query.filter(
             JobPost.user == user,
-            JobPost.datetime >= datetime.utcnow() - newlimit,
+            JobPost.state.NEW,
             ~JobPost.state.UNPUBLISHED
             ).notempty(),
         lambda: db.session.query(db.distinct(JobPost.user_id).label('id')).filter(
-            JobPost.datetime >= datetime.utcnow() - newlimit,
+            JobPost.state.NEW,
             ~JobPost.state.UNPUBLISHED
             )
         )
@@ -167,11 +167,11 @@ class UserFlags(object):
         __("Is an employer (posted <= a month ago)"),
         lambda user: JobPost.query.filter(
             JobPost.user == user,
-            JobPost.datetime >= datetime.utcnow() - agelimit,
+            JobPost.state.LISTED,
             ~JobPost.state.UNPUBLISHED
             ).notempty(),
         lambda: db.session.query(db.distinct(JobPost.user_id).label('id')).filter(
-            JobPost.datetime >= datetime.utcnow() - agelimit,
+            JobPost.state.LISTED,
             ~JobPost.state.UNPUBLISHED
             )
         )
@@ -206,11 +206,11 @@ class UserFlags(object):
         __("Is an employer who did not confirm a post (posted <= a day ago)"),
         lambda user: JobPost.query.filter(
             JobPost.user == user,
-            JobPost.datetime >= datetime.utcnow() - newlimit,
+            JobPost.state.NEW,
             JobPost.state.UNPUBLISHED
             ).notempty(),
         lambda: db.session.query(db.distinct(JobPost.user_id).label('id')).filter(
-            JobPost.datetime >= datetime.utcnow() - newlimit,
+            JobPost.state.NEW,
             ~JobPost.state.UNPUBLISHED
             )
         )
@@ -219,11 +219,11 @@ class UserFlags(object):
         __("Is an employer who did not confirm a post (posted <= a month ago)"),
         lambda user: JobPost.query.filter(
             JobPost.user == user,
-            JobPost.datetime >= datetime.utcnow() - agelimit,
+            JobPost.state.LISTED,
             JobPost.state.UNPUBLISHED
             ).notempty(),
         lambda: db.session.query(db.distinct(JobPost.user_id).label('id')).filter(
-            JobPost.datetime >= datetime.utcnow() - agelimit,
+            JobPost.state.LISTED,
             ~JobPost.state.UNPUBLISHED
             )
         )

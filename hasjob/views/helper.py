@@ -411,7 +411,7 @@ def getposts(basequery=None, pinned=False, showall=False, statusfilter=None, age
 
     if not ageless:
         if showall:
-            query = query.filter(JobPost.datetime > datetime.utcnow() - agelimit)
+            query = query.filter(JobPost.state.LISTED)
         else:
             if pinned:
                 if g.board:
@@ -462,7 +462,7 @@ def gettags(alltime=False):
             JobPost.state.PUBLIC, Tag.public == True
         ).group_by(Tag.id).order_by(db.text('count DESC'))  # NOQA
     if not alltime:
-        query = query.filter(JobPost.datetime > datetime.utcnow() - agelimit)
+        query = query.filter(JobPost.state.LISTED)
     if g.board:
         query = query.join(JobPost.postboards).filter(BoardJobPost.board == g.board)
     return query.all()
@@ -807,10 +807,11 @@ def filter_basequery(basequery, filters, exclude_list=[]):
 
 
 def filter_locations(board, filters):
-    now = datetime.utcnow()
-    basequery = db.session.query(JobLocation.geonameid, db.func.count(JobLocation.geonameid).label('count')
-        ).join(JobPost).filter(JobPost.state.PUBLIC, JobPost.datetime > now - agelimit,
-        JobLocation.primary == True).group_by(JobLocation.geonameid).order_by(db.text('count DESC'))  # NOQA
+    basequery = db.session.query(
+            JobLocation.geonameid, db.func.count(JobLocation.geonameid).label('count')
+        ).join(JobPost).filter(
+            JobPost.state.LISTED, JobLocation.primary == True
+        ).group_by(JobLocation.geonameid).order_by(db.text('count DESC'))  # NOQA
     if board:
         basequery = basequery.join(BoardJobPost).filter(BoardJobPost.board == board)
 
