@@ -15,8 +15,8 @@ class Location(BaseScopedNameMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=False)
     geonameid = db.synonym('id')
     board_id = db.Column(None, db.ForeignKey('board.id'), nullable=False, primary_key=True, index=True)
-    parent = db.synonym('board_id')
     board = db.relationship(Board, backref=db.backref('locations', lazy='dynamic', cascade='all, delete-orphan'))
+    parent = db.synonym('board')
 
     #: Landing page description
     description = db.Column(db.UnicodeText, nullable=True)
