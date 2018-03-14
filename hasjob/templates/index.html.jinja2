@@ -181,7 +181,7 @@
   {%- if not paginated -%}
     {% from "macros.html.jinja2" import filters_setup_script %}
     {%- if request.is_xhr -%}
-      {{ filters_setup_script(job_filters) }}
+      {{ filters_setup_script(job_filters, data_filters) }}
       <script type="text/javascript">
         // This is a temporary fix that is needed until browsers start recognizing the 'title'
         // parameter for pushState and replaceState
