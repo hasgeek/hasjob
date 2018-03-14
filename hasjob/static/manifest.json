@@ -1,20 +1,17 @@
 {
   "name": "Hasjob",
-  "short_name": "hasjob",
-  "display": "standalone",
+  "short_name": "Hasjob",
+  "description": "Hasjob is India’s premier job board for tech startups",
   "start_url": "/?utm_source=homescreen",
+  "scope":"/",
   "theme_color": "#816894",
   "background_color": "#FFFFFF",
-  "description": "Hasjob is India’s premier job board for tech startups",
+  "display": "standalone",
+  "orientation": "portrait",
   "icons": [
     {
-      "src": "/static/img/icons/android-chrome-192x192.png",
+      "src": "/static/img/hasjob-logo.svg",
       "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "/static/img/icons/android-chrome-512x512.png",
-      "sizes": "512x512",
       "type": "image/png"
     }
   ]

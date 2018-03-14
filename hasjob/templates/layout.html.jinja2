@@ -25,16 +25,17 @@
 
 {%- block layoutheaders %}
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#4DBA87">
+  <meta name="theme-color" content="#816894">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="apple-mobile-web-app-title" content="js">
-  <link rel="apple-touch-icon" href="/static/img/icons/apple-touch-icon-152x152.png">
-  <link rel="mask-icon" href="/static/img/icons/safari-pinned-tab.svg" color="#4DBA87">
-  <meta name="msapplication-TileImage" content="/static/img/icons/msapplication-icon-144x144.png">
-  <meta name="msapplication-TileColor" content="#000000">
-  <link rel="stylesheet" type="text/css" href='{{ asset_path('vendor-css') | safe }}' />
-  <link rel="stylesheet" type="text/css" href='{{ asset_path('app-css') | safe }}' />
+  <link rel="icon" sizes="192x192" href="/static/img/hasjob-logo.svg">
+  <link rel="apple-touch-icon" href="/static/img/hasjob-logo.svg">
+  <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/static/img/hasjob-logo.svg">
+
+  <link rel="stylesheet" type="text/css" href='{{ asset_path('app-css') }}' />
   <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Fira+Sans:400,400i,700,700i|McLaren&amp;subset=latin-ext">
   {#
   <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=McLaren" />
@@ -73,11 +74,11 @@
   <header>
   {% macro site_title() %}
     <div class="page-header test">
-      <h1><a href="{{ url_for('index') }}">
+      <h1><a href="{{ url_for('index') }}"><img src="{{ url_for('static', filename='img/hasjob-logo.svg', _external=true) }}" class='hasjob-logo' alt="hasjob">
       {%- if g.board -%}
-        <img src="{{ url_for('static', filename='img/hasjob-logo.png', _external=true) }}" class="hasjob-logo"/><span class="board-title">{{ g.board.title }}</span> <small class="board-caption">{%- if g.board.caption -%} {{ g.board.caption }} {%- else -%} Powered by Hasjob {%- endif -%}</small>
+        <span class="board-title">{{ g.board.title }}</span> <small class="board-caption">{%- if g.board.caption -%} {{ g.board.caption }} {%- else -%} Powered by Hasjob {%- endif -%}</small>
       {%- else -%}
-        <img src="{{ url_for('static', filename='img/hasjob-logo.png', _external=true) }}" class='hasjob-logo'><span class="board-title">Hasjob</span> <small>The HasGeek Job Board</small>
+        <span class="board-title">Hasjob</span> <small>The HasGeek Job Board</small>
       {%- endif -%}
       </a></h1>
     </div>
@@ -244,9 +245,9 @@
 
 {% block layoutscripts %}
   {%- if header_campaign %}{{ campaign_script() }}{% endif %}
-  <script src='{{ asset_path('manifest') | safe }}' type="text/javascript"></script>
-  <script src='{{ asset_path('vendor') | safe }}' type="text/javascript"></script>
-  <script src='{{ asset_path('app') | safe }}' type="text/javascript"></script>
+  <script src='{{ asset_path('manifest') }}' type="text/javascript"></script>
+  <script src='{{ asset_path('app') }}' type="text/javascript"></script>
+  <script src='{{ asset_path('vendor') }}' type="text/javascript"></script>
   <script type="text/javascript">
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/service-worker.js')

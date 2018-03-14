@@ -12,7 +12,7 @@
   </div>
 {% endblock %}
 
-{% block tablelayoutscripts %}
+{% block footerscripts %}
   <script type="text/javascript">
   {%- for period, divid, format in (('day', 'chart1', '%Hh'), ('week', 'chart2', '%a %d')) %}
     c3.generate({

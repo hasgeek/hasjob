@@ -26,9 +26,5 @@
 
 {% block layoutscripts %}
   {{ super() }}
-  {% block formlayoutscripts %}
   {% assets "js_tinymce" %}<script src="{{ ASSET_URL }}" type="text/javascript"></script>{% endassets %}
-    {% block footerscripts %}
-    {% endblock %}
-  {% endblock %}
 {% endblock %}
