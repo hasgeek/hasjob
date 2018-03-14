@@ -1,1 +1,0 @@
-import '../sass/app.sass';

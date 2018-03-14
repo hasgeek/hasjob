@@ -22,33 +22,33 @@
     </div>
 {% endblock %}
 {% block footerscripts %}
-  <script type="text/javascript" src="{{ url_for('static', filename='js/libs/jquery.flot.min.js') }}"></script>
-  <script type="text/javascript">
-    $(function () {
+<script type="text/javascript" src="{{ url_for('static', filename='js/libs/jquery.flot.min.js') }}"></script>
+<script type="text/javascript">
+  $(function () {
 
-      var onPostsByDate = function (source) {
-        $.plot($("#posts-by-date"), source.data, source.options);
-      };
+    var onPostsByDate = function (source) {
+      $.plot($("#posts-by-date"), source.data, source.options);
+    };
 
-      $.ajax({
-        url: '{{url_for("stats_posts_by_date") }}',
-        method: 'GET',
-        dataType: 'json',
-        success: onPostsByDate
-      });
-
-      var onPostsByType = function (source) {
-        console.log(source.data);
-        $.plot($("#posts-by-type"), source.data, source.options);
-      };
-
-      $.ajax({
-        url: '{{url_for("stats_posts_by_type") }}',
-        method: 'GET',
-        dataType: 'json',
-        success: onPostsByType
-      });
-
+    $.ajax({
+      url: '{{url_for("stats_posts_by_date") }}',
+      method: 'GET',
+      dataType: 'json',
+      success: onPostsByDate
     });
-  </script>
+
+    var onPostsByType = function (source) {
+      console.log(source.data);
+      $.plot($("#posts-by-type"), source.data, source.options);
+    };
+
+    $.ajax({
+      url: '{{url_for("stats_posts_by_type") }}',
+      method: 'GET',
+      dataType: 'json',
+      success: onPostsByType
+    });
+
+  });
+</script>
 {% endblock %}
