@@ -52,7 +52,7 @@ class FilteredView(BaseNameMixin, db.Model):
     tags = db.relationship(Tag, secondary=filteredview_tag_table)
     domains = db.relationship(Domain, secondary=filteredview_domain_table)
     location_names = db.Column(postgresql.ARRAY(db.Unicode(), dimensions=1), nullable=True)
-    # locations = db.relationship(JobLocation, secondary=filteredview_joblocation_table)
+    remote_location = db.Column(db.Boolean, default=False, nullable=False)
 
     pay_currency = db.Column(db.CHAR(3), nullable=True)
     pay_cash_min = db.Column(db.Integer, nullable=True)

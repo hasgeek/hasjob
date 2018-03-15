@@ -114,6 +114,8 @@ def fetch_jobposts(request_args, request_values, filters, is_index, board, board
         r_locations.append(location['geonameid'])
     f_locations = []
     remote_location = getbool(filters.get('anywhere') or request_args.get('anywhere')) or False
+    if remote_location:
+        data_filters['location_names'].append('anywhere')
     for rl in r_locations:
         if isinstance(rl, int) and rl > 0:
             f_locations.append(rl)
@@ -142,6 +144,7 @@ def fetch_jobposts(request_args, request_values, filters, is_index, board, board
         data_filters['anywhere'] = True
         # Only works as a positive filter: you can't search for jobs that are NOT anywhere
         basequery = remote_location_query
+
     currency = filters.get('currency') or request_args.get('currency')
     if currency in CURRENCY.keys():
         data_filters['currency'] = currency
@@ -541,17 +544,18 @@ def browse_tags():
     return render_template('tags.html.jinja2', tags=gettags(alltime=getbool(request.args.get('all'))))
 
 
-@app.route('/f/<name>', subdomain='<subdomain>')
-@app.route('/f/<name>')
+@app.route('/f/<name>', subdomain='<subdomain>', methods=['GET', 'POST'])
+@app.route('/f/<name>', methods=['GET', 'POST'])
 def filtered_view(name):
-    filtered_view = FilteredView.query.filter_by(name=name).one()
+    filtered_view = FilteredView.query.filter_by(name=name).first_or_404()
     filters = {
         't': [jobtype.name for jobtype in filtered_view.types],
         'c': [jobcategory.name for jobcategory in filtered_view.categories],
         'l': filtered_view.location_names,
         'currency': filtered_view.pay_currency,
         'pay': filtered_view.pay_cash_min,
-        'equity': filtered_view.equity
+        'equity': filtered_view.equity,
+        'anywhere': filtered_view.remote_location
     }
     return index(filters=filters, query_string=filtered_view.keywords, filtered_view=filtered_view)
 

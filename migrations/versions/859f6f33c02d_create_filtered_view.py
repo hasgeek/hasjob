@@ -24,6 +24,7 @@ def upgrade():
         sa.Column('pay_currency', sa.CHAR(length=3), nullable=True),
         sa.Column('pay_cash_min', sa.Integer(), nullable=True),
         sa.Column('equity', sa.Boolean(), nullable=False),
+        sa.Column('remote_location', sa.Boolean(), nullable=False),
         sa.Column('keywords', sa.UnicodeText(), nullable=False),
         sa.Column('location_names', postgresql.ARRAY(sa.Unicode(), dimensions=1), nullable=True),
         sa.Column('name', sa.Unicode(length=250), nullable=False),

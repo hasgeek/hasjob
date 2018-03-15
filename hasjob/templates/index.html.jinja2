@@ -174,7 +174,11 @@
     $(function(){
       var loadmore = {{loadmore | tojson}};
       var paginated = {{paginated | tojson}};
+      {%- if filtered_view %}
+      var loadmoreURL = "{{filtered_view.url_for('view', **query_params) | safe}}";
+      {%- else %}
       var loadmoreURL = "{{url_for('index', **query_params) | safe}}";
+      {%- endif %}
       if (loadmore){
         window.Hasjob.StickieList.loadmore({
           url: loadmoreURL,
