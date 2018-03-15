@@ -10,7 +10,7 @@ from coaster.views import render_with
 from baseframe import _  # , dogpile
 
 from .. import app, lastuser
-from ..models import (db, JobCategory, JobPost, JobType, POSTSTATUS, newlimit, agelimit, JobLocation, Board,
+from ..models import (db, JobCategory, JobPost, JobType, POST_STATE, newlimit, agelimit, JobLocation, Board,
     Domain, Location, Tag, JobPostTag, Campaign, CAMPAIGN_POSITION, CURRENCY, JobApplication, starred_job_table, BoardJobPost)
 from ..views.helper import (getposts, getallposts, gettags, location_geodata, load_viewcounts, session_jobpost_ab,
     bgroup, make_pay_graph, index_is_paginated, get_post_viewcounts)
@@ -90,7 +90,7 @@ def json_index(data):
     return jsonify(result)
 
 
-def fetch_jobposts(request_args, request_values, is_index, board, board_jobs, gkiosk, basequery, md5sum, domain, location, title, showall, statuses, batched, ageless, template_vars, search_query=None, query_string=None):
+def fetch_jobposts(request_args, request_values, is_index, board, board_jobs, gkiosk, basequery, md5sum, domain, location, title, showall, statusfilter, batched, ageless, template_vars, search_query=None, query_string=None):
     if basequery is None:
         basequery = JobPost.query
 
@@ -132,7 +132,7 @@ def fetch_jobposts(request_args, request_values, is_index, board, board_jobs, gk
     if f_locations and remote_location:
         data_filters['locations'] = f_locations
         data_filters['anywhere'] = True
-        recency = JobPost.datetime > datetime.utcnow() - agelimit
+        recency = JobPost.state.LISTED
         basequery = locations_query.filter(recency).union(remote_location_query.filter(recency))
     elif f_locations:
         data_filters['locations'] = f_locations
@@ -177,7 +177,7 @@ def fetch_jobposts(request_args, request_values, is_index, board, board_jobs, gk
     if getbool(request_args.get('archive')):
         ageless = True
         data_filters['archive'] = True
-        statuses = POSTSTATUS.ARCHIVED
+        statusfilter = JobPost.state.ARCHIVED
 
     if query_string:
         data_filters['query'] = search_query
@@ -188,7 +188,7 @@ def fetch_jobposts(request_args, request_values, is_index, board, board_jobs, gk
         showall = True
         batched = True
 
-    posts = getposts(basequery, pinned=True, showall=showall, statuses=statuses, ageless=ageless).all()
+    posts = getposts(basequery, pinned=True, showall=showall, statusfilter=statusfilter, ageless=ageless).all()
 
     if posts:
         employer_name = posts[0].company_name
@@ -209,7 +209,7 @@ def fetch_jobposts(request_args, request_values, is_index, board, board_jobs, gk
                 # Make pinned posts appear in a group of one
                 grouped.setdefault(('s', post.hashid), []).append(
                     (pinned, post, bgroup(jobpost_ab, post)))
-            elif post.status == POSTSTATUS.ANNOUNCEMENT:
+            elif post.state.ANNOUNCEMENT:
                 # Make announcements also appear in a group of one
                 grouped.setdefault(('a', post.hashid), []).append(
                     (pinned, post, bgroup(jobpost_ab, post)))
@@ -318,14 +318,14 @@ def fetch_jobposts(request_args, request_values, is_index, board, board_jobs, gk
 
 
 # @dogpile.region('hasjob_index')
-def fetch_cached_jobposts(request_args, request_values, is_index, board, board_jobs, gkiosk, basequery, md5sum, domain, location, title, showall, statuses, batched, ageless, template_vars, search_query=None, query_string=None):
-    return fetch_jobposts(request_args, request_values, is_index, board, board_jobs, gkiosk, basequery, md5sum, domain, location, title, showall, statuses, batched, ageless, template_vars, search_query, query_string)
+def fetch_cached_jobposts(request_args, request_values, is_index, board, board_jobs, gkiosk, basequery, md5sum, domain, location, title, showall, statusfilter, batched, ageless, template_vars, search_query=None, query_string=None):
+    return fetch_jobposts(request_args, request_values, is_index, board, board_jobs, gkiosk, basequery, md5sum, domain, location, title, showall, statusfilter, batched, ageless, template_vars, search_query, query_string)
 
 
 @app.route('/', methods=['GET', 'POST'], subdomain='<subdomain>')
 @app.route('/', methods=['GET', 'POST'])
 @render_with({'text/html': 'index.html.jinja2', 'application/json': json_index}, json=False)
-def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, title=None, showall=True, statuses=None, batched=True, ageless=False, cached=False, query_string=None, template_vars={}):
+def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, title=None, showall=True, statusfilter=None, batched=True, ageless=False, cached=False, query_string=None, template_vars={}):
     now = datetime.utcnow()
     is_siteadmin = lastuser.has_permission('siteadmin')
     board = g.board
@@ -333,7 +333,7 @@ def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, tit
     if board:
         board_jobs = {r.jobpost_id: r for r in
             BoardJobPost.query.join(BoardJobPost.jobpost).filter(
-                BoardJobPost.board == g.board, JobPost.datetime > now - agelimit).options(
+                BoardJobPost.board == g.board, JobPost.state.LISTED).options(
                     db.load_only('jobpost_id', 'pinned')).all()
         }
 
@@ -367,9 +367,9 @@ def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, tit
         search_query = None
 
     if cached:
-        data = fetch_cached_jobposts(request.args, request.values, is_index, board, board_jobs, g.kiosk, basequery, md5sum, domain, location, title, showall, statuses, batched, ageless, template_vars, search_query, query_string)
+        data = fetch_cached_jobposts(request.args, request.values, is_index, board, board_jobs, g.kiosk, basequery, md5sum, domain, location, title, showall, statusfilter, batched, ageless, template_vars, search_query, query_string)
     else:
-        data = fetch_jobposts(request.args, request.values, is_index, board, board_jobs, g.kiosk, basequery, md5sum, domain, location, title, showall, statuses, batched, ageless, template_vars, search_query, query_string)
+        data = fetch_jobposts(request.args, request.values, is_index, board, board_jobs, g.kiosk, basequery, md5sum, domain, location, title, showall, statusfilter, batched, ageless, template_vars, search_query, query_string)
 
     if data['data_filters']:
         # For logging
@@ -429,7 +429,7 @@ def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, tit
 @lastuser.requires_login
 def browse_drafts():
     basequery = JobPost.query.filter_by(user=g.user)
-    return index(basequery=basequery, ageless=True, statuses=[POSTSTATUS.DRAFT, POSTSTATUS.PENDING], cached=False)
+    return index(basequery=basequery, ageless=True, statusfilter=JobPost.state.UNPUBLISHED, cached=False)
 
 
 @app.route('/my', methods=['GET', 'POST'], subdomain='<subdomain>')
@@ -437,7 +437,7 @@ def browse_drafts():
 @lastuser.requires_login
 def my_posts():
     basequery = JobPost.query.filter_by(user=g.user)
-    return index(basequery=basequery, ageless=True, statuses=POSTSTATUS.MY, cached=False)
+    return index(basequery=basequery, ageless=True, statusfilter=JobPost.state.MY, cached=False)
 
 
 @app.route('/bookmarks', subdomain='<subdomain>')
@@ -445,7 +445,7 @@ def my_posts():
 @lastuser.requires_login
 def bookmarks():
     basequery = JobPost.query.join(starred_job_table).filter(starred_job_table.c.user_id == g.user.id)
-    return index(basequery=basequery, ageless=True, statuses=POSTSTATUS.ARCHIVED, cached=False)
+    return index(basequery=basequery, ageless=True, statusfilter=JobPost.state.ARCHIVED, cached=False)
 
 
 @app.route('/applied', subdomain='<subdomain>')
@@ -453,7 +453,7 @@ def bookmarks():
 @lastuser.requires_login
 def applied():
     basequery = JobPost.query.join(JobApplication).filter(JobApplication.user == g.user)
-    return index(basequery=basequery, ageless=True, statuses=POSTSTATUS.ARCHIVED, cached=False)
+    return index(basequery=basequery, ageless=True, statusfilter=JobPost.state.ARCHIVED, cached=False)
 
 
 @app.route('/type/<name>', methods=['GET', 'POST'], subdomain='<subdomain>')
@@ -768,7 +768,7 @@ def logoimage(domain, hashid):
     if not post.company_logo:
         # If there's no logo (perhaps it was deleted), don't try to show one
         abort(404)
-    if post.status in POSTSTATUS.UNACCEPTABLE:
+    if post.state.UNACCEPTABLE:
         # Don't show logo if post has been rejected. Could be spam
         abort(410)
     return redirect(uploaded_logos.url(post.company_logo))

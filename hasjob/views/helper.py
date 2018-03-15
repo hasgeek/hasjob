@@ -20,7 +20,7 @@ from baseframe import _, cache, get_timezone
 from baseframe.signals import form_validation_error, form_validation_success
 
 from .. import app, redis_store, lastuser
-from ..models import (agelimit, newlimit, db, JobCategory, JobPost, JobType, POSTSTATUS, BoardJobPost, Tag, JobPostTag,
+from ..models import (agelimit, newlimit, db, JobCategory, JobPost, JobType, POST_STATE, BoardJobPost, Tag, JobPostTag,
     Campaign, CampaignView, CampaignAnonView, EventSessionBase, EventSession, UserEventBase, UserEvent, JobImpression,
     JobViewSession, AnonUser, campaign_event_session_table, JobLocation, PAY_TYPE)
 from ..utils import scrubemail, redactemail, cointoss
@@ -394,39 +394,38 @@ def load_viewcounts(posts):
     g.viewcounts = dict(zip(viewcounts_keys, viewcounts_values))
 
 
-def getposts(basequery=None, pinned=False, showall=False, statuses=None, ageless=False, limit=2000, order=True):
+def getposts(basequery=None, pinned=False, showall=False, statusfilter=None, ageless=False, limit=2000, order=True):
     if ageless:
         pinned = False  # No pinning when browsing archives
-    if not statuses:
-        statuses = POSTSTATUS.LISTED
+
+    if statusfilter is None:
+        statusfilter = JobPost.state.PUBLIC
 
     if basequery is None:
         basequery = JobPost.query
 
-    query = basequery.filter(JobPost.status.in_(statuses)).options(*JobPost._defercols).options(db.joinedload('domain'))
-
-    now = datetime.utcnow()
+    query = basequery.filter(statusfilter).options(*JobPost._defercols).options(db.joinedload('domain'))
 
     if g.board:
         query = query.join(JobPost.postboards).filter(BoardJobPost.board == g.board)
 
     if not ageless:
         if showall:
-            query = query.filter(JobPost.datetime > datetime.utcnow() - agelimit)
+            query = query.filter(JobPost.state.LISTED)
         else:
             if pinned:
                 if g.board:
                     query = query.filter(
                         db.or_(
-                            db.and_(BoardJobPost.pinned == True, JobPost.datetime > now - agelimit),
-                            db.and_(BoardJobPost.pinned == False, JobPost.datetime > now - newlimit)))  # NOQA
+                            db.and_(BoardJobPost.pinned == True, JobPost.state.LISTED),
+                            db.and_(BoardJobPost.pinned == False, JobPost.state.NEW)))  # NOQA
                 else:
                     query = query.filter(
                         db.or_(
-                            db.and_(JobPost.pinned == True, JobPost.datetime > now - agelimit),
-                            db.and_(JobPost.pinned == False, JobPost.datetime > now - newlimit)))  # NOQA
+                            db.and_(JobPost.pinned == True, JobPost.state.LISTED),
+                            db.and_(JobPost.pinned == False, JobPost.state.NEW)))  # NOQA
             else:
-                query = query.filter(JobPost.datetime > datetime.utcnow() - newlimit)
+                query = query.filter(JobPost.state.NEW)
 
     if pinned:
         if g.board:
@@ -442,7 +441,7 @@ def getposts(basequery=None, pinned=False, showall=False, statuses=None, ageless
 def getallposts(order_by=None, desc=False, start=None, limit=None):
     if order_by is None:
         order_by = JobPost.datetime
-    filt = JobPost.query.filter(JobPost.status.in_(POSTSTATUS.LISTED))
+    filt = JobPost.query.filter(JobPost.state.PUBLIC)
     count = filt.count()
     if desc:
         filt = filt.order_by(db.desc(order_by))
@@ -456,12 +455,14 @@ def getallposts(order_by=None, desc=False, start=None, limit=None):
 
 
 def gettags(alltime=False):
-    query = db.session.query(Tag.name.label('name'), Tag.title.label('title'), Tag.public.label('public'),
-        db.func.count(Tag.id).label('count')).join(JobPostTag).join(JobPost).filter(
-        JobPost.status.in_(POSTSTATUS.LISTED)).filter(Tag.public == True
+    query = db.session.query(
+            Tag.name.label('name'), Tag.title.label('title'), Tag.public.label('public'),
+            db.func.count(Tag.id).label('count')
+        ).join(JobPostTag).join(JobPost).filter(
+            JobPost.state.PUBLIC, Tag.public == True
         ).group_by(Tag.id).order_by(db.text('count DESC'))  # NOQA
     if not alltime:
-        query = query.filter(JobPost.datetime > datetime.utcnow() - agelimit)
+        query = query.filter(JobPost.state.LISTED)
     if g.board:
         query = query.join(JobPost.postboards).filter(BoardJobPost.board == g.board)
     return query.all()
@@ -806,10 +807,11 @@ def filter_basequery(basequery, filters, exclude_list=[]):
 
 
 def filter_locations(board, filters):
-    now = datetime.utcnow()
-    basequery = db.session.query(JobLocation.geonameid, db.func.count(JobLocation.geonameid).label('count')
-        ).join(JobPost).filter(JobPost.status.in_(POSTSTATUS.LISTED), JobPost.datetime > now - agelimit,
-        JobLocation.primary == True).group_by(JobLocation.geonameid).order_by(db.text('count DESC'))  # NOQA
+    basequery = db.session.query(
+            JobLocation.geonameid, db.func.count(JobLocation.geonameid).label('count')
+        ).join(JobPost).filter(
+            JobPost.state.LISTED, JobLocation.primary == True
+        ).group_by(JobLocation.geonameid).order_by(db.text('count DESC'))  # NOQA
     if board:
         basequery = basequery.join(BoardJobPost).filter(BoardJobPost.board == board)
 
