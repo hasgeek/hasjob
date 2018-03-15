@@ -276,12 +276,6 @@ class JobPost(BaseMixin, db.Model):
         self.review_comments = reason
         self.reviewer = user
 
-    def status_label(self):
-        if self.state.NEW:
-            return self.state.NEW.label.title
-        elif self.state.UNPUBLISHED:
-            return self.state.label.title
-
     def url_for(self, action='view', _external=False, **kwargs):
         if self.state.UNPUBLISHED and action in ('view', 'edit'):
             domain = None
