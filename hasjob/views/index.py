@@ -329,7 +329,6 @@ def fetch_cached_jobposts(request_args, request_values, filters, is_index, board
 @app.route('/', methods=['GET', 'POST'], subdomain='<subdomain>')
 @app.route('/', methods=['GET', 'POST'])
 @render_with({'text/html': 'index.html.jinja2', 'application/json': json_index}, json=False)
-=======
 def index(basequery=None, filters={}, md5sum=None, tag=None, domain=None, location=None, title=None, showall=True, statusfilter=None, batched=True, ageless=False, cached=False, query_string=None, filtered_view=None, template_vars={}):
     now = datetime.utcnow()
     is_siteadmin = lastuser.has_permission('siteadmin')
