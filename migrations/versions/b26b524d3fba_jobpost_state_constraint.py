@@ -1,7 +1,7 @@
 """jobpost state constraint
 
 Revision ID: b26b524d3fba
-Revises: a55bb6a85c83
+Revises: 8a37fe07ef9d
 Create Date: 2018-02-21 22:34:38.051604
 
 """
