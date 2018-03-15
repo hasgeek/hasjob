@@ -10,8 +10,8 @@ from coaster.views import render_with
 from baseframe import _  # , dogpile
 
 from .. import app, lastuser
-from ..models import (db, JobCategory, JobPost, JobType, POSTSTATUS, newlimit, agelimit, JobLocation, Board, FilteredView,
-    Domain, Location, Tag, JobPostTag, Campaign, CAMPAIGN_POSITION, CURRENCY, JobApplication, starred_job_table, BoardJobPost)
+from ..models import (db, JobCategory, JobPost, JobType, POSTSTATUS, newlimit, agelimit, JobLocation, Board,
+    Domain, Location, Tag, JobPostTag, Campaign, CAMPAIGN_POSITION, CURRENCY, JobApplication, starred_job_table, BoardJobPost, FilteredView)
 from ..views.helper import (getposts, getallposts, gettags, location_geodata, load_viewcounts, session_jobpost_ab,
     bgroup, make_pay_graph, index_is_paginated, get_post_viewcounts)
 from ..uploads import uploaded_logos
