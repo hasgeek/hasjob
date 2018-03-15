@@ -4,6 +4,8 @@ from flask import url_for
 from sqlalchemy.dialects import postgresql
 from . import db, BaseNameMixin, JobType, JobCategory, JobLocation, Tag, Domain, User
 
+__all__ = ['FilteredView']
+
 
 filteredview_jobtype_table = db.Table('filteredview_jobtype_table', db.Model.metadata,
     db.Column('filtered_view_id', None, db.ForeignKey('filtered_view.id'), primary_key=True),
