@@ -233,7 +233,7 @@ class JobPost(BaseMixin, db.Model):
     state.add_conditional_state('LISTED', state.PUBLIC, lambda jobpost: jobpost.datetime >= datetime.utcnow() - agelimit, label=('listed', __("Listed")))
     state.add_conditional_state('CONFIRMABLE', state.UNPUBLISHED, lambda jobpost: jobpost.current_permissions.edit, label=('confirmable', __("Confirmable")))
 
-    @state.transition(state.UNPUBLISHED, state.WITHDRAWN, title=__("Withdraw"), message=__("This job post has been withdrawn"), type='danger')
+    @state.transition(state.PUBLIC, state.WITHDRAWN, title=__("Withdraw"), message=__("This job post has been withdrawn"), type='danger')
     def withdraw(self):
         self.closed_datetime = db.func.utcnow()
 
