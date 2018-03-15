@@ -234,7 +234,7 @@ def revealjob(domain, hashid):
     """
     Reveal job application form
     """
-    post = JobPost.query.filter_by(hashid=hashid).options(db.load_only('id', 'status', 'how_to_apply')).first_or_404()
+    post = JobPost.query.filter_by(hashid=hashid).options(db.load_only('id', '_state', 'how_to_apply')).first_or_404()
     if post.state.GONE:
         abort(410)
     jobview = UserJobView.query.get((post.id, g.user.id))
