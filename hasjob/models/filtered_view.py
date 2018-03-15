@@ -39,9 +39,6 @@ class FilteredView(BaseNameMixin, db.Model):
 
     __tablename__ = 'filtered_view'
 
-    #: Lastuser organization userid that created this
-    # userid = db.Column(db.Unicode(22), nullable=False, index=True)
-    # user = db.relationship(User)
     user_id = db.Column(None, db.ForeignKey('user.id'), primary_key=True, index=True)
     user = db.relationship(User)
 
