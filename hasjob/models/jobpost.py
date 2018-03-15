@@ -229,9 +229,13 @@ class JobPost(BaseMixin, db.Model):
     def after_expiry_date(self):
         return self.expiry_date + timedelta(days=1)
 
+    # NEW = Posted within last 24 hours
     state.add_conditional_state('NEW', state.PUBLIC, lambda jobpost: jobpost.datetime >= datetime.utcnow() - newlimit, label=('new', __("New")))
+    # LISTED = Posted within last 30 days
     state.add_conditional_state('LISTED', state.PUBLIC, lambda jobpost: jobpost.datetime >= datetime.utcnow() - agelimit, label=('listed', __("Listed")))
+    # OLD = Posted more than 30 days ago
     state.add_conditional_state('OLD', state.PUBLIC, lambda jobpost: not jobpost.state.LISTED, label=('old', __("Old")))
+    # Checks if current user has the permission to confirm the jobpost
     state.add_conditional_state('CONFIRMABLE', state.UNPUBLISHED, lambda jobpost: jobpost.current_permissions.edit, label=('confirmable', __("Confirmable")))
 
     @state.transition(state.PUBLIC, state.WITHDRAWN, title=__("Withdraw"), message=__("This job post has been withdrawn"), type='danger')
