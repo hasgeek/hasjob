@@ -231,6 +231,7 @@ class JobPost(BaseMixin, db.Model):
 
     state.add_conditional_state('NEW', state.PUBLIC, lambda jobpost: jobpost.datetime >= datetime.utcnow() - newlimit, label=('new', __("New")))
     state.add_conditional_state('LISTED', state.PUBLIC, lambda jobpost: jobpost.datetime >= datetime.utcnow() - agelimit, label=('listed', __("Listed")))
+    state.add_conditional_state('OLD', state.PUBLIC, lambda jobpost: not jobpost.state.LISTED, label=('old', __("Old")))
     state.add_conditional_state('CONFIRMABLE', state.UNPUBLISHED, lambda jobpost: jobpost.current_permissions.edit, label=('confirmable', __("Confirmable")))
 
     @state.transition(state.PUBLIC, state.WITHDRAWN, title=__("Withdraw"), message=__("This job post has been withdrawn"), type='danger')
