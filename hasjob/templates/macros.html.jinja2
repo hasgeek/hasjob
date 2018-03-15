@@ -26,9 +26,11 @@
       {%- if starred is not none %}
         <span class="pstar"><i class="fa fa-star{% if not starred %}-o{% endif %}" data-id="{{ post.hashid }}"></i></span>
       {%- endif %}
-      {%- if post.state.NEW or post.state.UNPUBLISHED %}
-        <span class="new">{{ post.state.label.title }}</span>
-      {%- endif %}
+      {%- with status_label = post.status_label() -%}
+        {%- if status_label -%}
+          <span class="new">{{ status_label }}</span>
+        {%- endif -%}
+      {%- endwith -%}
     </span>
   {%- if groupedunder %}
     </div>
