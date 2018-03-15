@@ -230,7 +230,7 @@ class JobPost(BaseMixin, db.Model):
         return self.expiry_date + timedelta(days=1)
 
     # NEW = Posted within last 24 hours
-    state.add_conditional_state('NEW', state.PUBLIC, lambda jobpost: jobpost.datetime >= datetime.utcnow() - newlimit, label=('new', __("New")))
+    state.add_conditional_state('NEW', state.PUBLIC, lambda jobpost: jobpost.datetime >= datetime.utcnow() - newlimit, label=('new', __("New!")))
     # LISTED = Posted within last 30 days
     state.add_conditional_state('LISTED', state.PUBLIC, lambda jobpost: jobpost.datetime >= datetime.utcnow() - agelimit, label=('listed', __("Listed")))
     # OLD = Posted more than 30 days ago
