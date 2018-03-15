@@ -168,7 +168,7 @@
                 </a>
               {%- endif %}
             {%- endif %}
-            {%- if is_siteadmin %}
+            {%- if is_siteadmin and post.state.PUBLIC %}
               <div class="list-group-item">
                 <a class="popup" href="#reject">
                   <i class="fa fa-fw fa-trash-o"></i>&nbsp;&nbsp; Reject this
