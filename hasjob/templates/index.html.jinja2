@@ -67,7 +67,7 @@
     {%- if filtered_view and filtered_view.description and not paginated %}
       <div class="flash info">
         <h2>{{ filtered_view.title }}</h2>
-        {{ filtered_view.description }}
+        {{ filtered_view.description | safe }}
       </div>
     {%- endif %}
     {%- if location and location.use_title and location.description and not paginated %}

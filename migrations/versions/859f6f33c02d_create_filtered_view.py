@@ -19,21 +19,25 @@ def upgrade():
     op.create_table('filtered_view',
         sa.Column('created_at', sa.DateTime(), nullable=False),
         sa.Column('updated_at', sa.DateTime(), nullable=False),
-        sa.Column('user_id', sa.Integer(), nullable=False),
+        sa.Column('board_id', sa.Integer(), nullable=False),
         sa.Column('description', sa.UnicodeText(), nullable=False),
         sa.Column('pay_currency', sa.CHAR(length=3), nullable=True),
         sa.Column('pay_cash_min', sa.Integer(), nullable=True),
         sa.Column('equity', sa.Boolean(), nullable=False),
         sa.Column('remote_location', sa.Boolean(), nullable=False),
         sa.Column('keywords', sa.UnicodeText(), nullable=False),
-        sa.Column('location_names', postgresql.ARRAY(sa.Unicode(), dimensions=1), nullable=True),
+        sa.Column('location_geonameids', postgresql.ARRAY(sa.Integer(), dimensions=1), nullable=True),
         sa.Column('name', sa.Unicode(length=250), nullable=False),
         sa.Column('title', sa.Unicode(length=250), nullable=False),
         sa.Column('id', sa.Integer(), nullable=False),
         sa.PrimaryKeyConstraint('id'),
-        sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
+        sa.ForeignKeyConstraint(['board_id'], ['board.id'], ),
         sa.UniqueConstraint('name')
     )
+
+    op.execute(sa.DDL('''
+        CREATE INDEX idx_filtered_view_location_geonameids on filtered_view USING gin (location_geonameids);
+    '''))
 
     op.create_table('filteredview_jobcategory_table',
         sa.Column('filtered_view_id', sa.Integer(), nullable=False),
@@ -77,4 +81,5 @@ def downgrade():
     op.drop_table('filteredview_tag_table')
     op.drop_table('filteredview_jobtype_table')
     op.drop_table('filteredview_jobcategory_table')
+    op.drop_index('idx_filtered_view_location_geonameids', 'filtered_view')
     op.drop_table('filtered_view')

@@ -2,7 +2,7 @@
 
 from flask import url_for
 from sqlalchemy.dialects import postgresql
-from . import db, BaseNameMixin, JobType, JobCategory, JobLocation, Tag, Domain, User
+from . import db, BaseScopedNameMixin, JobType, JobCategory, Tag, Domain, Board
 
 __all__ = ['FilteredView']
 
@@ -34,15 +34,18 @@ filteredview_domain_table = db.Table('filteredview_domain_table', db.Model.metad
 )
 
 
-class FilteredView(BaseNameMixin, db.Model):
+class FilteredView(BaseScopedNameMixin, db.Model):
     """
-    Filtered views show a filtered set of jobs at SEO friendly URLs configured by an audience manager.
+    Store filters to display a filtered set of jobs scoped by a board on SEO friendly URLs
+
+    Eg: `https://hasjob.co/f/machine-learning-jobs-in-bangalore`
     """
 
     __tablename__ = 'filtered_view'
 
-    user_id = db.Column(None, db.ForeignKey('user.id'), primary_key=True, index=True)
-    user = db.relationship(User)
+    board_id = db.Column(None, db.ForeignKey('board.id'), primary_key=True, index=True)
+    board = db.relationship(Board)
+    parent = db.synonym('board')
 
     #: Welcome text
     description = db.Column(db.UnicodeText, nullable=False, default=u'')
@@ -53,16 +56,19 @@ class FilteredView(BaseNameMixin, db.Model):
     categories = db.relationship(JobCategory, secondary=filteredview_jobcategory_table)
     tags = db.relationship(Tag, secondary=filteredview_tag_table)
     domains = db.relationship(Domain, secondary=filteredview_domain_table)
-    location_names = db.Column(postgresql.ARRAY(db.Unicode(), dimensions=1), nullable=True)
+    location_geonameids = db.Column(postgresql.ARRAY(db.Integer(), dimensions=1), nullable=True)
     remote_location = db.Column(db.Boolean, default=False, nullable=False)
-
     pay_currency = db.Column(db.CHAR(3), nullable=True)
     pay_cash_min = db.Column(db.Integer, nullable=True)
     equity = db.Column(db.Boolean, nullable=False, default=False)
     keywords = db.Column(db.UnicodeText, nullable=False, default=u'')
 
     def __repr__(self):
-        return '<Filtered view %s "%s">' % (self.name, self.title)
+        return '<Filtered view %s "%s">' % (self.board.title, self.title)
+
+    @classmethod
+    def get(cls, board, name):
+        return cls.query.filter(cls.board == board, cls.name == name).first_or_404()
 
     def url_for(self, action='view', **kwargs):
         if action == 'view':
