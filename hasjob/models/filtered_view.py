@@ -97,7 +97,6 @@ class FilteredView(BaseScopedNameMixin, db.Model):
 
     @classmethod
     def from_filters(cls, board, filters):
-        # TODO sort location_geonameids for querying?
         basequery = cls.query.filter(cls.board == board)
 
         if filters.get('t'):
