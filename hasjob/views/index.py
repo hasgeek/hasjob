@@ -108,7 +108,6 @@ def fetch_jobposts(request_args, request_values, filters, is_index, board, board
     if f_categories:
         data_filters['categories'] = f_categories
         basequery = basequery.join(JobCategory).filter(JobCategory.name.in_(f_categories))
-    # TODO this might break
     data_filters['location_names'] = r_locations = filters.get('l') or request_args.getlist('l')
     if location:
         r_locations.append(location['geonameid'])
