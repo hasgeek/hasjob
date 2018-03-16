@@ -13,24 +13,26 @@ agelimit = timedelta(days=30)
 newlimit = timedelta(days=1)
 
 
-class POSTSTATUS(LabeledEnum):
-    DRAFT =        (0,  __("Draft"))         # Being written
-    PENDING =      (1,  __("Pending"))       # Pending email verification
-    CONFIRMED =    (2,  __("Confirmed"))     # Post is now live on site
-    REVIEWED =     (3,  __("Reviewed"))      # Reviewed and cleared for push channels
-    REJECTED =     (4,  __("Rejected"))      # Reviewed and rejected as inappropriate
-    WITHDRAWN =    (5,  __("Withdrawn"))     # Withdrawn by owner
-    FLAGGED =      (6,  __("Flagged"))       # Flagged by users for review
-    SPAM =         (7,  __("Spam"))          # Marked as spam
-    MODERATED =    (8,  __("Moderated"))     # Moderated, needs edit
-    ANNOUNCEMENT = (9,  __("Announcement"))  # Special announcement
-    CLOSED =       (10, __("Closed"))        # Not accepting applications, but publicly viewable
+class POST_STATE(LabeledEnum):
+    DRAFT =        (0, 'draft',  __("Draft"))         # Being written
+    PENDING =      (1, 'pending',  __("Pending"))       # Pending email verification
+    CONFIRMED =    (2, 'confirmed',  __("Confirmed"))     # Post is now live on site
+    REVIEWED =     (3, 'reviewed',  __("Reviewed"))      # Reviewed and cleared for push channels
+    REJECTED =     (4, 'rejected',  __("Rejected"))      # Reviewed and rejected as inappropriate
+    WITHDRAWN =    (5, 'withdrawn',  __("Withdrawn"))     # Withdrawn by owner
+    FLAGGED =      (6, 'flagged',  __("Flagged"))       # Flagged by users for review
+    SPAM =         (7, 'spam',  __("Spam"))          # Marked as spam
+    MODERATED =    (8, 'moderated',  __("Moderated"))     # Moderated, needs edit
+    ANNOUNCEMENT = (9, 'announcement',  __("Announcement"))  # Special announcement
+    CLOSED =       (10, 'closed', __("Closed"))        # Not accepting applications, but publicly viewable
+
+    __order__ = (DRAFT, PENDING, CONFIRMED, REVIEWED, ANNOUNCEMENT, CLOSED, 
+                 FLAGGED, MODERATED, REJECTED, SPAM, WITHDRAWN)
 
     UNPUBLISHED = {DRAFT, PENDING}
     GONE = {REJECTED, WITHDRAWN, SPAM}
     UNACCEPTABLE = {REJECTED, SPAM}
-    LISTED = {CONFIRMED, REVIEWED, ANNOUNCEMENT}
-    POSTPENDING = {CONFIRMED, REVIEWED, REJECTED, WITHDRAWN, FLAGGED, SPAM, MODERATED, ANNOUNCEMENT, CLOSED}
+    PUBLIC = {CONFIRMED, REVIEWED, ANNOUNCEMENT, CLOSED}
     MY = {DRAFT, PENDING, CONFIRMED, REVIEWED, MODERATED, ANNOUNCEMENT, CLOSED}
     ARCHIVED = {CONFIRMED, REVIEWED, ANNOUNCEMENT, CLOSED}
 

@@ -21,7 +21,7 @@
   {%- endif %}
 {%- endblock %}
 {% block pageheaders %}
-  {%- if post.is_old() %}
+  {%- if post.state.OLD %}
     <meta name="robots" content="nofollow" />
   {%- endif %}
   {%- if can_see_post_stats %}
@@ -29,7 +29,7 @@
   {%- endif %}
 {% endblock %}
 {% block presheet %}
-  {% if post.is_unpublished() %}
+  {% if post.state.UNPUBLISHED %}
   <div class="guide">
     <div class="page-header"><h2>Review this post</h2></div>
     <p>
@@ -40,7 +40,7 @@
       <a href="{{ post.url_for('edit')|usessl }}" class="btn btn-info btn-sm">Edit again</a>
     </form>
   </div>
-  {% elif post.is_flagged() %}
+  {% elif post.state.FLAGGED %}
   <div class="guide">
     <div class="page-header"><h2>This post has been flagged for review</h2></div>
     <p>
@@ -48,14 +48,14 @@
       A review is currently pending
     </p>
   </div>
-  {% elif post.is_moderated() %}
+  {% elif post.state.MODERATED %}
   <div class="guide">
     <p>
       This post has been marked by a moderator as carrying potentially inaccurate or incomplete
       information. Please proceed with caution
     </p>
   </div>
-  {% elif post.is_old() %}
+  {% elif post.state.OLD %}
   <div class="guide">
     <p>
       This post is over 30 days old. The position may no longer be available
@@ -74,7 +74,7 @@
       {{ post.company_url_domain_zone }}
     </p>
   </div>
-  {% elif post.is_unacceptable() %}
+  {% elif post.state.UNACCEPTABLE %}
   <div class="guide">
     <p>
       Your post is not in compliance with our <a href="{{ url_for('terms_of_service') }}">Terms of Service</a> and has been taken down. Your post was reviewed by {{ post.reviewer.fullname }}, who left the following comment:</p>
@@ -124,7 +124,7 @@
             <a class="list-group-item share-popup" data-width="520" data-height="230" rel="noopener" target="_blank" href="http://www.facebook.com/sharer.php?s=100&p[url]={{ post.url_for(utm_campaign='share', utm_medium='facebook', _external=true)|urlquoteplus }}">
               <i class="fa fa-fw fa-facebook"></i>&nbsp;&nbsp; Share on Facebook
             </a>
-            {%- if not g.kiosk and not post.is_announcement() %}
+            {%- if not g.kiosk and not post.state.ANNOUNCEMENT %}
               <div class="list-group-item">
                 <a class="popup" href="#report">
                   <i class="fa fa-fw fa-flag"></i>&nbsp;&nbsp; {% if report -%} Reported {%- else -%} Report this {%- endif %}
@@ -150,11 +150,11 @@
               <a class="list-group-item" href="{{ post.url_for('edit') }}">
                 <i class="fa fa-fw fa-pencil"></i>&nbsp;&nbsp; Edit this
               </a>
-              {%- if post.is_closed() %}
+              {%- if post.state.CLOSED %}
                 <a class="list-group-item" href="{{ post.url_for('reopen') }}">
                   <i class="fa fa-fw fa-check"></i>&nbsp;&nbsp; Reopen this
                 </a>
-              {%- elif post.is_public() %}
+              {%- elif post.state.PUBLIC %}
                 <a class="list-group-item" href="{{ post.url_for('close') }}">
                   <i class="fa fa-fw fa-times"></i>&nbsp;&nbsp; Close this
                 </a>
@@ -162,13 +162,13 @@
                   <i class="fa fa-fw fa-trash-o"></i>&nbsp;&nbsp; Withdraw this
                 </a>
               {%- endif %}
-              {%- if post.is_old() %}
+              {%- if post.state.OLD %}
                 <a class="list-group-item" href="{{ url_for('newjob', template=post.hashid) }}">
                   <i class="fa fa-fw fa-refresh"></i>&nbsp;&nbsp; Repost this
                 </a>
               {%- endif %}
             {%- endif %}
-            {%- if is_siteadmin %}
+            {%- if is_siteadmin and post.state.PUBLIC %}
               <div class="list-group-item">
                 <a class="popup" href="#reject">
                   <i class="fa fa-fw fa-trash-o"></i>&nbsp;&nbsp; Reject this
@@ -218,7 +218,7 @@
               </div>
             {%- endif %}
             {%- if is_siteadmin or post.admin_is(g.user) %}
-              {%- if post.pay_type is not none and not post.is_announcement() %}
+              {%- if post.pay_type is not none and not post.state.ANNOUNCEMENT %}
                 <span class="list-group-item">
                   <i class="fa fa-fw fa-money"></i>&nbsp;&nbsp; {{ post.pay_label() }}
                 </span>
@@ -236,11 +236,11 @@
         {% endif %}</div>
       </div>
     </div>
-    {%- if post.is_closed() %}
+    {%- if post.state.CLOSED %}
       <div class="section">
         <h2>No longer accepting applications</h2>
       </div>
-    {% elif not post.is_announcement() %}
+    {% elif not post.state.ANNOUNCEMENT %}
       <div class="section" id="apply-info">
         {%- if g.kiosk %}
           <img align="right" src="//chart.googleapis.com/chart?chs=150x150&amp;cht=qr&amp;chl={{ post.url_for(subdomain=none, _external=true) }}&amp;choe=UTF-8"/>
@@ -267,7 +267,7 @@
           </p>
         {%- else %}
           <p id="apply-info-para">
-            {%- if post.is_draft() %}{# Always show when in draft state #}
+            {%- if post.state.DRAFT %}{# Always show when in draft state #}
               {{ post.how_to_apply|hideemail }}
             {%- elif g.user %}
               <a class="btn btn-primary" id="reveal-button" href="{{ post.url_for('reveal') }}">Show instructions</a> <span class="loading hidden"></span>
@@ -279,7 +279,7 @@
           </p>
         {%- endif %}
       </div>
-      {%- if not post.is_draft() and (g.user or g.kiosk) and applyform %}
+      {%- if not post.state.DRAFT and (g.user or g.kiosk) and applyform %}
         <div id="apply-section" class="section hidden">
         </div>
       {%- endif %}

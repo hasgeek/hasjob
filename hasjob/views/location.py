@@ -5,7 +5,7 @@ from datetime import datetime
 from flask import g, redirect, abort, url_for
 from baseframe import _
 from baseframe.forms import render_form, render_delete_sqla
-from ..models import db, agelimit, Location, JobLocation, JobPost, POSTSTATUS
+from ..models import db, agelimit, Location, JobLocation, JobPost, POST_STATE
 from ..forms import NewLocationForm, EditLocationForm
 from .. import app, lastuser
 from .helper import location_geodata
@@ -18,9 +18,11 @@ def location_new():
         abort(403)
     now = datetime.utcnow()
     geonames = OrderedDict([(r.geonameid, None) for r in
-        db.session.query(JobLocation.geonameid, db.func.count(JobLocation.geonameid).label('count')).join(
-            JobPost).filter(JobPost.status.in_(POSTSTATUS.LISTED), JobPost.datetime > now - agelimit,
-            ~JobLocation.geonameid.in_(db.session.query(Location.id).filter(Location.board == g.board))
+        db.session.query(
+                JobLocation.geonameid, db.func.count(JobLocation.geonameid).label('count')
+            ).join(JobPost).filter(
+                JobPost.state.LISTED,
+                ~JobLocation.geonameid.in_(db.session.query(Location.id).filter(Location.board == g.board))
             ).group_by(JobLocation.geonameid).order_by(db.text('count DESC')).limit(100)])
     data = location_geodata(geonames.keys())
     for row in data.values():
