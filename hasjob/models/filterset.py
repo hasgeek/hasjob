@@ -9,27 +9,27 @@ __all__ = ['FilterSet']
 
 
 filterset_jobtype_table = db.Table('filterset_jobtype_table', db.Model.metadata,
-    db.Column('filter_set_id', None, db.ForeignKey('filter_set.id'), primary_key=True),
+    db.Column('filterset_id', None, db.ForeignKey('filterset.id'), primary_key=True),
     db.Column('jobtype_id', None, db.ForeignKey('jobtype.id'), primary_key=True),
     db.Column('created_at', db.DateTime, nullable=False, default=db.func.utcnow())
 )
 
 
 filterset_jobcategory_table = db.Table('filterset_jobcategory_table', db.Model.metadata,
-    db.Column('filter_set_id', None, db.ForeignKey('filter_set.id'), primary_key=True),
+    db.Column('filterset_id', None, db.ForeignKey('filterset.id'), primary_key=True),
     db.Column('jobcategory_id', None, db.ForeignKey('jobcategory.id'), primary_key=True),
     db.Column('created_at', db.DateTime, nullable=False, default=db.func.utcnow())
 )
 
 
 filterset_tag_table = db.Table('filterset_tag_table', db.Model.metadata,
-    db.Column('filter_set_id', None, db.ForeignKey('filter_set.id'), primary_key=True),
+    db.Column('filterset_id', None, db.ForeignKey('filterset.id'), primary_key=True),
     db.Column('tag_id', None, db.ForeignKey('tag.id'), primary_key=True),
     db.Column('created_at', db.DateTime, nullable=False, default=db.func.utcnow())
 )
 
 filterset_domain_table = db.Table('filterset_domain_table', db.Model.metadata,
-    db.Column('filter_set_id', None, db.ForeignKey('filter_set.id'), primary_key=True),
+    db.Column('filterset_id', None, db.ForeignKey('filterset.id'), primary_key=True),
     db.Column('domain_id', None, db.ForeignKey('domain.id'), primary_key=True),
     db.Column('created_at', db.DateTime, nullable=False, default=db.func.utcnow())
 )
@@ -42,7 +42,7 @@ class FilterSet(BaseScopedNameMixin, db.Model):
     Eg: `https://hasjob.co/f/machine-learning-jobs-in-bangalore`
     """
 
-    __tablename__ = 'filter_set'
+    __tablename__ = 'filterset'
 
     board_id = db.Column(None, db.ForeignKey('board.id'), nullable=False, index=True)
     board = db.relationship(Board)
@@ -104,14 +104,14 @@ class FilterSet(BaseScopedNameMixin, db.Model):
                 filterset_jobtype_table).join(
                 JobType).filter(JobType.name.in_(filters['t']))
         else:
-            basequery = basequery.filter(~cls.id.in_(db.select([filterset_jobtype_table.c.filter_set_id])))
+            basequery = basequery.filter(~cls.id.in_(db.select([filterset_jobtype_table.c.filterset_id])))
 
         if filters.get('c'):
             basequery = basequery.join(
                 filterset_jobcategory_table).join(
                 JobCategory).filter(JobCategory.name.in_(filters['c']))
         else:
-            basequery = basequery.filter(~cls.id.in_(db.select([filterset_jobcategory_table.c.filter_set_id])))
+            basequery = basequery.filter(~cls.id.in_(db.select([filterset_jobcategory_table.c.filterset_id])))
 
         if filters.get('l'):
             basequery = basequery.filter(cls.location_geonameids == sorted(filters['l']))
@@ -152,7 +152,7 @@ def _format_and_validate(mapper, connection, target):
         raise ValueError("There already exists a filter set with this filter criteria")
 
 create_location_geonameids_trigger = DDL('''
-    CREATE INDEX idx_filter_set_location_geonameids on filter_set USING gin (location_geonameids);
+    CREATE INDEX idx_filterset_location_geonameids on filterset USING gin (location_geonameids);
 ''')
 
 event.listen(FilterSet.__table__, 'after_create',

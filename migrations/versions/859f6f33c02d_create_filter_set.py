@@ -16,7 +16,7 @@ from sqlalchemy.dialects import postgresql
 
 
 def upgrade():
-    op.create_table('filter_set',
+    op.create_table('filterset',
         sa.Column('created_at', sa.DateTime(), nullable=False),
         sa.Column('updated_at', sa.DateTime(), nullable=False),
         sa.Column('board_id', sa.Integer(), nullable=False),
@@ -35,50 +35,50 @@ def upgrade():
         sa.UniqueConstraint('name')
     )
 
-    op.create_index(op.f('ix_filter_set_remote_location'), 'filter_set', ['remote_location'], unique=False)
-    op.create_index(op.f('ix_filter_set_pay_currency'), 'filter_set', ['pay_currency'], unique=False)
-    op.create_index(op.f('ix_filter_set_pay_cash_min'), 'filter_set', ['pay_cash_min'], unique=False)
-    op.create_index(op.f('ix_filter_set_equity'), 'filter_set', ['equity'], unique=False)
-    op.create_index(op.f('ix_filter_set_keywords'), 'filter_set', ['keywords'], unique=False)
+    op.create_index(op.f('ix_filterset_remote_location'), 'filterset', ['remote_location'], unique=False)
+    op.create_index(op.f('ix_filterset_pay_currency'), 'filterset', ['pay_currency'], unique=False)
+    op.create_index(op.f('ix_filterset_pay_cash_min'), 'filterset', ['pay_cash_min'], unique=False)
+    op.create_index(op.f('ix_filterset_equity'), 'filterset', ['equity'], unique=False)
+    op.create_index(op.f('ix_filterset_keywords'), 'filterset', ['keywords'], unique=False)
 
     op.execute(sa.DDL('''
-        CREATE INDEX idx_filter_set_location_geonameids on filter_set USING gin (location_geonameids);
+        CREATE INDEX idx_filterset_location_geonameids on filterset USING gin (location_geonameids);
     '''))
 
     op.create_table('filterset_jobcategory_table',
-        sa.Column('filter_set_id', sa.Integer(), nullable=False),
+        sa.Column('filterset_id', sa.Integer(), nullable=False),
         sa.Column('jobcategory_id', sa.Integer(), nullable=False),
         sa.Column('created_at', sa.DateTime(), nullable=False),
-        sa.ForeignKeyConstraint(['filter_set_id'], ['filter_set.id'], ),
+        sa.ForeignKeyConstraint(['filterset_id'], ['filterset.id'], ),
         sa.ForeignKeyConstraint(['jobcategory_id'], ['jobcategory.id'], ),
-        sa.PrimaryKeyConstraint('filter_set_id', 'jobcategory_id')
+        sa.PrimaryKeyConstraint('filterset_id', 'jobcategory_id')
     )
 
     op.create_table('filterset_jobtype_table',
-        sa.Column('filter_set_id', sa.Integer(), nullable=False),
+        sa.Column('filterset_id', sa.Integer(), nullable=False),
         sa.Column('jobtype_id', sa.Integer(), nullable=False),
         sa.Column('created_at', sa.DateTime(), nullable=False),
-        sa.ForeignKeyConstraint(['filter_set_id'], ['filter_set.id'], ),
+        sa.ForeignKeyConstraint(['filterset_id'], ['filterset.id'], ),
         sa.ForeignKeyConstraint(['jobtype_id'], ['jobtype.id'], ),
-        sa.PrimaryKeyConstraint('filter_set_id', 'jobtype_id')
+        sa.PrimaryKeyConstraint('filterset_id', 'jobtype_id')
     )
 
     op.create_table('filterset_tag_table',
-        sa.Column('filter_set_id', sa.Integer(), nullable=False),
+        sa.Column('filterset_id', sa.Integer(), nullable=False),
         sa.Column('tag_id', sa.Integer(), nullable=False),
         sa.Column('created_at', sa.DateTime(), nullable=False),
-        sa.ForeignKeyConstraint(['filter_set_id'], ['filter_set.id'], ),
+        sa.ForeignKeyConstraint(['filterset_id'], ['filterset.id'], ),
         sa.ForeignKeyConstraint(['tag_id'], ['tag.id'], ),
-        sa.PrimaryKeyConstraint('filter_set_id', 'tag_id')
+        sa.PrimaryKeyConstraint('filterset_id', 'tag_id')
     )
 
     op.create_table('filterset_domain_table',
-        sa.Column('filter_set_id', sa.Integer(), nullable=False),
+        sa.Column('filterset_id', sa.Integer(), nullable=False),
         sa.Column('domain_id', sa.Integer(), nullable=False),
         sa.Column('created_at', sa.DateTime(), nullable=False),
         sa.ForeignKeyConstraint(['domain_id'], ['domain.id'], ),
-        sa.ForeignKeyConstraint(['filter_set_id'], ['filter_set.id'], ),
-        sa.PrimaryKeyConstraint('filter_set_id', 'domain_id')
+        sa.ForeignKeyConstraint(['filterset_id'], ['filterset.id'], ),
+        sa.PrimaryKeyConstraint('filterset_id', 'domain_id')
     )
 
 
@@ -87,10 +87,10 @@ def downgrade():
     op.drop_table('filterset_tag_table')
     op.drop_table('filterset_jobtype_table')
     op.drop_table('filterset_jobcategory_table')
-    op.drop_index('idx_filter_set_location_geonameids', 'filter_set')
-    op.drop_index(op.f('ix_filter_set_keywords'), table_name='filter_set')
-    op.drop_index(op.f('ix_filter_set_equity'), table_name='filter_set')
-    op.drop_index(op.f('ix_filter_set_pay_cash_min'), table_name='filter_set')
-    op.drop_index(op.f('ix_filter_set_pay_currency'), table_name='filter_set')
-    op.drop_index(op.f('ix_filter_set_remote_location'), table_name='filter_set')
-    op.drop_table('filter_set')
+    op.drop_index('idx_filterset_location_geonameids', 'filterset')
+    op.drop_index(op.f('ix_filterset_keywords'), table_name='filterset')
+    op.drop_index(op.f('ix_filterset_equity'), table_name='filterset')
+    op.drop_index(op.f('ix_filterset_pay_cash_min'), table_name='filterset')
+    op.drop_index(op.f('ix_filterset_pay_currency'), table_name='filterset')
+    op.drop_index(op.f('ix_filterset_remote_location'), table_name='filterset')
+    op.drop_table('filterset')
