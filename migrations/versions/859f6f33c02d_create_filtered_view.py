@@ -35,6 +35,12 @@ def upgrade():
         sa.UniqueConstraint('name')
     )
 
+    op.create_index(op.f('ix_filtered_view_remote_location'), 'filtered_view', ['remote_location'], unique=False)
+    op.create_index(op.f('ix_filtered_view_pay_currency'), 'filtered_view', ['pay_currency'], unique=False)
+    op.create_index(op.f('ix_filtered_view_pay_cash_min'), 'filtered_view', ['pay_cash_min'], unique=False)
+    op.create_index(op.f('ix_filtered_view_equity'), 'filtered_view', ['equity'], unique=False)
+    op.create_index(op.f('ix_filtered_view_keywords'), 'filtered_view', ['keywords'], unique=False)
+
     op.execute(sa.DDL('''
         CREATE INDEX idx_filtered_view_location_geonameids on filtered_view USING gin (location_geonameids);
     '''))
@@ -82,4 +88,9 @@ def downgrade():
     op.drop_table('filteredview_jobtype_table')
     op.drop_table('filteredview_jobcategory_table')
     op.drop_index('idx_filtered_view_location_geonameids', 'filtered_view')
+    op.drop_index(op.f('ix_filtered_view_keywords'), table_name='filtered_view')
+    op.drop_index(op.f('ix_filtered_view_equity'), table_name='filtered_view')
+    op.drop_index(op.f('ix_filtered_view_pay_cash_min'), table_name='filtered_view')
+    op.drop_index(op.f('ix_filtered_view_pay_currency'), table_name='filtered_view')
+    op.drop_index(op.f('ix_filtered_view_remote_location'), table_name='filtered_view')
     op.drop_table('filtered_view')

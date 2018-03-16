@@ -545,25 +545,11 @@ def browse_tags():
 
 @app.route('/f/<name>', subdomain='<subdomain>', methods=['GET', 'POST'])
 @app.route('/f/<name>', methods=['GET', 'POST'])
+@FilteredView.is_url_for('view')
 def filtered_view(name):
     filtered_view = FilteredView.get(g.board, name)
-
-    location_names = []
-    if filtered_view.location_geonameids:
-        location_dict = location_geodata(filtered_view.location_geonameids)
-        for geonameid in filtered_view.location_geonameids:
-            location_names.append(location_dict[geonameid]['name'])
-
-    filters = {
-        't': [jobtype.name for jobtype in filtered_view.types],
-        'c': [jobcategory.name for jobcategory in filtered_view.categories],
-        'l': location_names,
-        'currency': filtered_view.pay_currency,
-        'pay': filtered_view.pay_cash_min,
-        'equity': filtered_view.equity,
-        'anywhere': filtered_view.remote_location
-    }
-    return index(filters=filters, query_string=filtered_view.keywords, filtered_view=filtered_view)
+    return index(filters=filtered_view.to_filters(), query_string=filtered_view.keywords,
+        filtered_view=filtered_view)
 
 
 @app.route('/opensearch.xml', subdomain='<subdomain>')
