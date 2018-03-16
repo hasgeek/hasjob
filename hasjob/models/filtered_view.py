@@ -43,7 +43,7 @@ class FilteredView(BaseScopedNameMixin, db.Model):
 
     __tablename__ = 'filtered_view'
 
-    board_id = db.Column(None, db.ForeignKey('board.id'), primary_key=True, index=True)
+    board_id = db.Column(None, db.ForeignKey('board.id'), nullable=False, index=True)
     board = db.relationship(Board)
     parent = db.synonym('board')
 

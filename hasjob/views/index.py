@@ -321,6 +321,7 @@ def fetch_jobposts(request_args, request_values, filters, is_index, board, board
         pay_graph_data=pay_graph_data, paginated=index_is_paginated(), template_vars=template_vars)
 
 
+# @dogpile.region('hasjob_index')
 def fetch_cached_jobposts(request_args, request_values, filters, is_index, board, board_jobs, gkiosk, basequery, md5sum, domain, location, title, showall, statusfilter, batched, ageless, template_vars, search_query=None, query_string=None):
     return fetch_jobposts(request_args, request_values, filters, is_index, board, board_jobs, gkiosk, basequery, md5sum, domain, location, title, showall, statusfilter, batched, ageless, template_vars, search_query, query_string)
 
