@@ -37,8 +37,8 @@
       {%- else -%}
         All jobs at {{ domain.use_title }}
       {%- endif -%}
-    {%- elif filtered_view %}
-      {{ filtered_view.description|firstline }}
+    {%- elif filter_set %}
+      {{ filter_set.description|firstline }}
     {%- else -%}
       {{ super() }}
     {%- endif -%}
@@ -64,10 +64,10 @@
         {%- endif %}
       </div>
     {%- endif %}
-    {%- if filtered_view and filtered_view.description and not paginated %}
+    {%- if filter_set and filter_set.description and not paginated %}
       <div class="flash info">
-        <h2>{{ filtered_view.title }}</h2>
-        {{ filtered_view.description | safe }}
+        <h2>{{ filter_set.title }}</h2>
+        {{ filter_set.description | safe }}
       </div>
     {%- endif %}
     {%- if location and location.use_title and location.description and not paginated %}
@@ -174,8 +174,8 @@
     $(function(){
       var loadmore = {{loadmore | tojson}};
       var paginated = {{paginated | tojson}};
-      {%- if filtered_view %}
-      var loadmoreURL = "{{filtered_view.url_for('view', **query_params) | safe}}";
+      {%- if filter_set %}
+      var loadmoreURL = "{{filter_set.url_for('view', **query_params) | safe}}";
       {%- else %}
       var loadmoreURL = "{{url_for('index', **query_params) | safe}}";
       {%- endif %}
