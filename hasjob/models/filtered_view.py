@@ -70,6 +70,10 @@ class FilteredView(BaseScopedNameMixin, db.Model):
     def get(cls, board, name):
         return cls.query.filter(cls.board == board, cls.name == name).first_or_404()
 
-    def url_for(self, action='view', **kwargs):
+    def url_for(self, action='view', _external=False, **kwargs):
         if action == 'view':
-            return url_for('filtered_view', name=self.name, **kwargs)
+            if self.board.name == u'www':
+                # Skip www.hasjob.co. See `Board`
+                return url_for('filtered_view', subdomain=None, name=self.name, _external=_external)
+            else:
+                return url_for('filtered_view', subdomain=self.board.name, name=self.name, _external=_external)
