@@ -6,7 +6,24 @@ const workboxSW = new self.WorkboxSW({
   "clientsClaim": true
 });
 
-workboxSW.precache([]);
+workboxSW.precache([
+  {
+    "url": "/static/build/css/stylesheet-app-css.252c175cf0268e5fe5c8.css",
+    "revision": "4d69ae1ffaa574aef1281dc57414df39"
+  },
+  {
+    "url": "/static/build/js/app.252c175cf0268e5fe5c8.js",
+    "revision": "ee531064e82330054605f85bb7468442"
+  },
+  {
+    "url": "/static/build/js/manifest.252c175cf0268e5fe5c8.js",
+    "revision": "fe684bf23b9518850a7a3dd90492001d"
+  },
+  {
+    "url": "/static/build/js/vendor.252c175cf0268e5fe5c8.js",
+    "revision": "12a1ca8d2cb2caab35d21438cb595e94"
+  }
+]);
 
 workboxSW.router.registerNavigationRoute("/");workboxSW.router.registerRoute(/^https?\:\/\/static.*/, workboxSW.strategies.networkFirst({
   "cacheName": "assets"

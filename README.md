@@ -110,7 +110,7 @@ Hasjob makes use of subdomains to serve different sub-boards for jobs. To set it
 
 Hasjob runs on [Python](https://www.python.org) with the [Flask](http://flask.pocoo.org/) microframework.
 
-##### Virutalenv + pip
+##### Virutalenv + pip + webpack
 
 If you are going to use a computer on which you would work on multiple Python based projects, [Virtualenv](docs.python-guide.org/en/latest/dev/virtualenvs/) is strongly recommended to ensure Hasjob’s elaborate and sometimes version-specific requirements doesn't clash with anything else.
 
@@ -131,6 +131,16 @@ If you intend to actively contribute to Hasjob code, some functionality is sourc
 Finish configuration with:
 
     $ python manage.py db create
+
+You will need to install all dependencies listed in `package.json`
+     
+    $ cd hasjob/assets
+    $ npm install
+
+You will need to run Webpack to bundle CSS, JS files & generate the service-worker.js
+
+    $ cd hasjob/assets
+    $ yarn build
 
 Before you run the server in development mode, make sure you have Postgres server and Redis server running as well. To start Hasjob:
 
