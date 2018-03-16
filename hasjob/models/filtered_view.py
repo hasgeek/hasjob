@@ -57,7 +57,7 @@ class FilteredView(BaseScopedNameMixin, db.Model):
     categories = db.relationship(JobCategory, secondary=filteredview_jobcategory_table)
     tags = db.relationship(Tag, secondary=filteredview_tag_table)
     domains = db.relationship(Domain, secondary=filteredview_domain_table)
-    location_geonameids = db.Column(postgresql.ARRAY(db.Integer(), dimensions=1), nullable=True)
+    location_geonameids = db.Column(postgresql.ARRAY(db.Integer(), dimensions=1), nullable=True, index=True)
     remote_location = db.Column(db.Boolean, default=False, nullable=False, index=True)
     pay_currency = db.Column(db.CHAR(3), nullable=True, index=True)
     pay_cash_min = db.Column(db.Integer, nullable=True, index=True)
@@ -76,11 +76,11 @@ class FilteredView(BaseScopedNameMixin, db.Model):
             subdomain = self.board.name if self.board.not_root else None
             return url_for('filtered_view', subdomain=subdomain, name=self.name, _external=_external)
 
-    def to_filters(self):
+    def to_filters(self, translate_geonameids=True):
         from hasjob.views.helper import location_geodata
 
         location_names = []
-        if self.location_geonameids:
+        if translate_geonameids and self.location_geonameids:
             location_dict = location_geodata(self.location_geonameids)
             for geonameid in self.location_geonameids:
                 location_names.append(location_dict[geonameid]['name'])
@@ -88,7 +88,7 @@ class FilteredView(BaseScopedNameMixin, db.Model):
         return {
             't': [jobtype.name for jobtype in self.types],
             'c': [jobcategory.name for jobcategory in self.categories],
-            'l': location_names,
+            'l': location_names if translate_geonameids else self.location_geonameids,
             'currency': self.pay_currency,
             'pay': self.pay_cash_min,
             'equity': self.equity,
@@ -145,9 +145,12 @@ class FilteredView(BaseScopedNameMixin, db.Model):
 
 @event.listens_for(FilteredView, 'before_update')
 @event.listens_for(FilteredView, 'before_insert')
-def _sort_geonameids(mapper, connection, target):
+def _format_and_validate(mapper, connection, target):
     if target.location_geonameids:
         target.location_geonameids = sorted(target.location_geonameids)
+
+    if FilteredView.from_filters(target.board, target.to_filters(translate_geonameids=False)):
+        raise ValueError("There already exists a filtered view with this filter criteria")
 
 create_location_geonameids_trigger = DDL('''
     CREATE INDEX idx_filtered_view_location_geonameids on filtered_view USING gin (location_geonameids);
