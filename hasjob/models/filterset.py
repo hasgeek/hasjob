@@ -74,7 +74,7 @@ class FilterSet(BaseScopedNameMixin, db.Model):
     def url_for(self, action='view', _external=False, **kwargs):
         if action == 'view':
             subdomain = self.board.name if self.board.not_root else None
-            return url_for('filter_set', subdomain=subdomain, name=self.name, _external=_external)
+            return url_for('filterset_view', subdomain=subdomain, name=self.name, _external=_external)
 
     def to_filters(self, translate_geonameids=True):
         from hasjob.views.helper import location_geodata

@@ -329,7 +329,7 @@ def fetch_cached_jobposts(request_args, request_values, filters, is_index, board
 @app.route('/', methods=['GET', 'POST'], subdomain='<subdomain>')
 @app.route('/', methods=['GET', 'POST'])
 @render_with({'text/html': 'index.html.jinja2', 'application/json': json_index}, json=False)
-def index(basequery=None, filters={}, md5sum=None, tag=None, domain=None, location=None, title=None, showall=True, statusfilter=None, batched=True, ageless=False, cached=False, query_string=None, filter_set=None, template_vars={}):
+def index(basequery=None, filters={}, md5sum=None, tag=None, domain=None, location=None, title=None, showall=True, statusfilter=None, batched=True, ageless=False, cached=False, query_string=None, filterset=None, template_vars={}):
     now = datetime.utcnow()
     is_siteadmin = lastuser.has_permission('siteadmin')
     board = g.board
@@ -425,8 +425,8 @@ def index(basequery=None, filters={}, md5sum=None, tag=None, domain=None, locati
     if data['domain'] and data['domain'] not in db.session:
         data['domain'] = db.session.merge(data['domain'])
     data['show_viewcounts'] = show_viewcounts
-    if filter_set:
-        data['filter_set'] = filter_set
+    if filterset:
+        data['filterset'] = filterset
     return data
 
 
@@ -545,11 +545,11 @@ def browse_tags():
 
 @app.route('/f/<name>', subdomain='<subdomain>', methods=['GET', 'POST'])
 @app.route('/f/<name>', methods=['GET', 'POST'])
-def filter_set(name):
-    filter_set_obj = FilterSet.get(g.board, name)
-    return index(filters=filter_set_obj.to_filters(),
-        query_string=filter_set_obj.keywords,
-        filter_set=filter_set_obj)
+def filterset_view(name):
+    filterset = FilterSet.get(g.board, name)
+    return index(filters=filterset.to_filters(),
+        query_string=filterset.keywords,
+        filterset=filterset)
 
 
 @app.route('/opensearch.xml', subdomain='<subdomain>')
