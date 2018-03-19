@@ -26,7 +26,7 @@ def upgrade():
         sa.Column('equity', sa.Boolean(), nullable=False),
         sa.Column('remote_location', sa.Boolean(), nullable=False),
         sa.Column('keywords', sa.UnicodeText(), nullable=False),
-        sa.Column('location_geonameids', postgresql.ARRAY(sa.Integer(), dimensions=1), nullable=True),
+        sa.Column('location_geonameids', postgresql.ARRAY(sa.Integer(), dimensions=1), nullable=False),
         sa.Column('name', sa.Unicode(length=250), nullable=False),
         sa.Column('title', sa.Unicode(length=250), nullable=False),
         sa.Column('id', sa.Integer(), nullable=False),

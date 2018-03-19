@@ -59,7 +59,7 @@ class FilterSet(BaseScopedNameMixin, db.Model):
     categories = db.relationship(JobCategory, secondary=filterset_jobcategory_table)
     tags = db.relationship(Tag, secondary=filterset_tag_table)
     domains = db.relationship(Domain, secondary=filterset_domain_table)
-    location_geonameids = db.Column(postgresql.ARRAY(db.Integer(), dimensions=1), nullable=True, index=True)
+    location_geonameids = db.Column(postgresql.ARRAY(db.Integer(), dimensions=1), default=[], nullable=False, index=True)
     remote_location = db.Column(db.Boolean, default=False, nullable=False, index=True)
     pay_currency = db.Column(db.CHAR(3), nullable=True, index=True)
     pay_cash = db.Column(db.Integer, nullable=True, index=True)
@@ -130,7 +130,7 @@ class FilterSet(BaseScopedNameMixin, db.Model):
         if filters.get('l'):
             basequery = basequery.filter(cls.location_geonameids == sorted(filters['l']))
         else:
-            basequery = basequery.filter(cls.location_geonameids == None)
+            basequery = basequery.filter(cls.location_geonameids == [])
 
         if filters.get('equity'):
             basequery = basequery.filter(cls.equity == True)
