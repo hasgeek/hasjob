@@ -630,7 +630,7 @@ window.Hasjob.FunnelStat = {
      'funnelName' - conversion funnel's name.
      'maxValue' -  max value of conversion funnel across job posts of last 30 days
   */
-  createGradientColourBar: function(funnelName, maxValue){
+  createGradientColourBar: function(funnelName, maxValue) {
     var canvas = document.createElement("canvas");
     canvas.id = funnelName;
     canvas.width = maxValue;
@@ -660,7 +660,7 @@ window.Hasjob.FunnelStat = {
     'value' - conversion funnel value for the job post
     'elementId' - id attribute of the element of which background colour is to be set
   */
-  setFunnelColour: function(funnelName, value, elementId){
+  setFunnelColour: function(funnelName, value, elementId) {
     //rgba - RGBA values at a particular point in the canvas.
     var rgba = window.Hasjob.Config[funnelName].canvasContext.getImageData(value, 1, 1, 1).data;
     if (rgba[0] > 255 || rgba[1] > 255 || rgba[2] > 255) {
