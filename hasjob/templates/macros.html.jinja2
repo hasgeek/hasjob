@@ -224,7 +224,7 @@
   {%- endwith %}
 {%- endmacro -%}
 
-{%- macro funnel_stat_setup(max_counts) -%}
+{%- macro funnel_stat_setup(max_counts, paginated) -%}
   <script type="text/javascript">
     $(function(){
       {%- if not paginated -%}

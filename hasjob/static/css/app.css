@@ -1031,6 +1031,7 @@ tr > div {
   border-radius: 0 0 2px 2px;
   overflow: hidden;
   padding: 0;
+  list-style: none;
 }
 .stickie .count-background .background {
   flex: 1;
