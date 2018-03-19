@@ -674,11 +674,15 @@ window.Hasjob.FunnelStat = {
       colourHex = "#" + (("000000" + (rgba[0] << 16) | (rgba[1] << 8) | rgba[2]).toString(16)).slice(-6);
     }
     // Set the background colour of the element
-    document.getElementById(elementId).style.backgroundColor = colourHex;
+    var element = document.getElementById(elementId);
+    element.classList.add("funnel-color-set");
+    element.style.backgroundColor = colourHex;
   },
   updateFunnel: function() {
     $('.js-funnel').each(function() {
-      window.Hasjob.FunnelStat.setFunnelColour($(this).data('funnel-name'), $(this).data('funnel-value'), $(this).attr('id'));
+      if(!$(this).hasClass("funnel-color-set")) {
+        window.Hasjob.FunnelStat.setFunnelColour($(this).data('funnel-name'), $(this).data('funnel-value'), $(this).attr('id'));
+      }
     });
   }
 }
