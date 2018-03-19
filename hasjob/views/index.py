@@ -547,6 +547,8 @@ def browse_tags():
 @app.route('/f/<name>', methods=['GET', 'POST'])
 def filterset_view(name):
     filterset = FilterSet.get(g.board, name)
+    if not filterset:
+        abort(404)
     return index(filters=filterset.to_filters(translate_geonameids=True),
         query_string=filterset.keywords,
         filterset=filterset)

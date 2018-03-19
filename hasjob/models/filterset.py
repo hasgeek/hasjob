@@ -69,7 +69,7 @@ class FilterSet(BaseScopedNameMixin, db.Model):
 
     @classmethod
     def get(cls, board, name):
-        return cls.query.filter(cls.board == board, cls.name == name).first_or_404()
+        return cls.query.filter(cls.board == board, cls.name == name).one_or_none()
 
     def url_for(self, action='view', _external=False, **kwargs):
         if action == 'view':
