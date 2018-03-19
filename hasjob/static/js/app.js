@@ -626,11 +626,13 @@ window.Hasjob.PaySlider.prototype.resetSlider = function(currency) {
 window.Hasjob.FunnelStat = {
   /*
     Creates a linear colour gradient with canvas of width equal to maxValue. The canvas indicates a scale  from 0 to maxValue.
-    Takes 'maxValue' -  max value of conversion funnel across job posts of last 30 days
+    Takes
+     'funnelName' - conversion funnel's name.
+     'maxValue' -  max value of conversion funnel across job posts of last 30 days
   */
-  createGradientColourBar: function(maxValue){
+  createGradientColourBar: function(funnelName, maxValue){
     var canvas = document.createElement("canvas");
-    canvas.id = 'conversionfunnel';
+    canvas.id = funnelName;
     canvas.width = maxValue;
     canvas.height = 10;
 
@@ -646,27 +648,27 @@ window.Hasjob.FunnelStat = {
 
     context.fillStyle = grd;
     context.fill();
-    //Store the canvas context and end colour of the conversion funnel, later to be used by setFunnelColour for picking the colour for a conversion funnel value for a job post.
-    window.Hasjob.FunnelStat['conversionfunnel'] = {
-      canvasContext: context,
-      maxColour: '#DF3499'
-    };
+    //Store the canvas context and end colour of the conversion funnel, later to be used by window.Hasjob.Util.setFunnelColour for picking the colour for a conversion funnel value for a job post.
+    window.Hasjob.Config[funnelName] = {};
+    window.Hasjob.Config[funnelName].canvasContext = context;
+    window.Hasjob.Config[funnelName].maxColour = '#DF3499';
   },
   /*
     Picks the colour for the value from the colour gradient canvas based on a scale of 0 to maxValue.
-    Takes 'value, elementId'
-   'value' - conversion funnel value for the job post
-   'elementId' - id attribute of the element of which background colour is to be set
+    Takes 'funnelName', value, elementId'
+    'funnelName' - conversion funnel's name.
+    'value' - conversion funnel value for the job post
+    'elementId' - id attribute of the element of which background colour is to be set
   */
-  setFunnelColour: function(value, elementId){
+  setFunnelColour: function(funnelName, value, elementId){
     //rgba - RGBA values at a particular point in the canvas.
-    var rgba = window.Hasjob.FunnelStat.conversionfunnel.canvasContext.getImageData(value, 1, 1, 1).data;
+    var rgba = window.Hasjob.Config[funnelName].canvasContext.getImageData(value, 1, 1, 1).data;
     if (rgba[0] > 255 || rgba[1] > 255 || rgba[2] > 255) {
       // rgb value is invalid, hence return white
       colourHex ="#FFFFFF";
     } else if (rgba[0] == 0 && rgba[1] == 0 && rgba[2] == 0) {
       // value greater than maxValue hence return the last colour of the gradient
-      colourHex = window.Hasjob.FunnelStat.conversionfunnel.maxColour;
+      colourHex = window.Hasjob.Config[funnelName].maxColour;
     } else {
       // Get the colour code in hex from RGB values returned by getImageData
       colourHex = "#" + (("000000" + (rgba[0] << 16) | (rgba[1] << 8) | rgba[2]).toString(16)).slice(-6);
@@ -676,7 +678,7 @@ window.Hasjob.FunnelStat = {
   },
   updateFunnel: function() {
     $('.js-funnel').each(function() {
-      window.Hasjob.FunnelStat.setFunnelColour($(this).data('funnel'), $(this).attr('id'));
+      window.Hasjob.FunnelStat.setFunnelColour($(this).data('funnel-name'), $(this).data('funnel-value'), $(this).attr('id'));
     });
   }
 }

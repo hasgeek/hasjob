@@ -179,12 +179,16 @@
       } else {
         window.Hasjob.StickieList.loadmore({enable: false});
       }
-      {%- if not paginated -%}
-        window.Hasjob.FunnelStat.createGradientColourBar({{ max_impressions }});
-      {%- endif %}
-      window.Hasjob.FunnelStat.updateFunnel();
     });
   </script>
+  {% from "macros.html.jinja2" import funnel_stat_setup %}
+  {{ funnel_stat_setup({
+    'max_impressions': max_impressions,
+    'max_views': max_views,
+    'max_opens': max_opens,
+    'max_applied': max_applied
+    })
+  }}
   {%- if not paginated -%}
     {% from "macros.html.jinja2" import filters_setup_script %}
     {%- if request.is_xhr -%}

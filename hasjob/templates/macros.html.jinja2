@@ -41,10 +41,10 @@
           </span>
         </span>
         <ol class="count-background">
-          <li class="impressions background arrow js-funnel" id="impressions-{{post.id}}" data-funnel="{{post_viewcounts['impressions']}}"></li>
-          <li class="viewed background arrow js-funnel" id="viewed-{{post.id}}" data-funnel="{{post_viewcounts['viewed']}}"></li>
-          <li class="opened background arrow js-funnel" id="opened-{{post.id}}" data-funnel="{{post_viewcounts['opened']}}"></li>
-          <li class="applied background js-funnel" id="applied-{{post.id}}" data-funnel="{{post_viewcounts['applied']}}"></li>
+          <li class="impressions background arrow js-funnel" id="impressions-{{post.id}}" data-funnel-name="impressions" data-funnel-value="{{post_viewcounts['impressions']}}"></li>
+          <li class="viewed background arrow js-funnel" id="viewed-{{post.id}}" data-funnel-name="views" data-funnel-value="{{post_viewcounts['viewed']}}"></li>
+          <li class="opened background arrow js-funnel" id="opened-{{post.id}}" data-funnel-name="opens" data-funnel-value="{{post_viewcounts['opened']}}"></li>
+          <li class="applied background js-funnel" id="applied-{{post.id}}" data-funnel-name="applied" data-funnel-value="{{post_viewcounts['applied']}}"></li>
         </ol>
       {%- endif -%}
     {%- endwith %}
@@ -222,4 +222,18 @@
       window.Hasjob.Config.selectedFilters = {{selected_filters | tojson}};
     </script>
   {%- endwith %}
+{%- endmacro -%}
+
+{%- macro funnel_stat_setup(max_counts) -%}
+  <script type="text/javascript">
+    $(function(){
+      {%- if not paginated -%}
+        window.Hasjob.FunnelStat.createGradientColourBar('impressions', {{max_counts['max_impressions']}});
+        window.Hasjob.FunnelStat.createGradientColourBar('views', {{max_counts['max_views']}});
+        window.Hasjob.FunnelStat.createGradientColourBar('opens', {{max_counts['max_opens']}});
+        window.Hasjob.FunnelStat.createGradientColourBar('applied', {{max_counts['max_applied']}});
+      {%- endif %}
+      window.Hasjob.FunnelStat.updateFunnel();
+    });
+  </script>
 {%- endmacro -%}
