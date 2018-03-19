@@ -3,7 +3,7 @@
 from coaster.sqlalchemy import Query, failsafe_add
 from coaster.utils import make_name, LabeledEnum
 from baseframe import __
-from . import db, TimestampMixin, BaseNameMixin, POSTSTATUS
+from . import db, TimestampMixin, BaseNameMixin, POST_STATE
 from .jobpost import JobPost
 
 __all__ = ['TAG_TYPE', 'Tag', 'JobPostTag']
@@ -82,6 +82,7 @@ class JobPostTag(TimestampMixin, db.Model):
 
 
 def related_posts(self, limit=12):
+    # TODO: One JobPostTag moves to statemanager, use sqlalchemy to get rid of this raw query
     return db.session.query(JobPost).options(*JobPost._defercols).from_statement(db.text(
         '''SELECT jobpost.id, jobpost.hashid, jobpost.datetime, jobpost.headline, jobpost.headlineb,
             jobpost.location, jobpost.company_name, jobpost.type_id, jobpost.category_id, jobpost.status,
@@ -96,6 +97,7 @@ def related_posts(self, limit=12):
                 AND jobpost_tag.status IN :tag_present
                 GROUP BY jobpost_tag.jobpost_id ORDER BY count DESC LIMIT :limit) AS matches, jobpost
             WHERE jobpost.id = matches.jobpost_id;'''
-        )).params(id=self.id, listed=tuple(POSTSTATUS.LISTED), limit=limit, tag_present=tuple(TAG_TYPE.TAG_PRESENT))
+        )).params(id=self.id, listed=tuple(POST_STATE.PUBLIC), limit=limit, tag_present=tuple(TAG_TYPE.TAG_PRESENT))
+
 
 JobPost.related_posts = related_posts
