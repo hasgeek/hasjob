@@ -106,14 +106,26 @@ class FilterSet(BaseScopedNameMixin, db.Model):
                 filterset_jobtype_table).join(
                 JobType).filter(JobType.name.in_(filters['t']))
         else:
-            basequery = basequery.filter(~cls.id.in_(db.select([filterset_jobtype_table.c.filterset_id])))
+            basequery = basequery.filter(
+                ~db.exists(
+                    db.select([1]).where(
+                        FilterSet.id == filterset_jobtype_table.c.filterset_id
+                    )
+                )
+            )
 
         if filters.get('c'):
             basequery = basequery.join(
                 filterset_jobcategory_table).join(
                 JobCategory).filter(JobCategory.name.in_(filters['c']))
         else:
-            basequery = basequery.filter(~cls.id.in_(db.select([filterset_jobcategory_table.c.filterset_id])))
+            basequery = basequery.filter(
+                ~db.exists(
+                    db.select([1]).where(
+                        FilterSet.id == filterset_jobcategory_table.c.filterset_id
+                    )
+                )
+            )
 
         if filters.get('l'):
             basequery = basequery.filter(cls.location_geonameids == sorted(filters['l']))
@@ -147,11 +159,12 @@ class FilterSet(BaseScopedNameMixin, db.Model):
 @event.listens_for(FilterSet, 'before_update')
 @event.listens_for(FilterSet, 'before_insert')
 def _format_and_validate(mapper, connection, target):
-    if target.location_geonameids:
-        target.location_geonameids = sorted(target.location_geonameids)
+    with db.session.no_autoflush:
+        if target.location_geonameids:
+            target.location_geonameids = sorted(target.location_geonameids)
 
-    if FilterSet.from_filters(target.board, target.to_filters()):
-        raise ValueError("There already exists a filter set with this filter criteria")
+        if FilterSet.from_filters(target.board, target.to_filters()):
+            raise ValueError("There already exists a filter set with this filter criteria")
 
 create_location_geonameids_trigger = DDL('''
     CREATE INDEX ix_filterset_location_geonameids on filterset USING gin (location_geonameids);
