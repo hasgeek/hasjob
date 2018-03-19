@@ -154,7 +154,7 @@ def _format_and_validate(mapper, connection, target):
         raise ValueError("There already exists a filter set with this filter criteria")
 
 create_location_geonameids_trigger = DDL('''
-    CREATE INDEX idx_filterset_location_geonameids on filterset USING gin (location_geonameids);
+    CREATE INDEX ix_filterset_location_geonameids on filterset USING gin (location_geonameids);
 ''')
 
 event.listen(FilterSet.__table__, 'after_create',
