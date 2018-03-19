@@ -4,6 +4,8 @@ from flask import url_for
 from sqlalchemy.dialects import postgresql
 from sqlalchemy import event, DDL
 from . import db, BaseScopedNameMixin, JobType, JobCategory, Tag, Domain, Board
+from ..extapi import location_geodata
+
 
 __all__ = ['FilterSet']
 
@@ -77,8 +79,6 @@ class FilterSet(BaseScopedNameMixin, db.Model):
             return url_for('filterset_view', subdomain=subdomain, name=self.name, _external=_external)
 
     def to_filters(self, translate_geonameids=False):
-        from hasjob.views.helper import location_geodata
-
         location_names = []
         if translate_geonameids and self.location_geonameids:
             location_dict = location_geodata(self.location_geonameids)
