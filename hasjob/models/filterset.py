@@ -10,27 +10,27 @@ __all__ = ['FilterSet']
 
 filterset_jobtype_table = db.Table('filterset_jobtype_table', db.Model.metadata,
     db.Column('filterset_id', None, db.ForeignKey('filterset.id'), primary_key=True),
-    db.Column('jobtype_id', None, db.ForeignKey('jobtype.id'), primary_key=True),
+    db.Column('jobtype_id', None, db.ForeignKey('jobtype.id'), primary_key=True, index=True),
     db.Column('created_at', db.DateTime, nullable=False, default=db.func.utcnow())
 )
 
 
 filterset_jobcategory_table = db.Table('filterset_jobcategory_table', db.Model.metadata,
     db.Column('filterset_id', None, db.ForeignKey('filterset.id'), primary_key=True),
-    db.Column('jobcategory_id', None, db.ForeignKey('jobcategory.id'), primary_key=True),
+    db.Column('jobcategory_id', None, db.ForeignKey('jobcategory.id'), primary_key=True, index=True),
     db.Column('created_at', db.DateTime, nullable=False, default=db.func.utcnow())
 )
 
 
 filterset_tag_table = db.Table('filterset_tag_table', db.Model.metadata,
     db.Column('filterset_id', None, db.ForeignKey('filterset.id'), primary_key=True),
-    db.Column('tag_id', None, db.ForeignKey('tag.id'), primary_key=True),
+    db.Column('tag_id', None, db.ForeignKey('tag.id'), primary_key=True, index=True),
     db.Column('created_at', db.DateTime, nullable=False, default=db.func.utcnow())
 )
 
 filterset_domain_table = db.Table('filterset_domain_table', db.Model.metadata,
     db.Column('filterset_id', None, db.ForeignKey('filterset.id'), primary_key=True),
-    db.Column('domain_id', None, db.ForeignKey('domain.id'), primary_key=True),
+    db.Column('domain_id', None, db.ForeignKey('domain.id'), primary_key=True, index=True),
     db.Column('created_at', db.DateTime, nullable=False, default=db.func.utcnow())
 )
 
@@ -60,7 +60,7 @@ class FilterSet(BaseScopedNameMixin, db.Model):
     location_geonameids = db.Column(postgresql.ARRAY(db.Integer(), dimensions=1), nullable=True, index=True)
     remote_location = db.Column(db.Boolean, default=False, nullable=False, index=True)
     pay_currency = db.Column(db.CHAR(3), nullable=True, index=True)
-    pay_cash_min = db.Column(db.Integer, nullable=True, index=True)
+    pay_cash = db.Column(db.Integer, nullable=True, index=True)
     equity = db.Column(db.Boolean, nullable=False, default=False, index=True)
     keywords = db.Column(db.Unicode(250), nullable=False, default=u'', index=True)
 
@@ -83,6 +83,8 @@ class FilterSet(BaseScopedNameMixin, db.Model):
         if translate_geonameids and self.location_geonameids:
             location_dict = location_geodata(self.location_geonameids)
             for geonameid in self.location_geonameids:
+                # location_geodata returns related geonames as well
+                # so we prune it down to our original list
                 location_names.append(location_dict[geonameid]['name'])
 
         return {
@@ -90,7 +92,7 @@ class FilterSet(BaseScopedNameMixin, db.Model):
             'c': [jobcategory.name for jobcategory in self.categories],
             'l': location_names if translate_geonameids else self.location_geonameids,
             'currency': self.pay_currency,
-            'pay': self.pay_cash_min,
+            'pay': self.pay_cash,
             'equity': self.equity,
             'anywhere': self.remote_location
         }
@@ -124,10 +126,10 @@ class FilterSet(BaseScopedNameMixin, db.Model):
             basequery = basequery.filter(cls.equity == False)
 
         if filters.get('pay') and filters.get('currency'):
-            basequery = basequery.filter(cls.pay_cash_min == filters['pay'],
+            basequery = basequery.filter(cls.pay_cash == filters['pay'],
                 cls.pay_currency == filters['currency'])
         else:
-            basequery = basequery.filter(cls.pay_cash_min == None, cls.pay_currency == None)
+            basequery = basequery.filter(cls.pay_cash == None, cls.pay_currency == None)
 
         if filters.get('keywords'):
             basequery = basequery.filter(cls.keywords == filters['keywords'])

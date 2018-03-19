@@ -543,6 +543,7 @@ def browse_tags():
     return render_template('tags.html.jinja2', tags=gettags(alltime=getbool(request.args.get('all'))))
 
 
+# POST is required for pagination
 @app.route('/f/<name>', subdomain='<subdomain>', methods=['GET', 'POST'])
 @app.route('/f/<name>', methods=['GET', 'POST'])
 def filterset_view(name):

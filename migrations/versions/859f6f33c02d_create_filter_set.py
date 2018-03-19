@@ -22,7 +22,7 @@ def upgrade():
         sa.Column('board_id', sa.Integer(), nullable=False),
         sa.Column('description', sa.UnicodeText(), nullable=False),
         sa.Column('pay_currency', sa.CHAR(length=3), nullable=True),
-        sa.Column('pay_cash_min', sa.Integer(), nullable=True),
+        sa.Column('pay_cash', sa.Integer(), nullable=True),
         sa.Column('equity', sa.Boolean(), nullable=False),
         sa.Column('remote_location', sa.Boolean(), nullable=False),
         sa.Column('keywords', sa.UnicodeText(), nullable=False),
@@ -37,12 +37,12 @@ def upgrade():
 
     op.create_index(op.f('ix_filterset_remote_location'), 'filterset', ['remote_location'], unique=False)
     op.create_index(op.f('ix_filterset_pay_currency'), 'filterset', ['pay_currency'], unique=False)
-    op.create_index(op.f('ix_filterset_pay_cash_min'), 'filterset', ['pay_cash_min'], unique=False)
+    op.create_index(op.f('ix_filterset_pay_cash'), 'filterset', ['pay_cash'], unique=False)
     op.create_index(op.f('ix_filterset_equity'), 'filterset', ['equity'], unique=False)
     op.create_index(op.f('ix_filterset_keywords'), 'filterset', ['keywords'], unique=False)
 
     op.execute(sa.DDL('''
-        CREATE INDEX idx_filterset_location_geonameids on filterset USING gin (location_geonameids);
+        CREATE INDEX ix_filterset_location_geonameids on filterset USING gin (location_geonameids);
     '''))
 
     op.create_table('filterset_jobcategory_table',
@@ -81,16 +81,25 @@ def upgrade():
         sa.PrimaryKeyConstraint('filterset_id', 'domain_id')
     )
 
+    op.create_index(op.f('ix_filterset_jobcategory_table_jobcategory_id'), 'filterset_jobcategory_table', ['jobcategory_id'], unique=False)
+    op.create_index(op.f('ix_filterset_jobtype_table_jobtype_id'), 'filterset_jobtype_table', ['jobtype_id'], unique=False)
+    op.create_index(op.f('ix_filterset_tag_table_tag_id'), 'filterset_tag_table', ['tag_id'], unique=False)
+    op.create_index(op.f('ix_filterset_domain_table_domain_id'), 'filterset_domain_table', ['domain_id'], unique=False)
+
 
 def downgrade():
+    op.drop_index('ix_filterset_domain_table_domain_id', 'filterset_domain_table')
+    op.drop_index('ix_filterset_tag_table_tag_id', 'filterset_tag_table')
+    op.drop_index('ix_filterset_jobtype_table_jobtype_id', 'filterset_jobtype_table')
+    op.drop_index('ix_filterset_jobcategory_table_jobcategory_id', 'filterset_jobcategory_table')
     op.drop_table('filterset_domain_table')
     op.drop_table('filterset_tag_table')
     op.drop_table('filterset_jobtype_table')
     op.drop_table('filterset_jobcategory_table')
-    op.drop_index('idx_filterset_location_geonameids', 'filterset')
+    op.drop_index('ix_filterset_location_geonameids', 'filterset')
     op.drop_index(op.f('ix_filterset_keywords'), table_name='filterset')
     op.drop_index(op.f('ix_filterset_equity'), table_name='filterset')
-    op.drop_index(op.f('ix_filterset_pay_cash_min'), table_name='filterset')
+    op.drop_index(op.f('ix_filterset_pay_cash'), table_name='filterset')
     op.drop_index(op.f('ix_filterset_pay_currency'), table_name='filterset')
     op.drop_index(op.f('ix_filterset_remote_location'), table_name='filterset')
     op.drop_table('filterset')
