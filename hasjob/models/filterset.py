@@ -76,7 +76,7 @@ class FilterSet(BaseScopedNameMixin, db.Model):
             subdomain = self.board.name if self.board.not_root else None
             return url_for('filterset_view', subdomain=subdomain, name=self.name, _external=_external)
 
-    def to_filters(self, translate_geonameids=True):
+    def to_filters(self, translate_geonameids=False):
         from hasjob.views.helper import location_geodata
 
         location_names = []
@@ -148,7 +148,7 @@ def _format_and_validate(mapper, connection, target):
     if target.location_geonameids:
         target.location_geonameids = sorted(target.location_geonameids)
 
-    if FilterSet.from_filters(target.board, target.to_filters(translate_geonameids=False)):
+    if FilterSet.from_filters(target.board, target.to_filters()):
         raise ValueError("There already exists a filter set with this filter criteria")
 
 create_location_geonameids_trigger = DDL('''
