@@ -10,27 +10,27 @@ from ..extapi import location_geodata
 __all__ = ['FilterSet']
 
 
-filterset_jobtype_table = db.Table('filterset_jobtype_table', db.Model.metadata,
+filterset_jobtype_table = db.Table('filterset_jobtype', db.Model.metadata,
     db.Column('filterset_id', None, db.ForeignKey('filterset.id'), primary_key=True),
     db.Column('jobtype_id', None, db.ForeignKey('jobtype.id'), primary_key=True, index=True),
     db.Column('created_at', db.DateTime, nullable=False, default=db.func.utcnow())
 )
 
 
-filterset_jobcategory_table = db.Table('filterset_jobcategory_table', db.Model.metadata,
+filterset_jobcategory_table = db.Table('filterset_jobcategory', db.Model.metadata,
     db.Column('filterset_id', None, db.ForeignKey('filterset.id'), primary_key=True),
     db.Column('jobcategory_id', None, db.ForeignKey('jobcategory.id'), primary_key=True, index=True),
     db.Column('created_at', db.DateTime, nullable=False, default=db.func.utcnow())
 )
 
 
-filterset_tag_table = db.Table('filterset_tag_table', db.Model.metadata,
+filterset_tag_table = db.Table('filterset_tag', db.Model.metadata,
     db.Column('filterset_id', None, db.ForeignKey('filterset.id'), primary_key=True),
     db.Column('tag_id', None, db.ForeignKey('tag.id'), primary_key=True, index=True),
     db.Column('created_at', db.DateTime, nullable=False, default=db.func.utcnow())
 )
 
-filterset_domain_table = db.Table('filterset_domain_table', db.Model.metadata,
+filterset_domain_table = db.Table('filterset_domain', db.Model.metadata,
     db.Column('filterset_id', None, db.ForeignKey('filterset.id'), primary_key=True),
     db.Column('domain_id', None, db.ForeignKey('domain.id'), primary_key=True, index=True),
     db.Column('created_at', db.DateTime, nullable=False, default=db.func.utcnow())

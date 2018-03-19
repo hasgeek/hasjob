@@ -1,4 +1,4 @@
-"""creates filter set
+"""creates filterset
 
 Revision ID: 859f6f33c02d
 Revises: 8a37fe07ef9d
@@ -45,7 +45,7 @@ def upgrade():
         CREATE INDEX ix_filterset_location_geonameids on filterset USING gin (location_geonameids);
     '''))
 
-    op.create_table('filterset_jobcategory_table',
+    op.create_table('filterset_jobcategory',
         sa.Column('filterset_id', sa.Integer(), nullable=False),
         sa.Column('jobcategory_id', sa.Integer(), nullable=False),
         sa.Column('created_at', sa.DateTime(), nullable=False),
@@ -54,7 +54,7 @@ def upgrade():
         sa.PrimaryKeyConstraint('filterset_id', 'jobcategory_id')
     )
 
-    op.create_table('filterset_jobtype_table',
+    op.create_table('filterset_jobtype',
         sa.Column('filterset_id', sa.Integer(), nullable=False),
         sa.Column('jobtype_id', sa.Integer(), nullable=False),
         sa.Column('created_at', sa.DateTime(), nullable=False),
@@ -63,7 +63,7 @@ def upgrade():
         sa.PrimaryKeyConstraint('filterset_id', 'jobtype_id')
     )
 
-    op.create_table('filterset_tag_table',
+    op.create_table('filterset_tag',
         sa.Column('filterset_id', sa.Integer(), nullable=False),
         sa.Column('tag_id', sa.Integer(), nullable=False),
         sa.Column('created_at', sa.DateTime(), nullable=False),
@@ -72,7 +72,7 @@ def upgrade():
         sa.PrimaryKeyConstraint('filterset_id', 'tag_id')
     )
 
-    op.create_table('filterset_domain_table',
+    op.create_table('filterset_domain',
         sa.Column('filterset_id', sa.Integer(), nullable=False),
         sa.Column('domain_id', sa.Integer(), nullable=False),
         sa.Column('created_at', sa.DateTime(), nullable=False),
@@ -81,21 +81,21 @@ def upgrade():
         sa.PrimaryKeyConstraint('filterset_id', 'domain_id')
     )
 
-    op.create_index(op.f('ix_filterset_jobcategory_table_jobcategory_id'), 'filterset_jobcategory_table', ['jobcategory_id'], unique=False)
-    op.create_index(op.f('ix_filterset_jobtype_table_jobtype_id'), 'filterset_jobtype_table', ['jobtype_id'], unique=False)
-    op.create_index(op.f('ix_filterset_tag_table_tag_id'), 'filterset_tag_table', ['tag_id'], unique=False)
-    op.create_index(op.f('ix_filterset_domain_table_domain_id'), 'filterset_domain_table', ['domain_id'], unique=False)
+    op.create_index(op.f('ix_filterset_jobcategory_jobcategory_id'), 'filterset_jobcategory', ['jobcategory_id'], unique=False)
+    op.create_index(op.f('ix_filterset_jobtype_jobtype_id'), 'filterset_jobtype', ['jobtype_id'], unique=False)
+    op.create_index(op.f('ix_filterset_tag_tag_id'), 'filterset_tag', ['tag_id'], unique=False)
+    op.create_index(op.f('ix_filterset_domain_domain_id'), 'filterset_domain', ['domain_id'], unique=False)
 
 
 def downgrade():
-    op.drop_index('ix_filterset_domain_table_domain_id', 'filterset_domain_table')
-    op.drop_index('ix_filterset_tag_table_tag_id', 'filterset_tag_table')
-    op.drop_index('ix_filterset_jobtype_table_jobtype_id', 'filterset_jobtype_table')
-    op.drop_index('ix_filterset_jobcategory_table_jobcategory_id', 'filterset_jobcategory_table')
-    op.drop_table('filterset_domain_table')
-    op.drop_table('filterset_tag_table')
-    op.drop_table('filterset_jobtype_table')
-    op.drop_table('filterset_jobcategory_table')
+    op.drop_index('ix_filterset_domain_domain_id', 'filterset_domain')
+    op.drop_index('ix_filterset_tag_tag_id', 'filterset_tag')
+    op.drop_index('ix_filterset_jobtype_jobtype_id', 'filterset_jobtype')
+    op.drop_index('ix_filterset_jobcategory_jobcategory_id', 'filterset_jobcategory')
+    op.drop_table('filterset_domain')
+    op.drop_table('filterset_tag')
+    op.drop_table('filterset_jobtype')
+    op.drop_table('filterset_jobcategory')
     op.drop_index('ix_filterset_location_geonameids', 'filterset')
     op.drop_index(op.f('ix_filterset_keywords'), table_name='filterset')
     op.drop_index(op.f('ix_filterset_equity'), table_name='filterset')
