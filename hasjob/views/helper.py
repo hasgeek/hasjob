@@ -381,7 +381,7 @@ def get_post_viewcounts(jobpost_id):
 
 
 def get_max_counts(postids):
-    view_counts = [get_post_viewcounts(post.id) for post in JobPost.query.filter(JobPost.id.in_(postids))]
+    view_counts = [get_post_viewcounts(postid) for postid in postids]
 
     if view_counts:
         values = {
