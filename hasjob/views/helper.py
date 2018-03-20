@@ -322,7 +322,12 @@ def session_jobpost_ab():
 
 
 def bgroup(jobpost_ab, post):
-    return (jobpost_ab.get(post.id) or cointoss()) if post.headlineb else None
+    if not post.headlineb:
+        return
+    result = jobpost_ab.get(post.id)
+    if result is None:
+        result = cointoss()
+    return result
 
 
 def get_jobpost_impressions(jobpost_id):
