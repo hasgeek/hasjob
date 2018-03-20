@@ -108,6 +108,19 @@ def fetch_jobposts(request_args, request_values, filters, is_index, board, board
     if f_categories:
         data_filters['categories'] = f_categories
         basequery = basequery.join(JobCategory).filter(JobCategory.name.in_(f_categories))
+
+    f_domains = filters.get('d') or request_args.getlist('d')
+    while '' in f_domains:
+        f_domains.remove('')
+    if f_domains:
+        basequery = basequery.join(Domain).filter(Domain.name.in_(f_domains))
+
+    f_tags = filters.get('tg') or request_args.getlist('tg')
+    while '' in f_tags:
+        f_tags.remove('')
+    if f_tags:
+        basequery = basequery.join(JobPostTag).join(Tag).filter(Tag.name.in_(f_tags))
+
     data_filters['location_names'] = r_locations = filters.get('l') or request_args.getlist('l')
     if location:
         r_locations.append(location['geonameid'])

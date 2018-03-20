@@ -96,7 +96,8 @@ class Filterset(BaseScopedNameMixin, db.Model):
             'currency': self.pay_currency,
             'pay': self.pay_cash,
             'equity': self.equity,
-            'anywhere': self.remote_location
+            'anywhere': self.remote_location,
+            'q': self.keywords
         }
 
     @classmethod
@@ -171,8 +172,8 @@ class Filterset(BaseScopedNameMixin, db.Model):
         else:
             basequery = basequery.filter(cls.pay_cash == None, cls.pay_currency == None)
 
-        if filters.get('keywords'):
-            basequery = basequery.filter(cls.keywords == filters['keywords'])
+        if filters.get('q'):
+            basequery = basequery.filter(cls.keywords == filters['q'])
         else:
             basequery = basequery.filter(cls.keywords == '')
 
