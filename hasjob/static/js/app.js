@@ -738,7 +738,6 @@ $(function() {
   window.Hasjob.JobPost.handleStarClick();
   window.Hasjob.JobPost.handleGroupClick();
   window.Hasjob.FunnelStat.init();
-  window.Hasjob.StickieList.init();
 
   var getCurrencyVal = function() {
     return $("input[type='radio'][name='currency']:checked").val();

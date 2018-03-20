@@ -163,6 +163,12 @@
 
 {%- block footerscripts -%}
   <script type="text/javascript">
+    window.Hasjob.Config.MaxFunnelStat = {
+      'max_impressions': {{ max_impressions }},
+      'max_views': {{ max_views }},
+      'max_opens': {{ max_opens }},
+      'max_applied': {{ max_applied }}
+    }
     $(function(){
       var loadmore = {{loadmore | tojson}};
       var paginated = {{paginated | tojson}};
@@ -176,17 +182,11 @@
       } else {
         window.Hasjob.StickieList.loadmore({enable: false});
       }
+
+      window.Hasjob.StickieList.init();
     });
   </script>
   {%- if not paginated -%}
-    <script>
-      window.Hasjob.Config.MaxFunnelStat = {
-        'max_impressions': {{ max_impressions }},
-        'max_views': {{ max_views }},
-        'max_opens': {{ max_opens }},
-        'max_applied': {{ max_applied }}
-      }
-    </script>
     {% from "macros.html.jinja2" import filters_setup_script %}
     {%- if request.is_xhr -%}
       {{ filters_setup_script(job_filters, data_filters) }}
