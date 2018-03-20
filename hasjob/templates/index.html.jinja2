@@ -53,9 +53,6 @@
 {% endif %}
 {% block content %}
   {%- from "macros.html.jinja2" import stickie %}
-  {%- if not paginated -%}
-    {%- from "macros.html.jinja2" import conversion_funnel_setup %}
-  {%- endif %}
   {% with gkiosk=g.kiosk, gboard=g.board, guser=g.user, gstarred_ids=g.starred_ids %}
     {%- if gboard and gboard.not_root and not paginated and not (domain or md5sum or location or tag) %}
       <div class="flash info">
