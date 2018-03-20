@@ -421,7 +421,9 @@ def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, tit
     if data['domain'] and data['domain'] not in db.session:
         data['domain'] = db.session.merge(data['domain'])
     data['show_viewcounts'] = show_viewcounts
-    max_counts = get_max_counts(g.impressions.keys())
+
+    postids = [jobpost.id for jobpost in data['posts']]
+    max_counts = get_max_counts(postids)
     data['max_impressions'] = max_counts['max_impressions']
     data['max_views'] = max_counts['max_views']
     data['max_opens'] = max_counts['max_opens']
