@@ -9,47 +9,46 @@
     <span class="annotation top-right">{{ post.datetime|shortdate }}</span>
     <span class="headline">{% if is_bgroup %}{{ post.headlineb }}{% else %}{{ post.headline }}{% endif %}</span>
     {%- if show_viewcounts or show_pay %}
-      {%- with post_viewcounts=get_post_viewcounts(post.id) %}
-        {%- if show_pay %}
-          <span class="annotation pay">{{ post_viewcounts['pay_label'] }}</span>
-        {%- endif %}
-        <span class="clearfix">
-          <span class="annotation star">
-            {%- if starred is not none %}
-              <span class="pstar"><i class="fa fa-star{% if not starred %}-o{% endif %}" data-id="{{ post.hashid }}"></i></span>
-            {%- endif %}
-            {%- if post.state.NEW %}
-              <span class="new">New!</span>
-            {%- elif post.state.UNPUBLISHED %}
-              <span class="new">{{ post.state.label.title }}</span>
-            {%- endif %}
-          </span>
-          <span class="annotation company-name">{{ post.company_name }}</span>
-        </span>
-        {%- if show_viewcounts %}
-          <span class="count">
-            <span class="count-items impressions">
-              <span class="count-text text-center">{{ post_viewcounts['impressions'] }} impressions</span> <span class="count-arrow">›</span>
-            </span>
-            <span class="count-items viewed">
-              <span class="count-text text-center">{{ post_viewcounts['viewed'] }} viewed</span> <span class="count-arrow">›</span>
-            </span>
-            <span class="count-items opened">
-              <span class="count-text text-center">{{ post_viewcounts['opened'] }} opened</span> <span class="count-arrow">›</span>
-            </span>
-            <span class="count-items applied">
-              <span class="count-text text-center">{{ post_viewcounts['applied'] }} applied</span>
-            </span>
-          </span>
-          <ol class="count-background">
-            <li class="impressions background arrow js-funnel" id="impressions-{{post.id}}" data-funnel-name="impressions" data-funnel-value="{{post_viewcounts['impressions']}}"></li>
-            <li class="viewed background arrow js-funnel" id="viewed-{{post.id}}" data-funnel-name="views" data-funnel-value="{{post_viewcounts['viewed']}}"></li>
-            <li class="opened background arrow js-funnel" id="opened-{{post.id}}" data-funnel-name="opens" data-funnel-value="{{post_viewcounts['opened']}}"></li>
-            <li class="applied background js-funnel" id="applied-{{post.id}}" data-funnel-name="applied" data-funnel-value="{{post_viewcounts['applied']}}"></li>
-          </ol>
-        {%- endif -%}
-      {%- endwith %}
+      {%- set post_viewcounts=get_post_viewcounts(post.id) %}
     {%- endif %}
+    {%- if show_pay %}
+      <span class="annotation pay">{{ post_viewcounts['pay_label'] }}</span>
+    {%- endif %}
+    <span class="clearfix">
+      <span class="annotation star">
+        {%- if starred is not none %}
+          <span class="pstar"><i class="fa fa-star{% if not starred %}-o{% endif %}" data-id="{{ post.hashid }}"></i></span>
+        {%- endif %}
+        {%- if post.state.NEW %}
+          <span class="new">New!</span>
+        {%- elif post.state.UNPUBLISHED %}
+          <span class="new">{{ post.state.label.title }}</span>
+        {%- endif %}
+      </span>
+      <span class="annotation company-name">{{ post.company_name }}</span>
+    </span>
+    {%- if show_viewcounts %}
+      <span class="count">
+        <span class="count-items impressions">
+          <span class="count-text text-center">{{ post_viewcounts['impressions'] }} impressions</span> <span class="count-arrow">›</span>
+        </span>
+        <span class="count-items viewed">
+          <span class="count-text text-center">{{ post_viewcounts['viewed'] }} viewed</span> <span class="count-arrow">›</span>
+        </span>
+        <span class="count-items opened">
+          <span class="count-text text-center">{{ post_viewcounts['opened'] }} opened</span> <span class="count-arrow">›</span>
+        </span>
+        <span class="count-items applied">
+          <span class="count-text text-center">{{ post_viewcounts['applied'] }} applied</span>
+        </span>
+      </span>
+      <ol class="count-background">
+        <li class="impressions background arrow js-funnel" id="impressions-{{post.id}}" data-funnel-name="impressions" data-funnel-value="{{post_viewcounts['impressions']}}"></li>
+        <li class="viewed background arrow js-funnel" id="viewed-{{post.id}}" data-funnel-name="views" data-funnel-value="{{post_viewcounts['viewed']}}"></li>
+        <li class="opened background arrow js-funnel" id="opened-{{post.id}}" data-funnel-name="opens" data-funnel-value="{{post_viewcounts['opened']}}"></li>
+        <li class="applied background js-funnel" id="applied-{{post.id}}" data-funnel-name="applied" data-funnel-value="{{post_viewcounts['applied']}}"></li>
+      </ol>
+    {%- endif -%}
   {%- if groupedunder %}
     </div>
   {%- else %}
