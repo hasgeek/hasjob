@@ -5,8 +5,8 @@ from sqlalchemy import event, DDL
 from sqlalchemy.orm import deferred
 from sqlalchemy.dialects.postgresql import TSVECTOR
 from flask import url_for
-from baseframe.staticdata import webmail_domains
-from . import db, BaseMixin, POST_STATE
+from baseframe.forms.helper import is_public_email_domain
+from . import db, BaseMixin
 from .user import User
 from .jobpost import JobPost
 
@@ -100,7 +100,7 @@ class Domain(BaseMixin, db.Model):
         name = name.lower()
         result = cls.query.filter_by(name=name).one_or_none()
         if not result and create:
-            result = cls(name=name, is_webmail=name in webmail_domains)
+            result = cls(name=name, is_webmail=is_public_email_domain(name))
             db.session.add(result)
         return result
 

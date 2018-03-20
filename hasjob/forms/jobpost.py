@@ -7,7 +7,7 @@ from difflib import SequenceMatcher
 from flask import g, request, Markup
 from baseframe import _, __
 import baseframe.forms as forms
-from baseframe.staticdata import webmail_domains
+from baseframe.forms.helper import is_public_email_domain
 from coaster.utils import getbool, get_email_domain
 from flask_lastuser import LastuserResourceException
 
@@ -278,7 +278,7 @@ class ListingForm(forms.Form):
             if domain and domain.is_banned:
                 self.poster_email.errors.append(_(u"%%s is banned from posting jobs on Hasjob") % domain_name)
                 success = False
-            elif (not self.job_type_ob.webmail_allowed) and domain_name in webmail_domains:
+            elif (not self.job_type_ob.webmail_allowed) and is_public_email_domain(domain_name):
                 self.poster_email.errors.append(
                     _(u"Public webmail accounts like Gmail are not accepted. Please use your corporate email address"))
                 success = False

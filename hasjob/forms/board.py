@@ -5,7 +5,7 @@ from flask import Markup
 from baseframe import _, __
 import baseframe.forms as forms
 from baseframe.forms.sqlalchemy import AvailableName
-from baseframe.staticdata import webmail_domains
+from baseframe.forms.helper import is_public_email_domain
 from wtforms.widgets import CheckboxInput, ListWidget
 from wtforms.ext.sqlalchemy.fields import QuerySelectMultipleField
 
@@ -97,7 +97,7 @@ class BoardTaggingForm(forms.Form):
                 # FIXME: This will break domains where the subdomain handles email
                 r = tldextract.extract(item.lower())
                 d = u'.'.join([r.domain, r.suffix])
-                if d not in webmail_domains:
+                if not is_public_email_domain(d):
                     domains.add(d)
         field.data = list(domains)
 
