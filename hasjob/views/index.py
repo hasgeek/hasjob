@@ -10,7 +10,7 @@ from coaster.views import render_with
 from baseframe import _  # , dogpile
 
 from .. import app, lastuser
-from ..models import (db, JobCategory, JobPost, JobType, POST_STATE, newlimit, agelimit, JobLocation, Board,
+from ..models import (db, JobCategory, JobPost, JobType, POST_STATE, newlimit, agelimit, JobLocation, Board, Filterset,
     Domain, Location, Tag, JobPostTag, Campaign, CAMPAIGN_POSITION, CURRENCY, JobApplication, starred_job_table, BoardJobPost)
 from ..views.helper import (getposts, getallposts, gettags, location_geodata, load_viewcounts, session_jobpost_ab,
     bgroup, make_pay_graph, index_is_paginated, get_post_viewcounts, get_max_counts)
@@ -90,29 +90,44 @@ def json_index(data):
     return jsonify(result)
 
 
-def fetch_jobposts(request_args, request_values, is_index, board, board_jobs, gkiosk, basequery, md5sum, domain, location, title, showall, statusfilter, batched, ageless, template_vars, search_query=None, query_string=None):
+def fetch_jobposts(request_args, request_values, filters, is_index, board, board_jobs, gkiosk, basequery, md5sum, domain, location, title, showall, statusfilter, batched, ageless, template_vars, search_query=None, query_string=None):
     if basequery is None:
         basequery = JobPost.query
 
     # Apply request.args filters
     data_filters = {}
-    f_types = request_args.getlist('t')
+    f_types = filters.get('t') or request_args.getlist('t')
     while '' in f_types:
         f_types.remove('')
     if f_types:
         data_filters['types'] = f_types
         basequery = basequery.join(JobType).filter(JobType.name.in_(f_types))
-    f_categories = request_args.getlist('c')
+    f_categories = filters.get('c') or request_args.getlist('c')
     while '' in f_categories:
         f_categories.remove('')
     if f_categories:
         data_filters['categories'] = f_categories
         basequery = basequery.join(JobCategory).filter(JobCategory.name.in_(f_categories))
-    data_filters['location_names'] = r_locations = request_args.getlist('l')
+
+    f_domains = filters.get('d') or request_args.getlist('d')
+    while '' in f_domains:
+        f_domains.remove('')
+    if f_domains:
+        basequery = basequery.join(Domain).filter(Domain.name.in_(f_domains))
+
+    f_tags = filters.get('k') or request_args.getlist('k')
+    while '' in f_tags:
+        f_tags.remove('')
+    if f_tags:
+        basequery = basequery.join(JobPostTag).join(Tag).filter(Tag.name.in_(f_tags))
+
+    data_filters['location_names'] = r_locations = filters.get('l') or request_args.getlist('l')
     if location:
         r_locations.append(location['geonameid'])
     f_locations = []
-    remote_location = getbool(request_args.get('anywhere')) or False
+    remote_location = getbool(filters.get('anywhere') or request_args.get('anywhere')) or False
+    if remote_location:
+        data_filters['location_names'].append('anywhere')
     for rl in r_locations:
         if isinstance(rl, int) and rl > 0:
             f_locations.append(rl)
@@ -141,20 +156,22 @@ def fetch_jobposts(request_args, request_values, is_index, board, board_jobs, gk
         data_filters['anywhere'] = True
         # Only works as a positive filter: you can't search for jobs that are NOT anywhere
         basequery = remote_location_query
-    if 'currency' in request_args and request_args['currency'] in CURRENCY.keys():
-        currency = request_args['currency']
+
+    currency = filters.get('currency') or request_args.get('currency')
+    if currency in CURRENCY.keys():
         data_filters['currency'] = currency
         basequery = basequery.filter(JobPost.pay_currency == currency)
         pay_graph = currency
     else:
         pay_graph = False
-    if getbool(request_args.get('equity')):
+    if getbool(filters.get('equity') or request_args.get('equity')):
         # Only works as a positive filter: you can't search for jobs that DON'T pay in equity
         data_filters['equity'] = True
         basequery = basequery.filter(JobPost.pay_equity_min != None)  # NOQA
-    if 'pay' in request_args or ('pmin' in request_args and 'pmax' in request_args):
-        if 'pay' in request_args:
-            f_pay = string_to_number(request_args['pay'])
+
+    if filters.get('pay') or 'pay' in request_args or ('pmin' in request_args and 'pmax' in request_args):
+        if 'pay' in request_args or filters.get('pay'):
+            f_pay = filters['pay'] if filters.get('pay') else string_to_number(request_args['pay'])
             if f_pay is not None:
                 f_min = int(f_pay * 0.90)
                 f_max = int(f_pay * 1.30)
@@ -318,14 +335,14 @@ def fetch_jobposts(request_args, request_values, is_index, board, board_jobs, gk
 
 
 # @dogpile.region('hasjob_index')
-def fetch_cached_jobposts(request_args, request_values, is_index, board, board_jobs, gkiosk, basequery, md5sum, domain, location, title, showall, statusfilter, batched, ageless, template_vars, search_query=None, query_string=None):
-    return fetch_jobposts(request_args, request_values, is_index, board, board_jobs, gkiosk, basequery, md5sum, domain, location, title, showall, statusfilter, batched, ageless, template_vars, search_query, query_string)
+def fetch_cached_jobposts(request_args, request_values, filters, is_index, board, board_jobs, gkiosk, basequery, md5sum, domain, location, title, showall, statusfilter, batched, ageless, template_vars, search_query=None, query_string=None):
+    return fetch_jobposts(request_args, request_values, filters, is_index, board, board_jobs, gkiosk, basequery, md5sum, domain, location, title, showall, statusfilter, batched, ageless, template_vars, search_query, query_string)
 
 
 @app.route('/', methods=['GET', 'POST'], subdomain='<subdomain>')
 @app.route('/', methods=['GET', 'POST'])
 @render_with({'text/html': 'index.html.jinja2', 'application/json': json_index}, json=False)
-def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, title=None, showall=True, statusfilter=None, batched=True, ageless=False, cached=False, query_string=None, template_vars={}):
+def index(basequery=None, filters={}, md5sum=None, tag=None, domain=None, location=None, title=None, showall=True, statusfilter=None, batched=True, ageless=False, cached=False, query_string=None, filterset=None, template_vars={}):
     now = datetime.utcnow()
     is_siteadmin = lastuser.has_permission('siteadmin')
     board = g.board
@@ -367,9 +384,9 @@ def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, tit
         search_query = None
 
     if cached:
-        data = fetch_cached_jobposts(request.args, request.values, is_index, board, board_jobs, g.kiosk, basequery, md5sum, domain, location, title, showall, statusfilter, batched, ageless, template_vars, search_query, query_string)
+        data = fetch_cached_jobposts(request.args, request.values, filters, is_index, board, board_jobs, g.kiosk, basequery, md5sum, domain, location, title, showall, statusfilter, batched, ageless, template_vars, search_query, query_string)
     else:
-        data = fetch_jobposts(request.args, request.values, is_index, board, board_jobs, g.kiosk, basequery, md5sum, domain, location, title, showall, statusfilter, batched, ageless, template_vars, search_query, query_string)
+        data = fetch_jobposts(request.args, request.values, filters, is_index, board, board_jobs, g.kiosk, basequery, md5sum, domain, location, title, showall, statusfilter, batched, ageless, template_vars, search_query, query_string)
 
     if data['data_filters']:
         # For logging
@@ -428,6 +445,10 @@ def index(basequery=None, md5sum=None, tag=None, domain=None, location=None, tit
     data['max_views'] = max_counts['max_views']
     data['max_opens'] = max_counts['max_opens']
     data['max_applied'] = max_counts['max_applied']
+
+    if filterset:
+        data['filterset'] = filterset
+
     return data
 
 
@@ -542,6 +563,19 @@ def browse_by_tag(tag):
 @app.route('/tag')
 def browse_tags():
     return render_template('tags.html.jinja2', tags=gettags(alltime=getbool(request.args.get('all'))))
+
+
+# POST is required for pagination
+@app.route('/f/<name>', subdomain='<subdomain>', methods=['GET', 'POST'])
+@app.route('/f/<name>', methods=['GET', 'POST'])
+@Filterset.is_url_for('view')
+def filterset_view(name):
+    filterset = Filterset.get(g.board, name)
+    if not filterset:
+        abort(404)
+    return index(filters=filterset.to_filters(translate_geonameids=True),
+        query_string=filterset.keywords,
+        filterset=filterset)
 
 
 @app.route('/opensearch.xml', subdomain='<subdomain>')
@@ -736,6 +770,15 @@ def sitemap(key):
                       '    <lastmod>%s</lastmod>\n' % (board.updated_at.isoformat() + 'Z') + \
                       '    <changefreq>monthly</changefreq>\n'\
                       '  </url>\n'
+
+    # Add filtered views to sitemap
+    for item in Filterset.query.all():
+        sitemapxml += '  <url>\n'\
+                    '    <loc>%s</loc>\n' % item.url_for(_external=True) + \
+                    '    <lastmod>%s</lastmod>\n' % (item.updated_at.isoformat() + 'Z') + \
+                    '    <changefreq>daily</changefreq>\n'\
+                    '  </url>\n'
+
     # Add locations to sitemap
     for item in Location.query.filter(Location.board_id.in_(board_ids)).all():
         sitemapxml += '  <url>\n'\
