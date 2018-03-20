@@ -178,15 +178,15 @@
       }
     });
   </script>
-  {% from "macros.html.jinja2" import funnel_stat_setup %}
-  {{ funnel_stat_setup({
-    'max_impressions': max_impressions,
-    'max_views': max_views,
-    'max_opens': max_opens,
-    'max_applied': max_applied
-    }, paginated)
-  }}
   {%- if not paginated -%}
+    <script>
+      window.Hasjob.Config.MaxFunnelStat = {
+        'max_impressions': {{ max_impressions }},
+        'max_views': {{ max_views }},
+        'max_opens': {{ max_opens }},
+        'max_applied': {{ max_applied }}
+      }
+    </script>
     {% from "macros.html.jinja2" import filters_setup_script %}
     {%- if request.is_xhr -%}
       {{ filters_setup_script(job_filters, data_filters) }}

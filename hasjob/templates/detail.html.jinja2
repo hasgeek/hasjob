@@ -378,6 +378,12 @@
 {%- endif %}
 
 <script type="text/javascript">
+  window.Hasjob.Config.MaxFunnelStat = {
+    'max_impressions': {{ max_impressions }},
+    'max_views': {{ max_views }},
+    'max_opens': {{ max_opens }},
+    'max_applied': {{ max_applied }}
+  }
   $(function() {
     {%- if g.kiosk %}
       $('.jobdescription a').contents().unwrap();

@@ -1,7 +1,7 @@
 //window.Hasjob initialized in layout.html
 
 Hasjob.Util = {
-  updateGA: function(){
+  updateGA: function() {
     /*
       Resets the path in the tracker object and updates GA with the current path.
       To be called after updating the URL with pushState or replaceState.
@@ -12,6 +12,17 @@ Hasjob.Util = {
       window.ga('set', 'page', path);
       window.ga('send', 'pageview');
     }
+  },
+  createCustomEvent: function(eventName) {
+    // Raise a custom event once boxoffice.js has been loaded
+    if (typeof(window.Event) === "function") {
+      var customEvent = new Event(eventName);
+    } else {
+      // 'Event' constructor is not supported by IE
+      var customEvent = document.createEvent('Event');
+      customEvent.initEvent(eventName, true, true);
+    }
+    return customEvent;
   }
 };
 
@@ -95,7 +106,7 @@ window.Hasjob.JobPost = {
 
 window.Hasjob.StickieList = {
   init: function(){
-    var stickielist = this;
+    window.dispatchEvent(Hasjob.Util.createCustomEvent('onStickiesInit'));
   },
   loadmore: function(config){
     var stickielist = this;
@@ -116,6 +127,7 @@ window.Hasjob.StickieList = {
             $('ul#stickie-area').append(data.trim());
             stickielist.loadmoreRactive.set('loading', false);
             stickielist.loadmoreRactive.set('error', false);
+            window.dispatchEvent(Hasjob.Util.createCustomEvent('onStickiesPagination'));
           },
           error: function() {
             stickielist.loadmoreRactive.set('error', true);
@@ -175,6 +187,7 @@ window.Hasjob.StickieList = {
         $('#main-content').html(data);
         window.Hasjob.Filters.refresh();
         NProgress.done();
+        window.dispatchEvent(Hasjob.Util.createCustomEvent('onStickiesRefresh'));
       }
     });
     history.replaceState({reloadOnPop: true}, '', window.location.href);
@@ -467,6 +480,8 @@ window.Hasjob.Filters = {
       // Set the cursor back to where it was before refresh
       keywordsField.selectionEnd = initialKeywordPos;
     });
+
+    this.ButtonRactive.set('sidebarOn', false);
   }
 };
 
@@ -681,9 +696,29 @@ window.Hasjob.FunnelStat = {
   updateFunnel: function() {
     $('.js-funnel').each(function() {
       if(!$(this).hasClass("funnel-color-set")) {
-        window.Hasjob.FunnelStat.setFunnelColour($(this).data('funnel-name'), $(this).data('funnel-value'), $(this).attr('id'));
+        Hasjob.FunnelStat.setFunnelColour($(this).data('funnel-name'), $(this).data('funnel-value'), $(this).attr('id'));
       }
     });
+  },
+  createFunnel: function() {
+    Hasjob.FunnelStat.createGradientColourBar('impressions', Hasjob.Config.MaxFunnelStat.max_impressions);
+    Hasjob.FunnelStat.createGradientColourBar('views', Hasjob.Config.MaxFunnelStat.max_views);
+    Hasjob.FunnelStat.createGradientColourBar('opens', Hasjob.Config.MaxFunnelStat.max_opens);
+    Hasjob.FunnelStat.createGradientColourBar('applied', Hasjob.Config.MaxFunnelStat.max_applied);
+    Hasjob.FunnelStat.updateFunnel();
+  },
+  init: function() {
+    window.addEventListener('onStickiesInit', function (e) {
+      Hasjob.FunnelStat.createFunnel();
+    }, false);
+
+    window.addEventListener('onStickiesRefresh', function (e) {
+      Hasjob.FunnelStat.createFunnel();
+    }, false);
+
+    window.addEventListener('onStickiesPagination', function (e) {
+      Hasjob.FunnelStat.updateFunnel();
+    }, false);
   }
 }
 
@@ -702,6 +737,8 @@ $(function() {
   window.Hasjob.Filters.init();
   window.Hasjob.JobPost.handleStarClick();
   window.Hasjob.JobPost.handleGroupClick();
+  window.Hasjob.FunnelStat.init();
+  window.Hasjob.StickieList.init();
 
   var getCurrencyVal = function() {
     return $("input[type='radio'][name='currency']:checked").val();

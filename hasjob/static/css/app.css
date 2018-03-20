@@ -912,7 +912,6 @@ tr > div {
   position: relative;
   vertical-align: top;
   display: block;
-  font-family: "McLaren", sans-serif;
   overflow: visible;
   padding: 24px 0 0;
   word-wrap: break-word;
@@ -940,7 +939,6 @@ tr > div {
   display: block;
   position: absolute;
   color: #816894;
-  font-family: "McLaren", sans-serif;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -960,6 +958,9 @@ tr > div {
   display: block;
   padding: 0 18px;
   position: static;
+}
+.stickie .headline {
+  font-family: "McLaren", sans-serif;
 }
 .stickie .star {
   position: static;
@@ -1187,6 +1188,7 @@ tr > div {
 
 .stickie.special {
   background-color: #f6f6f6;
+  padding: 24px 18px;
 }
 
 .stickie.org {

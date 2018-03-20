@@ -15,7 +15,6 @@
   position: relative
   vertical-align: top
   display: block
-  font-family: $font-stickie-headline
   overflow: visible  // To make shadow visible
   padding: 24px 0 0
   word-wrap: break-word
@@ -37,7 +36,6 @@
     display: block
     position: absolute
     color: $color-stickie-location
-    font-family: $font-stickie-headline
     overflow: hidden
     white-space: nowrap
     text-overflow: ellipsis
@@ -57,6 +55,9 @@
     display: block
     padding: 0 18px
     position: static
+
+  .headline
+    font-family: $font-stickie-headline
 
   .star
     position: static
@@ -261,6 +262,7 @@
 
 .stickie.special
   background-color: $color-stickie-info
+  padding: 24px 18px
 
 .stickie.org
   background-color: #fff
