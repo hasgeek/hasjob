@@ -37,6 +37,8 @@
       {%- else -%}
         All jobs at {{ domain.use_title }}
       {%- endif -%}
+    {%- elif filterset %}
+      {{ filterset.description|firstline }}
     {%- else -%}
       {{ super() }}
     {%- endif -%}
@@ -60,6 +62,12 @@
         {%- if gkiosk and g.peopleflow_url %}
           <p>If you find a job worth applying for here, tap your badge on the reader attached to this kiosk and we’ll send an email connecting you with the employer.</p>
         {%- endif %}
+      </div>
+    {%- endif %}
+    {%- if filterset and filterset.description and not paginated %}
+      <div class="flash info">
+        <h2>{{ filterset.title }}</h2>
+        {{ filterset.description | safe }}
       </div>
     {%- endif %}
     {%- if location and location.use_title and location.description and not paginated %}
@@ -172,7 +180,11 @@
     $(function(){
       var loadmore = {{loadmore | tojson}};
       var paginated = {{paginated | tojson}};
+      {%- if filterset %}
+      var loadmoreURL = "{{filterset.url_for('view', **query_params) | safe}}";
+      {%- else %}
       var loadmoreURL = "{{url_for('index', **query_params) | safe}}";
+      {%- endif %}
       if (loadmore){
         window.Hasjob.StickieList.loadmore({
           url: loadmoreURL,

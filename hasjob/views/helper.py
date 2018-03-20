@@ -3,11 +3,9 @@
 from os import path
 from datetime import datetime, timedelta
 from uuid import uuid4
-from urlparse import urljoin
 from urllib import quote, quote_plus
 import hashlib
 import bleach
-import requests
 from pytz import utc
 from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
@@ -20,6 +18,7 @@ from baseframe import _, cache, get_timezone
 from baseframe.signals import form_validation_error, form_validation_success
 
 from .. import app, redis_store, lastuser
+from ..extapi import location_geodata
 from ..models import (agelimit, newlimit, db, JobCategory, JobPost, JobType, POST_STATE, BoardJobPost, Tag, JobPostTag,
     Campaign, CampaignView, CampaignAnonView, EventSessionBase, EventSession, UserEventBase, UserEvent, JobImpression,
     JobViewSession, AnonUser, campaign_event_session_table, JobLocation, PAY_TYPE, UserJobView, JobApplication)
@@ -322,7 +321,12 @@ def session_jobpost_ab():
 
 
 def bgroup(jobpost_ab, post):
-    return (jobpost_ab.get(post.id) or cointoss()) if post.headlineb else None
+    if not post.headlineb:
+        return
+    result = jobpost_ab.get(post.id)
+    if result is None:
+        result = cointoss()
+    return result
 
 
 def get_jobpost_impressions(jobpost_id):
@@ -671,22 +675,6 @@ def reset_campaign_views():  # Periodic job (see manage.py)
             synchronize_session=False)  # NOQA
 
     db.session.commit()
-
-
-@cache.memoize(timeout=86400)
-def location_geodata(location):
-    if 'HASCORE_SERVER' in app.config and location:
-        if isinstance(location, (list, tuple)):
-            url = urljoin(app.config['HASCORE_SERVER'], '/1/geo/get_by_names')
-        else:
-            url = urljoin(app.config['HASCORE_SERVER'], '/1/geo/get_by_name')
-        response = requests.get(url, params={'name': location}).json()
-        if response.get('status') == 'ok':
-            result = response.get('result', {})
-            if isinstance(result, (list, tuple)):
-                result = {r['geonameid']: r for r in result}
-            return result
-    return {}
 
 
 def jobpost_location_hierarchy(self):
