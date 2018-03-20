@@ -14,7 +14,7 @@ Hasjob.Util = {
     }
   },
   createCustomEvent: function(eventName) {
-    // Raise a custom event once boxoffice.js has been loaded
+    // Raise a custom event
     if (typeof(window.Event) === "function") {
       var customEvent = new Event(eventName);
     } else {
@@ -645,7 +645,7 @@ window.Hasjob.FunnelStat = {
      'funnelName' - conversion funnel's name.
      'maxValue' -  max value of conversion funnel across job posts of last 30 days
   */
-  createGradientColourBar: function(funnelName, maxValue) {
+  createGradientColourScale: function(funnelName, maxValue) {
     var canvas = document.createElement("canvas");
     canvas.id = funnelName;
     canvas.width = maxValue;
@@ -675,7 +675,7 @@ window.Hasjob.FunnelStat = {
     'value' - conversion funnel value for the job post
     'elementId' - id attribute of the element of which background colour is to be set
   */
-  setFunnelColour: function(funnelName, value, elementId) {
+  setGradientColour: function(funnelName, value, elementId) {
     //rgba - RGBA values at a particular point in the canvas.
     var rgba = window.Hasjob.Config[funnelName].canvasContext.getImageData(value, 1, 1, 1).data;
     if (rgba[0] > 255 || rgba[1] > 255 || rgba[2] > 255) {
@@ -693,31 +693,32 @@ window.Hasjob.FunnelStat = {
     element.classList.add("funnel-color-set");
     element.style.backgroundColor = colourHex;
   },
-  updateFunnel: function() {
+  renderGradientColour: function() {
     $('.js-funnel').each(function() {
       if(!$(this).hasClass("funnel-color-set")) {
-        Hasjob.FunnelStat.setFunnelColour($(this).data('funnel-name'), $(this).data('funnel-value'), $(this).attr('id'));
+        Hasjob.FunnelStat.setGradientColour($(this).data('funnel-name'), $(this).data('funnel-value'), $(this).attr('id'));
       }
     });
   },
-  createFunnel: function() {
-    Hasjob.FunnelStat.createGradientColourBar('impressions', Hasjob.Config.MaxFunnelStat.max_impressions);
-    Hasjob.FunnelStat.createGradientColourBar('views', Hasjob.Config.MaxFunnelStat.max_views);
-    Hasjob.FunnelStat.createGradientColourBar('opens', Hasjob.Config.MaxFunnelStat.max_opens);
-    Hasjob.FunnelStat.createGradientColourBar('applied', Hasjob.Config.MaxFunnelStat.max_applied);
-    Hasjob.FunnelStat.updateFunnel();
+  createGradientColour: function() {
+    Hasjob.FunnelStat.createGradientColourScale('impressions', Hasjob.Config.MaxFunnelStat.max_impressions);
+    Hasjob.FunnelStat.createGradientColourScale('views', Hasjob.Config.MaxFunnelStat.max_views);
+    Hasjob.FunnelStat.createGradientColourScale('opens', Hasjob.Config.MaxFunnelStat.max_opens);
+    Hasjob.FunnelStat.createGradientColourScale('applied', Hasjob.Config.MaxFunnelStat.max_applied);
   },
   init: function() {
     window.addEventListener('onStickiesInit', function (e) {
-      Hasjob.FunnelStat.createFunnel();
+      Hasjob.FunnelStat.createGradientColour();
+      Hasjob.FunnelStat.renderGradientColour();
     }, false);
 
     window.addEventListener('onStickiesRefresh', function (e) {
-      Hasjob.FunnelStat.createFunnel();
+      Hasjob.FunnelStat.createGradientColour();
+      Hasjob.FunnelStat.renderGradientColour();
     }, false);
 
     window.addEventListener('onStickiesPagination', function (e) {
-      Hasjob.FunnelStat.updateFunnel();
+      Hasjob.FunnelStat.renderGradientColour();
     }, false);
   }
 }
