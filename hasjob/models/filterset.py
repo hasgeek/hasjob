@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from flask import url_for
 from sqlalchemy.dialects import postgresql
 from sqlalchemy import event, DDL
 from . import db, BaseScopedNameMixin, JobType, JobCategory, Tag, Domain, Board
@@ -89,7 +88,7 @@ class Filterset(BaseScopedNameMixin, db.Model):
         return {
             't': [jobtype.name for jobtype in self.types],
             'c': [jobcategory.name for jobcategory in self.categories],
-            'tg': [tag.name for tag in self.tags],
+            'k': [tag.name for tag in self.tags],
             'd': [domain.name for domain in self.domains],
             'l': location_names if translate_geonameids else self.geonameids,
             'currency': self.pay_currency,
@@ -129,10 +128,10 @@ class Filterset(BaseScopedNameMixin, db.Model):
                 )
             )
 
-        if filters.get('tg'):
+        if filters.get('k'):
             basequery = basequery.join(
                 filterset_tag_table).join(
-                Tag).filter(Tag.name.in_(filters['tg']))
+                Tag).filter(Tag.name.in_(filters['k']))
         else:
             basequery = basequery.filter(
                 ~db.exists(

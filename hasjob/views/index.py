@@ -115,7 +115,7 @@ def fetch_jobposts(request_args, request_values, filters, is_index, board, board
     if f_domains:
         basequery = basequery.join(Domain).filter(Domain.name.in_(f_domains))
 
-    f_tags = filters.get('tg') or request_args.getlist('tg')
+    f_tags = filters.get('k') or request_args.getlist('k')
     while '' in f_tags:
         f_tags.remove('')
     if f_tags:
