@@ -26,7 +26,7 @@ def upgrade():
         sa.Column('equity', sa.Boolean(), nullable=False),
         sa.Column('remote_location', sa.Boolean(), nullable=False),
         sa.Column('keywords', sa.UnicodeText(), nullable=False),
-        sa.Column('location_geonameids', postgresql.ARRAY(sa.Integer(), dimensions=1), nullable=False),
+        sa.Column('geonameids', postgresql.ARRAY(sa.Integer(), dimensions=1), nullable=False),
         sa.Column('name', sa.Unicode(length=250), nullable=False),
         sa.Column('title', sa.Unicode(length=250), nullable=False),
         sa.Column('id', sa.Integer(), nullable=False),
@@ -42,7 +42,7 @@ def upgrade():
     op.create_index(op.f('ix_filterset_keywords'), 'filterset', ['keywords'], unique=False)
 
     op.execute(sa.DDL('''
-        CREATE INDEX ix_filterset_location_geonameids on filterset USING gin (location_geonameids);
+        CREATE INDEX ix_filterset_geonameids on filterset USING gin (geonameids);
     '''))
 
     op.create_table('filterset_jobcategory',
@@ -96,7 +96,7 @@ def downgrade():
     op.drop_table('filterset_tag')
     op.drop_table('filterset_jobtype')
     op.drop_table('filterset_jobcategory')
-    op.drop_index('ix_filterset_location_geonameids', 'filterset')
+    op.drop_index('ix_filterset_geonameids', 'filterset')
     op.drop_index(op.f('ix_filterset_keywords'), table_name='filterset')
     op.drop_index(op.f('ix_filterset_equity'), table_name='filterset')
     op.drop_index(op.f('ix_filterset_pay_cash'), table_name='filterset')

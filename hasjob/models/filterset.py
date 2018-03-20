@@ -59,7 +59,7 @@ class FilterSet(BaseScopedNameMixin, db.Model):
     categories = db.relationship(JobCategory, secondary=filterset_jobcategory_table)
     tags = db.relationship(Tag, secondary=filterset_tag_table)
     domains = db.relationship(Domain, secondary=filterset_domain_table)
-    location_geonameids = db.Column(postgresql.ARRAY(db.Integer(), dimensions=1), default=[], nullable=False, index=True)
+    geonameids = db.Column(postgresql.ARRAY(db.Integer(), dimensions=1), default=[], nullable=False)
     remote_location = db.Column(db.Boolean, default=False, nullable=False, index=True)
     pay_currency = db.Column(db.CHAR(3), nullable=True, index=True)
     pay_cash = db.Column(db.Integer, nullable=True, index=True)
@@ -80,9 +80,9 @@ class FilterSet(BaseScopedNameMixin, db.Model):
 
     def to_filters(self, translate_geonameids=False):
         location_names = []
-        if translate_geonameids and self.location_geonameids:
-            location_dict = location_geodata(self.location_geonameids)
-            for geonameid in self.location_geonameids:
+        if translate_geonameids and self.geonameids:
+            location_dict = location_geodata(self.geonameids)
+            for geonameid in self.geonameids:
                 # location_geodata returns related geonames as well
                 # so we prune it down to our original list
                 location_names.append(location_dict[geonameid]['name'])
@@ -90,7 +90,7 @@ class FilterSet(BaseScopedNameMixin, db.Model):
         return {
             't': [jobtype.name for jobtype in self.types],
             'c': [jobcategory.name for jobcategory in self.categories],
-            'l': location_names if translate_geonameids else self.location_geonameids,
+            'l': location_names if translate_geonameids else self.geonameids,
             'currency': self.pay_currency,
             'pay': self.pay_cash,
             'equity': self.equity,
@@ -128,9 +128,9 @@ class FilterSet(BaseScopedNameMixin, db.Model):
             )
 
         if filters.get('l'):
-            basequery = basequery.filter(cls.location_geonameids == sorted(filters['l']))
+            basequery = basequery.filter(cls.geonameids == sorted(filters['l']))
         else:
-            basequery = basequery.filter(cls.location_geonameids == [])
+            basequery = basequery.filter(cls.geonameids == [])
 
         if filters.get('equity'):
             basequery = basequery.filter(cls.equity == True)
@@ -160,15 +160,15 @@ class FilterSet(BaseScopedNameMixin, db.Model):
 @event.listens_for(FilterSet, 'before_insert')
 def _format_and_validate(mapper, connection, target):
     with db.session.no_autoflush:
-        if target.location_geonameids:
-            target.location_geonameids = sorted(target.location_geonameids)
+        if target.geonameids:
+            target.geonameids = sorted(target.geonameids)
 
         if FilterSet.from_filters(target.board, target.to_filters()):
             raise ValueError("There already exists a filter set with this filter criteria")
 
-create_location_geonameids_trigger = DDL('''
-    CREATE INDEX ix_filterset_location_geonameids on filterset USING gin (location_geonameids);
+create_geonameids_trigger = DDL('''
+    CREATE INDEX ix_filterset_geonameids on filterset USING gin (geonameids);
 ''')
 
 event.listen(FilterSet.__table__, 'after_create',
-    create_location_geonameids_trigger.execute_if(dialect='postgresql'))
+    create_geonameids_trigger.execute_if(dialect='postgresql'))
