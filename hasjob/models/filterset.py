@@ -73,10 +73,9 @@ class Filterset(BaseScopedNameMixin, db.Model):
     def get(cls, board, name):
         return cls.query.filter(cls.board == board, cls.name == name).one_or_none()
 
-    def url_for(self, action='view', _external=False, **kwargs):
-        if action == 'view':
-            subdomain = self.board.name if self.board.not_root else None
-            return url_for('filterset_view', subdomain=subdomain, name=self.name, _external=_external)
+    def url_for(self, action='view', _external=True, **kwargs):
+        kwargs.setdefault('subdomain', self.board.name if self.board.not_root else None)
+        return super(Filterset, self).url_for(action, name=self.name, _external=_external, **kwargs)
 
     def to_filters(self, translate_geonameids=False):
         location_names = []

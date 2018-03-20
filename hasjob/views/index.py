@@ -559,6 +559,7 @@ def browse_tags():
 # POST is required for pagination
 @app.route('/f/<name>', subdomain='<subdomain>', methods=['GET', 'POST'])
 @app.route('/f/<name>', methods=['GET', 'POST'])
+@Filterset.is_url_for('view')
 def filterset_view(name):
     filterset = Filterset.get(g.board, name)
     if not filterset:
