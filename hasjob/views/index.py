@@ -10,7 +10,7 @@ from coaster.views import render_with
 from baseframe import _  # , dogpile
 
 from .. import app, lastuser
-from ..models import (db, JobCategory, JobPost, JobType, POST_STATE, newlimit, agelimit, JobLocation, Board, FilterSet,
+from ..models import (db, JobCategory, JobPost, JobType, POST_STATE, newlimit, agelimit, JobLocation, Board, Filterset,
     Domain, Location, Tag, JobPostTag, Campaign, CAMPAIGN_POSITION, CURRENCY, JobApplication, starred_job_table, BoardJobPost)
 from ..views.helper import (getposts, getallposts, gettags, location_geodata, load_viewcounts, session_jobpost_ab,
     bgroup, make_pay_graph, index_is_paginated, get_post_viewcounts)
@@ -547,7 +547,7 @@ def browse_tags():
 @app.route('/f/<name>', subdomain='<subdomain>', methods=['GET', 'POST'])
 @app.route('/f/<name>', methods=['GET', 'POST'])
 def filterset_view(name):
-    filterset = FilterSet.get(g.board, name)
+    filterset = Filterset.get(g.board, name)
     if not filterset:
         abort(404)
     return index(filters=filterset.to_filters(translate_geonameids=True),
@@ -749,7 +749,7 @@ def sitemap(key):
                       '  </url>\n'
 
     # Add filtered views to sitemap
-    for item in FilterSet.query.all():
+    for item in Filterset.query.all():
         sitemapxml += '  <url>\n'\
                     '    <loc>%s</loc>\n' % item.url_for(_external=True) + \
                     '    <lastmod>%s</lastmod>\n' % (item.updated_at.isoformat() + 'Z') + \

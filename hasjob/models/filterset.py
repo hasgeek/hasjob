@@ -7,7 +7,7 @@ from . import db, BaseScopedNameMixin, JobType, JobCategory, Tag, Domain, Board
 from ..extapi import location_geodata
 
 
-__all__ = ['FilterSet']
+__all__ = ['Filterset']
 
 
 filterset_jobtype_table = db.Table('filterset_jobtype', db.Model.metadata,
@@ -37,7 +37,7 @@ filterset_domain_table = db.Table('filterset_domain', db.Model.metadata,
 )
 
 
-class FilterSet(BaseScopedNameMixin, db.Model):
+class Filterset(BaseScopedNameMixin, db.Model):
     """
     Store filters to display a filtered set of jobs scoped by a board on SEO friendly URLs
 
@@ -67,7 +67,7 @@ class FilterSet(BaseScopedNameMixin, db.Model):
     keywords = db.Column(db.Unicode(250), nullable=False, default=u'', index=True)
 
     def __repr__(self):
-        return '<FilterSet %s "%s">' % (self.board.title, self.title)
+        return '<Filterset %s "%s">' % (self.board.title, self.title)
 
     @classmethod
     def get(cls, board, name):
@@ -90,6 +90,8 @@ class FilterSet(BaseScopedNameMixin, db.Model):
         return {
             't': [jobtype.name for jobtype in self.types],
             'c': [jobcategory.name for jobcategory in self.categories],
+            'tg': [tag.name for tag in self.tags],
+            'd': [domain.name for domain in self.domains],
             'l': location_names if translate_geonameids else self.geonameids,
             'currency': self.pay_currency,
             'pay': self.pay_cash,
@@ -109,7 +111,7 @@ class FilterSet(BaseScopedNameMixin, db.Model):
             basequery = basequery.filter(
                 ~db.exists(
                     db.select([1]).where(
-                        FilterSet.id == filterset_jobtype_table.c.filterset_id
+                        Filterset.id == filterset_jobtype_table.c.filterset_id
                     )
                 )
             )
@@ -122,7 +124,33 @@ class FilterSet(BaseScopedNameMixin, db.Model):
             basequery = basequery.filter(
                 ~db.exists(
                     db.select([1]).where(
-                        FilterSet.id == filterset_jobcategory_table.c.filterset_id
+                        Filterset.id == filterset_jobcategory_table.c.filterset_id
+                    )
+                )
+            )
+
+        if filters.get('tg'):
+            basequery = basequery.join(
+                filterset_tag_table).join(
+                Tag).filter(Tag.name.in_(filters['tg']))
+        else:
+            basequery = basequery.filter(
+                ~db.exists(
+                    db.select([1]).where(
+                        Filterset.id == filterset_tag_table.c.filterset_id
+                    )
+                )
+            )
+
+        if filters.get('d'):
+            basequery = basequery.join(
+                filterset_domain_table).join(
+                Domain).filter(Domain.name.in_(filters['d']))
+        else:
+            basequery = basequery.filter(
+                ~db.exists(
+                    db.select([1]).where(
+                        Filterset.id == filterset_domain_table.c.filterset_id
                     )
                 )
             )
@@ -156,19 +184,19 @@ class FilterSet(BaseScopedNameMixin, db.Model):
         return basequery.one_or_none()
 
 
-@event.listens_for(FilterSet, 'before_update')
-@event.listens_for(FilterSet, 'before_insert')
+@event.listens_for(Filterset, 'before_update')
+@event.listens_for(Filterset, 'before_insert')
 def _format_and_validate(mapper, connection, target):
     with db.session.no_autoflush:
         if target.geonameids:
             target.geonameids = sorted(target.geonameids)
 
-        if FilterSet.from_filters(target.board, target.to_filters()):
+        if Filterset.from_filters(target.board, target.to_filters()):
             raise ValueError("There already exists a filter set with this filter criteria")
 
 create_geonameids_trigger = DDL('''
     CREATE INDEX ix_filterset_geonameids on filterset USING gin (geonameids);
 ''')
 
-event.listen(FilterSet.__table__, 'after_create',
+event.listen(Filterset.__table__, 'after_create',
     create_geonameids_trigger.execute_if(dialect='postgresql'))
