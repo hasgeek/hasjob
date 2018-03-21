@@ -8,7 +8,7 @@ from baseframe.forms import render_form, render_delete_sqla
 from ..models import db, agelimit, Location, JobLocation, JobPost, POST_STATE
 from ..forms import NewLocationForm, EditLocationForm
 from .. import app, lastuser
-from .helper import location_geodata
+from ..extapi import location_geodata
 
 
 @app.route('/in/new', methods=['GET', 'POST'], subdomain='<subdomain>')
