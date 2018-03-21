@@ -4,7 +4,7 @@ body
 
 header
   margin-bottom: 0
-  min-height: 62px
+  min-height: 103px
 
   h1
     color: $color-title-has
@@ -32,6 +32,11 @@ header
     +box-shadow(0 1px 5px $color-shadow)
     min-height: 62px
 
+    .container
+      position: relative
+      height: 103px
+      background: #ebe7e4
+
     .btn-post-job
       background-color: $color-title-geek
       border-color: $color-title-geek
@@ -58,6 +63,7 @@ header
       position: absolute
       left: 15px
       right: 15px
+      top: 28px
 
     .board-caption h1 a
       width: 100%
@@ -68,24 +74,55 @@ header
 
     h1
       margin: 0
+
+    .hg-header-nav
+      ul li
+        position: static
+
+      .search
+        position: absolute
+        top: 46px
+        width: 100%
+        left: 0
+        padding: 10px 15px
+
+      .search-box
+        width: 100%
+        padding: 0 5px
+        font-family: $font-default, FontAwesome
+        height: 36px
+        font-size: 13px
+        color: #555
+        background-color: #fff
+        background-image: none
+        border: 1px solid #ccc
+        border-radius: 3px
+
+      .search-box:focus,
+      .search-box:active
+        outline: none
     
     .hg-site-nav
-      position: fixed
-      top: 61px
-      min-height: 100vh
-      left: -120%
-      width: 110%
+      position: absolute
+      top: -500px
+      left: 0
+      width: 100%
       margin: 0
-      max-height: 100%
-      -webkit-transition: left .15s ease-out
-      -moz-transition: left .15s ease-out
-      -ms-transition: left .15s ease-out
-      -o-transition: left .15s ease-out
-      transition: left .15s ease-out
+      -webkit-transition: top 0.25s linear, z-index 0.1s step-start
+      -moz-transition: top 0.25s linear, z-index 0.1s step-start
+      -ms-transition: top 0.25s linear, z-index 0.1s step-start
+      -o-transition: top 0.25s linear, z-index 0.1s step-start
+      transition: top 0.25s linear, z-index 0.1s step-start
+      z-index: -1
 
     .hg-site-nav.active
-      left: 0
-      background-color: rgba(0, 0, 0, 0.3)
+      top: 46px
+      -webkit-transition: top 0.25s linear, z-index 0.25s step-end
+      -moz-transition: top 0.25s linear, z-index 0.25s step-end
+      -ms-transition: top 0.25s linear, z-index 0.25s step-end
+      -o-transition: top 0.25s linear, z-index 0.25s step-end
+      transition: top 0.25s linear, z-index 0.25s step-end
+      z-index: 1
 
     .fa
       width: 14px //same as font-size
@@ -97,10 +134,9 @@ header
   +replace-text-with-dimensions('logo-star.png')
 
 .header-section
-  width: 85%
+  width: 100%
   background: #ebe7e4
-  padding: 10px 15px 5px 15px
-  min-height: 100vh
+  padding: 15px
 
   label
     font-weight: normal
@@ -209,6 +245,9 @@ header
     #hgnav 
       min-height: 0
 
+      .container
+        height: auto
+
       .hg-header-app-nav
         max-width: 76%
 
@@ -226,6 +265,8 @@ header
         left: 0
         width: 100%
         min-height: 0
+        z-index: 1030
+
 
       #hg-site-nav-toggle
         display: none

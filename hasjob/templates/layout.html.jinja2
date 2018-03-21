@@ -72,23 +72,15 @@
     </div>
   {% endmacro %}
   {% macro site_nav_button() %}
-    <button type="button" id="hg-site-nav-toggle">
-      {%- raw %}
-        <script id='filters-button-ractive' type='text/ractive'>
-        {{#if sidebarOn }}
-          <i class="fa fa-close"></i>
-        {{else}}
-          <i class="fa fa-search"></i>
-        {{/if}}
-        </script>
-      {%- endraw %}
-    </button>
+    <div class="visible-xs search">
+      <input id="search-mobile" class="search-box" type="text" placeholder="&#xF002; Search">
+    </div>
   {% endmacro %}
   {% macro site_nav() %}
     <div id='job-filters-ractive-template'>
       {%- raw %}
         <script id='filters-ractive' type='text/ractive'>
-          <div class="nav hg-site-nav {{# sidebarOn }}active{{/if}}" id="hg-sitenav">
+          <div class="nav hg-site-nav {{#if show}}active{{/if}}" id="hg-sitenav">
             <div class="header-section" id="filter-dropdown">
               <form id="js-job-filters" role="form">
                 {{ #jobsArchive }}
