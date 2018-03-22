@@ -748,7 +748,10 @@ class JobApplication(BaseMixin, db.Model):
     #: User opted-in to experimental features
     optin = db.Column(db.Boolean, default=False, nullable=False)
     #: Employer's response code
-    response = db.Column(db.Integer, nullable=False, default=EMPLOYER_RESPONSE.NEW)
+    _response = db.Column('response', db.Integer,
+        StateManager.check_constraint('response', EMPLOYER_RESPONSE),
+        nullable=False, default=EMPLOYER_RESPONSE.NEW)
+    response = StateManager('_response', EMPLOYER_RESPONSE, doc="Employer's response")
     #: Employer's response message
     response_message = db.Column(db.UnicodeText, nullable=True)
     #: Bag of words, for spam analysis
@@ -769,40 +772,6 @@ class JobApplication(BaseMixin, db.Model):
     @property
     def status(self):
         return EMPLOYER_RESPONSE[self.response]
-
-    def is_new(self):
-        return self.response == EMPLOYER_RESPONSE.NEW
-
-    def is_pending(self):
-        return self.response == EMPLOYER_RESPONSE.PENDING
-
-    def is_ignored(self):
-        return self.response == EMPLOYER_RESPONSE.IGNORED
-
-    def is_replied(self):
-        return self.response == EMPLOYER_RESPONSE.REPLIED
-
-    def is_flagged(self):
-        return self.response == EMPLOYER_RESPONSE.FLAGGED
-
-    def is_spam(self):
-        return self.response == EMPLOYER_RESPONSE.SPAM
-
-    def is_rejected(self):
-        return self.response == EMPLOYER_RESPONSE.REJECTED
-
-    def can_reply(self):
-        return self.response in (EMPLOYER_RESPONSE.NEW, EMPLOYER_RESPONSE.PENDING, EMPLOYER_RESPONSE.IGNORED)
-
-    def can_reject(self):
-        return self.response in (EMPLOYER_RESPONSE.NEW, EMPLOYER_RESPONSE.PENDING, EMPLOYER_RESPONSE.IGNORED)
-
-    def can_ignore(self):
-        return self.response in (EMPLOYER_RESPONSE.NEW, EMPLOYER_RESPONSE.PENDING)
-
-    def can_report(self):
-        return self.response in (EMPLOYER_RESPONSE.NEW, EMPLOYER_RESPONSE.PENDING,
-            EMPLOYER_RESPONSE.IGNORED, EMPLOYER_RESPONSE.REJECTED)
 
     def application_count(self):
         """Number of jobs candidate has applied to around this one"""

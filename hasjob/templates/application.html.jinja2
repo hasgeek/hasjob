@@ -29,16 +29,16 @@
           <input type="hidden" name="_charset_"/>
           <input type="hidden" name="form.id" value="process_application_form"/>
           {{ response_form.hidden_tag() }}
-          {%- if job_application.is_new() or job_application.is_pending() or job_application.is_ignored() %}
+          {%- if job_application.response.NEW or job_application.response.PENDING or job_application.response.IGNORED %}
             <div id="appl-options">
               <p>
                 <button class="btn btn-success" id="appl-reply" name="action" value="reply">Respond...</button>
                 <button class="btn btn-info" id="appl-reject" name="action" value="reject">Reject...</button>
-                {% if not job_application.is_ignored() %}<button class="btn btn-info" type="submit" name="action" value="ignore">Ignore candidate</button>{% endif %}
+                {% if not job_application.response.IGNORED %}<button class="btn btn-info" type="submit" name="action" value="ignore">Ignore candidate</button>{% endif %}
                 <button class="btn btn-danger" type="submit" name="action" value="flag">Report spam</button>
               </p>
               <p id="appl-instructions">
-                {%- if job_application.is_ignored() %}
+                {%- if job_application.response.IGNORED %}
                   You have ignored this candidate.
                 {%- endif %}
                 Respond to the candidate to see their contact information.
@@ -46,18 +46,18 @@
                 will not be shared. Spam reports are manually processed.
               </p>
             </div>
-          {%- elif job_application.is_flagged() %}
+          {%- elif job_application.response.FLAGGED %}
             <p>
               <button class="btn btn-info" type="submit" name="action" value="unflag">Report not spam</button>
             </p>
             <p>
               You have flagged this application as spam.
             </p>
-          {%- elif job_application.is_spam() %}
+          {%- elif job_application.response.SPAM %}
             <p>
               An administrator flagged this application as spam.
             </p>
-          {%- elif job_application.is_replied() %}
+          {%- elif job_application.response.REPLIED %}
             <p>
               <strong>Email:</strong> {{ job_application.email }}<br>
               <strong>Phone:</strong> {{ job_application.phone }}
@@ -68,7 +68,7 @@
             {%- if job_application.response_message %}
               {{ job_application.response_message|safe }}
             {%- endif %}
-          {%- elif job_application.is_rejected() %}
+          {%- elif job_application.response.REJECTED %}
               {%- if job_application.replied_by -%}
                 <p><strong>Correspondent:</strong> {{ job_application.replied_by.pickername }}</p>
               {%- endif %}
@@ -96,14 +96,14 @@
       <div class="col-md-3">
         <div class="list-group">
           {%- for appl in post.applications %}
-            <a class="list-group-item status_{{ appl.status|lower }}" href="{{ appl.url_for() }}">
+            <a class="list-group-item status_{{ appl.response.label.name }}" href="{{ appl.url_for() }}">
               {%- if appl == job_application -%}
                 <strong>{{ appl.fullname }}</strong>
               {%- else -%}
                 {{ appl.fullname }}
               {%- endif -%}
               <br><span class="post-date">{{ appl.created_at|shortdate }} &middot;
-              {%- if appl.is_new() %} <strong>{{ appl.status }}</strong>{% else %} {{ appl.status }}{% endif %}
+              {%- if appl.state.NEW %} <strong>{{ appl.response.label.title }}</strong>{% else %} {{ appl.response.label.title }}{% endif %}
               </span>
             </a>
           {%- endfor %}

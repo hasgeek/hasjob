@@ -459,8 +459,8 @@ def process_application(domain, hashid, application):
     flashmsg = ''
 
     if response_form.validate_on_submit():
-        if (request.form.get('action') == 'reply' and job_application.can_reply()) or (
-                request.form.get('action') == 'reject' and job_application.can_reject()):
+        if (request.form.get('action') == 'reply' and job_application.response.CAN_REPLY) or (
+                request.form.get('action') == 'reject' and job_application.response.CAN_REJECT):
             if not response_form.response_message.data:
                 flashmsg = "You need to write a message to the candidate."
             else:
@@ -484,7 +484,7 @@ def process_application(domain, hashid, application):
                     sender=sender_name,
                     site=app.config['SITE_TITLE'])
 
-                if job_application.is_replied():
+                if job_application.response.REPLIED:
                     msg = Message(
                         subject=u"{candidate}: {headline}".format(
                             candidate=job_application.user.fullname, headline=post.headline),
@@ -502,13 +502,13 @@ def process_application(domain, hashid, application):
                 msg.html = email_html
                 mail.send(msg)
                 db.session.commit()
-        elif request.form.get('action') == 'ignore' and job_application.can_ignore():
+        elif request.form.get('action') == 'ignore' and job_application.response.CAN_IGNORE:
             job_application.response = EMPLOYER_RESPONSE.IGNORED
             db.session.commit()
-        elif request.form.get('action') == 'flag' and job_application.can_report():
+        elif request.form.get('action') == 'flag' and job_application.response.CAN_REPORT:
             job_application.response = EMPLOYER_RESPONSE.FLAGGED
             db.session.commit()
-        elif request.form.get('action') == 'unflag' and job_application.is_flagged():
+        elif request.form.get('action') == 'unflag' and job_application.response.FLAGGED:
             job_application.response = EMPLOYER_RESPONSE.NEW
             db.session.commit()
 
