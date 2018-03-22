@@ -385,23 +385,22 @@ def get_post_viewcounts(jobpost_id):
 
 
 def get_max_counts(postids):
-    view_counts = [get_post_viewcounts(postid) for postid in postids]
-
-    if view_counts:
-        values = {
-            'max_impressions': max([vc['impressions'] for vc in view_counts]),
-            'max_views': max([vc['viewed'] for vc in view_counts]),
-            'max_opens': max([vc['opened'] for vc in view_counts]),
-            'max_applied': max([vc['applied'] for vc in view_counts])
-        }
-    else:
-        values = {
-            'max_impressions': 0,
-            'max_views': 0,
-            'max_opens': 0,
-            'max_applied': 0
-        }
-
+    values = g.maxcounts if g.maxcounts else {}
+    if not values:
+        view_counts = [get_post_viewcounts(postid) for postid in postids]
+        if view_counts:
+            values = {
+                'max_impressions': max([vc['impressions'] for vc in view_counts] or [0]),
+                'max_views': max([vc['viewed'] for vc in view_counts] or [0]),
+                'max_opens': max([vc['opened'] for vc in view_counts] or [0]),
+                'max_applied': max([vc['applied'] for vc in view_counts] or [0])
+            }
+        cache_key = JobPost.maxcounts_key(postids)
+        redis_store.hset(cache_key, 'max_impressions', values['max_impressions'])
+        redis_store.hset(cache_key, 'max_views', values['max_views'])
+        redis_store.hset(cache_key, 'max_opens', values['max_opens'])
+        redis_store.hset(cache_key, 'max_applied', values['max_applied'])
+        redis_store.expire(cache_key, 86400)
     return values
 
 
@@ -412,11 +411,19 @@ def inject_post_viewcounts():
 
 def load_viewcounts(posts):
     redis_pipe = redis_store.pipeline()
-    viewcounts_keys = JobPost.viewcounts_key([p.id for p in posts])
+    postids = [p.id for p in posts]
+    viewcounts_keys = JobPost.viewcounts_key(postids)
     for key in viewcounts_keys:
         redis_pipe.hgetall(key)
-    viewcounts_values = redis_pipe.execute()
+
+    maxcounts_key = JobPost.maxcounts_key(postids)
+    redis_pipe.hgetall(maxcounts_key)
+
+    values = redis_pipe.execute()
+    viewcounts_values = values[:-1]
+    maxcounts_values = values[-1]
     g.viewcounts = dict(zip(viewcounts_keys, viewcounts_values))
+    g.maxcounts = maxcounts_values
 
 
 def getposts(basequery=None, pinned=False, showall=False, statusfilter=None, ageless=False, limit=2000, order=True):
