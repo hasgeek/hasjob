@@ -79,30 +79,10 @@ header
       ul li
         position: static
 
-      .search
-        position: absolute
-        top: 46px
-        width: 100%
-        left: 0
-        padding: 10px 15px
-
-      .search-box
-        width: 100%
-        padding: 0 5px
-        font-family: $font-default, FontAwesome
-        height: 36px
-        font-size: 13px
-        color: #555
-        background-color: #fff
-        background-image: none
-        border: 1px solid #ccc
-        border-radius: 3px
-
-      .search-box:focus,
-      .search-box:active
-        outline: none
-    
     .hg-site-nav
+      clear: both
+    
+    .filter-dropdown
       position: absolute
       top: -500px
       left: 0
@@ -114,9 +94,12 @@ header
       -o-transition: top 0.25s linear, z-index 0.1s step-start
       transition: top 0.25s linear, z-index 0.1s step-start
       z-index: -1
+      background: #ebe7e4
+      padding-bottom: 15px
+      box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.4)
 
-    .hg-site-nav.active
-      top: 46px
+    .filter-dropdown.active
+      top: 96px
       -webkit-transition: top 0.25s linear, z-index 0.25s step-end
       -moz-transition: top 0.25s linear, z-index 0.25s step-end
       -ms-transition: top 0.25s linear, z-index 0.25s step-end
@@ -133,10 +116,10 @@ header
 #logo
   +replace-text-with-dimensions('logo-star.png')
 
-.header-section
+.filters-wrapper
   width: 100%
   background: #ebe7e4
-  padding: 15px
+  margin: 20px 0 0
 
   label
     font-weight: normal
@@ -258,24 +241,13 @@ header
         display: inline
 
       .hg-site-nav
-        clear: both
         margin: 0
-        position: relative
-        top: 0
-        left: 0
-        width: 100%
-        min-height: 0
-        z-index: 1030
 
-
-      #hg-site-nav-toggle
-        display: none
-
-      .header-section
+      .filters-wrapper
         width: 100%
         padding: 10px 0 5px
         min-height: 0
-
+        margin: 0
 
         ul.multiselect-container
           width: 20em
@@ -295,7 +267,7 @@ header
     left: auto
     
 @media (min-width: 992px) and (max-width: 1199px)
-  .header-section .pay-filter-dropdown
+  .filters-wrapper .pay-filter-dropdown
     right: 0
     left: auto
 
@@ -306,7 +278,7 @@ header
     #hgnav .hg-header-app-nav
       max-width: 90%
 
-  .header-section
+  .filters-wrapper
     padding-bottom: 4px
 
     .submit-btn
@@ -332,3 +304,7 @@ header
 
 #nprogress .peg
   box-shadow: 0 0 10px $color-title-has,0 0 5px $color-title-has
+
+#nprogress .spinner-icon
+  border-top-color: $color-title-has
+  border-left-color: $color-title-has

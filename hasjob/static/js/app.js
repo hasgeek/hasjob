@@ -137,7 +137,7 @@ window.Hasjob.StickieList = {
   },
   refresh: function(){
     // progress indicator
-    NProgress.configure({ showSpinner: false });
+    NProgress.configure();
     NProgress.start();
     var filterParams = window.Hasjob.Filters.toParam();
     var searchUrl = window.Hasjob.Config.baseURL;
@@ -194,13 +194,12 @@ window.Hasjob.Filters = {
       selectedCurrency: window.Hasjob.Config.selectedFilters.currency,
       pay: window.Hasjob.Config.selectedFilters.pay,
       equity: window.Hasjob.Config.selectedFilters.equity,
-      sidebarOn: false
+      isMobile: $(window).width() < 768
     };
   },
   init: function(){
     var filters = this;
     var keywordTimeout;
-    var isSlidingMenu = $(window).width() < 768;
     var isFilterDropdownClosed = true;
     var filterMenuHeight = $('#hgnav').height() - $('#hg-sitenav').height();
     var pageScrollTimerId;
@@ -214,6 +213,26 @@ window.Hasjob.Filters = {
       },
       hide: function() {
         filters.dropdownMenu.set('show', false);
+      },
+      openDropDownMenu: function(event) {
+        console.log('open');
+        event.original.preventDefault();
+        filters.dropdownMenu.show();
+      },
+      closeDropDownMenu: function(event) {
+        console.log('close');
+        event.original.preventDefault();
+        filters.dropdownMenu.hide();
+      },
+      complete: function() {
+        $(window).resize(function() {
+          if ($(window).width() < 768) {
+            filters.dropdownMenu.set('isMobile', true);
+          }
+          else {
+            filters.dropdownMenu.set('isMobile', false);
+          }
+        });
       }
     });
 
@@ -345,17 +364,6 @@ window.Hasjob.Filters = {
       isFilterDropdownClosed = true;
     });
 
-    $('#search-mobile').click(function(event) {
-      event.preventDefault();
-      filters.dropdownMenu.show();
-    });
-
-    // Done button for filters on mobile
-    $('#js-mobile-filter-done').click(function(event) {
-      event.preventDefault();
-      filters.dropdownMenu.hide();
-    });
-
     //On pressing ESC, close the filters menu
     $(document).keydown(function(event) {
       if (event.keyCode === 27) {
@@ -409,7 +417,6 @@ window.Hasjob.Filters = {
       // Set the cursor back to where it was before refresh
       keywordsField.selectionEnd = initialKeywordPos;
     });
-    this.dropdownMenu.hide();
   }
 };
 

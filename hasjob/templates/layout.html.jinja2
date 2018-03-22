@@ -72,21 +72,25 @@
     </div>
   {% endmacro %}
   {% macro site_nav_button() %}
-    <div class="visible-xs search">
-      <input id="search-mobile" class="search-box" type="text" placeholder="&#xF002; Search">
+    <div class="hidden">
     </div>
   {% endmacro %}
   {% macro site_nav() %}
     <div id='job-filters-ractive-template'>
       {%- raw %}
         <script id='filters-ractive' type='text/ractive'>
-          <div class="nav hg-site-nav {{#if show}}active{{/if}}" id="hg-sitenav">
-            <div class="header-section" id="filter-dropdown">
+          <div class="nav hg-site-nav" id="hg-sitenav">
+            <div class="filters-wrapper" id="filter-dropdown">
               <form id="js-job-filters" role="form">
                 {{ #jobsArchive }}
                   <input type="hidden" name="archive" value="{{ jobsArchive }}" />
                 {{/jobsArchive}}
-                <div class="row">
+                {{#if isMobile}}
+                <div class="visible-xs search">
+                  <input id="job-filters-keywords" class="filter-select form-control js-handle-keyword-update js-search-box search" type="text" placeholder="Keywords" name="q" value={{selectedQuery}} on-click="openDropDownMenu(event)">
+                </div>
+                {{/if}}
+                <div class="row {{#if isMobile}}filter-dropdown{{/if}} {{#if show}}active{{/if}}">
                   <div class="filters filters-col1 location-filter col-xs-12 col-sm-4 col-md-3">
                     <select id="job-filters-location" name="l" multiple="multiple" class="job-filters-select2 notselect hidden js-handle-filter-change js-refresh-location" placeholder="Location">
                       {{ #jobLocations }}
@@ -147,14 +151,18 @@
                       </ul>
                     </div>
                   </div>
-                  <div class="filters col-xs-12 col-sm-4 col-md-3">
+                  {{#if !isMobile}}
+                  <div class="filters col-xs-12 col-sm-4 col-md-3 hidden-xs">
                     <input id="job-filters-keywords" class="filter-select form-control js-handle-keyword-update" type="text" placeholder="Keywords" name="q" value={{selectedQuery}} />
                   </div>
+                  {{/if}}
+                  {{#if isMobile}}
                   <div class="col-xs-12">
-                    <button id='js-mobile-filter-done' class="btn btn-default submit-btn visible-xs">
+                    <button id='js-mobile-filter-done' class="btn btn-default submit-btn" on-click="closeDropDownMenu(event)">
                       <span><i class="fa fa-check"></i>Done</span>
                     </button>
                   </div>
+                  {{/if}}
                 </div>
               </form>
             </div>
