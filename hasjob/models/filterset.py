@@ -105,7 +105,8 @@ class Filterset(BaseScopedNameMixin, db.Model):
         if filters.get('t'):
             basequery = basequery.join(
                 filterset_jobtype_table).join(
-                JobType).filter(JobType.name.in_(filters['t']))
+                JobType).filter(JobType.name.in_(filters['t'])).group_by(Filterset.id).having(
+                db.func.count(filterset_jobtype_table.c.filterset_id) == len(filters['t']))
         else:
             basequery = basequery.filter(
                 ~db.exists(
@@ -118,7 +119,8 @@ class Filterset(BaseScopedNameMixin, db.Model):
         if filters.get('c'):
             basequery = basequery.join(
                 filterset_jobcategory_table).join(
-                JobCategory).filter(JobCategory.name.in_(filters['c']))
+                JobCategory).filter(JobCategory.name.in_(filters['c'])).group_by(Filterset.id).having(
+                db.func.count(filterset_jobcategory_table.c.filterset_id) == len(filters['c']))
         else:
             basequery = basequery.filter(
                 ~db.exists(
@@ -190,7 +192,8 @@ def _format_and_validate(mapper, connection, target):
         if target.geonameids:
             target.geonameids = sorted(target.geonameids)
 
-        if Filterset.from_filters(target.board, target.to_filters()):
+        filterset = Filterset.from_filters(target.board, target.to_filters())
+        if filterset and filterset.id != target.id:
             raise ValueError("There already exists a filter set with this filter criteria")
 
 create_geonameids_trigger = DDL('''
