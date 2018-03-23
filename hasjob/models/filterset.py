@@ -81,7 +81,7 @@ class Filterset(BaseScopedNameMixin, db.Model):
 
     @property
     def proxy(self):
-        """Proxy for association proxies"""
+        """Proxy for setting association proxies in forms. See `FiltersetAssocationsForm`"""
         return self
 
     def to_filters(self, translate_geonameids=False):
