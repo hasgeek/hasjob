@@ -87,7 +87,7 @@
                 {{/jobsArchive}}
                 {{#if isMobile}}
                 <div class="visible-xs search">
-                  <input id="job-filters-keywords" class="filter-select form-control js-handle-keyword-update search-field js-search-box" type="text" placeholder="&#xF002; Search" name="q" value={{selectedQuery}} on-click="openDropDownMenu(event)">
+                  <input id="job-filters-keywords" class="filter-select form-control js-handle-keyword-update search-field js-search-box" type="text" placeholder="&#xF002; Search" name="q" value={{selectedQuery}} on-click="open(event)">
                 </div>
                 {{/if}}
                 <div class="row {{#if isMobile}}filter-dropdown{{/if}} {{#if show}}active{{/if}}">
@@ -158,7 +158,7 @@
                   {{/if}}
                   {{#if isMobile}}
                   <div class="col-xs-12">
-                    <button id='js-mobile-filter-done' class="btn btn-default submit-btn" on-click="closeDropDownMenu(event)">
+                    <button id='js-mobile-filter-done' class="btn btn-default submit-btn" on-click="close(event)">
                       <span><i class="fa fa-check"></i>Done</span>
                     </button>
                   </div>
