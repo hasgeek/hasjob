@@ -14,7 +14,7 @@ def format_geonameids(geonameids):
 
 
 def get_currency_choices():
-    choices = [('', u'None')]
+    choices = [('', __('None'))]
     choices.extend(CURRENCY.items())
     return choices
 
@@ -49,8 +49,8 @@ class FiltersetForm(forms.Form):
     remote_location = forms.BooleanField(__("Match remote jobs"))
     pay_cash_currency = forms.RadioField(__("Currency"), choices=get_currency_choices(), default='',
         validators=[forms.validators.Optional()])
-    pay_cash = forms.IntegerField(__("Pay"), description=__("Minimum amount"),
+    pay_cash = forms.IntegerField(__("Pay"), description=__("Minimum pay"),
         validators=[forms.validators.Optional()])
     keywords = forms.StringField(__("Keywords"), description=__("Keywords"),
         validators=[forms.validators.Optional()], filters=[forms.filters.strip()])
-    proxy = forms.FormField(FiltersetAssocationsForm, __(""))
+    proxy = forms.FormField(FiltersetAssocationsForm, "")
