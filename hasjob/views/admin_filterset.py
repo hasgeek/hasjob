@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from flask import flash, g
-from coaster.views import route, viewdata, UrlForView, InstanceLoader, ModelView
+from coaster.views import route, viewdata, UrlForView, ModelView
 from baseframe import __
 from baseframe.forms import render_form, render_redirect
 from .. import app, lastuser
@@ -15,9 +15,9 @@ class AdminFilterset(AdminView):
     __decorators__ = [lastuser.requires_permission('siteadmin')]
 
     @route('new', methods=['GET', 'POST'])
-    @viewdata(tab=True, index=4, title=__("New"))
+    @viewdata(title=__("New"))
     def new(self):
-        form = FiltersetForm(board=g.board)
+        form = FiltersetForm(parent=g.board)
         if form.validate_on_submit():
             filterset = Filterset(board=g.board, title=form.title.data)
             form.populate_obj(filterset)
@@ -36,7 +36,7 @@ AdminFilterset.init_app(app)
 
 
 @route('/f/<name>')
-class AdminFiltersetView(UrlForView, InstanceLoader, ModelView):
+class AdminFiltersetView(UrlForView, ModelView):
     __decorators__ = [lastuser.requires_permission('siteadmin')]
     model = Filterset
 
@@ -44,7 +44,7 @@ class AdminFiltersetView(UrlForView, InstanceLoader, ModelView):
         return Filterset.get(g.board, kwargs.get('name'))
 
     @route('edit', methods=['GET', 'POST'])
-    @viewdata(tab=True, index=4, title=__("Edit"))
+    @viewdata(title=__("Edit"))
     def edit(self, **kwargs):
         form = FiltersetForm(obj=self.obj)
         if form.validate_on_submit():

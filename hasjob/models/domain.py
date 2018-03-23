@@ -4,7 +4,6 @@ from werkzeug import cached_property
 from sqlalchemy import event, DDL
 from sqlalchemy.orm import deferred
 from sqlalchemy.dialects.postgresql import TSVECTOR
-from coaster.utils import make_name
 from flask import url_for
 from baseframe.staticdata import webmail_domains
 from . import db, BaseMixin
@@ -107,8 +106,8 @@ class Domain(BaseMixin, db.Model):
 
     @classmethod
     def autocomplete(cls, prefix):
-        search = make_name(prefix) + '%'
-        return cls.query.filter(cls.name.like(search), cls.is_banned == False).all()  # NOQA
+        search = prefix + '%'
+        return cls.query.filter(cls.name.ilike(search), cls.is_banned == False).all()  # NOQA
 
 
 create_domain_search_trigger = DDL(

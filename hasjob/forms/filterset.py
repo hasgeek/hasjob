@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 
+from flask import g
 from wtforms.ext.sqlalchemy.fields import QuerySelectMultipleField
 from wtforms.widgets import CheckboxInput, ListWidget
 from baseframe import __
 import baseframe.forms as forms
 from ..models import CURRENCY, JobType, JobCategory
+from ..models.board import board_jobtype_table, board_jobcategory_table
 
 
 def format_geonameids(geonameids):
@@ -21,23 +23,25 @@ def get_currency_choices():
 
 class FiltersetAssocationsForm(forms.Form):
     types = QuerySelectMultipleField(__("Job types"),
-        widget=ListWidget(), option_widget=CheckboxInput(),
-        query_factory=lambda: JobType.query.order_by('title'), get_label='title',
-        validators=[forms.validators.Optional()],
-        description=__(u"Select the job types this filterset should match"))
+        widget=ListWidget(), option_widget=CheckboxInput(), get_label='title',
+        validators=[forms.validators.Optional()])
     categories = QuerySelectMultipleField(__("Job categories"),
         widget=ListWidget(), option_widget=CheckboxInput(),
-        query_factory=lambda: JobCategory.query.order_by('title'), get_label='title',
-        validators=[forms.validators.Optional()],
-        description=__(u"Select the job categories this filterset should match"))
-    geonameids = forms.GeonameSelectMultiField("Locations",
-        description=__("Locations"), filters=[format_geonameids])
+        get_label='title', validators=[forms.validators.Optional()])
+    geonameids = forms.GeonameSelectMultiField("Locations", filters=[format_geonameids])
     auto_domains = forms.AutocompleteMultipleField(__("Domains"),
-        autocomplete_endpoint='/api/1/domain/autocomplete', results_key='domains',
-        description=__("Domains that should be matched for"))
+        autocomplete_endpoint='/api/1/domain/autocomplete', results_key='domains')
     auto_tags = forms.AutocompleteMultipleField(__("Tags"),
-        autocomplete_endpoint='/api/1/tag/autocomplete', results_key='tags',
-        description=__("Tags that should be matched for"))
+        autocomplete_endpoint='/api/1/tag/autocomplete', results_key='tags')
+
+    def set_queries(self):
+        if not self.edit_parent:
+            self.edit_parent = g.board
+        self.types.query = JobType.query.join(board_jobtype_table).filter(
+            board_jobtype_table.c.board_id == self.edit_parent.id).order_by('title')
+        self.categories.query = JobCategory.query.join(board_jobcategory_table).filter(
+            board_jobcategory_table.c.board_id == self.edit_parent.id).order_by('title')
+
 
 
 class FiltersetForm(forms.Form):
@@ -51,6 +55,6 @@ class FiltersetForm(forms.Form):
         validators=[forms.validators.Optional()])
     pay_cash = forms.IntegerField(__("Pay"), description=__("Minimum pay"),
         validators=[forms.validators.Optional()])
-    keywords = forms.StringField(__("Keywords"), description=__("Keywords"),
+    keywords = forms.StringField(__("Keywords"),
         validators=[forms.validators.Optional()], filters=[forms.filters.strip()])
     proxy = forms.FormField(FiltersetAssocationsForm, "")
