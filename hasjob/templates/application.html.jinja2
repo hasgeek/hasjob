@@ -29,11 +29,11 @@
           <input type="hidden" name="_charset_"/>
           <input type="hidden" name="form.id" value="process_application_form"/>
           {{ response_form.hidden_tag() }}
-          {%- if job_application.response.NEW or job_application.response.PENDING or job_application.response.IGNORED %}
+          {%- if job_application.response.CAN_REJECT %}
             <div id="appl-options">
               <p>
-                <button class="btn btn-success" id="appl-reply" name="action" value="reply">Respond...</button>
-                <button class="btn btn-info" id="appl-reject" name="action" value="reject">Reject...</button>
+                <button class="btn btn-success" id="appl-reply" name="action" value="reply">Respond</button>
+                <button class="btn btn-info" id="appl-reject" name="action" value="reject">Reject</button>
                 {% if not job_application.response.IGNORED %}<button class="btn btn-info" type="submit" name="action" value="ignore">Ignore candidate</button>{% endif %}
                 <button class="btn btn-danger" type="submit" name="action" value="flag">Report spam</button>
               </p>
@@ -103,7 +103,7 @@
                 {{ appl.fullname }}
               {%- endif -%}
               <br><span class="post-date">{{ appl.created_at|shortdate }} &middot;
-              {%- if appl.state.NEW %} <strong>{{ appl.response.label.title }}</strong>{% else %} {{ appl.response.label.title }}{% endif %}
+              {%- if appl.response.NEW %} <strong>{{ appl.response.label.title }}</strong>{% else %} {{ appl.response.label.title }}{% endif %}
               </span>
             </a>
           {%- endfor %}

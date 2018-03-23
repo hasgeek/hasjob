@@ -773,9 +773,33 @@ class JobApplication(BaseMixin, db.Model):
         if self.hashid is None:
             self.hashid = unique_long_hash()
 
-    @property
-    def status(self):
-        return EMPLOYER_RESPONSE[self.response]
+    @response.transition(response.NEW, response.PENDING, title=__("Mark read"), message=__("This job application has been read"), type='success')
+    def mark_read(self):
+        pass
+
+    @response.transition(response.CAN_REPLY, response.REPLIED, title=__("Reply"), message=__("This job application has been replied to"), type='success')
+    def reply(self, message, user):
+        self.response_message = message
+        self.replied_by = user
+        self.replied_at = db.func.utcnow()
+
+    @response.transition(response.CAN_REJECT, response.REJECTED, title=__("Reject"), message=__("This job application has been rejected"), type='danger')
+    def reject(self, message, user):
+        self.response_message = message
+        self.replied_by = user
+        self.replied_at = db.func.utcnow()
+
+    @response.transition(response.CAN_IGNORE, response.IGNORED, title=__("Ignore"), message=__("This job application has been ignored"), type='danger')
+    def ignore(self):
+        pass
+
+    @response.transition(response.CAN_REPORT, response.FLAGGED, title=__("Report"), message=__("This job application has been reported"), type='danger')
+    def flag(self):
+        pass
+
+    @response.transition(response.FLAGGED, response.NEW, title=__("Unflag"), message=__("This job application has been unflagged"), type='success')
+    def unflag(self):
+        pass
 
     def application_count(self):
         """Number of jobs candidate has applied to around this one"""
@@ -792,9 +816,9 @@ class JobApplication(BaseMixin, db.Model):
         date_min = self.created_at - timedelta(days=7)
         date_max = self.created_at + timedelta(days=7)
         counts = defaultdict(int)
-        for r in db.session.query(JobApplication.response).filter(JobApplication.user == self.user).filter(
+        for r in db.session.query(JobApplication._response).filter(JobApplication.user == self.user).filter(
                 JobApplication.created_at > date_min, JobApplication.created_at < date_max):
-            counts[r.response] += 1
+            counts[r._response] += 1
 
         return {
             'count': sum(counts.values()),
@@ -820,7 +844,7 @@ class JobApplication(BaseMixin, db.Model):
 
 JobApplication.jobpost = db.relationship(JobPost,
     backref=db.backref('applications', lazy='dynamic', order_by=(
-        db.case(value=JobApplication.response, whens={
+        db.case(value=JobApplication._response, whens={
             EMPLOYER_RESPONSE.NEW: 0,
             EMPLOYER_RESPONSE.PENDING: 1,
             EMPLOYER_RESPONSE.IGNORED: 2,
@@ -834,12 +858,12 @@ JobApplication.jobpost = db.relationship(JobPost,
 
 JobPost.new_applications = db.column_property(
     db.select([db.func.count(JobApplication.id)]).where(
-        db.and_(JobApplication.jobpost_id == JobPost.id, JobApplication.response == EMPLOYER_RESPONSE.NEW)))
+        db.and_(JobApplication.jobpost_id == JobPost.id, JobApplication.response.NEW)))
 
 
 JobPost.replied_applications = db.column_property(
     db.select([db.func.count(JobApplication.id)]).where(
-        db.and_(JobApplication.jobpost_id == JobPost.id, JobApplication.response == EMPLOYER_RESPONSE.REPLIED)))
+        db.and_(JobApplication.jobpost_id == JobPost.id, JobApplication.response.REPLIED)))
 
 
 JobPost.viewcounts_viewed = db.column_property(
