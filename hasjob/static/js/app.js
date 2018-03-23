@@ -208,21 +208,13 @@ window.Hasjob.Filters = {
       el: 'job-filters-ractive-template',
       template: '#filters-ractive',
       data: this.getCurrentState(),
-      show: function() {
+      openDropDownMenu: function(event) {
+        event.original.preventDefault();
         filters.dropdownMenu.set('show', true);
       },
-      hide: function() {
-        filters.dropdownMenu.set('show', false);
-      },
-      openDropDownMenu: function(event) {
-        console.log('open');
-        event.original.preventDefault();
-        filters.dropdownMenu.show();
-      },
       closeDropDownMenu: function(event) {
-        console.log('close');
         event.original.preventDefault();
-        filters.dropdownMenu.hide();
+        filters.dropdownMenu.set('show', false);
       },
       complete: function() {
         $(window).resize(function() {
