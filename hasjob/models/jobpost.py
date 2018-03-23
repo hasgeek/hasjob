@@ -251,6 +251,10 @@ class JobPost(BaseMixin, db.Model):
         self.email_verified = True
         self.datetime = db.func.utcnow()
 
+    @state.transition(state.CLOSED, state.CONFIRMED, title=__("Reopen"), message=__("This job post has been reopened"), type='success')
+    def reopen(self):
+        pass
+
     @state.transition(state.PUBLIC, state.SPAM, title=__("Mark as spam"), message=__("This job post has been marked as spam"), type='danger')
     def mark_spam(self, reason, user):
         self.closed_datetime = db.func.utcnow()
