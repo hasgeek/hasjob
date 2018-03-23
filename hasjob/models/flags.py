@@ -5,7 +5,7 @@ from datetime import datetime
 from sqlalchemy import distinct
 from werkzeug import cached_property
 from baseframe import __, cache
-from . import db, agelimit, newlimit, POST_STATE, EMPLOYER_RESPONSE
+from . import db, agelimit, newlimit
 from .user import User
 from .jobpost import JobPost, JobApplication
 from .board import Board

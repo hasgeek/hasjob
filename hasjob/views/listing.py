@@ -384,7 +384,7 @@ def view_application_email_gif(domain, hashid, application):
 
     if job_application is not None:
         if job_application.response.NEW:
-            job_application.response = EMPLOYER_RESPONSE.PENDING
+            job_application.mark_read()
             db.session.commit()
         return gif1x1, 200, {
             'Content-Type': 'image/gif',

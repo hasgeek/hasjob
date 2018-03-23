@@ -815,19 +815,14 @@ class JobApplication(BaseMixin, db.Model):
                 }
         date_min = self.created_at - timedelta(days=7)
         date_max = self.created_at + timedelta(days=7)
-        counts = defaultdict(int)
-        for r in db.session.query(JobApplication._response).filter(JobApplication.user == self.user).filter(
-                JobApplication.created_at > date_min, JobApplication.created_at < date_max):
-            counts[r._response] += 1
-
-        return {
-            'count': sum(counts.values()),
-            'ignored': counts[EMPLOYER_RESPONSE.IGNORED],
-            'replied': counts[EMPLOYER_RESPONSE.REPLIED],
-            'flagged': counts[EMPLOYER_RESPONSE.FLAGGED],
-            'spam': counts[EMPLOYER_RESPONSE.SPAM],
-            'rejected': counts[EMPLOYER_RESPONSE.REJECTED],
-            }
+        grouped = JobApplication.response.group(
+            JobApplication.query.filter(JobApplication.user == self.user).filter(
+                JobApplication.created_at > date_min, JobApplication.created_at < date_max
+            ).options(db.load_only('id'))
+        )
+        counts = {k.label.name: len(v) for k, v in grouped.items()}
+        counts['count'] = sum(counts.values())
+        return counts
 
     def url_for(self, action='view', _external=False, **kwargs):
         domain = self.jobpost.email_domain

@@ -11,7 +11,7 @@ from baseframe.staticdata import webmail_domains
 from coaster.utils import getbool, get_email_domain
 from flask_lastuser import LastuserResourceException
 
-from ..models import User, JobType, JobApplication, EMPLOYER_RESPONSE, PAY_TYPE, CURRENCY, Domain
+from ..models import User, JobType, JobApplication, PAY_TYPE, CURRENCY, Domain
 from ..uploads import process_image, UploadNotAllowed
 
 from .. import app, lastuser
@@ -399,7 +399,7 @@ class ApplicationForm(forms.Form):
         words = get_word_bag(field.data)
         form.words = words
         similar = False
-        for oldapp in JobApplication.query.filter_by(response=EMPLOYER_RESPONSE.SPAM).all():
+        for oldapp in JobApplication.query.filter(JobApplication.response.SPAM).all():
             if oldapp.words:
                 s = SequenceMatcher(None, words, oldapp.words)
                 if s.ratio() > 0.8:
