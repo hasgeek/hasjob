@@ -2,6 +2,7 @@
 
 from sqlalchemy.dialects import postgresql
 from sqlalchemy import event, DDL
+from sqlalchemy.ext.associationproxy import association_proxy
 from . import db, BaseScopedNameMixin, JobType, JobCategory, Tag, Domain, Board
 from ..extapi import location_geodata
 
@@ -57,7 +58,9 @@ class Filterset(BaseScopedNameMixin, db.Model):
     #: Associated job categories
     categories = db.relationship(JobCategory, secondary=filterset_jobcategory_table)
     tags = db.relationship(Tag, secondary=filterset_tag_table)
+    auto_tags = association_proxy('tags', 'title', creator=lambda t: Tag.get(t, create=True))
     domains = db.relationship(Domain, secondary=filterset_domain_table)
+    auto_domains = association_proxy('domains', 'name', creator=lambda d: Domain.get(d))
     geonameids = db.Column(postgresql.ARRAY(db.Integer(), dimensions=1), default=[], nullable=False)
     remote_location = db.Column(db.Boolean, default=False, nullable=False, index=True)
     pay_currency = db.Column(db.CHAR(3), nullable=True, index=True)
@@ -75,6 +78,11 @@ class Filterset(BaseScopedNameMixin, db.Model):
     def url_for(self, action='view', _external=True, **kwargs):
         kwargs.setdefault('subdomain', self.board.name if self.board.not_root else None)
         return super(Filterset, self).url_for(action, name=self.name, _external=_external, **kwargs)
+
+    @property
+    def proxy(self):
+        """Proxy for association proxies"""
+        return self
 
     def to_filters(self, translate_geonameids=False):
         location_names = []
@@ -133,7 +141,8 @@ class Filterset(BaseScopedNameMixin, db.Model):
         if filters.get('k'):
             basequery = basequery.join(
                 filterset_tag_table).join(
-                Tag).filter(Tag.name.in_(filters['k']))
+                Tag).filter(Tag.name.in_(filters['k'])).group_by(Filterset.id).having(
+                db.func.count(filterset_tag_table.c.filterset_id) == len(filters['k']))
         else:
             basequery = basequery.filter(
                 ~db.exists(
@@ -146,7 +155,8 @@ class Filterset(BaseScopedNameMixin, db.Model):
         if filters.get('d'):
             basequery = basequery.join(
                 filterset_domain_table).join(
-                Domain).filter(Domain.name.in_(filters['d']))
+                Domain).filter(Domain.name.in_(filters['d'])).group_by(Filterset.id).having(
+                db.func.count(filterset_domain_table.c.filterset_id) == len(filters['d']))
         else:
             basequery = basequery.filter(
                 ~db.exists(
