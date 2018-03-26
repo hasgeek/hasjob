@@ -79,9 +79,6 @@ header #hgnav .board-caption h1 a {
 header #hgnav h1 {
   margin: 0;
 }
-header #hgnav .hg-header-nav ul li {
-  position: static;
-}
 header #hgnav .hg-site-nav {
   clear: both;
 }

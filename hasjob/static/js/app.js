@@ -137,7 +137,7 @@ window.Hasjob.StickieList = {
   },
   refresh: function(){
     // progress indicator
-    NProgress.configure();
+    NProgress.configure({ showSpinner: false });
     NProgress.start();
     var filterParams = window.Hasjob.Filters.toParam();
     var searchUrl = window.Hasjob.Config.baseURL;
@@ -225,6 +225,14 @@ window.Hasjob.Filters = {
           }
           else {
             filters.dropdownMenu.set('isMobile', false);
+          }
+        });
+
+        //Close the dropdown menu when user clicks outside the menu
+        $(document).on("click", function(event) {
+          var $dropdown = $("#job-filters-ractive-template");
+          if ($dropdown !== event.target && !$dropdown.has(event.target).length){
+            filters.dropdownMenu.closeOnMobile();
           }
         });
       }
@@ -410,6 +418,7 @@ window.Hasjob.Filters = {
 
       // Set the cursor back to where it was before refresh
       keywordsField.selectionEnd = initialKeywordPos;
+      $("html, body").animate({ scrollTop: 0 }, "slow");
     });
   }
 };
