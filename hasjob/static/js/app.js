@@ -360,7 +360,7 @@ window.Hasjob.Filters = {
     $(document).keydown(function(event) {
       if (event.keyCode === 27) {
         event.preventDefault();
-        filters.dropdownMenu.hide();
+        filters.dropdownMenu.closeOnMobile();
       }
     });
 
