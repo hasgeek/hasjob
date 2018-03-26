@@ -1,25 +1,29 @@
 # -*- coding: utf-8 -*-
 
-from flask import flash, g
+from flask import flash, g, abort
 from coaster.views import route, viewdata, UrlForView, ModelView
+from coaster.auth import current_auth
 from baseframe import __
 from baseframe.forms import render_form, render_redirect
-from .. import app, lastuser
+from .. import app
 from ..models import db, Filterset
 from ..forms import FiltersetForm
 
 
 @route('/f')
 class AdminFiltersetView(UrlForView, ModelView):
-    __decorators__ = [lastuser.requires_permission('siteadmin')]
     model = Filterset
 
     def loader(self, kwargs):
-        return Filterset.get(g.board, kwargs.get('name'))
+        if 'name' in kwargs:
+            return Filterset.get(g.board, kwargs.get('name'))
 
     @route('new', methods=['GET', 'POST'])
     @viewdata(title=__("New"))
     def new(self):
+        if 'edit-filterset' not in g.board.permissions(current_auth.user):
+            abort(403)
+
         form = FiltersetForm(parent=g.board)
         if form.validate_on_submit():
             filterset = Filterset(board=g.board, title=form.title.data)
@@ -38,6 +42,9 @@ class AdminFiltersetView(UrlForView, ModelView):
     @route('<name>/edit', methods=['GET', 'POST'])
     @viewdata(title=__("Edit"))
     def edit(self, **kwargs):
+        if 'edit-filterset' not in g.board.permissions(current_auth.user):
+            abort(403)
+
         form = FiltersetForm(obj=self.obj)
         if form.validate_on_submit():
             form.populate_obj(self.obj)

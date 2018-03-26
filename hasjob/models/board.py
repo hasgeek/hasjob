@@ -211,6 +211,7 @@ class Board(BaseNameMixin, db.Model):
             perms.add('delete')
             perms.add('add')
             perms.add('new-job')
+            perms.add('edit-filterset')
         elif user in self.posting_users:
             perms.add('new-job')
         return perms
