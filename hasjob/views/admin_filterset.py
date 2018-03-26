@@ -7,12 +7,15 @@ from baseframe.forms import render_form, render_redirect
 from .. import app, lastuser
 from ..models import db, Filterset
 from ..forms import FiltersetForm
-from .admin import AdminView
 
 
 @route('/f')
-class AdminFilterset(AdminView):
+class AdminFiltersetView(UrlForView, ModelView):
     __decorators__ = [lastuser.requires_permission('siteadmin')]
+    model = Filterset
+
+    def loader(self, kwargs):
+        return Filterset.get(g.board, kwargs.get('name'))
 
     @route('new', methods=['GET', 'POST'])
     @viewdata(title=__("New"))
@@ -32,18 +35,7 @@ class AdminFilterset(AdminView):
         return render_form(form=form, title=u"Create a filterset…", submit="Create",
             formid="filterset_new", ajax=False)
 
-AdminFilterset.init_app(app)
-
-
-@route('/f/<name>')
-class AdminFiltersetView(UrlForView, ModelView):
-    __decorators__ = [lastuser.requires_permission('siteadmin')]
-    model = Filterset
-
-    def loader(self, kwargs):
-        return Filterset.get(g.board, kwargs.get('name'))
-
-    @route('edit', methods=['GET', 'POST'])
+    @route('<name>/edit', methods=['GET', 'POST'])
     @viewdata(title=__("Edit"))
     def edit(self, **kwargs):
         form = FiltersetForm(obj=self.obj)
@@ -58,6 +50,5 @@ class AdminFiltersetView(UrlForView, ModelView):
                 flash(u"There already exists a filterset with the selected criteria", 'interactive')
         return render_form(form=form, title=u"Edit filterset…", submit="Update",
             formid="filterset_edit", ajax=False)
-
 
 AdminFiltersetView.init_app(app)
