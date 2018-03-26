@@ -230,8 +230,7 @@ window.Hasjob.Filters = {
 
         //Close the dropdown menu when user clicks outside the menu
         $(document).on("click", function(event) {
-          var $dropdown = $("#job-filters-ractive-template");
-          if ($dropdown !== event.target && !$dropdown.has(event.target).length){
+          if ($("#js-job-filters") !== event.target && !$(event.target).parents('#filter-dropdown').length){
             filters.dropdownMenu.closeOnMobile();
           }
         });

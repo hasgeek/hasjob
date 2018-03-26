@@ -110,6 +110,9 @@ header #hgnav .filter-dropdown.active {
   transition: top 0.25s linear, z-index 0.25s step-end;
   z-index: 1;
 }
+header #hgnav .dropdown-backdrop {
+  display: none;
+}
 header #hgnav .fa {
   width: 14px;
 }
