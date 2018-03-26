@@ -5,7 +5,7 @@ from flask import Markup
 from baseframe import _, __
 import baseframe.forms as forms
 from baseframe.forms.sqlalchemy import AvailableName
-from baseframe.forms.helper import is_public_email_domain
+from baseframe.utils import is_public_email_domain
 from wtforms.widgets import CheckboxInput, ListWidget
 from wtforms.ext.sqlalchemy.fields import QuerySelectMultipleField
 

@@ -5,7 +5,7 @@ from sqlalchemy import event, DDL
 from sqlalchemy.orm import deferred
 from sqlalchemy.dialects.postgresql import TSVECTOR
 from flask import url_for
-from baseframe.forms.helper import is_public_email_domain
+from baseframe.utils import is_public_email_domain
 from . import db, BaseMixin
 from .user import User
 from .jobpost import JobPost

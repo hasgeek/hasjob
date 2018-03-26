@@ -13,7 +13,7 @@ import tldextract
 from coaster.auth import current_auth
 from coaster.sqlalchemy import make_timestamp_columns, Query, JsonDict, StateManager
 from baseframe import cache, _, __
-from baseframe.forms.helper import is_public_email_domain
+from baseframe.utils import is_public_email_domain
 from .. import redis_store
 from . import newlimit, agelimit, db, POST_STATE, EMPLOYER_RESPONSE, PAY_TYPE, BaseMixin, TimestampMixin
 from .jobtype import JobType

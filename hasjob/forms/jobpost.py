@@ -7,7 +7,7 @@ from difflib import SequenceMatcher
 from flask import g, request, Markup
 from baseframe import _, __
 import baseframe.forms as forms
-from baseframe.forms.helper import is_public_email_domain
+from baseframe.utils import is_public_email_domain
 from coaster.utils import getbool, get_email_domain
 from flask_lastuser import LastuserResourceException
 
