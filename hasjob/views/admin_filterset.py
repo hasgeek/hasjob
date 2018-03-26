@@ -28,7 +28,7 @@ class AdminFilterset(AdminView):
                 return render_redirect(filterset.url_for(), code=303)
             except ValueError:
                 db.session.rollback()
-                flash(u"There already exists a filterset with the selected criteria", 'failure')
+                flash(u"There already exists a filterset with the selected criteria", 'interactive')
         return render_form(form=form, title=u"Create a filterset…", submit="Create",
             formid="filterset_new", ajax=False)
 
