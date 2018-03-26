@@ -213,7 +213,9 @@ window.Hasjob.Filters = {
         filters.dropdownMenu.set('show', true);
       },
       closeOnMobile: function(event) {
-        event.original.preventDefault();
+        if(event) {
+          event.original.preventDefault();
+        }
         filters.dropdownMenu.set('show', false);
       },
       complete: function() {
