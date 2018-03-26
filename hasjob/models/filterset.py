@@ -79,11 +79,6 @@ class Filterset(BaseScopedNameMixin, db.Model):
         kwargs.setdefault('subdomain', self.board.name if self.board.not_root else None)
         return super(Filterset, self).url_for(action, name=self.name, _external=_external, **kwargs)
 
-    @property
-    def proxy(self):
-        """Proxy for forms. See `FiltersetAssocationsForm`"""
-        return self
-
     def to_filters(self, translate_geonameids=False):
         location_names = []
         if translate_geonameids and self.geonameids:

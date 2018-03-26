@@ -21,7 +21,12 @@ def get_currency_choices():
     return choices
 
 
-class FiltersetAssocationsForm(forms.Form):
+class FiltersetForm(forms.Form):
+    title = forms.StringField(__("Title"), description=__("A title shown to viewers"),
+        validators=[forms.validators.DataRequired()], filters=[forms.filters.strip()])
+    description = forms.TinyMce4Field(__("Description"),
+	    description=__("Description shown to viewers and search engines"),
+	    validators=[forms.validators.DataRequired()])
     types = QuerySelectMultipleField(__("Job types"),
         widget=ListWidget(), option_widget=CheckboxInput(), get_label='title',
         validators=[forms.validators.Optional()])
@@ -29,6 +34,13 @@ class FiltersetAssocationsForm(forms.Form):
         widget=ListWidget(), option_widget=CheckboxInput(),
         get_label='title', validators=[forms.validators.Optional()])
     geonameids = forms.GeonameSelectMultiField("Locations", filters=[format_geonameids])
+    remote_location = forms.BooleanField(__("Match remote jobs"))
+    pay_cash_currency = forms.RadioField(__("Currency"), choices=get_currency_choices(), default='',
+        validators=[forms.validators.Optional()])
+    pay_cash = forms.IntegerField(__("Pay"), description=__("Minimum pay"),
+        validators=[forms.validators.Optional()])
+    keywords = forms.StringField(__("Keywords"),
+        validators=[forms.validators.Optional()], filters=[forms.filters.strip()])
     auto_domains = forms.AutocompleteMultipleField(__("Domains"),
         autocomplete_endpoint='/api/1/domain/autocomplete', results_key='domains')
     auto_tags = forms.AutocompleteMultipleField(__("Tags"),
@@ -42,19 +54,3 @@ class FiltersetAssocationsForm(forms.Form):
         self.categories.query = JobCategory.query.join(board_jobcategory_table).filter(
             board_jobcategory_table.c.board_id == self.edit_parent.id).order_by('title')
 
-
-
-class FiltersetForm(forms.Form):
-    title = forms.StringField(__("Title"), description=__("A title shown to viewers"),
-        validators=[forms.validators.DataRequired()], filters=[forms.filters.strip()])
-    description = forms.TinyMce4Field(__("Description"),
-	    description=__("Description shown to viewers and search engines"),
-	    validators=[forms.validators.DataRequired()])
-    remote_location = forms.BooleanField(__("Match remote jobs"))
-    pay_cash_currency = forms.RadioField(__("Currency"), choices=get_currency_choices(), default='',
-        validators=[forms.validators.Optional()])
-    pay_cash = forms.IntegerField(__("Pay"), description=__("Minimum pay"),
-        validators=[forms.validators.Optional()])
-    keywords = forms.StringField(__("Keywords"),
-        validators=[forms.validators.Optional()], filters=[forms.filters.strip()])
-    proxy = forms.FormField(FiltersetAssocationsForm, "")
