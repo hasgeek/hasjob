@@ -208,11 +208,11 @@ window.Hasjob.Filters = {
       el: 'job-filters-ractive-template',
       template: '#filters-ractive',
       data: this.getCurrentState(),
-      open: function(event) {
+      openOnMobile: function(event) {
         event.original.preventDefault();
         filters.dropdownMenu.set('show', true);
       },
-      close: function(event) {
+      closeOnMobile: function(event) {
         event.original.preventDefault();
         filters.dropdownMenu.set('show', false);
       },
