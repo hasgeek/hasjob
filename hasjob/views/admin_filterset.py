@@ -21,7 +21,7 @@ class AdminFiltersetView(UrlForView, ModelView):
     @route('new', methods=['GET', 'POST'])
     @viewdata(title=__("New"))
     def new(self):
-        if 'edit-filterset' not in g.board.permissions(current_auth.user):
+        if 'edit-filterset' not in g.board.current_permissions:
             abort(403)
 
         form = FiltersetForm(parent=g.board)
@@ -42,7 +42,7 @@ class AdminFiltersetView(UrlForView, ModelView):
     @route('<name>/edit', methods=['GET', 'POST'])
     @viewdata(title=__("Edit"))
     def edit(self, **kwargs):
-        if 'edit-filterset' not in g.board.permissions(current_auth.user):
+        if 'edit-filterset' not in g.board.current_permissions:
             abort(403)
 
         form = FiltersetForm(obj=self.obj)

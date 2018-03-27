@@ -256,8 +256,3 @@ def escape_for_sql_like(query):
     "query\%\_%"
     """
     return query.replace(u'%', ur'\%').replace(u'_', ur'\_').replace(u'[', u'').replace(u']', u'') + u'%'
-
-
-if __name__ == '__main__':
-    import doctest
-    doctest.testmod()
