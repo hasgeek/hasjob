@@ -2,6 +2,7 @@
 
 from sqlalchemy.dialects import postgresql
 from sqlalchemy import event, DDL
+from sqlalchemy.ext.associationproxy import association_proxy
 from . import db, BaseScopedNameMixin, JobType, JobCategory, Tag, Domain, Board
 from ..extapi import location_geodata
 
@@ -57,7 +58,9 @@ class Filterset(BaseScopedNameMixin, db.Model):
     #: Associated job categories
     categories = db.relationship(JobCategory, secondary=filterset_jobcategory_table)
     tags = db.relationship(Tag, secondary=filterset_tag_table)
+    auto_tags = association_proxy('tags', 'title', creator=lambda t: Tag.get(t, create=True))
     domains = db.relationship(Domain, secondary=filterset_domain_table)
+    auto_domains = association_proxy('domains', 'name', creator=lambda d: Domain.get(d))
     geonameids = db.Column(postgresql.ARRAY(db.Integer(), dimensions=1), default=[], nullable=False)
     remote_location = db.Column(db.Boolean, default=False, nullable=False, index=True)
     pay_currency = db.Column(db.CHAR(3), nullable=True, index=True)
@@ -105,7 +108,8 @@ class Filterset(BaseScopedNameMixin, db.Model):
         if filters.get('t'):
             basequery = basequery.join(
                 filterset_jobtype_table).join(
-                JobType).filter(JobType.name.in_(filters['t']))
+                JobType).filter(JobType.name.in_(filters['t'])).group_by(Filterset.id).having(
+                db.func.count(filterset_jobtype_table.c.filterset_id) == len(filters['t']))
         else:
             basequery = basequery.filter(
                 ~db.exists(
@@ -118,7 +122,8 @@ class Filterset(BaseScopedNameMixin, db.Model):
         if filters.get('c'):
             basequery = basequery.join(
                 filterset_jobcategory_table).join(
-                JobCategory).filter(JobCategory.name.in_(filters['c']))
+                JobCategory).filter(JobCategory.name.in_(filters['c'])).group_by(Filterset.id).having(
+                db.func.count(filterset_jobcategory_table.c.filterset_id) == len(filters['c']))
         else:
             basequery = basequery.filter(
                 ~db.exists(
@@ -131,7 +136,8 @@ class Filterset(BaseScopedNameMixin, db.Model):
         if filters.get('k'):
             basequery = basequery.join(
                 filterset_tag_table).join(
-                Tag).filter(Tag.name.in_(filters['k']))
+                Tag).filter(Tag.name.in_(filters['k'])).group_by(Filterset.id).having(
+                db.func.count(filterset_tag_table.c.filterset_id) == len(filters['k']))
         else:
             basequery = basequery.filter(
                 ~db.exists(
@@ -144,7 +150,8 @@ class Filterset(BaseScopedNameMixin, db.Model):
         if filters.get('d'):
             basequery = basequery.join(
                 filterset_domain_table).join(
-                Domain).filter(Domain.name.in_(filters['d']))
+                Domain).filter(Domain.name.in_(filters['d'])).group_by(Filterset.id).having(
+                db.func.count(filterset_domain_table.c.filterset_id) == len(filters['d']))
         else:
             basequery = basequery.filter(
                 ~db.exists(
@@ -190,7 +197,8 @@ def _format_and_validate(mapper, connection, target):
         if target.geonameids:
             target.geonameids = sorted(target.geonameids)
 
-        if Filterset.from_filters(target.board, target.to_filters()):
+        filterset = Filterset.from_filters(target.board, target.to_filters())
+        if filterset and filterset.id != target.id:
             raise ValueError("There already exists a filter set with this filter criteria")
 
 create_geonameids_trigger = DDL('''
