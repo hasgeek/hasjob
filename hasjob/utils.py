@@ -252,7 +252,7 @@ def escape_for_sql_like(query):
     Escape the '%' and '_' wildcards in SQL LIKE clauses.
     Some SQL dialects respond to '[' and ']', so remove them.
 
-    >>> sanitize_for_sql("query%_[]")
+    >>> escape_for_sql_like("query%_[]")
     "query\%\_%"
     """
     return query.replace(u'%', ur'\%').replace(u'_', ur'\_').replace(u'[', u'').replace(u']', u'') + u'%'
