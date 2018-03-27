@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from collections import defaultdict
-import hashlib
 from datetime import datetime, timedelta
 from werkzeug import cached_property
 from flask import url_for, escape, Markup
@@ -11,7 +10,6 @@ from sqlalchemy.orm import defer, deferred, load_only
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.dialects.postgresql import TSVECTOR
 import tldextract
-from coaster.auth import current_auth
 from coaster.sqlalchemy import make_timestamp_columns, Query, JsonDict, StateManager
 from baseframe import cache, _, __
 from baseframe.staticdata import webmail_domains
@@ -430,10 +428,9 @@ class JobPost(BaseMixin, db.Model):
             return ['hasjob/viewcounts/%d' % post_id for post_id in jobpost_id]
         return 'hasjob/viewcounts/%d' % jobpost_id
 
-    @staticmethod
-    def maxcounts_key(postids):
-        return ['hasjob/maxcounts/{digest}'.format(digest=
-            hashlib.sha1(','.join(str(postid) for postid in postids)).hexdigest())]
+    @property
+    def max_counts_key():
+        return u'maxcounts'
 
     def uncache_viewcounts(self, key=None):
         cache_key = JobPost.viewcounts_key(self.id)

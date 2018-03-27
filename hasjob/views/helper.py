@@ -395,7 +395,7 @@ def get_max_counts(postids):
                 'max_opens': max([vc['opened'] for vc in view_counts] or [0]),
                 'max_applied': max([vc['applied'] for vc in view_counts] or [0])
             }
-        cache_key = JobPost.maxcounts_key(postids)
+        cache_key = JobPost.max_counts_key
         redis_store.hset(cache_key, 'max_impressions', values['max_impressions'])
         redis_store.hset(cache_key, 'max_views', values['max_views'])
         redis_store.hset(cache_key, 'max_opens', values['max_opens'])
@@ -415,10 +415,7 @@ def load_viewcounts(posts):
     viewcounts_keys = JobPost.viewcounts_key(postids)
     for key in viewcounts_keys:
         redis_pipe.hgetall(key)
-
-    maxcounts_key = JobPost.maxcounts_key(postids)
-    redis_pipe.hgetall(maxcounts_key)
-
+    redis_pipe.hgetall(JobPost.max_counts_key)
     values = redis_pipe.execute()
     viewcounts_values = values[:-1]
     maxcounts_values = values[-1]
