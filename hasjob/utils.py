@@ -247,7 +247,7 @@ def get_word_bag(text):
     return " ".join(words)
 
 
-def escape_for_sql(query):
+def escape_for_sql_like(query):
     """
     Escape the '%' and '_' wildcards in SQL LIKE clauses.
     Some SQL dialects respond to '[' and ']', so remove them.
