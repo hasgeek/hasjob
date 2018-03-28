@@ -1059,7 +1059,7 @@ def reopen(domain, hashid, key):
         return redirect(post.url_for(), code=303)
     form = Form()
     if form.validate_on_submit():
-        post.confirm()
+        post.reopen()
         db.session.commit()
         # cache bust
         # dogpile.invalidate_region('hasjob_index')

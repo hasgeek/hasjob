@@ -26,28 +26,6 @@ Hasjob.Util = {
   }
 };
 
-window.Hasjob.Body = {
-  init: function() {
-    var body = this;
-    var hammer = Hammer(document.body, {
-      cssProps: {
-        userSelect: true
-      }
-    });
-
-    body.ractive = new Ractive();
-
-    hammer.on('swipe', function(event) {
-      if (event.direction === 4) {
-        body.ractive.fire('swipeRight');
-      }
-      else if (event.direction === 2) {
-        body.ractive.fire('swipeLeft');
-      }
-    });
-  }
-};
-
 window.Hasjob.JobPost = {
   handleStarClick: function () {
     $('#main-content').on('click', '.pstar', function(e) {
@@ -229,26 +207,46 @@ window.Hasjob.Filters = {
       selectedCurrency: window.Hasjob.Config.selectedFilters.currency,
       pay: window.Hasjob.Config.selectedFilters.pay,
       equity: window.Hasjob.Config.selectedFilters.equity,
-      sidebarOn: false
+      isMobile: $(window).width() < 768
     };
   },
   init: function(){
     var filters = this;
     var keywordTimeout;
-    var isSlidingMenu = $(window).width() < 768;
     var isFilterDropdownClosed = true;
     var filterMenuHeight = $('#hgnav').height() - $('#hg-sitenav').height();
     var pageScrollTimerId;
 
-    filters.ractive = new Ractive({
+    filters.dropdownMenu = new Ractive({
       el: 'job-filters-ractive-template',
       template: '#filters-ractive',
       data: this.getCurrentState(),
-      showSidebar: function() {
-        filters.ractive.set('sidebarOn', true);
+      openOnMobile: function(event) {
+        event.original.preventDefault();
+        filters.dropdownMenu.set('show', true);
       },
-      hideSidebar: function() {
-        filters.ractive.set('sidebarOn', false);
+      closeOnMobile: function(event) {
+        if(event) {
+          event.original.preventDefault();
+        }
+        filters.dropdownMenu.set('show', false);
+      },
+      complete: function() {
+        $(window).resize(function() {
+          if ($(window).width() < 768) {
+            filters.dropdownMenu.set('isMobile', true);
+          }
+          else {
+            filters.dropdownMenu.set('isMobile', false);
+          }
+        });
+
+        //Close the dropdown menu when user clicks outside the menu
+        $(document).on("click", function(event) {
+          if ($("#js-job-filters") !== event.target && !$(event.target).parents('#filter-dropdown').length){
+            filters.dropdownMenu.closeOnMobile();
+          }
+        });
       }
     });
 
@@ -272,7 +270,6 @@ window.Hasjob.Filters = {
 
     $(window).resize(function() {
       if ($(window).width() < 768) {
-        isSlidingMenu = true;
         // Incase filters menu has been slided up on page scroll
         $('#hg-sitenav').show();
         if(pageScrollTimerId) {
@@ -282,7 +279,6 @@ window.Hasjob.Filters = {
         }
       }
       else {
-        isSlidingMenu = false;
         filterMenuHeight = $('#hgnav').height() - $('#hg-sitenav').height();
         if(!pageScrollTimerId) {
           pageScrollTimerId = pageScrollTimer();
@@ -382,59 +378,14 @@ window.Hasjob.Filters = {
       isFilterDropdownClosed = true;
     });
 
-    filters.ButtonRactive = new Ractive({
-      el: 'hg-site-nav-toggle',
-      template: '#filters-button-ractive',
-      data: {
-        sidebarOn: false
-      },
-      showSidebar: function() {
-        this.set('sidebarOn', true);
-        filters.ractive.showSidebar();
-      },
-      hideSidebar: function() {
-        this.set('sidebarOn', false);
-        filters.ractive.hideSidebar();
-      },
-      oncomplete: function() {
-        //Search icon on mobile to open/close filters menu
-        $('#hg-site-nav-toggle').click(function(event) {
-          event.preventDefault();
-          if (filters.ButtonRactive.get('sidebarOn')) {
-            filters.ButtonRactive.hideSidebar();
-          }
-          else {
-            filters.ButtonRactive.showSidebar();
-          }
-        });
-
-        // Done button for filters on mobile
-        $('#js-mobile-filter-done').click(function(event) {
-          event.preventDefault();
-          filters.ButtonRactive.hideSidebar();
-        });
-
-        //On pressing ESC, close the filters menu
-        $(document).keydown(function(event) {
-          if (event.keyCode === 27) {
-            event.preventDefault();
-            filters.ButtonRactive.hideSidebar();
-          }
-        });
-
-        window.Hasjob.Body.ractive.on('swipeRight', function() {
-          if (isSlidingMenu && !filters.ButtonRactive.get('sidebarOn')) {
-            filters.ButtonRactive.showSidebar();
-          }
-        });
-
-        window.Hasjob.Body.ractive.on('swipeLeft', function() {
-          if (isSlidingMenu && filters.ButtonRactive.get('sidebarOn')) {
-            filters.ButtonRactive.hideSidebar();
-          }
-        });
+    //On pressing ESC, close the filters menu
+    $(document).keydown(function(event) {
+      if (event.keyCode === 27) {
+        event.preventDefault();
+        filters.dropdownMenu.closeOnMobile();
       }
     });
+
   },
   formatFilterParams: function(formParams){
     var sortedFilterParams = [];
@@ -471,7 +422,7 @@ window.Hasjob.Filters = {
     var initialKeywordPos = keywordsField.selectionEnd;
 
     // reset pre-selected values in filters
-    this.ractive.set(this.getCurrentState()).then(function() {
+    this.dropdownMenu.set(this.getCurrentState()).then(function() {
       // Since the data may have changed, multiselect requires a rebuild
       $('#job-filters-location').multiselect('rebuild');
       $('#job-filters-type').multiselect('rebuild');
@@ -479,6 +430,7 @@ window.Hasjob.Filters = {
 
       // Set the cursor back to where it was before refresh
       keywordsField.selectionEnd = initialKeywordPos;
+      $("html, body").animate({ scrollTop: 0 }, "slow");
     });
 
     this.ButtonRactive.set('sidebarOn', false);
@@ -734,7 +686,6 @@ $(function() {
     }
   });
 
-  window.Hasjob.Body.init();
   window.Hasjob.Filters.init();
   window.Hasjob.JobPost.handleStarClick();
   window.Hasjob.JobPost.handleGroupClick();

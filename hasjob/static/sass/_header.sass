@@ -4,7 +4,7 @@ body
 
 header
   margin-bottom: 0
-  min-height: 62px
+  min-height: 103px
 
   h1
     color: $color-title-has
@@ -32,6 +32,11 @@ header
     +box-shadow(0 1px 5px $color-shadow)
     min-height: 62px
 
+    .container
+      position: relative
+      height: 103px
+      background: #ebe7e4
+
     .btn-post-job
       background-color: $color-title-geek
       border-color: $color-title-geek
@@ -58,6 +63,7 @@ header
       position: absolute
       left: 15px
       right: 15px
+      top: 28px
 
     .board-caption h1 a
       width: 100%
@@ -68,24 +74,40 @@ header
 
     h1
       margin: 0
-    
-    .hg-site-nav
-      position: fixed
-      top: 61px
-      min-height: 100vh
-      left: -120%
-      width: 110%
-      margin: 0
-      max-height: 100%
-      -webkit-transition: left .15s ease-out
-      -moz-transition: left .15s ease-out
-      -ms-transition: left .15s ease-out
-      -o-transition: left .15s ease-out
-      transition: left .15s ease-out
 
-    .hg-site-nav.active
+    .hg-site-nav
+      clear: both
+
+    .search-field
+      font-family: "Fira Sans", arial, sans-serif, FontAwesome
+    
+    .filter-dropdown
+      position: absolute
+      top: -500px
       left: 0
-      background-color: rgba(0, 0, 0, 0.3)
+      width: 100%
+      margin: 0
+      -webkit-transition: top 0.25s linear, z-index 0.1s step-start
+      -moz-transition: top 0.25s linear, z-index 0.1s step-start
+      -ms-transition: top 0.25s linear, z-index 0.1s step-start
+      -o-transition: top 0.25s linear, z-index 0.1s step-start
+      transition: top 0.25s linear, z-index 0.1s step-start
+      z-index: -1
+      background: #ebe7e4
+      padding-bottom: 15px
+      box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.4)
+
+    .filter-dropdown.active
+      top: 96px
+      -webkit-transition: top 0.25s linear, z-index 0.25s step-end
+      -moz-transition: top 0.25s linear, z-index 0.25s step-end
+      -ms-transition: top 0.25s linear, z-index 0.25s step-end
+      -o-transition: top 0.25s linear, z-index 0.25s step-end
+      transition: top 0.25s linear, z-index 0.25s step-end
+      z-index: 1
+
+    .dropdown-backdrop
+      display: none
 
     .fa
       width: 14px //same as font-size
@@ -96,11 +118,10 @@ header
 #logo
   +replace-text-with-dimensions('logo-star.png')
 
-.header-section
-  width: 85%
+.filters-wrapper
+  width: 100%
   background: #ebe7e4
-  padding: 10px 15px 5px 15px
-  min-height: 100vh
+  margin: 20px 0 0
 
   label
     font-weight: normal
@@ -209,6 +230,9 @@ header
     #hgnav 
       min-height: 0
 
+      .container
+        height: auto
+
       .hg-header-app-nav
         max-width: 76%
 
@@ -219,22 +243,13 @@ header
         display: inline
 
       .hg-site-nav
-        clear: both
         margin: 0
-        position: relative
-        top: 0
-        left: 0
-        width: 100%
-        min-height: 0
 
-      #hg-site-nav-toggle
-        display: none
-
-      .header-section
+      .filters-wrapper
         width: 100%
         padding: 10px 0 5px
         min-height: 0
-
+        margin: 0
 
         ul.multiselect-container
           width: 20em
@@ -254,7 +269,7 @@ header
     left: auto
     
 @media (min-width: 992px) and (max-width: 1199px)
-  .header-section .pay-filter-dropdown
+  .filters-wrapper .pay-filter-dropdown
     right: 0
     left: auto
 
@@ -265,7 +280,7 @@ header
     #hgnav .hg-header-app-nav
       max-width: 90%
 
-  .header-section
+  .filters-wrapper
     padding-bottom: 4px
 
     .submit-btn
@@ -291,3 +306,7 @@ header
 
 #nprogress .peg
   box-shadow: 0 0 10px $color-title-has,0 0 5px $color-title-has
+
+#nprogress .spinner-icon
+  border-top-color: $color-title-has
+  border-left-color: $color-title-has
