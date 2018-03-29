@@ -4,6 +4,7 @@ from coaster.sqlalchemy import Query, failsafe_add
 from coaster.utils import make_name, LabeledEnum
 from baseframe import __
 from . import db, TimestampMixin, BaseNameMixin, POST_STATE
+from ..utils import escape_for_sql_like
 from .jobpost import JobPost
 
 __all__ = ['TAG_TYPE', 'Tag', 'JobPostTag']
@@ -53,7 +54,7 @@ class Tag(BaseNameMixin, db.Model):
 
     @classmethod
     def autocomplete(cls, prefix):
-        search = make_name(prefix) + '%'
+        search = escape_for_sql_like(make_name(prefix))
         return cls.query.filter(cls.name.like(search), cls.public == True).all()  # NOQA
 
 

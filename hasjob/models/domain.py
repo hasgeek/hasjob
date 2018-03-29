@@ -7,6 +7,7 @@ from sqlalchemy.dialects.postgresql import TSVECTOR
 from flask import url_for
 from baseframe.utils import is_public_email_domain
 from . import db, BaseMixin
+from ..utils import escape_for_sql_like
 from .user import User
 from .jobpost import JobPost
 
@@ -103,6 +104,10 @@ class Domain(BaseMixin, db.Model):
             result = cls(name=name, is_webmail=is_public_email_domain(name))
             db.session.add(result)
         return result
+
+    @classmethod
+    def autocomplete(cls, prefix):
+        return cls.query.filter(cls.name.ilike(escape_for_sql_like(prefix)), cls.is_banned == False).all()  # NOQA
 
 
 create_domain_search_trigger = DDL(
