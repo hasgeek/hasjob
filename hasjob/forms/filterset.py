@@ -5,6 +5,7 @@ from wtforms.ext.sqlalchemy.fields import QuerySelectMultipleField
 from wtforms.widgets import CheckboxInput, ListWidget
 from baseframe import __
 import baseframe.forms as forms
+from . import content_css
 from ..models import CURRENCY, JobType, JobCategory
 from ..models.board import board_jobtype_table, board_jobcategory_table
 
@@ -25,6 +26,7 @@ class FiltersetForm(forms.Form):
     title = forms.StringField(__("Title"), description=__("A title shown to viewers"),
         validators=[forms.validators.DataRequired()], filters=[forms.filters.strip()])
     description = forms.TinyMce4Field(__("Description"),
+        content_css=content_css,
 	    description=__("Description shown to viewers and search engines"),
 	    validators=[forms.validators.DataRequired()])
     types = QuerySelectMultipleField(__("Job types"),
