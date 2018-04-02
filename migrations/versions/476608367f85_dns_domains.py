@@ -12,7 +12,32 @@ down_revision = '140e56666d9e'
 
 from alembic import op
 import sqlalchemy as sa
-from baseframe.staticdata import webmail_domains
+
+public_domains = {
+    'gmail.com',
+    'googlemail.com',
+    'hotmail.com',
+    'icloud.com',
+    'live.com',
+    'live.in',
+    'mac.com',
+    'mailinator.com',
+    'me.com',
+    'msn.com',
+    'outlook.co',
+    'outlook.com',
+    'protonmail.ch',
+    'protonmail.com',
+    'rocketmail.com',
+    'yahoo.co.in',
+    'yahoo.co.uk',
+    'yahoo.com',
+    'yahoo.com',
+    'yandex.com',
+    'yandex.ru',
+    'ymail.com',
+    'zoho.com',
+    }
 
 
 def upgrade():
@@ -37,7 +62,7 @@ def upgrade():
             FROM jobpost GROUP BY LOWER(email_domain)'''))
     # This is a risky cast from a Python set to a SQL list. Only guaranteed to work with Python 2.x
     op.execute(sa.text('''UPDATE domain SET is_webmail=true WHERE name IN %r''' %
-        (tuple([str(d.lower()) for d in webmail_domains]),)))
+        (tuple([str(d.lower()) for d in public_domains]),)))
     op.execute(sa.text(
         '''UPDATE jobpost SET domain_id = domain.id FROM domain WHERE domain.name = LOWER(jobpost.email_domain)'''))
     op.alter_column('jobpost', 'domain_id', nullable=False)
