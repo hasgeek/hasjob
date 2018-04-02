@@ -797,7 +797,7 @@ class JobApplication(BaseMixin, db.Model):
     def flag(self):
         pass
 
-    @response.transition(response.FLAGGED, response.NEW, title=__("Unflag"), message=__("This job application has been unflagged"), type='success')
+    @response.transition(response.FLAGGED, response.PENDING, title=__("Unflag"), message=__("This job application has been unflagged"), type='success')
     def unflag(self):
         pass
 

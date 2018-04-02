@@ -383,7 +383,7 @@ def view_application_email_gif(domain, hashid, application):
         job_application = None
 
     if job_application is not None:
-        if job_application.response.NEW:
+        if job_application.mark_read.is_available:
             job_application.mark_read()
             db.session.commit()
         return gif1x1, 200, {
@@ -422,7 +422,7 @@ def view_application(domain, hashid, application):
     if job_application.response.NEW:
         # If the application is pending, mark it as opened.
         # However, don't do this if the user is a siteadmin, unless they also own the post.
-        if post.admin_is(g.user) or not lastuser.has_permission('siteadmin'):
+        if job_application.mark_read.is_available:
             job_application.mark_read()
             db.session.commit()
     response_form = forms.ApplicationResponseForm()
