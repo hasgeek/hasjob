@@ -10,7 +10,7 @@ from pytz import utc
 from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
 from geoip2.errors import AddressNotFoundError
-from flask import Markup, request, g, session
+from flask import Markup, request, g, session, Response
 from flask_rq import job
 from flask_lastuser import signal_user_looked_up
 from coaster.sqlalchemy import failsafe_add
@@ -28,14 +28,55 @@ from ..utils import scrubemail, redactemail, cointoss
 gif1x1 = 'R0lGODlhAQABAJAAAP8AAAAAACH5BAUQAAAALAAAAAABAAEAAAICBAEAOw=='.decode('base64')
 
 
-@app.route('/_sniffle.gif')
+@app.route('/_sniffle', methods=['POST'])
 def sniffle():
-    return gif1x1, 200, {
-        'Content-Type': 'image/gif',
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0'
-    }
+    """
+    Load anon user:
+
+    1. If there's g.user and session['anon_user'], it loads that anon_user and tags with user=g.user, then removes anon
+    2. If there's no g.user and no session['anon_user'] and form submitted token matches session['au'], sets session['anon_user'] = 'test'
+    3. If there's no g.user and there is session['au'] != form['token'], loads g.anon_user
+    """
+    # Loading an anon user only if we're not rendering static resources
+    if g.user:
+        if 'au' in session and session['au'] is not None and not unicode(session['au']).startswith(u'test'):
+            anon_user = AnonUser.query.get(session['au'])
+            if anon_user:
+                anon_user.user = g.user
+        session.pop('au', None)
+    else:
+        if unicode(session['au']).startswith('test') and unicode(session['au']) == request.form.get('token'):
+            # This client sent us back our test cookie, so set a real value now
+            g.anon_user = AnonUser()
+            db.session.add(g.anon_user)
+            g.esession = EventSession.new_from_request(request)
+            g.esession.anon_user = g.anon_user
+            db.session.add(g.esession)
+            g.esession.load_from_cache(session['au'], UserEvent)
+            # We'll update session['au'] below after database commit
+        else:
+            anon_user = AnonUser.query.get(session['au'])
+            if not anon_user:
+                # XXX: We got a fake value? This shouldn't happen
+                g.event_data['anon_cookie_test'] = session['au']
+                session['au'] = u'test-' + unicode(uuid4())  # Try again
+                g.esession = EventSessionBase.new_from_request(request)
+            else:
+                g.anon_user = anon_user
+
+    db.session.commit()
+
+    if g.anon_user:
+        session['au'] = g.anon_user.id
+        session.permanent = True
+
+    # Prepare event session if it's not already present
+    if g.user or g.anon_user and not g.esession:
+        g.esession = EventSession.get_session(uuid=session.get('es'), user=g.user, anon_user=g.anon_user)
+    if g.esession:
+        session['es'] = g.esession.uuid
+
+    return Response("OK")
 
 
 def index_is_paginated():
@@ -66,18 +107,11 @@ def load_user_data(user):
     """
     All pre-request utilities, run after g.user becomes available.
 
-    Part 1: Load anon user:
-
-    1. If there's g.user and session['anon_user'], it loads that anon_user and tags with user=g.user, then removes anon
-    2. If there's no g.user and no session['anon_user'], sets session['anon_user'] = 'test'
-    3. If there's no g.user and there is session['anon_user'] = 'test', creates a new anon user, then saves to cookie
-    4. If there's no g.user and there is session['anon_user'] != 'test', loads g.anon_user
-
     Part 2: Are we in kiosk mode? Is there a preview campaign?
     Part 3: Look up user's IP address location as geonameids for use in targeting.
     """
-    g.anon_user = None  # Could change below
-    g.event_data = {}   # Views can add data to the current pageview event
+    g.anon_user = None
+    g.event_data = {}
     g.esession = None
     g.viewcounts = {}
     g.impressions = session.pop('impressions', {})  # Retrieve from cookie session if present there
@@ -86,66 +120,21 @@ def load_user_data(user):
     g.bgroup = None
     now = datetime.utcnow()
 
-    if request.endpoint not in ('static', 'baseframe.static'):
-        # Loading an anon user only if we're not rendering static resources
-        if user:
-            if 'au' in session and session['au'] is not None and not unicode(session['au']).startswith(u'test'):
-                anon_user = AnonUser.query.get(session['au'])
-                if anon_user:
-                    anon_user.user = user
-            session.pop('au', None)
-        else:
-            if not session.get('au'):
-                session['au'] = u'test-' + unicode(uuid4())
-                g.esession = EventSessionBase.new_from_request(request)
-                g.event_data['anon_cookie_test'] = session['au']
-            # elif session['au'] == 'test':  # Legacy test cookie, original request now lost
-            #     g.anon_user = AnonUser()
-            #     db.session.add(g.anon_user)
-            #     g.esession = EventSession.new_from_request(request)
-            #     g.esession.anon_user = g.anon_user
-            #     db.session.add(g.esession)
-            #     # We'll update session['au'] below after database commit
-            # elif unicode(session['au']).startswith('test-'):  # Newer redis-backed test cookie
-            #     # This client sent us back our test cookie, so set a real value now
-            #     g.anon_user = AnonUser()
-            #     db.session.add(g.anon_user)
-            #     g.esession = EventSession.new_from_request(request)
-            #     g.esession.anon_user = g.anon_user
-            #     db.session.add(g.esession)
-            #     g.esession.load_from_cache(session['au'], UserEvent)
-            #     # We'll update session['au'] below after database commit
-            else:
-                anon_user = None  # AnonUser.query.get(session['au'])
-                if not anon_user:
-                    # XXX: We got a fake value? This shouldn't happen
-                    g.event_data['anon_cookie_test'] = session['au']
-                    session['au'] = u'test-' + unicode(uuid4())  # Try again
-                    g.esession = EventSessionBase.new_from_request(request)
-                else:
-                    g.anon_user = anon_user
+    if 'au' not in session or session['au'] is None:
+        session['au'] = u'test-' + unicode(uuid4())
+        g.esession = EventSessionBase.new_from_request(request)
+        g.event_data['anon_cookie_test'] = session['au']
+    elif not unicode(session['au']).startswith(u'test'):
+        anon_user = AnonUser.query.get(session['au'])
+        if anon_user:
+            g.anon_user = anon_user
 
-    # Prepare event session if it's not already present
-    if g.user or g.anon_user and not g.esession:
-        g.esession = EventSession.get_session(uuid=session.get('es'), user=g.user, anon_user=g.anon_user)
-    if g.esession:
-        session['es'] = g.esession.uuid
-
-    # Don't commit here. It flushes SQLAlchemy's session cache and forces
-    # fresh database hits. Let after_request commit. (Commented out 30-03-2016)
-    # db.session.commit()
-    g.db_commit_needed = True
-
-    if g.anon_user:
-        session['au'] = g.anon_user.id
-        session.permanent = True
-        if 'impressions' in session:
-            # Run this in the foreground since we need this later in the request for A/B display consistency.
-            # This is most likely being called from the UI-non-blocking sniffle.gif anyway.
-            save_impressions(g.esession.id, session.pop('impressions').values(), now)
+    if g.anon_user and 'impressions' in session:
+        # Run this in the foreground since we need this later in the request for A/B display consistency.
+        # This is most likely being called from the UI-non-blocking sniffle.gif anyway.
+        save_impressions(g.esession.id, session.pop('impressions').values(), now)
 
     # We have a user, now look up everything else
-
     if session.get('kiosk'):
         g.kiosk = True
     else:
@@ -313,7 +302,7 @@ def session_jobpost_ab():
     Returns the user's B-group assignment (NA, True, False) for all jobs shown to the user
     in the current event session (impressions or views) as a dictionary of {id: bgroup}
     """
-    if not g.esession.persistent:
+    if g.esession and not g.esession.persistent:
         return {key: value[2] for key, value in session.get('impressions', {}).items()}
     result = {ji.jobpost_id: ji.bgroup for ji in JobImpression.query.filter_by(event_session=g.esession)}
     result.update({jvs.jobpost_id: jvs.bgroup for jvs in JobViewSession.query.filter_by(event_session=g.esession)})

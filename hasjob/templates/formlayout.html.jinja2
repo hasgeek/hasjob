@@ -1,3 +1,4 @@
+{% from "macros.html.jinja2" import anon_user_script %}
 {%- if current_view.tabs -%}
   {%- extends "tablayout.html.jinja2" -%}
 {%- else -%}
@@ -27,4 +28,5 @@
   {%- if header_campaign %}{{ campaign_script() }}{% endif %}
   {% assets "js_tinymce" %}<script src="{{ ASSET_URL }}" type="text/javascript"></script>{% endassets %}
   {% block footerscripts %}{% endblock %}
+  {{ anon_user_script() }}
 {% endblock %}

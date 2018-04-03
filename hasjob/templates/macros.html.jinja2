@@ -207,3 +207,37 @@
     </script>
   {%- endwith %}
 {%- endmacro -%}
+
+{%- macro anon_user_script() -%}
+  {%- if not g.user and not g.anon_user %}
+  <script type="text/javascript">
+    $(function () {
+      var sniffurl = "{{ url_for('sniffle') }}";
+      var sniffed = false;
+      var sniff = function (event) {
+        jQuery.post(
+          sniffurl,
+          {
+            event: event,
+            token: "{{ session['au'] }}"
+          },
+          function (data) {
+            console.log(data);
+          })
+        sniffed = true;
+      }
+      window.onscroll = function (e) {
+        if (!sniffed) {
+          sniff("scolll");
+        }
+      }
+      window.onpointermove = function (e) {
+        if (!sniffed) {
+          sniff("pointermove");
+        }
+      }
+    })
+  </script>
+  {%- endif %}
+{%- endmacro -%}
+
