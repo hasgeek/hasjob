@@ -683,8 +683,9 @@ def confirm(domain, hashid):
         msg.body = html2text(msg.html)
         mail.send(msg)
         post.email_sent = True
-        post.mark_pending()
-        db.session.commit()
+        if post.state.DRAFT:
+            post.mark_pending()
+            db.session.commit()
 
         footer_campaign = Campaign.for_context(CAMPAIGN_POSITION.AFTERPOST, board=g.board, user=g.user,
                     anon_user=g.anon_user, geonameids=g.user_geonameids)
