@@ -96,6 +96,8 @@ def load_user_data(user):
     """
     All pre-request utilities, run after g.user becomes available.
 
+    Part 1: If session['au'] exists, either set g.anon_user or set anon_user.user (if g.user exists).
+            If session['au'] does not exist, set it
     Part 2: Are we in kiosk mode? Is there a preview campaign?
     Part 3: Look up user's IP address location as geonameids for use in targeting.
     """
