@@ -37,14 +37,7 @@ def sniffle():
     2. If there's no g.user and no session['anon_user'] and form submitted token matches session['au'], sets session['anon_user'] = 'test'
     3. If there's no g.user and there is session['au'] != form['token'], loads g.anon_user
     """
-    # Loading an anon user only if we're not rendering static resources
-    if g.user:
-        if 'au' in session and session['au'] is not None and not unicode(session['au']).startswith(u'test'):
-            anon_user = AnonUser.query.get(session['au'])
-            if anon_user:
-                anon_user.user = g.user
-        session.pop('au', None)
-    else:
+    if not g.user:
         if unicode(session['au']).startswith('test') and unicode(session['au']) == request.form.get('token'):
             # This client sent us back our test cookie, so set a real value now
             g.anon_user = AnonUser()
@@ -55,16 +48,12 @@ def sniffle():
             g.esession.load_from_cache(session['au'], UserEvent)
             # We'll update session['au'] below after database commit
         else:
-            anon_user = AnonUser.query.get(session['au'])
-            if not anon_user:
-                # XXX: We got a fake value? This shouldn't happen
-                g.event_data['anon_cookie_test'] = session['au']
-                session['au'] = u'test-' + unicode(uuid4())  # Try again
-                g.esession = EventSessionBase.new_from_request(request)
-            else:
-                g.anon_user = anon_user
-
-    db.session.commit()
+            # form submitted token doesn't match the already set session['au']
+            # XXX: We got a fake value? This shouldn't happen
+            g.event_data['anon_cookie_test'] = session['au']
+            session['au'] = u'test-' + unicode(uuid4())  # Try again
+            g.esession = EventSessionBase.new_from_request(request)
+        db.session.commit()
 
     if g.anon_user:
         session['au'] = g.anon_user.id
@@ -120,14 +109,22 @@ def load_user_data(user):
     g.bgroup = None
     now = datetime.utcnow()
 
-    if 'au' not in session or session['au'] is None:
+    if 'au' in session and session['au'] is not None:
+        if not unicode(session['au']).startswith(u'test'):
+            # fetch anon user and set anon_user.user
+            anon_user = AnonUser.query.get(session['au'])
+            if anon_user and g.user:
+                # we have anon user id in session['au'], set anon_user.user to current user
+                anon_user.user = g.user
+                g.db_commit_needed = True
+                session.pop('au', None)
+            elif anon_user and not g.user:
+                # set g.anon_user
+                g.anon_user = anon_user
+    elif not g.user:
         session['au'] = u'test-' + unicode(uuid4())
         g.esession = EventSessionBase.new_from_request(request)
         g.event_data['anon_cookie_test'] = session['au']
-    elif not unicode(session['au']).startswith(u'test'):
-        anon_user = AnonUser.query.get(session['au'])
-        if anon_user:
-            g.anon_user = anon_user
 
     if g.anon_user and 'impressions' in session:
         # Run this in the foreground since we need this later in the request for A/B display consistency.
