@@ -385,7 +385,7 @@ def get_post_viewcounts(jobpost_id):
 
 
 def get_max_counts(postids):
-    values = g.maxcounts if g.maxcounts else {}
+    values = g.maxcounts if 'maxcounts' in g else {}
     if not values:
         view_counts = [get_post_viewcounts(postid) for postid in postids]
         if view_counts:
