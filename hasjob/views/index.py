@@ -90,7 +90,7 @@ def json_index(data):
     return jsonify(result)
 
 
-def fetch_jobposts(request_args, request_values, filters, is_index, board, board_jobs, gkiosk, basequery, md5sum, domain, location, title, showall, statusfilter, batched, ageless, template_vars, search_query=None, query_string=None):
+def fetch_jobposts(request_args, request_values, filters, is_index, board, board_jobs, gkiosk, basequery, md5sum, domain, location, title, showall, statusfilter, batched, ageless, template_vars, search_query=None, query_string=None, posts_only=False):
     if basequery is None:
         basequery = JobPost.query
 
@@ -201,11 +201,13 @@ def fetch_jobposts(request_args, request_values, filters, is_index, board, board
         data_filters['query_string'] = query_string
         basequery = basequery.filter(JobPost.search_vector.match(search_query, postgresql_regconfig='english'))
 
+    posts = getposts(basequery, pinned=True, showall=showall, statusfilter=statusfilter, ageless=ageless).all()
+    if posts_only:
+        return posts
+
     if data_filters:
         showall = True
         batched = True
-
-    posts = getposts(basequery, pinned=True, showall=showall, statusfilter=statusfilter, ageless=ageless).all()
 
     if posts:
         employer_name = posts[0].company_name
@@ -567,6 +569,55 @@ def filterset_view(name):
     return index(filters=filterset.to_filters(translate_geonameids=True),
         query_string=filterset.keywords,
         filterset=filterset)
+
+
+# @app.route('/subscribe', subdomain='<subdomain>', methods=['POST'])
+# @app.route('/subscribe', methods=['POST'])
+# def subscribe_to_jobposts():
+#     filterset = Filterset.from_filters(g.board, filters)
+#     if not filterset:
+#         form = FiltersetForm(parent=g.board)
+#         if form.validate_on_submit():
+#             filterset = Filterset(board=g.board, title=u"")
+#             form.populate_obj(filterset)
+#             db.session.add(filterset)
+
+#     if g.user not in filterset.users:
+#         filterset.users.append(g.user)
+#     db.session.commit()
+#     return index(filters=filterset.to_filters(translate_geonameids=True),
+#         query_string=filterset.keywords,
+#         filterset=filterset)
+
+
+# def send_alerts_to_subscribers():
+#     subscriptions = JobPostSubscription.query.filter_by(active=True).all()
+#     for sub in subscriptions:
+#         posts = get_filtered_posts(filters=sub.filterset.to_filters())
+#         now = datetime.utcnow()
+#         if sub.daily:
+#             days_delta = 1
+#         elif sub.weekly:
+#             days_delta = 7
+#         elif sub.monthly:
+#             days_delta = 30
+
+#         last_reference_date = now - timedelta(days=days_delta)
+#         recent_alert = JobPostAlert.query.filter(
+#             JobPostAlert.jobpost_subscription == sub, JobPostAlert.sent_at >= last_reference_date
+#             ).order_by('created_at desc').first()
+#         if recent_alert:
+#             break
+
+#         sent_jobpostids = [jobpost.id for jobpost in recent_alert.jobposts]
+#         unsent_posts = [post for post in posts if post.id not in sent_jobpostids]
+#         if not unsent_posts:
+#             break
+
+#         jobpost_alert = JobPostAlert(jobpost_subscription=sub, sent_at=now)
+#         jobpost_alert.jobposts = unsent_posts
+#         db.session.add(jobpost_alert)
+#     db.session.commit()
 
 
 @app.route('/opensearch.xml', subdomain='<subdomain>')
