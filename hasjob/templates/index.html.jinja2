@@ -194,8 +194,9 @@
       } else {
         window.Hasjob.StickieList.loadmore({enable: false});
       }
-
-      window.Hasjob.StickieList.init();
+      {%- if not paginated and not request.is_xhr -%}
+        window.Hasjob.StickieList.init();
+      {%- endif %}
     });
   </script>
   {%- if not paginated -%}
