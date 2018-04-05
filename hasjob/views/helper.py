@@ -267,7 +267,7 @@ def session_jobpost_ab():
     Returns the user's B-group assignment (NA, True, False) for all jobs shown to the user
     in the current event session (impressions or views) as a dictionary of {id: bgroup}
     """
-    if g.esession and not g.esession.persistent:
+    if not g.esession.persistent:
         return {key: value[2] for key, value in session.get('impressions', {}).items()}
     result = {ji.jobpost_id: ji.bgroup for ji in JobImpression.query.filter_by(event_session=g.esession)}
     result.update({jvs.jobpost_id: jvs.bgroup for jvs in JobViewSession.query.filter_by(event_session=g.esession)})
