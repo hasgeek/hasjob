@@ -101,7 +101,7 @@ class Domain(BaseMixin, db.Model):
         name = name.lower()
         result = cls.query.filter_by(name=name).one_or_none()
         if not result and create:
-            result = cls(name=name, is_webmail=is_public_email_domain(name))
+            result = cls(name=name, is_webmail=is_public_email_domain(name, default=False))
             db.session.add(result)
         return result
 

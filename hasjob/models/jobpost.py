@@ -330,7 +330,7 @@ class JobPost(BaseMixin, db.Model):
         elif action == 'manage':
             return url_for('managejob', hashid=self.hashid, domain=domain, _external=_external, **kwargs)
         elif action == 'browse':
-            if is_public_email_domain(self.email_domain):
+            if is_public_email_domain(self.email_domain, default=False):
                 return url_for('browse_by_email', md5sum=self.md5sum, _external=_external, **kwargs)
             else:
                 return url_for('browse_by_domain', domain=self.email_domain, _external=_external, **kwargs)
@@ -349,7 +349,7 @@ class JobPost(BaseMixin, db.Model):
 
     @property
     def from_webmail_domain(self):
-        return is_public_email_domain(self.email_domain)
+        return is_public_email_domain(self.email_domain, default=False)
 
     @property
     def company_url_domain_zone(self):

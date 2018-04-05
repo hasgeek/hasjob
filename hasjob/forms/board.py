@@ -97,7 +97,7 @@ class BoardTaggingForm(forms.Form):
                 # FIXME: This will break domains where the subdomain handles email
                 r = tldextract.extract(item.lower())
                 d = u'.'.join([r.domain, r.suffix])
-                if not is_public_email_domain(d):
+                if not is_public_email_domain(d, default=False):
                     domains.add(d)
         field.data = list(domains)
 

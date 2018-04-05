@@ -278,7 +278,7 @@ class ListingForm(forms.Form):
             if domain and domain.is_banned:
                 self.poster_email.errors.append(_(u"%%s is banned from posting jobs on Hasjob") % domain_name)
                 success = False
-            elif (not self.job_type_ob.webmail_allowed) and is_public_email_domain(domain_name):
+            elif (not self.job_type_ob.webmail_allowed) and is_public_email_domain(domain_name, default=False):
                 self.poster_email.errors.append(
                     _(u"Public webmail accounts like Gmail are not accepted. Please use your corporate email address"))
                 success = False
