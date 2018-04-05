@@ -2,7 +2,6 @@
 
 from os import path
 from datetime import datetime, timedelta
-from uuid import uuid4
 from urllib import quote, quote_plus
 import hashlib
 import bleach
@@ -10,7 +9,7 @@ from pytz import utc
 from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
 from geoip2.errors import AddressNotFoundError
-from flask import Markup, request, g, session, Response
+from flask import Markup, request, g, session
 from flask_rq import job
 from flask_lastuser import signal_user_looked_up
 from coaster.sqlalchemy import failsafe_add
@@ -19,47 +18,14 @@ from baseframe.signals import form_validation_error, form_validation_success
 
 from .. import app, redis_store, lastuser
 from ..extapi import location_geodata
-from ..models import (agelimit, newlimit, db, JobCategory, JobPost, JobType, POST_STATE, BoardJobPost, Tag, JobPostTag,
-    Campaign, CampaignView, CampaignAnonView, EventSessionBase, EventSession, UserEventBase, UserEvent, JobImpression,
-    JobViewSession, AnonUser, campaign_event_session_table, JobLocation, PAY_TYPE)
+from ..models import (db, JobCategory, JobPost, JobType, BoardJobPost, Tag, JobPostTag,
+    Campaign, CampaignView, CampaignAnonView, EventSessionBase, EventSession, UserEventBase,
+    UserEvent, JobImpression, JobViewSession, AnonUser, campaign_event_session_table,
+    JobLocation, PAY_TYPE)
 from ..utils import scrubemail, redactemail, cointoss
 
 
 gif1x1 = 'R0lGODlhAQABAJAAAP8AAAAAACH5BAUQAAAALAAAAAABAAEAAAICBAEAOw=='.decode('base64')
-
-
-@app.route('/_sniffle', methods=['POST'])
-def sniffle():
-    """
-    Load anon user:
-
-    1. If there's g.user and session['anon_user'], it loads that anon_user and tags with user=g.user, then removes anon
-    2. If there's no g.user and no session['anon_user'] and form submitted token matches session['au'], sets session['anon_user'] = 'test'
-    3. If there's no g.user and there is session['au'] != form['token'], loads g.anon_user
-    """
-    if not g.user:
-        if unicode(session['au']).startswith('test') and unicode(session['au']) == request.form.get('token'):
-            # This client sent us back our test cookie, so set a real value now
-            g.anon_user = AnonUser()
-            db.session.add(g.anon_user)
-            g.esession = EventSession.new_from_request(request)
-            g.esession.anon_user = g.anon_user
-            db.session.add(g.esession)
-            g.esession.load_from_cache(session['au'], UserEvent)
-            # We'll update session['au'] below after database commit
-        else:
-            # form submitted token doesn't match the already set session['au']
-            # XXX: We got a fake value? This shouldn't happen
-            g.event_data['anon_cookie_test'] = session['au']
-            session['au'] = u'test-' + unicode(uuid4())  # Try again
-            g.esession = EventSessionBase.new_from_request(request)
-        db.session.commit()
-
-    if g.anon_user:
-        session['au'] = g.anon_user.id
-        session.permanent = True
-
-    return Response("OK")
 
 
 def index_is_paginated():
@@ -91,7 +57,6 @@ def load_user_data(user):
     All pre-request utilities, run after g.user becomes available.
 
     Part 1: If session['au'] exists, either set g.anon_user or set anon_user.user (if g.user exists).
-            If session['au'] does not exist, set it
     Part 2: Are we in kiosk mode? Is there a preview campaign?
     Part 3: Look up user's IP address location as geonameids for use in targeting.
     """
@@ -107,21 +72,20 @@ def load_user_data(user):
 
     if request.endpoint not in ('static', 'baseframe.static'):
         if 'au' in session and session['au'] is not None:
-            if not unicode(session['au']).startswith(u'test'):
-                # fetch anon user and set anon_user.user
+            if unicode(session['au']).startswith('test'):
+                # old test token that we no longer need
+                session.pop('au', None)
+            else:
+                # fetch anon user and set anon_user.user if g.user exists
                 anon_user = AnonUser.query.get(session['au'])
-                if anon_user and g.user:
-                    # we have anon user id in session['au'], set anon_user.user to current user
-                    anon_user.user = g.user
-                    g.db_commit_needed = True
-                    session.pop('au', None)
-                elif anon_user and not g.user:
-                    # set g.anon_user
+                if anon_user:
+                    if g.user:
+                        anon_user.user = g.user
                     g.anon_user = anon_user
+                session.pop('au', None)
         elif not g.user:
-            session['au'] = u'test-' + unicode(uuid4())
+            # g.user, g.anon_user, session['au'], none of them are set
             g.esession = EventSessionBase.new_from_request(request)
-            g.event_data['anon_cookie_test'] = session['au']
 
         # Prepare event session if it's not already present
         if g.user or g.anon_user and not g.esession:
@@ -180,7 +144,7 @@ def load_user_data(user):
 
 @app.after_request
 def record_views_and_events(response):
-    if hasattr(g, 'db_commit_needed') and g.db_commit_needed:
+    if len(db.session.dirty) > 0 or len(db.session.new) > 0:
         db.session.commit()
 
     # We had a few error reports with g.* variables missing in this function, so now
@@ -289,7 +253,8 @@ def record_views_and_events(response):
                     jobpost_id=g.jobpost_viewed[0],
                     bgroup=g.jobpost_viewed[1])
         else:
-            g.esession.save_to_cache(session['au'])
+            if 'au' in session:
+                g.esession.save_to_cache(session['au'])
             if g.impressions:
                 # Save impressions to user's cookie session to write to db later
                 session['impressions'] = g.impressions

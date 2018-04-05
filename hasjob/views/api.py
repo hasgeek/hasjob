@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from flask import jsonify
-from coaster.views import requestargs
-from ..models import Tag
+from flask import jsonify, g, session, request, Response
+from flask_wtf import FlaskForm
+from coaster.views import requestargs, render_with
+
+from ..models import db, Tag, AnonUser, EventSession, EventSessionBase, UserEvent
 from .. import app, lastuser
 
 
@@ -11,3 +13,32 @@ from .. import app, lastuser
 @requestargs('q')
 def tag_autocomplete(q):
     return jsonify({'tags': [t.title for t in Tag.autocomplete(q)]})
+
+
+@app.route('/api/1/anonsession', methods=['POST'])
+@render_with(json=True)
+def anon_session():
+    """
+    Load anon user:
+
+    1. If client returns valid csrf token, create and set g.anon_user
+    2. if g.anon_user exists, set session['au'] to anon_user.id
+    """
+    csrf_form = FlaskForm()
+    if csrf_form.validate_on_submit():
+        # This client sent us back valid csrf token
+        g.anon_user = AnonUser()
+        db.session.add(g.anon_user)
+        g.esession = EventSession.new_from_request(request)
+        g.esession.anon_user = g.anon_user
+        db.session.add(g.esession)
+        if 'au' in session:
+            g.esession.load_from_cache(session['au'], UserEvent)
+        # We'll update session['au'] below after database commit
+        db.session.commit()
+
+    if g.anon_user:
+        session['au'] = g.anon_user.id
+        session.permanent = True
+
+    return Response({'status': 'ok'})

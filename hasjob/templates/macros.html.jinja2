@@ -212,28 +212,28 @@
   {%- if not g.user and not g.anon_user %}
   <script type="text/javascript">
     $(function () {
-      var sniffurl = "{{ url_for('sniffle') }}";
-      var sniffed = false;
-      var sniff = function (event) {
-        jQuery.post(
-          sniffurl,
+      var anonymized = false;
+      var csrf_token = $('meta[name="csrf-token"]').attr('content');
+      var anonymize = function (event) {
+        $.post(
+          "{{ url_for('anon_session') }}",
           {
             event: event,
-            token: "{{ session['au'] }}"
+            csrf_token: csrf_token
           },
           function (data) {
             console.log(data);
-          })
-        sniffed = true;
+          });
+        anonymized = true;
       }
       window.onscroll = function (e) {
-        if (!sniffed) {
-          sniff("scolll");
+        if (!anonymized) {
+          anonymize("scroll");
         }
       }
       window.onpointermove = function (e) {
-        if (!sniffed) {
-          sniff("pointermove");
+        if (!anonymized) {
+          anonymize("pointermove");
         }
       }
     })
