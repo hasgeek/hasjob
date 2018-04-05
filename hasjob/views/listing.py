@@ -29,7 +29,7 @@ from hasjob.views import ALLOWED_TAGS
 from hasjob.nlp import identify_language
 from hasjob.views.helper import (
     gif1x1, load_viewcounts, session_jobpost_ab, bgroup, has_post_stats,
-    get_post_viewcounts)
+    get_post_viewcounts, get_max_counts)
 
 
 @app.route('/<domain>/<hashid>', methods=('GET', 'POST'), subdomain='<subdomain>')
@@ -189,9 +189,17 @@ def job_related_posts(domain, hashid):
     if is_siteadmin or (g.user and g.user.flags.get('is_employer_month')):
         load_viewcounts(related_posts)
     g.impressions = {rp.id: (False, rp.id, bgroup(jobpost_ab, rp)) for rp in related_posts}
-    return render_template('related_posts.html.jinja2', post=post,
-        related_posts=related_posts, is_siteadmin=is_siteadmin)
-
+    postids = [related_post.id for related_post in related_posts]
+    max_counts = get_max_counts(postids)
+    return jsonify(template=render_template('related_posts.html.jinja2', post=post,
+            related_posts=related_posts,
+            is_siteadmin=is_siteadmin
+        ),
+        max_impressions=max_counts['max_impressions'],
+        max_views=max_counts['max_views'],
+        max_opens=max_counts['max_opens'],
+        max_applied=max_counts['max_applied']
+    )
 
 @app.route('/<domain>/<hashid>/star', defaults={'domain': None}, methods=['POST'], subdomain='<subdomain>')
 @app.route('/<domain>/<hashid>/star', defaults={'domain': None}, methods=['POST'])
