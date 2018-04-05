@@ -59,12 +59,6 @@ def sniffle():
         session['au'] = g.anon_user.id
         session.permanent = True
 
-    # Prepare event session if it's not already present
-    if g.user or g.anon_user and not g.esession:
-        g.esession = EventSession.get_session(uuid=session.get('es'), user=g.user, anon_user=g.anon_user)
-    if g.esession:
-        session['es'] = g.esession.uuid
-
     return Response("OK")
 
 
@@ -111,27 +105,34 @@ def load_user_data(user):
     g.bgroup = None
     now = datetime.utcnow()
 
-    if 'au' in session and session['au'] is not None:
-        if not unicode(session['au']).startswith(u'test'):
-            # fetch anon user and set anon_user.user
-            anon_user = AnonUser.query.get(session['au'])
-            if anon_user and g.user:
-                # we have anon user id in session['au'], set anon_user.user to current user
-                anon_user.user = g.user
-                g.db_commit_needed = True
-                session.pop('au', None)
-            elif anon_user and not g.user:
-                # set g.anon_user
-                g.anon_user = anon_user
-    elif not g.user:
-        session['au'] = u'test-' + unicode(uuid4())
-        g.esession = EventSessionBase.new_from_request(request)
-        g.event_data['anon_cookie_test'] = session['au']
+    if request.endpoint not in ('static', 'baseframe.static'):
+        if 'au' in session and session['au'] is not None:
+            if not unicode(session['au']).startswith(u'test'):
+                # fetch anon user and set anon_user.user
+                anon_user = AnonUser.query.get(session['au'])
+                if anon_user and g.user:
+                    # we have anon user id in session['au'], set anon_user.user to current user
+                    anon_user.user = g.user
+                    g.db_commit_needed = True
+                    session.pop('au', None)
+                elif anon_user and not g.user:
+                    # set g.anon_user
+                    g.anon_user = anon_user
+        elif not g.user:
+            session['au'] = u'test-' + unicode(uuid4())
+            g.esession = EventSessionBase.new_from_request(request)
+            g.event_data['anon_cookie_test'] = session['au']
 
-    if g.anon_user and 'impressions' in session:
-        # Run this in the foreground since we need this later in the request for A/B display consistency.
-        # This is most likely being called from the UI-non-blocking sniffle.gif anyway.
-        save_impressions(g.esession.id, session.pop('impressions').values(), now)
+        # Prepare event session if it's not already present
+        if g.user or g.anon_user and not g.esession:
+            g.esession = EventSession.get_session(uuid=session.get('es'), user=g.user, anon_user=g.anon_user)
+        if g.esession:
+            session['es'] = g.esession.uuid
+
+        if g.anon_user and 'impressions' in session:
+            # Run this in the foreground since we need this later in the request for A/B display consistency.
+            # This is most likely being called from the UI-non-blocking sniffle.gif anyway.
+            save_impressions(g.esession.id, session.pop('impressions').values(), now)
 
     # We have a user, now look up everything else
     if session.get('kiosk'):
