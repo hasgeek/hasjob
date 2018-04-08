@@ -29,6 +29,7 @@ workboxSW.router.registerRoute(/^https?\:\/\/static.*/, workboxSW.strategies.net
   "cacheName": "assets"
 }), 'GET');
 
+//For development setup caching of assets
 workboxSW.router.registerRoute(/^http:\/\/localhost:5000\/static/, workboxSW.strategies.networkFirst({
   "cacheName": "baseframe-local"
 }), 'GET');
@@ -61,19 +62,11 @@ workboxSW.router.registerRoute(/^https?:\/\/fonts.gstatic.com\/*/, workboxSW.str
   "cacheName": "fonts"
 }), 'GET');
 
-const routeHandler = workboxSW.strategies.networkFirst({
-  cacheName: 'routes'
-});
-
-workboxSW.router.registerRoute('/', workboxSW.strategies.networkFirst({
-  "cacheName": "routes"
-}), 'GET');
-
 /* The service worker handles all fetch requests. If fetching of job post page or 
 other pages fails due to a network error, it will return the cached "offline" page.
 */
-workboxSW.router.registerRoute('/*', args => {
-  return routeHandler.handle(args).then(response => {
+workboxSW.router.registerRoute('/(.*)', args => {
+  return workboxSW.strategies.networkFirst({cacheName: 'routes'}).handle(args).then(response => {
     if (!response) {
       return caches.match('/offline');
     } 
