@@ -171,12 +171,14 @@
 
 {%- block footerscripts -%}
   <script type="text/javascript">
-    window.Hasjob.Config.MaxFunnelStat = {
-      'max_impressions': {{ max_impressions }},
-      'max_views': {{ max_views }},
-      'max_opens': {{ max_opens }},
-      'max_applied': {{ max_applied }}
-    }
+    {%- if show_viewcounts -%}
+      window.Hasjob.Config.MaxFunnelStat = {
+        'max_impressions': {{ max_impressions }},
+        'max_views': {{ max_views }},
+        'max_opens': {{ max_opens }},
+        'max_applied': {{ max_applied }}
+      }
+    {%- endif %}
     $(function(){
       var loadmore = {{loadmore | tojson}};
       var paginated = {{paginated | tojson}};

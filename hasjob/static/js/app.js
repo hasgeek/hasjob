@@ -241,16 +241,22 @@ window.Hasjob.StickieList = {
   },
   funnelStatInit: function() {
     window.addEventListener('onStickiesInit', function (e) {
-      Hasjob.StickieList.createGradientColour();
-      Hasjob.StickieList.renderGradientColour();
+      if (window.Hasjob.Config.MaxFunnelStat) {
+        Hasjob.StickieList.createGradientColour();
+        Hasjob.StickieList.renderGradientColour();
+      }
     }, false);
 
     window.addEventListener('onStickiesRefresh', function (e) {
-      Hasjob.StickieList.renderGradientColour();
+      if (window.Hasjob.Config.MaxFunnelStat) {
+        Hasjob.StickieList.renderGradientColour();
+      }
     }, false);
 
     window.addEventListener('onStickiesPagination', function (e) {
-      Hasjob.StickieList.renderGradientColour();
+      if (window.Hasjob.Config.MaxFunnelStat) {
+        Hasjob.StickieList.renderGradientColour();
+      }
     }, false);
   }
 };

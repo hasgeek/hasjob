@@ -448,12 +448,14 @@
         triggered_related = true;
         $.get("{{ post.url_for('related_posts') }}", function (data) {
             $('#stickie-area').html(data.template);
-            window.Hasjob.Config.MaxFunnelStat = {
-              'max_impressions': data.max_impressions,
-              'max_views': data.max_views,
-              'max_opens': data.max_opens,
-              'max_applied': data.max_applied
-            }
+            {%- if can_see_post_stats %}
+              window.Hasjob.Config.MaxFunnelStat = {
+                'max_impressions': data.max_impressions,
+                'max_views': data.max_views,
+                'max_opens': data.max_opens,
+                'max_applied': data.max_applied
+              }
+            {%- endif %}
             window.Hasjob.StickieList.init();
           }
         );
