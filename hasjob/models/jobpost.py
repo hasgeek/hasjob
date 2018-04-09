@@ -13,7 +13,7 @@ import tldextract
 from coaster.auth import current_auth
 from coaster.sqlalchemy import make_timestamp_columns, Query, JsonDict, StateManager
 from baseframe import cache, _, __
-from baseframe.staticdata import webmail_domains
+from baseframe.utils import is_public_email_domain
 from .. import redis_store
 from . import newlimit, agelimit, db, POST_STATE, EMPLOYER_RESPONSE, PAY_TYPE, BaseMixin, TimestampMixin
 from .jobtype import JobType
@@ -73,6 +73,7 @@ def has_starred_post(user, post):
     query = starred_job_table.count().where(starred_job_table.c.user_id == user.id).where(starred_job_table.c.jobpost_id == post.id)
     res = db.session.execute(query)
     return bool(res.first()[0]) if res else False
+
 
 User.has_starred_post = has_starred_post
 
@@ -329,7 +330,7 @@ class JobPost(BaseMixin, db.Model):
         elif action == 'manage':
             return url_for('managejob', hashid=self.hashid, domain=domain, _external=_external, **kwargs)
         elif action == 'browse':
-            if self.email_domain in webmail_domains:
+            if is_public_email_domain(self.email_domain, default=False):
                 return url_for('browse_by_email', md5sum=self.md5sum, _external=_external, **kwargs)
             else:
                 return url_for('browse_by_domain', domain=self.email_domain, _external=_external, **kwargs)
@@ -348,7 +349,7 @@ class JobPost(BaseMixin, db.Model):
 
     @property
     def from_webmail_domain(self):
-        return self.email_domain in webmail_domains
+        return is_public_email_domain(self.email_domain, default=False)
 
     @property
     def company_url_domain_zone(self):

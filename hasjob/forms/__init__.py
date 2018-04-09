@@ -32,3 +32,4 @@ from .board import *     # NOQA
 from .campaign import *  # NOQA
 from .domain import *    # NOQA
 from .jobpost import *   # NOQA
+from .filterset import *   # NOQA
