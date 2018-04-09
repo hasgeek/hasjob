@@ -765,7 +765,7 @@ def sitemap(key):
                       '  </url>\n'
 
     # Add filtered views to sitemap
-    for item in Filterset.query.all():
+    for item in Filterset.query.filter(Filterset.sitemap == True):
         sitemapxml += '  <url>\n'\
                     '    <loc>%s</loc>\n' % item.url_for(_external=True) + \
                     '    <lastmod>%s</lastmod>\n' % (item.updated_at.isoformat() + 'Z') + \

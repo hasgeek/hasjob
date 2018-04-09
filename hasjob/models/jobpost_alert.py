@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from datetime import datetime, timedelta
 from coaster.sqlalchemy import StateManager
 from ..utils import random_long_key
 from . import db, BaseMixin, LabeledEnum
@@ -15,37 +16,41 @@ class EMAIL_FREQUENCY(LabeledEnum):
 
 class JobPostSubscription(BaseMixin, db.Model):
     __tablename__ = 'jobpost_subscription'
-    __table_args__ = (db.UniqueConstraint('user_id', 'user_type', 'filterset_id'),)
+    __table_args__ = (db.UniqueConstraint('filterset_id', 'email'),)
 
-    user_id = db.Column(None, db.ForeignKey('user.id'))
-    user = db.relationship('User', backref=db.backref('subscriptions',
-        lazy='dynamic', cascade='all, delete-orphan'))
-    user_type = db.Column(db.Unicode(8), nullable=False, default=u'User')
-    filterset_id = db.Column(None, db.ForeignKey('filterset.id'))
+    filterset_id = db.Column(None, db.ForeignKey('filterset.id'), nullable=False)
     filterset = db.relationship('Filterset', backref=db.backref('subscriptions',
         lazy='dynamic'))
-    active = db.Column(db.Boolean, nullable=False, default=True, index=True)
-    email = db.Column(db.Boolean, nullable=True, default=True, index=True)
+    email = db.Column(db.Unicode(254), nullable=False)
+
+    active = db.Column(db.Boolean, nullable=False, default=False, index=True)
+    email_verify_key = db.Column(db.String(40), nullable=True, default=random_long_key, unique=True)
+    unsubscribe_key = db.Column(db.String(40), nullable=True, default=random_long_key, unique=True)
+    email_verified_at = db.Column(db.DateTime, nullable=True, index=True)
+    unsubscribed_at = db.Column(db.DateTime, nullable=True)
+
     _email_frequency = db.Column('email_frequency',
             db.Integer, StateManager.check_constraint('email_frequency', EMAIL_FREQUENCY),
         default=EMAIL_FREQUENCY.DAILY, nullable=True)
     email_frequency = StateManager('_email_frequency', EMAIL_FREQUENCY, doc="Email frequency")
-    email_verify_key = db.Column(db.String(40), nullable=True, default=random_long_key)
-    email_verified_at = db.Column(db.DateTime, nullable=True, index=True)
-    deactivated_at = db.Column(db.DateTime, nullable=True)
-    reactivated_at = db.Column(db.DateTime, nullable=True)
 
     def verify_email(self):
+        self.active = True
         self.email_verified_at = db.func.utcnow()
 
-    def deactivate(self):
+    def unsubscribe(self):
         self.active = False
-        self.deactivated = db.func.utcnow()
+        self.unsubscribed_at = db.func.utcnow()
 
-    def reactivate(self):
-        if self.email_verified:
-            self.active = True
-            self.reactivated_at = db.func.utcnow()
+    @classmethod
+    def get_active_subscriptions(cls):
+        return cls.query.filter(cls.active == True, cls.email_verified_at != None)
+
+    def has_recent_alert(self):
+        return JobPostAlert.query.filter(
+            JobPostAlert.jobpost_subscription == self,
+            JobPostAlert.sent_at >= datetime.utcnow() - timedelta(days=self.email_frequency.value)
+        ).order_by('created_at desc').notempty()
 
 
 jobpost_alert_table = db.Table('jobpost_jobpost_alert', db.Model.metadata,

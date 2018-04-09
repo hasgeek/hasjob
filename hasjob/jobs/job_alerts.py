@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from datetime import datetime, timedelta
 from flask_mail import Message
 from flask import render_template
 from flask_rq import job
@@ -11,30 +10,30 @@ from hasjob.models import db, JobPost, JobPostSubscription, JobPostAlert, jobpos
 from hasjob.views.index import fetch_jobposts
 
 
+def get_unseen_posts(subscription):
+    posts = fetch_jobposts(filters=subscription.filterset.to_filters(), posts_only=True)
+    seen_jobpostids = JobPost.query.join(jobpost_alert_table).join(JobPostAlert).filter(
+        JobPostAlert.jobpost_subscription == subscription).options(db.load_only('id')).all()
+    return [post for post in posts if post.id not in seen_jobpostids]
+
+
 @job('hasjob')
 def send_email_alerts():
-    subscriptions = JobPostSubscription.query.filter(JobPostSubscription.active == True,
-        JobPostSubscription.email_verified_at != None).all()
-    for sub in subscriptions:
-        if JobPostAlert.query.filter(
-            JobPostAlert.jobpost_subscription == sub,
-            JobPostAlert.sent_at >= datetime.utcnow() - timedelta(days=sub.email_frequency.value)
-            ).order_by('created_at desc').notempty():
-            print 'alert was recently sent so skipping'
+    for subscription in JobPostSubscription.get_active_subscriptions:
+        if subscription.has_recent_alert():
+            # Alert was sent recently, break out of loop
             break
 
-        posts = fetch_jobposts(filters=sub.filterset.to_filters(), posts_only=True)
-        sent_jobpostids = JobPost.query.join(jobpost_alert_table).join(JobPostAlert).filter(JobPostAlert.jobpost_subscription == sub).options(db.load_only('id')).all()
-        unseen_posts = [post for post in posts if post.id not in sent_jobpostids]
+        unseen_posts = get_unseen_posts(subscription)
         if not unseen_posts:
-            print "no unseen posts"
+            # Nothing new to see, break out of loop
             break
 
-        jobpost_alert = JobPostAlert(jobpost_subscription=sub)
+        jobpost_alert = JobPostAlert(jobpost_subscription=subscription)
         jobpost_alert.jobposts = unseen_posts
         db.session.commit()
 
-        msg = Message(subject=u"Job alerts", recipients=[sub.user.email])
+        msg = Message(subject=u"New jobs on Hasjob", recipients=[subscription.email])
         html = email_transform(render_template('job_alert_mailer.html.jinja2', posts=jobpost_alert.jobposts))
         msg.html = html
         msg.body = html2text(html)

@@ -8,7 +8,7 @@ import hasjob.forms as forms
 import hasjob.views as views
 from hasjob.models import db
 from hasjob import app
-from hasjob.jobs import send_email_alerts
+from hasjob.jobs.job_alerts import send_email_alerts
 from datetime import datetime, timedelta
 
 periodic = Manager(usage="Periodic tasks from cron (with recommended intervals)")

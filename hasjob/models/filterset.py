@@ -53,6 +53,8 @@ class Filterset(BaseScopedNameMixin, db.Model):
 
     #: Welcome text
     description = db.Column(db.UnicodeText, nullable=False, default=u'')
+    #: Display on sitemap
+    sitemap = db.Column(db.Boolean, default=False, nullable=True, index=True)
 
     #: Associated job types
     types = db.relationship(JobType, secondary=filterset_jobtype_table)
