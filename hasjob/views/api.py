@@ -4,7 +4,7 @@ from flask import jsonify, g, session, request, Response
 from flask_wtf import FlaskForm
 from coaster.views import requestargs, render_with
 
-from ..models import db, Tag, AnonUser, EventSession, EventSessionBase, UserEvent
+from ..models import db, Tag, Domain, AnonUser, EventSession, EventSessionBase, UserEvent
 from .. import app, lastuser
 
 
@@ -13,6 +13,13 @@ from .. import app, lastuser
 @requestargs('q')
 def tag_autocomplete(q):
     return jsonify({'tags': [t.title for t in Tag.autocomplete(q)]})
+
+
+@app.route('/api/1/domain/autocomplete')
+@lastuser.requires_login
+@requestargs('q')
+def domain_autocomplete(q):
+    return jsonify({'domains': [d.name for d in Domain.autocomplete(q)]})
 
 
 @app.route('/api/1/anonsession', methods=['POST'])

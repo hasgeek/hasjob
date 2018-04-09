@@ -683,8 +683,9 @@ def confirm(domain, hashid):
         msg.body = html2text(msg.html)
         mail.send(msg)
         post.email_sent = True
-        post.mark_pending()
-        db.session.commit()
+        if post.state.DRAFT:
+            post.mark_pending()
+            db.session.commit()
 
         footer_campaign = Campaign.for_context(CAMPAIGN_POSITION.AFTERPOST, board=g.board, user=g.user,
                     anon_user=g.anon_user, geonameids=g.user_geonameids)
@@ -1051,7 +1052,7 @@ def reopen(domain, hashid, key):
         return redirect(post.url_for(), code=303)
     form = Form()
     if form.validate_on_submit():
-        post.confirm()
+        post.reopen()
         db.session.commit()
         # cache bust
         # dogpile.invalidate_region('hasjob_index')
