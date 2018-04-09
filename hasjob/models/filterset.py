@@ -5,6 +5,7 @@ from sqlalchemy import event, DDL
 from sqlalchemy.ext.associationproxy import association_proxy
 from . import db, BaseScopedNameMixin, JobType, JobCategory, Tag, Domain, Board
 from ..extapi import location_geodata
+from coaster.utils import buid, getbool
 
 
 __all__ = ['Filterset']
@@ -78,6 +79,38 @@ class Filterset(BaseScopedNameMixin, db.Model):
     def url_for(self, action='view', _external=True, **kwargs):
         kwargs.setdefault('subdomain', self.board.name if self.board.not_root else None)
         return super(Filterset, self).url_for(action, name=self.name, _external=_external, **kwargs)
+
+    @classmethod
+    def init_from_filters(cls, board, filters):
+        obj = cls(parent=board, title=buid())
+        if filters.get('t'):
+            obj.types = JobType.query.filter(JobType.name.in_(filters['t'])).group_by(JobType.id).having(
+                db.func.count(JobType.name) == len(filters['t'])).all()
+
+        if filters.get('c'):
+            obj.categories = JobCategory.query.filter(JobCategory.name.in_(filters['c'])).group_by(JobCategory.id).having(
+                db.func.count(JobCategory.name) == len(filters['c'])).all()
+
+        if filters.get('l'):
+            geonameids = []
+            for loc in filters.get('l'):
+                geonameids.append(location_geodata(loc)['geonameid'])
+            obj.geonameids = geonameids
+
+        if getbool(filters.get('anywhere')):
+            obj.remote_location = True
+
+        if getbool(filters.get('equity')):
+            obj.equity = True
+
+        if filters.get('currency') and filters.get('pay'):
+            obj.pay_currency = filters.get('currency')
+            obj.pay_cash = filters.get('pay')
+
+        if filters.get('q'):
+            obj.keywords = filters.get('q')
+
+        return obj
 
     def to_filters(self, translate_geonameids=False):
         location_names = []

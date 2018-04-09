@@ -1,0 +1,17 @@
+{% extends "inc/email_layout_lite.html.jinja2" %}
+
+{% block content %}
+  <div itemscope itemtype="http://schema.org/EmailMessage">
+  	<div itemprop="action" itemscope itemtype="http://schema.org/ViewAction">
+  		<meta itemprop="name" content="Confirm your email for job alerts"/>
+  	</div>
+  	<meta itemprop="description" content="Job alerts"/>
+  	<div itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+  	    <meta itemprop="name" content="Hasjob"/>
+  	    <link itemprop="url" href="{{ url_for('index', subdomain=none, _external=true) }}"/>
+  	</div>
+  </div>
+  Please click <a href="{{url_for('confirm_subscription_to_job_alerts', token=token, _external=True)}}">here</a> to confirm your subscription.
+  <hr>
+  <p><a href="{{ url_for('index', subdomain=none, _external=true) }}">Hasjob</a> is a service of <a href="https://hasgeek.com/">HasGeek</a>. Write to us at <a href="mailto:{{ config['SUPPORT_EMAIL'] }}">{{ config['SUPPORT_EMAIL'] }}</a> if you have suggestions or questions on this service.</p>
+{% endblock %}

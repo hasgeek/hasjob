@@ -10,7 +10,7 @@ from coaster.views import render_with
 from baseframe import _  # , dogpile
 
 from .. import app, lastuser
-from ..models import (db, JobCategory, JobPost, JobType, POST_STATE, newlimit, agelimit, JobLocation, Board, Filterset,
+from ..models import (db, JobCategory, JobPost, JobType, newlimit, agelimit, JobLocation, Board, Filterset,
     Domain, Location, Tag, JobPostTag, Campaign, CAMPAIGN_POSITION, CURRENCY, JobApplication, starred_job_table, BoardJobPost)
 from ..views.helper import (getposts, getallposts, gettags, location_geodata, load_viewcounts, session_jobpost_ab,
     bgroup, make_pay_graph, index_is_paginated, get_post_viewcounts)
@@ -90,38 +90,38 @@ def json_index(data):
     return jsonify(result)
 
 
-def fetch_jobposts(request_args, request_values, filters, is_index, board, board_jobs, gkiosk, basequery, md5sum, domain, location, title, showall, statusfilter, batched, ageless, template_vars, search_query=None, query_string=None, posts_only=False):
+def fetch_jobposts(request_args={}, request_values={}, filters={}, is_index=False, board=None, board_jobs={}, gkiosk=False, basequery=None, md5sum=None, domain=None, location=None, title=None, showall=True, statusfilter=None, batched=True, ageless=False, template_vars={}, search_query=None, query_string=None, posts_only=False):
     if basequery is None:
         basequery = JobPost.query
 
     # Apply request.args filters
     data_filters = {}
-    f_types = filters.get('t') or request_args.getlist('t')
+    f_types = filters.get('t') or (request_args and request_args.getlist('t'))
     while '' in f_types:
         f_types.remove('')
     if f_types:
         data_filters['types'] = f_types
         basequery = basequery.join(JobType).filter(JobType.name.in_(f_types))
-    f_categories = filters.get('c') or request_args.getlist('c')
+    f_categories = filters.get('c') or (request_args and request_args.getlist('c'))
     while '' in f_categories:
         f_categories.remove('')
     if f_categories:
         data_filters['categories'] = f_categories
         basequery = basequery.join(JobCategory).filter(JobCategory.name.in_(f_categories))
 
-    f_domains = filters.get('d') or request_args.getlist('d')
+    f_domains = filters.get('d') or (request_args and request_args.getlist('d'))
     while '' in f_domains:
         f_domains.remove('')
     if f_domains:
         basequery = basequery.join(Domain).filter(Domain.name.in_(f_domains))
 
-    f_tags = filters.get('k') or request_args.getlist('k')
+    f_tags = filters.get('k') or (request_args and request_args.getlist('k'))
     while '' in f_tags:
         f_tags.remove('')
     if f_tags:
         basequery = basequery.join(JobPostTag).join(Tag).filter(Tag.name.in_(f_tags))
 
-    data_filters['location_names'] = r_locations = filters.get('l') or request_args.getlist('l')
+    data_filters['location_names'] = r_locations = filters.get('l') or (request_args and request_args.getlist('l'))
     if location:
         r_locations.append(location['geonameid'])
     f_locations = []
@@ -269,7 +269,7 @@ def fetch_jobposts(request_args, request_values, filters, is_index, board, board
         batchsize = 32
 
         # list of posts that were pinned at the time of first load
-        pinned_hashids = request_args.getlist('ph')
+        pinned_hashids = (request_args and request_args.getlist('ph'))
         # Depending on the display mechanism (grouped or ungrouped), extract the batch
         if grouped:
             if not startdate:
@@ -569,55 +569,6 @@ def filterset_view(name):
     return index(filters=filterset.to_filters(translate_geonameids=True),
         query_string=filterset.keywords,
         filterset=filterset)
-
-
-# @app.route('/subscribe', subdomain='<subdomain>', methods=['POST'])
-# @app.route('/subscribe', methods=['POST'])
-# def subscribe_to_jobposts():
-#     filterset = Filterset.from_filters(g.board, filters)
-#     if not filterset:
-#         form = FiltersetForm(parent=g.board)
-#         if form.validate_on_submit():
-#             filterset = Filterset(board=g.board, title=u"")
-#             form.populate_obj(filterset)
-#             db.session.add(filterset)
-
-#     if g.user not in filterset.users:
-#         filterset.users.append(g.user)
-#     db.session.commit()
-#     return index(filters=filterset.to_filters(translate_geonameids=True),
-#         query_string=filterset.keywords,
-#         filterset=filterset)
-
-
-# def send_alerts_to_subscribers():
-#     subscriptions = JobPostSubscription.query.filter_by(active=True).all()
-#     for sub in subscriptions:
-#         posts = get_filtered_posts(filters=sub.filterset.to_filters())
-#         now = datetime.utcnow()
-#         if sub.daily:
-#             days_delta = 1
-#         elif sub.weekly:
-#             days_delta = 7
-#         elif sub.monthly:
-#             days_delta = 30
-
-#         last_reference_date = now - timedelta(days=days_delta)
-#         recent_alert = JobPostAlert.query.filter(
-#             JobPostAlert.jobpost_subscription == sub, JobPostAlert.sent_at >= last_reference_date
-#             ).order_by('created_at desc').first()
-#         if recent_alert:
-#             break
-
-#         sent_jobpostids = [jobpost.id for jobpost in recent_alert.jobposts]
-#         unsent_posts = [post for post in posts if post.id not in sent_jobpostids]
-#         if not unsent_posts:
-#             break
-
-#         jobpost_alert = JobPostAlert(jobpost_subscription=sub, sent_at=now)
-#         jobpost_alert.jobposts = unsent_posts
-#         db.session.add(jobpost_alert)
-#     db.session.commit()
 
 
 @app.route('/opensearch.xml', subdomain='<subdomain>')

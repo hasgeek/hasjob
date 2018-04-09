@@ -228,36 +228,3 @@ class UserEvent(UserEventBase, BaseMixin, db.Model):
     name = db.Column(db.Unicode(80), nullable=False)
     #: Custom event data (null = no data saved)
     data = db.Column(JsonDict, nullable=True)
-
-
-# class JobPostSubscription(BaseMixin, db.Model):
-#     __tablename__ = 'jobpost_subscription'
-
-#     user_id = db.Column(None, db.ForeignKey('user.id'), primary_key=True, index=True)
-#     user = db.relationship(User, backref=db.backref('subscriptions',
-#         lazy='dynamic', cascade='all, delete-orphan'))
-
-#     filterset_id = db.Column(None, db.ForeignKey('filterset.id'), primary_key=True, index=True)
-#     filterset = db.relationship('Filterset', backref=db.backref('subscriptions',
-#         lazy='dynamic', cascade='all, delete-orphan'))
-#     active = db.Column(db.Boolean, nullable=False, default=True)
-#     email = db.Column(db.Boolean, nullable=False, default=False)
-#     email_frequency = db.Column(db.SmallInteger, nullable=True)
-#     email_preferred_time = db.Column(db.Time, nullable=False, default=db.func.utcnow(), primary_key=True)
-
-
-# jobpost_alert_table = db.Table('jobpost_alert', db.Model.metadata,
-#     db.Column('jobpost_id', None, db.ForeignKey('jobpost.id'), primary_key=True, index=True),
-#     db.Column('jobpost_alert', None, db.ForeignKey('jobpost_alert.id'), primary_key=True, index=True),
-#     db.Column('created_at', db.DateTime, nullable=False, default=db.func.utcnow())
-# )
-
-
-# class JobPostAlert(BaseMixin, db.Model):
-#     __tablename__ = 'jobpost_alert'
-
-#     jobpost_subscription_id = db.Column(None, db.ForeignKey('jobpost_subscription.id'),
-#         primary_key=True, index=True)
-#     jobpost_subscription = db.relationship(JobPostSubscription, backref=db.backref('alerts',
-#         lazy='dynamic', cascade='all, delete-orphan'))
-#     sent_at = db.Column(db.DateTime, nullable=False, default=db.func.utcnow(), primary_key=True)
