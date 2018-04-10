@@ -81,8 +81,12 @@ def load_user_data(user):
                 if anon_user:
                     if g.user:
                         anon_user.user = g.user
+                        session.pop('au', None)
                     g.anon_user = anon_user
-                session.pop('au', None)
+                else:
+                    # the AnonUser record has been deleted for some reason,
+                    # this should not happen.
+                    session.pop('au', None)
         elif not g.user:
             # g.user, g.anon_user, session['au'], none of them are set
             g.esession = EventSessionBase.new_from_request(request)
