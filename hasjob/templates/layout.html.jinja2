@@ -81,7 +81,7 @@
         <script id='filters-ractive' type='text/ractive'>
           <div class="nav hg-site-nav" id="hg-sitenav">
             <div class="filters-wrapper" id="filter-dropdown">
-              <form id="js-job-filters" role="form">
+              <form id="js-job-filters" role="form" autocomplete="off">
                 {{ #jobsArchive }}
                   <input type="hidden" name="archive" value="{{ jobsArchive }}" />
                 {{/jobsArchive}}
