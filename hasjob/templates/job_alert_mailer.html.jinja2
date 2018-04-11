@@ -1,0 +1,21 @@
+{% extends "inc/email_layout_lite.html.jinja2" %}
+
+{% block content %}
+  <div itemscope itemtype="http://schema.org/EmailMessage">
+  	<div itemprop="action" itemscope itemtype="http://schema.org/ViewAction">
+  		<meta itemprop="name" content="Job Posts"/>
+  	</div>
+  	<meta itemprop="description" content="Job alerts"/>
+  	<div itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+  	    <meta itemprop="name" content="Hasjob"/>
+  	    <link itemprop="url" href="{{ url_for('index', subdomain=none, _external=true) }}"/>
+  	</div>
+  </div>
+  <ul>
+    {%- for post in posts %}
+    <li><a href={{post.url_for(_external=True)}}>{{post.headline}}</a></li>
+    {%- endfor %}
+  </ul>
+  <hr>
+  <p><a href="{{ url_for('index', subdomain=none, _external=true) }}">Hasjob</a> is a service of <a href="https://hasgeek.com/">HasGeek</a>. Write to us at <a href="mailto:{{ config['SUPPORT_EMAIL'] }}">{{ config['SUPPORT_EMAIL'] }}</a> if you have suggestions or questions on this service.</p>
+{% endblock %}

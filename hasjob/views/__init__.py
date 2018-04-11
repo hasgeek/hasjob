@@ -30,4 +30,4 @@ ALLOWED_TAGS = [
 ]
 
 from . import (index, error_handling, helper, listing, location, static, login, board, kiosk, campaign,  # NOQA
-    admindash, domain, api, admin_filterset)
+    admindash, domain, api, admin_filterset, job_alerts)
