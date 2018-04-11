@@ -383,8 +383,8 @@ def view_application_email_gif(domain, hashid, application):
         job_application = None
 
     if job_application is not None:
-        if job_application.response == EMPLOYER_RESPONSE.NEW:
-            job_application.response = EMPLOYER_RESPONSE.PENDING
+        if job_application.mark_read.is_available:
+            job_application.mark_read()
             db.session.commit()
         return gif1x1, 200, {
             'Content-Type': 'image/gif',
@@ -419,15 +419,13 @@ def view_application(domain, hashid, application):
     if post.email_domain != domain:
         return redirect(job_application.url_for(), code=301)
 
-    if job_application.response == EMPLOYER_RESPONSE.NEW:
+    if job_application.response.NEW:
         # If the application is pending, mark it as opened.
         # However, don't do this if the user is a siteadmin, unless they also own the post.
-        if post.admin_is(g.user) or not lastuser.has_permission('siteadmin'):
-            job_application.response = EMPLOYER_RESPONSE.PENDING
+        if job_application.mark_read.is_available:
+            job_application.mark_read()
             db.session.commit()
     response_form = forms.ApplicationResponseForm()
-
-    statuses = set([app.status for app in post.applications])
 
     if not g.kiosk:
         if g.preview_campaign:
@@ -440,7 +438,7 @@ def view_application(domain, hashid, application):
 
     return render_template('application.html.jinja2', post=post, job_application=job_application,
         header_campaign=header_campaign,
-        response_form=response_form, statuses=statuses, is_siteadmin=lastuser.has_permission('siteadmin'))
+        response_form=response_form, is_siteadmin=lastuser.has_permission('siteadmin'))
 
 
 @app.route('/<domain>/<hashid>/appl/<application>/process', methods=['POST'], subdomain='<subdomain>')
@@ -459,18 +457,21 @@ def process_application(domain, hashid, application):
     flashmsg = ''
 
     if response_form.validate_on_submit():
-        if (request.form.get('action') == 'reply' and job_application.can_reply()) or (
-                request.form.get('action') == 'reject' and job_application.can_reject()):
+        if (request.form.get('action') == 'reply' and job_application.response.CAN_REPLY) or (
+                request.form.get('action') == 'reject' and job_application.response.CAN_REJECT):
             if not response_form.response_message.data:
                 flashmsg = "You need to write a message to the candidate."
             else:
                 if request.form.get('action') == 'reply':
-                    job_application.response = EMPLOYER_RESPONSE.REPLIED
+                    job_application.reply(
+                        message=response_form.response_message.data,
+                        user=g.user
+                    )
                 else:
-                    job_application.response = EMPLOYER_RESPONSE.REJECTED
-                job_application.response_message = response_form.response_message.data
-                job_application.replied_by = g.user
-                job_application.replied_at = datetime.utcnow()
+                    job_application.reject(
+                        message=response_form.response_message.data,
+                        user=g.user
+                    )
 
                 email_html = email_transform(
                     render_template('respond_email.html.jinja2',
@@ -484,7 +485,7 @@ def process_application(domain, hashid, application):
                     sender=sender_name,
                     site=app.config['SITE_TITLE'])
 
-                if job_application.is_replied():
+                if job_application.response.REPLIED:
                     msg = Message(
                         subject=u"{candidate}: {headline}".format(
                             candidate=job_application.user.fullname, headline=post.headline),
@@ -502,14 +503,14 @@ def process_application(domain, hashid, application):
                 msg.html = email_html
                 mail.send(msg)
                 db.session.commit()
-        elif request.form.get('action') == 'ignore' and job_application.can_ignore():
-            job_application.response = EMPLOYER_RESPONSE.IGNORED
+        elif request.form.get('action') == 'ignore' and job_application.response.CAN_IGNORE:
+            job_application.ignore()
             db.session.commit()
-        elif request.form.get('action') == 'flag' and job_application.can_report():
-            job_application.response = EMPLOYER_RESPONSE.FLAGGED
+        elif request.form.get('action') == 'flag' and job_application.response.CAN_REPORT:
+            job_application.flag()
             db.session.commit()
-        elif request.form.get('action') == 'unflag' and job_application.is_flagged():
-            job_application.response = EMPLOYER_RESPONSE.NEW
+        elif request.form.get('action') == 'unflag' and job_application.response.FLAGGED:
+            job_application.unflag()
             db.session.commit()
 
     if flashmsg:

@@ -26,7 +26,7 @@ class POST_STATE(LabeledEnum):
     ANNOUNCEMENT = (9, 'announcement',  __("Announcement"))  # Special announcement
     CLOSED =       (10, 'closed', __("Closed"))        # Not accepting applications, but publicly viewable
 
-    __order__ = (DRAFT, PENDING, CONFIRMED, REVIEWED, ANNOUNCEMENT, CLOSED, 
+    __order__ = (DRAFT, PENDING, CONFIRMED, REVIEWED, ANNOUNCEMENT, CLOSED,
                  FLAGGED, MODERATED, REJECTED, SPAM, WITHDRAWN)
 
     UNPUBLISHED = {DRAFT, PENDING}
@@ -46,15 +46,20 @@ class CURRENCY(LabeledEnum):
 
 
 class EMPLOYER_RESPONSE(LabeledEnum):
-    NEW =      (0, __("New"))       # New application
-    PENDING =  (1, __("Pending"))   # Employer viewed on website
-    IGNORED =  (2, __("Ignored"))   # Dismissed as not worth responding to
-    REPLIED =  (3, __("Replied"))   # Employer replied to candidate
-    FLAGGED =  (4, __("Flagged"))   # Employer reported a spammer
-    SPAM =     (5, __("Spam"))      # Admin marked this as spam
-    REJECTED = (6, __("Rejected"))  # Employer rejected candidate with a message
+    NEW =      (0, 'new', __("New"))       # New application
+    PENDING =  (1, 'pending', __("Pending"))   # Employer viewed on website
+    IGNORED =  (2, 'ignored', __("Ignored"))   # Dismissed as not worth responding to
+    REPLIED =  (3, 'replied', __("Replied"))   # Employer replied to candidate
+    FLAGGED =  (4, 'flagged', __("Flagged"))   # Employer reported a spammer
+    SPAM =     (5, 'spam', __("Spam"))      # Admin marked this as spam
+    REJECTED = (6, 'rejected', __("Rejected"))  # Employer rejected candidate with a message
 
     __order__ = (NEW, PENDING, IGNORED, REPLIED, FLAGGED, SPAM, REJECTED)
+
+    CAN_REPLY = {NEW, PENDING, IGNORED}
+    CAN_REJECT = CAN_REPLY
+    CAN_IGNORE = {NEW, PENDING}
+    CAN_REPORT = {NEW, PENDING, IGNORED, REJECTED}
 
 
 class PAY_TYPE(LabeledEnum):
