@@ -39,13 +39,12 @@ def anon_session():
         g.esession = EventSession.new_from_request(request)
         g.esession.anon_user = g.anon_user
         db.session.add(g.esession)
-        if 'au' in session:
-            g.esession.load_from_cache(session['au'], UserEvent)
         # We'll update session['au'] below after database commit
         db.session.commit()
 
     if g.anon_user:
         session['au'] = g.anon_user.id
+        g.esession.load_from_cache(session['au'], UserEvent)
         session.permanent = True
 
     return Response({'status': 'ok'})
