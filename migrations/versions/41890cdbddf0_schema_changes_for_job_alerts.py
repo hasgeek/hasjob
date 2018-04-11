@@ -41,7 +41,9 @@ def upgrade():
         sa.Column('created_at', sa.DateTime(), nullable=False),
         sa.Column('updated_at', sa.DateTime(), nullable=False),
         sa.Column('jobpost_subscription_id', sa.Integer(), nullable=True),
-        sa.Column('sent_at', sa.DateTime(), nullable=False),
+        sa.Column('sent_at', sa.DateTime(), nullable=True),
+        sa.Column('failed_at', sa.DateTime(), nullable=True),
+        sa.Column('fail_reason', sa.Unicode(length=255), nullable=True),
         sa.Column('id', sa.Integer(), nullable=False),
         sa.ForeignKeyConstraint(['jobpost_subscription_id'], ['jobpost_subscription.id'], ),
         sa.PrimaryKeyConstraint('id')

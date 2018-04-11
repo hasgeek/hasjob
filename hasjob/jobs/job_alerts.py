@@ -19,7 +19,7 @@ def get_unseen_posts(subscription):
 
 @job('hasjob')
 def send_email_alerts():
-    for subscription in JobPostSubscription.get_active_subscriptions:
+    for subscription in JobPostSubscription.get_active_subscriptions():
         if subscription.has_recent_alert():
             # Alert was sent recently, break out of loop
             break
@@ -31,10 +31,15 @@ def send_email_alerts():
 
         jobpost_alert = JobPostAlert(jobpost_subscription=subscription)
         jobpost_alert.jobposts = unseen_posts
-        db.session.commit()
 
         msg = Message(subject=u"New jobs on Hasjob", recipients=[subscription.email])
         html = email_transform(render_template('job_alert_mailer.html.jinja2', posts=jobpost_alert.jobposts))
         msg.html = html
         msg.body = html2text(html)
-        mail.send(msg)
+        try:
+            mail.send(msg)
+            jobpost_alert.register_delivery()
+        except Exception as exc:
+            jobpost_alert.register_failure(unicode(exc))
+        db.session.add(jobpost_alert)
+        db.session.commit()

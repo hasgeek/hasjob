@@ -41,10 +41,10 @@ def subscribe_to_job_alerts():
 
     filterset = Filterset.from_filters(g.board, request.json.get('filters'))
     if not filterset:
-        filterset = Filterset.init_from_filters(g.board, request.json.get('filters'))
+        filterset = Filterset(board=g.board, filters=request.json.get('filters'))
         db.session.add(filterset)
 
-    subscription = JobPostSubscription(filterset=filterset, email=email)
+    subscription = JobPostSubscription(filterset=filterset, email=email, user=g.user, anon_user=g.anon_user)
     if verified_user:
         subscription.verify_email()
     db.session.add(subscription)

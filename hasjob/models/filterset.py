@@ -74,6 +74,39 @@ class Filterset(BaseScopedNameMixin, db.Model):
     def __repr__(self):
         return '<Filterset %s "%s">' % (self.board.title, self.title)
 
+    def __init__(self, **kwargs):
+        filters = kwargs.pop('filters') if kwargs.get('filters') else {}
+        super(Filterset, self).__init__(**kwargs)
+
+        if not self.title:
+            self.title = buid()
+
+        if filters:
+            if filters.get('t'):
+                self.types = JobType.query.filter(JobType.name.in_(filters['t'])).all()
+
+            if filters.get('c'):
+                self.categories = JobCategory.query.filter(JobCategory.name.in_(filters['c'])).all()
+
+            if filters.get('l'):
+                geonameids = []
+                for loc in filters.get('l'):
+                    geonameids.append(location_geodata(loc)['geonameid'])
+                self.geonameids = geonameids
+
+            if getbool(filters.get('anywhere')):
+                self.remote_location = True
+
+            if getbool(filters.get('equity')):
+                self.equity = True
+
+            if filters.get('currency') and filters.get('pay'):
+                self.pay_currency = filters.get('currency')
+                self.pay_cash = filters.get('pay')
+
+            if filters.get('q'):
+                self.keywords = filters.get('q')
+
     @classmethod
     def get(cls, board, name):
         return cls.query.filter(cls.board == board, cls.name == name).one_or_none()
@@ -81,38 +114,6 @@ class Filterset(BaseScopedNameMixin, db.Model):
     def url_for(self, action='view', _external=True, **kwargs):
         kwargs.setdefault('subdomain', self.board.name if self.board.not_root else None)
         return super(Filterset, self).url_for(action, name=self.name, _external=_external, **kwargs)
-
-    @classmethod
-    def init_from_filters(cls, board, filters):
-        obj = cls(parent=board, title=buid())
-        if filters.get('t'):
-            obj.types = JobType.query.filter(JobType.name.in_(filters['t'])).group_by(JobType.id).having(
-                db.func.count(JobType.name) == len(filters['t'])).all()
-
-        if filters.get('c'):
-            obj.categories = JobCategory.query.filter(JobCategory.name.in_(filters['c'])).group_by(JobCategory.id).having(
-                db.func.count(JobCategory.name) == len(filters['c'])).all()
-
-        if filters.get('l'):
-            geonameids = []
-            for loc in filters.get('l'):
-                geonameids.append(location_geodata(loc)['geonameid'])
-            obj.geonameids = geonameids
-
-        if getbool(filters.get('anywhere')):
-            obj.remote_location = True
-
-        if getbool(filters.get('equity')):
-            obj.equity = True
-
-        if filters.get('currency') and filters.get('pay'):
-            obj.pay_currency = filters.get('currency')
-            obj.pay_cash = filters.get('pay')
-
-        if filters.get('q'):
-            obj.keywords = filters.get('q')
-
-        return obj
 
     def to_filters(self, translate_geonameids=False):
         location_names = []
