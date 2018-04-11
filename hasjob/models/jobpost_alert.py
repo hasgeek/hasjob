@@ -17,9 +17,8 @@ class JobPostSubscription(BaseMixin, db.Model):
     __tablename__ = 'jobpost_subscription'
 
     filterset_id = db.Column(None, db.ForeignKey('filterset.id'), nullable=False)
-    filterset = db.relationship('Filterset', backref=db.backref('subscriptions',
-        lazy='dynamic'))
-    email = db.Column(db.Unicode(254), nullable=False)
+    filterset = db.relationship('Filterset', backref=db.backref('subscriptions', lazy='dynamic'))
+    email = db.Column(db.Unicode(254), nullable=True)
     user_id = db.Column(None, db.ForeignKey('user.id'), nullable=True, index=True)
     user = db.relationship(User)
     anon_user_id = db.Column(None, db.ForeignKey('anon_user.id'), nullable=True, index=True)
@@ -28,7 +27,7 @@ class JobPostSubscription(BaseMixin, db.Model):
     active = db.Column(db.Boolean, nullable=False, default=False, index=True)
     email_verify_key = db.Column(db.String(40), nullable=True, default=random_long_key, unique=True)
     unsubscribe_key = db.Column(db.String(40), nullable=True, default=random_long_key, unique=True)
-    subscribed_at = db.Column(db.DateTime, nullable=True, default=db.func.utcnow())
+    subscribed_at = db.Column(db.DateTime, nullable=False, default=db.func.utcnow())
     email_verified_at = db.Column(db.DateTime, nullable=True, index=True)
     unsubscribed_at = db.Column(db.DateTime, nullable=True)
 
@@ -41,6 +40,10 @@ class JobPostSubscription(BaseMixin, db.Model):
         db.CheckConstraint(
             db.case([(user_id != None, 1)], else_=0) + db.case([(anon_user_id != None, 1)], else_=0) <= 1,  # NOQA
             name='jobpost_subscription_user_id_or_anon_user_id'))
+
+    @classmethod
+    def get(cls, filterset, email):
+        return cls.query.filter(cls.filterset == filterset, cls.email == email).one_or_none()
 
     def verify_email(self):
         self.active = True
@@ -61,12 +64,12 @@ class JobPostSubscription(BaseMixin, db.Model):
         ).order_by('created_at desc').notempty()
 
     def is_right_time_to_send_alert(self):
-        # Is it within 30 minutes of the preferred time?
-        # The time at which the subscription was initiated is taken as the "preferred time"
-        # for now
-        return ((datetime.utcnow() - self.subscribed_at.time()).total_seconds()/60) < 30
-
-
+        """
+        Checks if it's the right time to send this subscriber an alert.
+        For now, the time at which the subscription was initiated is taken as the "preferred time" and
+        uses a tolerance of 30 minutes
+        """
+        return ((datetime.utcnow() - self.subscribed_at.time()).total_seconds()/60) <= 30
 
 jobpost_alert_table = db.Table('jobpost_jobpost_alert', db.Model.metadata,
     db.Column('jobpost_id', None, db.ForeignKey('jobpost.id'), primary_key=True),

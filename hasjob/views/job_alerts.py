@@ -40,13 +40,19 @@ def subscribe_to_job_alerts():
         return redirect(url_for('index'), code=302)
 
     filterset = Filterset.from_filters(g.board, request.json.get('filters'))
-    if not filterset:
+    if filterset:
+        existing_subscription = JobPostSubscription.get(filterset, email)
+        if existing_subscription:
+            flash(_(u"You've already subscribed to receive alerts for jobs that match this filtering criteria."), 'danger')
+            return redirect(url_for('index'), code=302)
+    else:
         filterset = Filterset(board=g.board, filters=request.json.get('filters'))
         db.session.add(filterset)
 
     subscription = JobPostSubscription(filterset=filterset, email=email, user=g.user, anon_user=g.anon_user)
     if verified_user:
         subscription.verify_email()
+
     db.session.add(subscription)
     db.session.commit()
     if not verified_user:
