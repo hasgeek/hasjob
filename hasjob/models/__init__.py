@@ -93,3 +93,4 @@ from .board import *
 from .flags import *
 from .campaign import *
 from .filterset import *
+from .jobpost_alert import *

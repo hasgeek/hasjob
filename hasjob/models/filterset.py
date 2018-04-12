@@ -5,6 +5,7 @@ from sqlalchemy import event, DDL
 from sqlalchemy.ext.associationproxy import association_proxy
 from . import db, BaseScopedNameMixin, JobType, JobCategory, Tag, Domain, Board
 from ..extapi import location_geodata
+from coaster.utils import buid, getbool
 
 
 __all__ = ['Filterset']
@@ -52,6 +53,8 @@ class Filterset(BaseScopedNameMixin, db.Model):
 
     #: Welcome text
     description = db.Column(db.UnicodeText, nullable=False, default=u'')
+    #: Display on sitemap
+    sitemap = db.Column(db.Boolean, default=False, nullable=True, index=True)
 
     #: Associated job types
     types = db.relationship(JobType, secondary=filterset_jobtype_table)
@@ -70,6 +73,39 @@ class Filterset(BaseScopedNameMixin, db.Model):
 
     def __repr__(self):
         return '<Filterset %s "%s">' % (self.board.title, self.title)
+
+    def __init__(self, **kwargs):
+        filters = kwargs.pop('filters') if kwargs.get('filters') else {}
+        super(Filterset, self).__init__(**kwargs)
+
+        if not self.title:
+            self.title = buid()
+
+        if filters:
+            if filters.get('t'):
+                self.types = JobType.query.filter(JobType.name.in_(filters['t'])).all()
+
+            if filters.get('c'):
+                self.categories = JobCategory.query.filter(JobCategory.name.in_(filters['c'])).all()
+
+            if filters.get('l'):
+                geonameids = []
+                for loc in filters.get('l'):
+                    geonameids.append(location_geodata(loc)['geonameid'])
+                self.geonameids = geonameids
+
+            if getbool(filters.get('anywhere')):
+                self.remote_location = True
+
+            if getbool(filters.get('equity')):
+                self.equity = True
+
+            if filters.get('currency') and filters.get('pay'):
+                self.pay_currency = filters.get('currency')
+                self.pay_cash = filters.get('pay')
+
+            if filters.get('q'):
+                self.keywords = filters.get('q')
 
     @classmethod
     def get(cls, board, name):

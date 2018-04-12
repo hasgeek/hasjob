@@ -398,7 +398,7 @@ def load_viewcounts(posts):
     g.viewcounts = dict(zip(viewcounts_keys, viewcounts_values))
 
 
-def getposts(basequery=None, pinned=False, showall=False, statusfilter=None, ageless=False, limit=2000, order=True):
+def getposts(basequery=None, pinned=False, showall=False, statusfilter=None, ageless=False, limit=2000, board=None, order=True):
     if ageless:
         pinned = False  # No pinning when browsing archives
 
@@ -410,7 +410,9 @@ def getposts(basequery=None, pinned=False, showall=False, statusfilter=None, age
 
     query = basequery.filter(statusfilter).options(*JobPost._defercols).options(db.joinedload('domain'))
 
-    if g.board:
+    if 'board' in g:
+        board = g.board
+    if board:
         query = query.join(JobPost.postboards).filter(BoardJobPost.board == g.board)
 
     if not ageless:
@@ -418,7 +420,7 @@ def getposts(basequery=None, pinned=False, showall=False, statusfilter=None, age
             query = query.filter(JobPost.state.LISTED)
         else:
             if pinned:
-                if g.board:
+                if board:
                     query = query.filter(
                         db.or_(
                             db.and_(BoardJobPost.pinned == True, JobPost.state.LISTED),
@@ -432,7 +434,7 @@ def getposts(basequery=None, pinned=False, showall=False, statusfilter=None, age
                 query = query.filter(JobPost.state.NEW)
 
     if pinned:
-        if g.board:
+        if board:
             query = query.order_by(db.desc(BoardJobPost.pinned))
         else:
             query = query.order_by(db.desc(JobPost.pinned))

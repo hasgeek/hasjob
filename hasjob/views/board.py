@@ -33,7 +33,7 @@ def remove_subdomain_parameter(endpoint, values):
 def add_subdomain_parameter(endpoint, values):
     if app.url_map.is_endpoint_expecting(endpoint, 'subdomain'):
         if 'subdomain' not in values:
-            values['subdomain'] = g.board.name if g.board and g.board.not_root else None
+            values['subdomain'] = g.board.name if 'board' in g and g.board.not_root else None
 
 
 @app.route('/board', methods=['GET', 'POST'])

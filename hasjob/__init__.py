@@ -30,7 +30,7 @@ assets['hasjob.css'][version] = 'css/app.css'
 
 # Third, after config, import the models and views
 
-from . import models, views  # NOQA
+from . import models, views, jobs  # NOQA
 from .models import db  # NOQA
 
 # Configure the app
