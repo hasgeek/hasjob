@@ -65,12 +65,12 @@ def subscribe_to_job_alerts():
 @app.route('/confirm_subscription_to_job_alerts', subdomain='<subdomain>')
 @app.route('/confirm_subscription_to_job_alerts')
 def confirm_subscription_to_job_alerts():
-    sub = JobPostSubscription.query.filter_by(email_verify_key=request.args.get('token')).one_or_none()
-    if not sub:
+    subscription = JobPostSubscription.query.filter_by(email_verify_key=request.args.get('token')).one_or_none()
+    if not subscription:
         abort(404)
-    if sub.email_verified_at:
+    if subscription.email_verified_at:
         abort(400)
-    sub.verify_email()
+    subscription.verify_email()
     db.session.commit()
     flash(_(u"You've just subscribed to receive alerts from us! We'll keep you posted."), 'success')
     return redirect(url_for('index'), code=302)
@@ -79,12 +79,12 @@ def confirm_subscription_to_job_alerts():
 @app.route('/unsubscribe_from_job_alerts', subdomain='<subdomain>')
 @app.route('/unsubscribe_from_job_alerts')
 def unsubscribe_from_job_alerts():
-    sub = JobPostSubscription.query.filter_by(unsubscribe_key=request.args.get('token')).one_or_none()
-    if not sub:
+    subscription = JobPostSubscription.query.filter_by(unsubscribe_key=request.args.get('token')).one_or_none()
+    if not subscription:
         abort(404)
-    if not sub.email_verified_at:
+    if not subscription.email_verified_at:
         abort(400)
-    sub.unsubscribe()
+    subscription.unsubscribe()
     db.session.commit()
     flash(_(u"You've just unsubscribed from receiving alerts! Hope they were useful."), 'success')
     return redirect(url_for('index'), code=302)

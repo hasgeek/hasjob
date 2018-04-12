@@ -24,6 +24,9 @@ def send_email_alerts():
             # Alert was sent recently, break out of loop
             break
 
+        if not subscription.is_right_time_to_send_alert():
+            break
+
         unseen_posts = get_unseen_posts(subscription)
         if not unseen_posts:
             # Nothing new to see, break out of loop

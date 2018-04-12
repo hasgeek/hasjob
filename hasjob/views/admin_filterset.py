@@ -26,7 +26,7 @@ class AdminFiltersetView(UrlForView, ModelView):
 
         form = FiltersetForm(parent=g.board)
         if form.validate_on_submit():
-            filterset = Filterset(board=g.board, title=form.title.data)
+            filterset = Filterset(board=g.board, title=form.title.data, sitemap=True)
             form.populate_obj(filterset)
             try:
                 db.session.add(filterset)
