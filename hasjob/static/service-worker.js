@@ -8,19 +8,19 @@ const workboxSW = new self.WorkboxSW({
 
 workboxSW.precache([
   {
-    "url": "/static/build/css/stylesheet-app-css.e93800b0e750d56dc168.css",
-    "revision": "e3df4e30b87d77c4325e59dc81258fe9"
+    "url": "/static/build/css/stylesheet-app-css.0311cce02f7f609a446b.css",
+    "revision": "8108eca68b21077741cc53859c18ba23"
   },
   {
-    "url": "/static/build/js/app.e93800b0e750d56dc168.js",
+    "url": "/static/build/js/app.0311cce02f7f609a446b.js",
     "revision": "ab2bd19af576ec7856bf9666a9842711"
   },
   {
-    "url": "/static/build/js/manifest.e93800b0e750d56dc168.js",
+    "url": "/static/build/js/manifest.0311cce02f7f609a446b.js",
     "revision": "fe684bf23b9518850a7a3dd90492001d"
   },
   {
-    "url": "/static/build/js/vendor.e93800b0e750d56dc168.js",
+    "url": "/static/build/js/vendor.0311cce02f7f609a446b.js",
     "revision": "12a1ca8d2cb2caab35d21438cb595e94"
   }
 ]);
@@ -93,7 +93,7 @@ function createCacheBustedRequest(url) {
 // Cache the offline page during install phase of the service worker
 self.addEventListener('install', event => {
   event.waitUntil(
-    fetch(createCacheBustedRequest('offline')).then(function(response) {
+    fetch(createCacheBustedRequest('/api/1/template/offline')).then(function(response) {
       return caches.open('hasjob-offline').then(function(cache) {
         return cache.put('offline', response);
       });

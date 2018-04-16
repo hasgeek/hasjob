@@ -15,6 +15,11 @@
   letter-spacing: -0.2em;
   margin-left: -0.2em; // This must match letter-spacing
 }
+#i40x.offline {
+  letter-spacing: -0.1em;
+  margin-left: 0em;
+  margin-right: 0.1em; // This must match letter-spacing
+}
 #i40x:after {
   display: block;
   color: $color-title-jobs;

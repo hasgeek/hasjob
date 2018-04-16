@@ -821,7 +821,7 @@ def search():
     return redirect(url_for('index', **request.args))
 
 
-@app.route('/offline')
+@app.route('/api/1/template/offline')
 def offline():
     return render_template('offline.html.jinja2')
 
