@@ -425,17 +425,13 @@ class JobPost(BaseMixin, db.Model):
             Markup('<div>') + Markup(escape(self.headline)) + Markup('</div>'),
             Markup('<div>') + Markup(self.description) + Markup('</div>'),
             Markup('<div>') + Markup(self.perks) + Markup('</div>')
-            ))
+        ))
 
     @staticmethod
     def viewcounts_key(jobpost_id):
         if isinstance(jobpost_id, (list, tuple)):
             return ['hasjob/viewcounts/%d' % post_id for post_id in jobpost_id]
         return 'hasjob/viewcounts/%d' % jobpost_id
-
-    @property
-    def max_counts_key():
-        return u'maxcounts'
 
     def uncache_viewcounts(self, key=None):
         cache_key = JobPost.viewcounts_key(self.id)
