@@ -3,26 +3,16 @@ Hasjob
 
 Code for Hasjob, HasGeek’s job board at https://hasjob.co/
 
-Copyright © 2010-2017 by HasGeek
+Copyright © 2010-2018 by HasGeek
 
-Hasjob’s code is open source under the AGPL v3 license (see LICENSE.txt),
-but the name ‘Hasjob’ and the distinctive appearance of the job board are
-not part of the open source code. The code is open to:
+Hasjob’s code is open source under the AGPL v3 license (see LICENSE.txt). We welcome your examination of our code to:
 
 * Establish trust and transparency on how it works, and
 * Allow contributions to Hasjob.
 
-HasGeek is a business, and like any business has trade secrets, intellectual
-property and competition. Hasjob’s code is not intended to be used to setup
-rival job boards.
+Our workflow assumes this code is for use on a single production website. Using this to operate your own job board is not recommended. The name ‘Hasjob’ and the distinctive appearance of the job board are not part of the open source code.
 
-If you really must use this code to run your own job board, the AGPLv3 license
-requires you to release all your modifications to the public under the same
-license. You may not make a proprietary fork.
-
-To have your contributions merged back into the master repository, you must
-agree to assign copyright to HasGeek and must assert that you have
-the right to make this assignment.
+To establish our intent, we use the AGPL v3 license, which requires you to release all your modifications to the public under the same license. You may not make a proprietary fork. To have your contributions merged back into the master repository, you must agree to assign copyright to HasGeek, and must assert that you have the right to make this assignment.
 
 ## Installation
 
@@ -146,6 +136,7 @@ Hasjob requires some tasks to be run in periodic background jobs. These can be c
 
     */10 * * * * cd /path/to/hasjob; python manage.py periodic sessions
     */5  * * * * cd /path/to/hasjob; python manage.py periodic impressions
+    0    2 * * * cd /path/to/hasjob; python manage.py periodic campaignviews
 
 ### Testing
 
@@ -157,27 +148,22 @@ Edit the top few lines of test file `tests/test_job_post.js` with the URL, usern
 
 Run the test with `casperjs test tests/test_job_post.js`.
 
-### Disabling Cache
+### Disabling cache
 
-If you ever want to disable caching when developing, inside your `development.py`, add these lines -
+To disable cache in development, add these lines to to `development.py`:
 
     CACHE_TYPE = 'null'
     CACHE_NO_NULL_WARNING = False
 
 ### Other notes
 
-If you encounter a problem setting up, please look at existing issue reports
-on GitHub before filing a new issue. This code is the same version used in
-production so there is a very good chance you did something wrong and there
-is no actual problem in the code. Issues you encounter after setup could
-be real bugs.
+If you encounter a problem setting up, please look at existing issue reports on GitHub before filing a new issue. This code is the same version used in production, so if the website works, chances are something is wrong in your installation.
 
-WSGI is recommended for production. For Apache: enable `mod_wsgi` and make a
-`VirtualHost` with:
+WSGI is recommended for production. For Apache, enable `mod_wsgi` and make a `VirtualHost` with:
 
     WSGIScriptAlias / /path/to/hasjob/git/repo/folder/website.py
 
-For Nginx, run website.py under uWSGI and proxy to it:
+For Nginx, run `website.py` under uWSGI and proxy to it:
 
     location / {
         include uwsgi_params; # Include common uWSGI settings here

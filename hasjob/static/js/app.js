@@ -1,7 +1,7 @@
 //window.Hasjob initialized in layout.html
 
 Hasjob.Util = {
-  updateGA: function(){
+  updateGA: function() {
     /*
       Resets the path in the tracker object and updates GA with the current path.
       To be called after updating the URL with pushState or replaceState.
@@ -12,6 +12,17 @@ Hasjob.Util = {
       window.ga('set', 'page', path);
       window.ga('send', 'pageview');
     }
+  },
+  createCustomEvent: function(eventName) {
+    // Raise a custom event
+    if (typeof(window.Event) === "function") {
+      var customEvent = new Event(eventName);
+    } else {
+      // 'Event' constructor is not supported by IE
+      var customEvent = document.createEvent('Event');
+      customEvent.initEvent(eventName, true, true);
+    }
+    return customEvent;
   }
 };
 
@@ -73,7 +84,7 @@ window.Hasjob.JobPost = {
 
 window.Hasjob.StickieList = {
   init: function(){
-    var stickielist = this;
+    window.dispatchEvent(Hasjob.Util.createCustomEvent('onStickiesInit'));
   },
   loadmore: function(config){
     var stickielist = this;
@@ -94,6 +105,7 @@ window.Hasjob.StickieList = {
             $('ul#stickie-area').append(data.trim());
             stickielist.loadmoreRactive.set('loading', false);
             stickielist.loadmoreRactive.set('error', false);
+            window.dispatchEvent(Hasjob.Util.createCustomEvent('onStickiesPagination'));
           },
           error: function() {
             stickielist.loadmoreRactive.set('error', true);
@@ -153,11 +165,97 @@ window.Hasjob.StickieList = {
         $('#main-content').html(data);
         window.Hasjob.Filters.refresh();
         NProgress.done();
+        window.dispatchEvent(Hasjob.Util.createCustomEvent('onStickiesRefresh'));
       }
     });
     history.replaceState({reloadOnPop: true}, '', window.location.href);
     history.pushState({reloadOnPop: true}, '', searchUrl);
     window.Hasjob.Util.updateGA();
+  },
+  createGradientColourScale: function(funnelName, maxValue) {
+    /*
+      Creates a linear colour gradient with canvas of width equal to maxValue. The canvas indicates a scale  from 0 to maxValue.
+
+      Takes
+       'funnelName' - conversion funnel's name.
+       'maxValue' -  max value of conversion funnel across job posts of last 30 days
+    */
+
+    var canvas = document.createElement("canvas");
+    canvas.id = funnelName;
+    canvas.width = maxValue;
+    canvas.height = 10;
+
+    var context = canvas.getContext('2d');
+    context.rect(0, 0, canvas.width, canvas.height);
+    var grd = context.createLinearGradient(0, 0, canvas.width, canvas.height);
+
+    grd.addColorStop(1, '#DF3499');
+    grd.addColorStop(0.7, '#E05F26');
+    grd.addColorStop(0.5, '#DF5C2A');
+    grd.addColorStop(0.1, '#F1D564');
+    grd.addColorStop(0, '#FFFFA2');
+
+    context.fillStyle = grd;
+    context.fill();
+    //Store the canvas context and end colour of the conversion funnel, later to be used by window.Hasjob.Util.setFunnelColour for picking the colour for a conversion funnel value for a job post.
+    window.Hasjob.Config[funnelName] = {};
+    window.Hasjob.Config[funnelName].canvasContext = context;
+    window.Hasjob.Config[funnelName].maxColour = '#DF3499';
+  },
+  setGradientColour: function(funnelName, value, elementId) {
+    /*
+      Picks the colour for the value from the colour gradient canvas based on a scale of 0 to maxValue.
+
+      Takes 'funnelName', value, elementId'
+      'funnelName' - conversion funnel's name.
+      'value' - conversion funnel value for the job post
+      'elementId' - id attribute of the element of which background colour is to be set
+    */
+
+    //rgba - RGBA values at a particular point in the canvas.
+    var rgba = window.Hasjob.Config[funnelName].canvasContext.getImageData(value, 1, 1, 1).data;
+    if (rgba[0] > 255 || rgba[1] > 255 || rgba[2] > 255) {
+      // rgb value is invalid, hence return white
+      colourHex ="#FFFFFF";
+    } else if (rgba[0] == 0 && rgba[1] == 0 && rgba[2] == 0) {
+      // value greater than maxValue hence return the last colour of the gradient
+      colourHex = window.Hasjob.Config[funnelName].maxColour;
+    } else {
+      // Get the colour code in hex from RGB values returned by getImageData
+      colourHex = "#" + (("000000" + (rgba[0] << 16) | (rgba[1] << 8) | rgba[2]).toString(16)).slice(-6);
+    }
+    // Set the background colour of the element
+    var element = document.getElementById(elementId);
+    element.classList.add("funnel-color-set");
+    element.style.backgroundColor = colourHex;
+  },
+  renderGradientColour: function() {
+    $('.js-funnel').each(function() {
+      if(!$(this).hasClass("funnel-color-set")) {
+        Hasjob.StickieList.setGradientColour($(this).data('funnel-name'), $(this).data('funnel-value'), $(this).attr('id'));
+      }
+    });
+  },
+  createGradientColour: function() {
+    Hasjob.StickieList.createGradientColourScale('impressions', Hasjob.Config.MaxCounts.max_impressions);
+    Hasjob.StickieList.createGradientColourScale('views', Hasjob.Config.MaxCounts.max_views);
+    Hasjob.StickieList.createGradientColourScale('opens', Hasjob.Config.MaxCounts.max_opens);
+    Hasjob.StickieList.createGradientColourScale('applied', Hasjob.Config.MaxCounts.max_applied);
+  },
+  initFunnelViz: function() {
+    window.addEventListener('onStickiesInit', function (e) {
+      Hasjob.StickieList.createGradientColour();
+      Hasjob.StickieList.renderGradientColour();
+    }, false);
+
+    window.addEventListener('onStickiesRefresh', function (e) {
+      Hasjob.StickieList.renderGradientColour();
+    }, false);
+
+    window.addEventListener('onStickiesPagination', function (e) {
+      Hasjob.StickieList.renderGradientColour();
+    }, false);
   }
 };
 
@@ -589,6 +687,9 @@ $(function() {
   window.Hasjob.Filters.init();
   window.Hasjob.JobPost.handleStarClick();
   window.Hasjob.JobPost.handleGroupClick();
+  if (window.Hasjob.Config.MaxCounts) {
+    window.Hasjob.StickieList.initFunnelViz();
+  }
 
   var getCurrencyVal = function() {
     return $("input[type='radio'][name='currency']:checked").val();

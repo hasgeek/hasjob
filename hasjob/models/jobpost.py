@@ -10,7 +10,6 @@ from sqlalchemy.orm import defer, deferred, load_only
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.dialects.postgresql import TSVECTOR
 import tldextract
-from coaster.auth import current_auth
 from coaster.sqlalchemy import make_timestamp_columns, Query, JsonDict, StateManager
 from baseframe import cache, _, __
 from baseframe.utils import is_public_email_domain
@@ -426,7 +425,7 @@ class JobPost(BaseMixin, db.Model):
             Markup('<div>') + Markup(escape(self.headline)) + Markup('</div>'),
             Markup('<div>') + Markup(self.description) + Markup('</div>'),
             Markup('<div>') + Markup(self.perks) + Markup('</div>')
-            ))
+        ))
 
     @staticmethod
     def viewcounts_key(jobpost_id):

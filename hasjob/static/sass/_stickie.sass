@@ -15,9 +15,8 @@
   position: relative
   vertical-align: top
   display: block
-  font-family: $font-stickie-headline
   overflow: visible  // To make shadow visible
-  padding: 24px 18px
+  padding: 24px 0 0
   word-wrap: break-word
   +box-sizing(border-box)
   +border-radius(2px)
@@ -32,43 +31,139 @@
   label
     font-weight: normal
 
-  .count
-    font-size: 90%
-    color: $color-stickie-location
-    display: block
-
   .annotation
     font-size: 75%
     display: block
     position: absolute
     color: $color-stickie-location
-    font-family: $font-stickie-headline
     overflow: hidden
     white-space: nowrap
     text-overflow: ellipsis
     height: 1.5em
 
   .top-right
-    top: 0.1em
-    right: 0.5em
+    top: .1em
+    right: .5em
 
   .top-left
-    top: 0.1em
-    left: 0.5em
+    top: .1em
+    left: .5em
     width: 75%
 
-  .bottom-right
-    right: 0.5em
-    bottom: 0.1em
-    width: 70%
-    text-align: right
+  .headline,
+  .pay,
+    display: block
+    padding: 0 18px
+    position: static
 
-  .bottom-left
-    left: 0.5em
-    bottom: 0.1em
+  .headline
+    font-family: $font-stickie-headline
+
+  .star
+    position: static
+    float: left
+    width: 20%
+    margin-left: 0.5em
 
   .new
     color: $color-stickie-new
+
+  .company-name
+    position: static
+    float: right
+    width: 70%
+    text-align: right
+    margin-right: 0.5em
+
+  .count
+    margin-top: 5px
+    color: $color-stickie-location
+    display: flex
+
+  .count-items
+    flex: 1
+    font-size: 9px
+
+  .count-text
+    display: inline-block
+    width: calc(100% - 6px)
+
+  .count-items.impressions
+    flex: 1.5
+
+  .count-arrow
+    float: right
+
+  .count-text,
+  .count-arrow
+    font-size: 10px
+
+  @media (min-width: 480px)
+    .count-text,
+    .count-arrow
+      font-size: 14px
+
+  @media (min-width: 768px)
+    .count-text,
+    .count-arrow
+      font-size: 7px
+
+    .count-arrow
+      margin-top: 2px
+
+  @media (min-width: 1200px)
+    .count-text,
+    .count-arrow
+      font-size: 8px
+
+    .count-arrow
+      margin-top: 1px
+
+  .count-background 
+    display: flex
+    height: 7px
+    margin-top: 4px
+    border-radius: 0 0 2px 2px
+    overflow: hidden
+    padding: 0
+    list-style: none
+
+    .background
+      flex: 1
+      height: 100%
+      margin: 0
+      padding: 0
+
+    .impressions.background
+      flex: 1.5
+      position: relative
+      z-index: 4
+
+    .viewed.background 
+      position: relative
+      z-index: 3
+
+    .opened.background
+      position: relative
+      z-index: 2
+
+    .applied.background
+      position: relative
+      z-index: 1
+
+    .background.arrow:before
+      content: ''
+      display: inline-block
+      width: 7px
+      height: 7px
+      border-style: solid
+      border-width: 2px 2px 0 0
+      border-color: $color-stickie
+      position: absolute
+      top: 0
+      right: -2px
+      vertical-align: top
+      @include transform(rotate(45deg))
 
   .pinned
     text-indent: -10000px
@@ -105,6 +200,11 @@
     bottom: 1.5em
     left: 1.5em
     right: 1.5em
+
+  .count-background
+    position: absolute
+    bottom: 0
+    width: 100%
 
   // Extra stickies, beyond those specified below.
   // Keep in same position
@@ -162,6 +262,7 @@
 
 .stickie.special
   background-color: $color-stickie-info
+  padding: 24px 18px
 
 .stickie.org
   background-color: #fff
