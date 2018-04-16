@@ -172,13 +172,15 @@ window.Hasjob.StickieList = {
     history.pushState({reloadOnPop: true}, '', searchUrl);
     window.Hasjob.Util.updateGA();
   },
-    /*
-    Creates a linear colour gradient with canvas of width equal to maxValue. The canvas indicates a scale  from 0 to maxValue.
-    Takes
-     'funnelName' - conversion funnel's name.
-     'maxValue' -  max value of conversion funnel across job posts of last 30 days
-  */
   createGradientColourScale: function(funnelName, maxValue) {
+    /*
+      Creates a linear colour gradient with canvas of width equal to maxValue. The canvas indicates a scale  from 0 to maxValue.
+
+      Takes
+       'funnelName' - conversion funnel's name.
+       'maxValue' -  max value of conversion funnel across job posts of last 30 days
+    */
+
     var canvas = document.createElement("canvas");
     canvas.id = funnelName;
     canvas.width = maxValue;
@@ -201,14 +203,16 @@ window.Hasjob.StickieList = {
     window.Hasjob.Config[funnelName].canvasContext = context;
     window.Hasjob.Config[funnelName].maxColour = '#DF3499';
   },
-  /*
-    Picks the colour for the value from the colour gradient canvas based on a scale of 0 to maxValue.
-    Takes 'funnelName', value, elementId'
-    'funnelName' - conversion funnel's name.
-    'value' - conversion funnel value for the job post
-    'elementId' - id attribute of the element of which background colour is to be set
-  */
   setGradientColour: function(funnelName, value, elementId) {
+    /*
+      Picks the colour for the value from the colour gradient canvas based on a scale of 0 to maxValue.
+
+      Takes 'funnelName', value, elementId'
+      'funnelName' - conversion funnel's name.
+      'value' - conversion funnel value for the job post
+      'elementId' - id attribute of the element of which background colour is to be set
+    */
+
     //rgba - RGBA values at a particular point in the canvas.
     var rgba = window.Hasjob.Config[funnelName].canvasContext.getImageData(value, 1, 1, 1).data;
     if (rgba[0] > 255 || rgba[1] > 255 || rgba[2] > 255) {
@@ -234,29 +238,23 @@ window.Hasjob.StickieList = {
     });
   },
   createGradientColour: function() {
-    Hasjob.StickieList.createGradientColourScale('impressions', Hasjob.Config.MaxFunnelStat.max_impressions);
-    Hasjob.StickieList.createGradientColourScale('views', Hasjob.Config.MaxFunnelStat.max_views);
-    Hasjob.StickieList.createGradientColourScale('opens', Hasjob.Config.MaxFunnelStat.max_opens);
-    Hasjob.StickieList.createGradientColourScale('applied', Hasjob.Config.MaxFunnelStat.max_applied);
+    Hasjob.StickieList.createGradientColourScale('impressions', Hasjob.Config.MaxCounts.max_impressions);
+    Hasjob.StickieList.createGradientColourScale('views', Hasjob.Config.MaxCounts.max_views);
+    Hasjob.StickieList.createGradientColourScale('opens', Hasjob.Config.MaxCounts.max_opens);
+    Hasjob.StickieList.createGradientColourScale('applied', Hasjob.Config.MaxCounts.max_applied);
   },
-  funnelStatInit: function() {
+  initFunnelViz: function() {
     window.addEventListener('onStickiesInit', function (e) {
-      if (window.Hasjob.Config.MaxFunnelStat) {
-        Hasjob.StickieList.createGradientColour();
-        Hasjob.StickieList.renderGradientColour();
-      }
+      Hasjob.StickieList.createGradientColour();
+      Hasjob.StickieList.renderGradientColour();
     }, false);
 
     window.addEventListener('onStickiesRefresh', function (e) {
-      if (window.Hasjob.Config.MaxFunnelStat) {
-        Hasjob.StickieList.renderGradientColour();
-      }
+      Hasjob.StickieList.renderGradientColour();
     }, false);
 
     window.addEventListener('onStickiesPagination', function (e) {
-      if (window.Hasjob.Config.MaxFunnelStat) {
-        Hasjob.StickieList.renderGradientColour();
-      }
+      Hasjob.StickieList.renderGradientColour();
     }, false);
   }
 };
@@ -689,7 +687,9 @@ $(function() {
   window.Hasjob.Filters.init();
   window.Hasjob.JobPost.handleStarClick();
   window.Hasjob.JobPost.handleGroupClick();
-  window.Hasjob.StickieList.funnelStatInit();
+  if (window.Hasjob.Config.MaxCounts) {
+    window.Hasjob.StickieList.initFunnelViz();
+  }
 
   var getCurrencyVal = function() {
     return $("input[type='radio'][name='currency']:checked").val();

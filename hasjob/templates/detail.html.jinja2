@@ -449,7 +449,7 @@
         $.get("{{ post.url_for('related_posts') }}", function (data) {
             $('#stickie-area').html(data.template);
             {%- if can_see_post_stats %}
-              window.Hasjob.Config.MaxFunnelStat = {
+              window.Hasjob.Config.MaxCounts = {
                 'max_impressions': data.max_impressions,
                 'max_views': data.max_views,
                 'max_opens': data.max_opens,
