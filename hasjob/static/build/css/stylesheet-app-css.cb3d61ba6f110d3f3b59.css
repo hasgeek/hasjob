@@ -725,9 +725,8 @@ tr > div {
   position: relative;
   vertical-align: top;
   display: block;
-  font-family: "McLaren", sans-serif;
   overflow: visible;
-  padding: 24px 18px;
+  padding: 24px 0 0;
   word-wrap: break-word;
   box-sizing: border-box;
   border-radius: 2px;
@@ -739,37 +738,118 @@ tr > div {
     border-bottom: 0; }
   .stickie label {
     font-weight: normal; }
-  .stickie .count {
-    font-size: 90%;
-    color: #816894;
-    display: block; }
   .stickie .annotation {
     font-size: 75%;
     display: block;
     position: absolute;
     color: #816894;
-    font-family: "McLaren", sans-serif;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
     height: 1.5em; }
   .stickie .top-right {
-    top: 0.1em;
-    right: 0.5em; }
+    top: .1em;
+    right: .5em; }
   .stickie .top-left {
-    top: 0.1em;
-    left: 0.5em;
+    top: .1em;
+    left: .5em;
     width: 75%; }
-  .stickie .bottom-right {
-    right: 0.5em;
-    bottom: 0.1em;
-    width: 70%;
-    text-align: right; }
-  .stickie .bottom-left {
-    left: 0.5em;
-    bottom: 0.1em; }
+  .stickie .headline,
+  .stickie .pay {
+    display: block;
+    padding: 0 18px;
+    position: static; }
+  .stickie .headline {
+    font-family: "McLaren", sans-serif; }
+  .stickie .star {
+    position: static;
+    float: left;
+    width: 20%;
+    margin-left: 0.5em; }
   .stickie .new {
     color: #df5e0e; }
+  .stickie .company-name {
+    position: static;
+    float: right;
+    width: 70%;
+    text-align: right;
+    margin-right: 0.5em; }
+  .stickie .count {
+    margin-top: 5px;
+    color: #816894;
+    display: flex; }
+  .stickie .count-items {
+    flex: 1;
+    font-size: 9px; }
+  .stickie .count-text {
+    display: inline-block;
+    width: calc(100% - 6px); }
+  .stickie .count-items.impressions {
+    flex: 1.5; }
+  .stickie .count-arrow {
+    float: right; }
+  .stickie .count-text,
+  .stickie .count-arrow {
+    font-size: 10px; }
+  @media (min-width: 480px) {
+    .stickie .count-text,
+    .stickie .count-arrow {
+      font-size: 14px; } }
+  @media (min-width: 768px) {
+    .stickie .count-text,
+    .stickie .count-arrow {
+      font-size: 7px; }
+    .stickie .count-arrow {
+      margin-top: 2px; } }
+  @media (min-width: 1200px) {
+    .stickie .count-text,
+    .stickie .count-arrow {
+      font-size: 8px; }
+    .stickie .count-arrow {
+      margin-top: 1px; } }
+  .stickie .count-background {
+    display: flex;
+    height: 7px;
+    margin-top: 4px;
+    border-radius: 0 0 2px 2px;
+    overflow: hidden;
+    padding: 0;
+    list-style: none; }
+    .stickie .count-background .background {
+      flex: 1;
+      height: 100%;
+      margin: 0;
+      padding: 0; }
+    .stickie .count-background .impressions.background {
+      flex: 1.5;
+      position: relative;
+      z-index: 4; }
+    .stickie .count-background .viewed.background {
+      position: relative;
+      z-index: 3; }
+    .stickie .count-background .opened.background {
+      position: relative;
+      z-index: 2; }
+    .stickie .count-background .applied.background {
+      position: relative;
+      z-index: 1; }
+    .stickie .count-background .background.arrow:before {
+      content: '';
+      display: inline-block;
+      width: 7px;
+      height: 7px;
+      border-style: solid;
+      border-width: 2px 2px 0 0;
+      border-color: #ffffa2;
+      position: absolute;
+      top: 0;
+      right: -2px;
+      vertical-align: top;
+      -webkit-transform: rotate(45deg);
+      -moz-transform: rotate(45deg);
+      -ms-transform: rotate(45deg);
+      -o-transform: rotate(45deg);
+      transform: rotate(45deg); }
   .stickie .pinned {
     text-indent: -10000px;
     display: block;
@@ -806,6 +886,10 @@ tr > div {
     bottom: 1.5em;
     left: 1.5em;
     right: 1.5em; }
+  .stickie.grouped.under .count-background {
+    position: absolute;
+    bottom: 0;
+    width: 100%; }
   .no-touch li:hover > .stickie.grouped.under {
     top: 0px;
     left: 15px;
@@ -847,7 +931,8 @@ tr > div {
   text-align: center; }
 
 .stickie.special {
-  background-color: #f6f6f6; }
+  background-color: #f6f6f6;
+  padding: 24px 18px; }
 
 .stickie.org {
   background-color: #fff;
@@ -999,7 +1084,8 @@ tr > div {
   display: inline-block;
   text-align: center;
   width: auto;
-  margin: 24px 0; }
+  margin: 24px 0;
+  padding: 24px 18px; }
 
 #i40x {
   font-size: 150px;

@@ -5,7 +5,7 @@ from datetime import datetime
 from sqlalchemy import distinct
 from werkzeug import cached_property
 from baseframe import __, cache
-from . import db, agelimit, newlimit, POST_STATE, EMPLOYER_RESPONSE
+from . import db, agelimit, newlimit
 from .user import User
 from .jobpost import JobPost, JobApplication
 from .board import Board
@@ -91,10 +91,10 @@ class UserFlags(object):
         __("Is a candidate who received a response (at any time)"),
         lambda user: JobApplication.query.filter(
             JobApplication.user == user,
-            JobApplication.response == EMPLOYER_RESPONSE.REPLIED
+            JobApplication.response.REPLIED
             ).notempty(),
         lambda: db.session.query(distinct(JobApplication.user_id).label('id')).filter(
-            JobApplication.response == EMPLOYER_RESPONSE.REPLIED
+            JobApplication.response.REPLIED
             )
         )
 
@@ -103,10 +103,10 @@ class UserFlags(object):
         lambda user: JobApplication.query.filter(
             JobApplication.user == user,
             JobApplication.replied_at >= datetime.utcnow() - newlimit,
-            JobApplication.response == EMPLOYER_RESPONSE.REPLIED
+            JobApplication.response.REPLIED
             ).notempty(),
         lambda: db.session.query(distinct(JobApplication.user_id).label('id')).filter(
-            JobApplication.response == EMPLOYER_RESPONSE.REPLIED,
+            JobApplication.response.REPLIED,
             JobApplication.replied_at >= datetime.utcnow() - newlimit
             )
         )
@@ -116,10 +116,10 @@ class UserFlags(object):
         lambda user: JobApplication.query.filter(
             JobApplication.user == user,
             JobApplication.replied_at >= datetime.utcnow() - agelimit,
-            JobApplication.response == EMPLOYER_RESPONSE.REPLIED
+            JobApplication.response.REPLIED
             ).notempty(),
         lambda: db.session.query(distinct(JobApplication.user_id).label('id')).filter(
-            JobApplication.response == EMPLOYER_RESPONSE.REPLIED,
+            JobApplication.response.REPLIED,
             JobApplication.replied_at >= datetime.utcnow() - agelimit
             )
         )
@@ -129,10 +129,10 @@ class UserFlags(object):
         lambda user: JobApplication.query.filter(
             JobApplication.user == user,
             JobApplication.replied_at < datetime.utcnow() - agelimit,
-            JobApplication.response == EMPLOYER_RESPONSE.REPLIED
+            JobApplication.response.REPLIED
             ).notempty(),
         lambda: db.session.query(distinct(JobApplication.user_id).label('id')).filter(
-            JobApplication.response == EMPLOYER_RESPONSE.REPLIED,
+            JobApplication.response.REPLIED,
             JobApplication.replied_at < datetime.utcnow() - agelimit
             )
         )
@@ -234,10 +234,10 @@ class UserFlags(object):
         __("Is an employer who responded to a candidate (at any time)"),
         lambda user: JobApplication.query.filter(
             JobApplication.replied_by == user,
-            JobApplication.response == EMPLOYER_RESPONSE.REPLIED
+            JobApplication.response.REPLIED
             ).notempty(),
         lambda: db.session.query(distinct(JobApplication.replied_by_id).label('id')).filter(
-            JobApplication.response == EMPLOYER_RESPONSE.REPLIED
+            JobApplication.response.REPLIED
             )
         )
 
@@ -246,10 +246,10 @@ class UserFlags(object):
         lambda user: JobApplication.query.filter(
             JobApplication.replied_by == user,
             JobApplication.replied_at >= datetime.utcnow() - newlimit,
-            JobApplication.response == EMPLOYER_RESPONSE.REPLIED
+            JobApplication.response.REPLIED
             ).notempty(),
         lambda: db.session.query(distinct(JobApplication.replied_by_id).label('id')).filter(
-            JobApplication.response == EMPLOYER_RESPONSE.REPLIED,
+            JobApplication.response.REPLIED,
             JobApplication.replied_at >= datetime.utcnow() - newlimit
             )
         )
@@ -259,10 +259,10 @@ class UserFlags(object):
         lambda user: JobApplication.query.filter(
             JobApplication.replied_by == user,
             JobApplication.replied_at >= datetime.utcnow() - agelimit,
-            JobApplication.response == EMPLOYER_RESPONSE.REPLIED
+            JobApplication.response.REPLIED
             ).notempty(),
         lambda: db.session.query(distinct(JobApplication.replied_by_id).label('id')).filter(
-            JobApplication.response == EMPLOYER_RESPONSE.REPLIED,
+            JobApplication.response.REPLIED,
             JobApplication.replied_at >= datetime.utcnow() - agelimit
             )
         )
@@ -272,10 +272,10 @@ class UserFlags(object):
         lambda user: JobApplication.query.filter(
             JobApplication.replied_by == user,
             JobApplication.replied_at < datetime.utcnow() - agelimit,
-            JobApplication.response == EMPLOYER_RESPONSE.REPLIED
+            JobApplication.response.REPLIED
             ).notempty(),
         lambda: db.session.query(distinct(JobApplication.replied_by_id).label('id')).filter(
-            JobApplication.response == EMPLOYER_RESPONSE.REPLIED,
+            JobApplication.response.REPLIED,
             JobApplication.replied_at < datetime.utcnow() - agelimit
             )
         )

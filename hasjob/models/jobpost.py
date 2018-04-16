@@ -10,10 +10,9 @@ from sqlalchemy.orm import defer, deferred, load_only
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.dialects.postgresql import TSVECTOR
 import tldextract
-from coaster.auth import current_auth
 from coaster.sqlalchemy import make_timestamp_columns, Query, JsonDict, StateManager
 from baseframe import cache, _, __
-from baseframe.staticdata import webmail_domains
+from baseframe.utils import is_public_email_domain
 from .. import redis_store
 from . import newlimit, agelimit, db, POST_STATE, EMPLOYER_RESPONSE, PAY_TYPE, BaseMixin, TimestampMixin
 from .jobtype import JobType
@@ -73,6 +72,7 @@ def has_starred_post(user, post):
     query = starred_job_table.count().where(starred_job_table.c.user_id == user.id).where(starred_job_table.c.jobpost_id == post.id)
     res = db.session.execute(query)
     return bool(res.first()[0]) if res else False
+
 
 User.has_starred_post = has_starred_post
 
@@ -329,7 +329,7 @@ class JobPost(BaseMixin, db.Model):
         elif action == 'manage':
             return url_for('managejob', hashid=self.hashid, domain=domain, _external=_external, **kwargs)
         elif action == 'browse':
-            if self.email_domain in webmail_domains:
+            if is_public_email_domain(self.email_domain, default=False):
                 return url_for('browse_by_email', md5sum=self.md5sum, _external=_external, **kwargs)
             else:
                 return url_for('browse_by_domain', domain=self.email_domain, _external=_external, **kwargs)
@@ -348,7 +348,7 @@ class JobPost(BaseMixin, db.Model):
 
     @property
     def from_webmail_domain(self):
-        return self.email_domain in webmail_domains
+        return is_public_email_domain(self.email_domain, default=False)
 
     @property
     def company_url_domain_zone(self):
@@ -425,7 +425,7 @@ class JobPost(BaseMixin, db.Model):
             Markup('<div>') + Markup(escape(self.headline)) + Markup('</div>'),
             Markup('<div>') + Markup(self.description) + Markup('</div>'),
             Markup('<div>') + Markup(self.perks) + Markup('</div>')
-            ))
+        ))
 
     @staticmethod
     def viewcounts_key(jobpost_id):
@@ -752,7 +752,10 @@ class JobApplication(BaseMixin, db.Model):
     #: User opted-in to experimental features
     optin = db.Column(db.Boolean, default=False, nullable=False)
     #: Employer's response code
-    response = db.Column(db.Integer, nullable=False, default=EMPLOYER_RESPONSE.NEW)
+    _response = db.Column('response', db.Integer,
+        StateManager.check_constraint('response', EMPLOYER_RESPONSE),
+        nullable=False, default=EMPLOYER_RESPONSE.NEW)
+    response = StateManager('_response', EMPLOYER_RESPONSE, doc="Employer's response")
     #: Employer's response message
     response_message = db.Column(db.UnicodeText, nullable=True)
     #: Bag of words, for spam analysis
@@ -770,43 +773,33 @@ class JobApplication(BaseMixin, db.Model):
         if self.hashid is None:
             self.hashid = unique_long_hash()
 
-    @property
-    def status(self):
-        return EMPLOYER_RESPONSE[self.response]
+    @response.transition(response.NEW, response.PENDING, title=__("Mark read"), message=__("This job application has been read"), type='success')
+    def mark_read(self):
+        pass
 
-    def is_new(self):
-        return self.response == EMPLOYER_RESPONSE.NEW
+    @response.transition(response.CAN_REPLY, response.REPLIED, title=__("Reply"), message=__("This job application has been replied to"), type='success')
+    def reply(self, message, user):
+        self.response_message = message
+        self.replied_by = user
+        self.replied_at = db.func.utcnow()
 
-    def is_pending(self):
-        return self.response == EMPLOYER_RESPONSE.PENDING
+    @response.transition(response.CAN_REJECT, response.REJECTED, title=__("Reject"), message=__("This job application has been rejected"), type='danger')
+    def reject(self, message, user):
+        self.response_message = message
+        self.replied_by = user
+        self.replied_at = db.func.utcnow()
 
-    def is_ignored(self):
-        return self.response == EMPLOYER_RESPONSE.IGNORED
+    @response.transition(response.CAN_IGNORE, response.IGNORED, title=__("Ignore"), message=__("This job application has been ignored"), type='danger')
+    def ignore(self):
+        pass
 
-    def is_replied(self):
-        return self.response == EMPLOYER_RESPONSE.REPLIED
+    @response.transition(response.CAN_REPORT, response.FLAGGED, title=__("Report"), message=__("This job application has been reported"), type='danger')
+    def flag(self):
+        pass
 
-    def is_flagged(self):
-        return self.response == EMPLOYER_RESPONSE.FLAGGED
-
-    def is_spam(self):
-        return self.response == EMPLOYER_RESPONSE.SPAM
-
-    def is_rejected(self):
-        return self.response == EMPLOYER_RESPONSE.REJECTED
-
-    def can_reply(self):
-        return self.response in (EMPLOYER_RESPONSE.NEW, EMPLOYER_RESPONSE.PENDING, EMPLOYER_RESPONSE.IGNORED)
-
-    def can_reject(self):
-        return self.response in (EMPLOYER_RESPONSE.NEW, EMPLOYER_RESPONSE.PENDING, EMPLOYER_RESPONSE.IGNORED)
-
-    def can_ignore(self):
-        return self.response in (EMPLOYER_RESPONSE.NEW, EMPLOYER_RESPONSE.PENDING)
-
-    def can_report(self):
-        return self.response in (EMPLOYER_RESPONSE.NEW, EMPLOYER_RESPONSE.PENDING,
-            EMPLOYER_RESPONSE.IGNORED, EMPLOYER_RESPONSE.REJECTED)
+    @response.transition(response.FLAGGED, response.PENDING, title=__("Unflag"), message=__("This job application has been unflagged"), type='success')
+    def unflag(self):
+        pass
 
     def application_count(self):
         """Number of jobs candidate has applied to around this one"""
@@ -822,19 +815,14 @@ class JobApplication(BaseMixin, db.Model):
                 }
         date_min = self.created_at - timedelta(days=7)
         date_max = self.created_at + timedelta(days=7)
-        counts = defaultdict(int)
-        for r in db.session.query(JobApplication.response).filter(JobApplication.user == self.user).filter(
-                JobApplication.created_at > date_min, JobApplication.created_at < date_max):
-            counts[r.response] += 1
-
-        return {
-            'count': sum(counts.values()),
-            'ignored': counts[EMPLOYER_RESPONSE.IGNORED],
-            'replied': counts[EMPLOYER_RESPONSE.REPLIED],
-            'flagged': counts[EMPLOYER_RESPONSE.FLAGGED],
-            'spam': counts[EMPLOYER_RESPONSE.SPAM],
-            'rejected': counts[EMPLOYER_RESPONSE.REJECTED],
-            }
+        grouped = JobApplication.response.group(
+            JobApplication.query.filter(JobApplication.user == self.user).filter(
+                JobApplication.created_at > date_min, JobApplication.created_at < date_max
+            ).options(db.load_only('id'))
+        )
+        counts = {k.label.name: len(v) for k, v in grouped.items()}
+        counts['count'] = sum(counts.values())
+        return counts
 
     def url_for(self, action='view', _external=False, **kwargs):
         domain = self.jobpost.email_domain
@@ -851,7 +839,7 @@ class JobApplication(BaseMixin, db.Model):
 
 JobApplication.jobpost = db.relationship(JobPost,
     backref=db.backref('applications', lazy='dynamic', order_by=(
-        db.case(value=JobApplication.response, whens={
+        db.case(value=JobApplication._response, whens={
             EMPLOYER_RESPONSE.NEW: 0,
             EMPLOYER_RESPONSE.PENDING: 1,
             EMPLOYER_RESPONSE.IGNORED: 2,
@@ -865,12 +853,12 @@ JobApplication.jobpost = db.relationship(JobPost,
 
 JobPost.new_applications = db.column_property(
     db.select([db.func.count(JobApplication.id)]).where(
-        db.and_(JobApplication.jobpost_id == JobPost.id, JobApplication.response == EMPLOYER_RESPONSE.NEW)))
+        db.and_(JobApplication.jobpost_id == JobPost.id, JobApplication.response.NEW)))
 
 
 JobPost.replied_applications = db.column_property(
     db.select([db.func.count(JobApplication.id)]).where(
-        db.and_(JobApplication.jobpost_id == JobPost.id, JobApplication.response == EMPLOYER_RESPONSE.REPLIED)))
+        db.and_(JobApplication.jobpost_id == JobPost.id, JobApplication.response.REPLIED)))
 
 
 JobPost.viewcounts_viewed = db.column_property(

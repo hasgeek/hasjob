@@ -70,7 +70,7 @@ class AdminCampaignList(AdminView):
             db.session.add(campaign)
             db.session.commit()
             flash(u"Created a campaign", 'success')
-            return render_redirect(url_for('campaign_view', campaign=campaign.name), code=303)
+            return render_redirect(campaign.url_for(), code=303)
 
         return render_form(form=form, title=u"Create a campaign…", submit="Next",
             formid="campaign_new", cancel_url=url_for(self.list_current.endpoint), ajax=False)
