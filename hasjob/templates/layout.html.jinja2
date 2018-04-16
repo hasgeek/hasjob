@@ -200,6 +200,7 @@
     {%- if request.path != url_for('newjob') %}
         {% set site_links = site_links + [{'title': "Post a job", 'url': url_for('newjob')|usessl, 'class': 'btn btn-sm btn-post-job hidden-xs'}] %}
     {%- endif %}
+    {% set site_links = site_links + [{'title': "Share", 'url': '', 'class': 'btn btn-sm btn-share-page hidden'}] %}
     {{ hgnav(site_title=site_title(), site_nav_button=site_nav_button(), site_nav=site_nav(), site_links=site_links, user_links=user_links) }}
   {% endwith %}
   {%- endif %}
@@ -267,6 +268,21 @@
           if (window.ga) {
             window.ga('send', 'event', 'Add to Home', choice.outcome);
           }
+        });
+      });
+    }
+
+    var shareBtn = $('.btn-share-page');
+    if (navigator.share) {
+      shareBtn.html('<i class="fa fa-share-alt"></i>');
+      shareBtn.removeClass('hidden');
+      shareBtn.on('click', function(event){
+        event.preventDefault();
+        navigator.share({
+          title: $('meta[name="DC.title"]').attr('content'),
+          text: $('meta[name="description"]').attr('content'),
+          url: document.querySelector('link[rel=canonical]') &&
+          document.querySelector('link[rel=canonical]').href || window.location.href
         });
       });
     }
