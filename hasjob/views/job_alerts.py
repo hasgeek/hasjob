@@ -21,8 +21,8 @@ def send_confirmation_email_for_job_alerts(to_address, token):
     mail.send(msg)
 
 
-@app.route('/subscribe_to_job_alerts', subdomain='<subdomain>', methods=['POST'])
-@app.route('/subscribe_to_job_alerts', methods=['POST'])
+@app.route('/api/1/subscribe_to_job_alerts', subdomain='<subdomain>', methods=['POST'])
+@app.route('/api/1/subscribe_to_job_alerts', methods=['POST'])
 def subscribe_to_job_alerts():
     if not request.json or not request.json.get('filters'):
         abort(400)
@@ -62,8 +62,8 @@ def subscribe_to_job_alerts():
     return redirect(url_for('index'), code=302)
 
 
-@app.route('/confirm_subscription_to_job_alerts', subdomain='<subdomain>')
-@app.route('/confirm_subscription_to_job_alerts')
+@app.route('/api/1/confirm_subscription_to_job_alerts', subdomain='<subdomain>')
+@app.route('/api/1/confirm_subscription_to_job_alerts')
 def confirm_subscription_to_job_alerts():
     subscription = JobPostSubscription.query.filter_by(email_verify_key=request.args.get('token')).one_or_none()
     if not subscription:
@@ -76,8 +76,8 @@ def confirm_subscription_to_job_alerts():
     return redirect(url_for('index'), code=302)
 
 
-@app.route('/unsubscribe_from_job_alerts', subdomain='<subdomain>')
-@app.route('/unsubscribe_from_job_alerts')
+@app.route('/api/1/unsubscribe_from_job_alerts', subdomain='<subdomain>')
+@app.route('/api/1/unsubscribe_from_job_alerts')
 def unsubscribe_from_job_alerts():
     subscription = JobPostSubscription.query.filter_by(unsubscribe_key=request.args.get('token')).one_or_none()
     if not subscription:

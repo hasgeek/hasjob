@@ -17,7 +17,7 @@ class JobPostSubscription(BaseMixin, db.Model):
     __tablename__ = 'jobpost_subscription'
 
     filterset_id = db.Column(None, db.ForeignKey('filterset.id'), nullable=False)
-    filterset = db.relationship('Filterset', backref=db.backref('subscriptions', lazy='dynamic'))
+    filterset = db.relationship('Filterset', backref=db.backref('subscriptions', lazy='dynamic', cascade='all, delete-orphan'))
     email = db.Column(db.Unicode(254), nullable=True)
     user_id = db.Column(None, db.ForeignKey('user.id'), nullable=True, index=True)
     user = db.relationship(User)
@@ -71,6 +71,7 @@ class JobPostSubscription(BaseMixin, db.Model):
         """
         return ((datetime.utcnow() - self.subscribed_at.time()).total_seconds()/60) <= 30
 
+
 jobpost_alert_table = db.Table('jobpost_jobpost_alert', db.Model.metadata,
     db.Column('jobpost_id', None, db.ForeignKey('jobpost.id'), primary_key=True),
     db.Column('jobpost_alert_id', None, db.ForeignKey('jobpost_alert.id'), primary_key=True),
@@ -88,12 +89,3 @@ class JobPostAlert(BaseMixin, db.Model):
     jobposts = db.relationship('JobPost', lazy='dynamic', secondary=jobpost_alert_table,
         backref=db.backref('alerts', lazy='dynamic'))
     sent_at = db.Column(db.DateTime, nullable=True)
-    failed_at = db.Column(db.DateTime, nullable=True)
-    fail_reason = db.Column(db.Unicode(255), nullable=True)
-
-    def register_delivery(self):
-        self.sent_at = db.func.utcnow()
-
-    def register_failure(self, fail_reason):
-        self.failed_at = db.func.utcnow()
-        self.fail_reason = fail_reason

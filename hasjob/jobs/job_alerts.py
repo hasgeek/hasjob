@@ -39,10 +39,7 @@ def send_email_alerts():
         html = email_transform(render_template('job_alert_mailer.html.jinja2', posts=jobpost_alert.jobposts))
         msg.html = html
         msg.body = html2text(html)
-        try:
-            mail.send(msg)
-            jobpost_alert.register_delivery()
-        except Exception as exc:
-            jobpost_alert.register_failure(unicode(exc))
+        mail.send(msg)
+        jobpost_alert.register_delivery()
         db.session.add(jobpost_alert)
         db.session.commit()
