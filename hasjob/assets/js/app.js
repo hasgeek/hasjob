@@ -215,6 +215,7 @@ window.Hasjob.StickieList = {
 
     //rgba - RGBA values at a particular point in the canvas.
     var rgba = window.Hasjob.Config[funnelName].canvasContext.getImageData(value, 1, 1, 1).data;
+    var colourHex;
     if (rgba[0] > 255 || rgba[1] > 255 || rgba[2] > 255) {
       // rgb value is invalid, hence return white
       colourHex ="#FFFFFF";
@@ -245,16 +246,24 @@ window.Hasjob.StickieList = {
   },
   initFunnelViz: function() {
     window.addEventListener('onStickiesInit', function (e) {
-      Hasjob.StickieList.createGradientColour();
-      Hasjob.StickieList.renderGradientColour();
+      /* Check for MaxCounts since on job post page it is assigned much later
+      when related job posts are loaded. */
+      if (window.Hasjob.Config.MaxCounts) {
+        Hasjob.StickieList.createGradientColour();
+        Hasjob.StickieList.renderGradientColour();
+      }
     }, false);
 
     window.addEventListener('onStickiesRefresh', function (e) {
-      Hasjob.StickieList.renderGradientColour();
+      if (window.Hasjob.Config.MaxCounts) {
+        Hasjob.StickieList.renderGradientColour();
+      }
     }, false);
 
     window.addEventListener('onStickiesPagination', function (e) {
-      Hasjob.StickieList.renderGradientColour();
+      if (window.Hasjob.Config.MaxCounts) {
+        Hasjob.StickieList.renderGradientColour();
+      }
     }, false);
   }
 };
@@ -687,9 +696,7 @@ $(function() {
   window.Hasjob.Filters.init();
   window.Hasjob.JobPost.handleStarClick();
   window.Hasjob.JobPost.handleGroupClick();
-  if (window.Hasjob.Config.MaxCounts) {
-    window.Hasjob.StickieList.initFunnelViz();
-  }
+  window.Hasjob.StickieList.initFunnelViz();
 
   var getCurrencyVal = function() {
     return $("input[type='radio'][name='currency']:checked").val();

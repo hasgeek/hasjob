@@ -18,9 +18,9 @@
   overflow: visible  // To make shadow visible
   padding: 24px 0 0
   word-wrap: break-word
-  +box-sizing(border-box)
-  +border-radius(2px)
-  +box-shadow(0 1px 4px rgba(0, 0, 0, 0.3), 0 0 10px rgba(0, 0, 0, 0.1) inset)
+  box-sizing: border-box
+  border-radius: 2px
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3), 0 0 10px rgba(0, 0, 0, 0.1) inset
 
   /* Make stickies clickable */
   &,  &:active, &:hover, &:visited, &:focus
@@ -174,9 +174,9 @@
     left: calc(50% - 5px)
     width: 10px
     height: 10px
-    +border-radius(5px)
+    border-radius: 5px
     background: $color-title-has
-    +box-shadow(0 2px 2px rgba(0, 0, 0, 0.2))
+    box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2)
 
 .stickie.grouped.under
   position: absolute
@@ -186,11 +186,13 @@
   bottom: 5px
   z-index: -3
   overflow: hidden
-  +transition-duration(0.1s)
-  +transition-property(top, left, bottom, right)
-  +transition-timing-function(ease-out)
+  -webkit-transition: top, left, bottom, right .1s ease-out
+  -moz-transition: top, left, bottom, right .1s ease-out
+  -ms-transition: top, left, bottom, right .1s ease-out
+  -o-transition: top, left, bottom, right .1s ease-out
+  transition: top, left, bottom, right .1s ease-out
   &:before, &:after
-    +box-shadow(none)
+    box-shadow: none
 
   .headline
     display: block
@@ -213,9 +215,11 @@
     left: 15px
     right: 15px
     bottom: 0px
-    +transition-duration(0.1s)
-    +transition-property(top, left, bottom, right)
-    +transition-timing-function(ease-out)
+    -webkit-transition: top, left, bottom, right .1s ease-out
+    -moz-transition: top, left, bottom, right .1s ease-out
+    -ms-transition: top, left, bottom, right .1s ease-out
+    -o-transition: top, left, bottom, right .1s ease-out
+    transition: top, left, bottom, right .1s ease-out
 
   // Top left
   .no-touch li:hover > &:nth-of-type(1)
@@ -281,7 +285,11 @@
 .stickie .pstar
   color: $color-title-has
   cursor: pointer
-  +transition(opacity 0.2s ease-in-out)
+  -webkit-transition: opacity .2s ease-in-out
+  -moz-transition: opacity .2s ease-in-out
+  -ms-transition: opacity .2s ease-in-out
+  -o-transition: opacity .2s ease-in-out
+  transition: opacity .2s ease-in-out
 
 .stickie .pstar .fa-star-o
   opacity: 0.1
@@ -306,40 +314,72 @@
   resize: none
   min-height: 0
   padding: 0
-  +box-shadow(none)
-  +transition(border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, height 0.2s ease-in-out)
+  box-shadow: none
+  -webkit-transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, height 0.2s ease-in-out
+  -moz-transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, height 0.2s ease-in-out
+  -ms-transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, height 0.2s ease-in-out
+  -o-transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, height 0.2s ease-in-out
+  transition: oborder-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, height 0.2s ease-in-out
   &:hover, &:focus
     border-color: #66afe9
     outline: 0
-    +box-shadow(0 0 8px rgba(102,175,233,0.6))
-    +transition(border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, height 0.2s ease-in-out)
+    box-shadow: 0 0 8px rgba(102,175,233,0.6)
+    -webkit-transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, height 0.2s ease-in-out
+    -moz-transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, height 0.2s ease-in-out
+    -ms-transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, height 0.2s ease-in-out
+    -o-transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, height 0.2s ease-in-out
+    transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, height 0.2s ease-in-out
 
 #newpost_headline::-webkit-input-placeholder
   color: $color-stickie-main-text
   opacity: 1.0
-  +transition(opacity 0.2s ease-in-out)
+  -webkit-transition: opacity .2s ease-in-out
+  -moz-transition: opacity .2s ease-in-out
+  -ms-transition: opacity .2s ease-in-out
+  -o-transition: opacity .2s ease-in-out
+  transition: opacity .2s ease-in-out
 
 #newpost_headline:focus::-webkit-input-placeholder
   opacity: 0.4
-  +transition(opacity 0.2s ease-in-out)
+  -webkit-transition: opacity .2s ease-in-out
+  -moz-transition: opacity .2s ease-in-out
+  -ms-transition: opacity .2s ease-in-out
+  -o-transition: opacity .2s ease-in-out
+  transition: opacity .2s ease-in-out
 
 #newpost_headline::-moz-placeholder
   color: $color-stickie-main-text
   opacity: 1.0
-  +transition(opacity 0.2s ease-in-out)
+  -webkit-transition: opacity .2s ease-in-out
+  -moz-transition: opacity .2s ease-in-out
+  -ms-transition: opacity .2s ease-in-out
+  -o-transition: opacity .2s ease-in-out
+  transition: opacity .2s ease-in-out
 
 #newpost_headline:focus::-moz-placeholder
   opacity: 0.4
-  +transition(opacity 0.2s ease-in-out)
+  -webkit-transition: opacity .2s ease-in-out
+  -moz-transition: opacity .2s ease-in-out
+  -ms-transition: opacity .2s ease-in-out
+  -o-transition: opacity .2s ease-in-out
+  transition: opacity .2s ease-in-out
 
 #newpost_headline:-ms-input-placeholder
   color: $color-stickie-main-text
   opacity: 1.0
-  +transition(opacity 0.2s ease-in-out)
+  -webkit-transition: opacity .2s ease-in-out
+  -moz-transition: opacity .2s ease-in-out
+  -ms-transition: opacity .2s ease-in-out
+  -o-transition: opacity .2s ease-in-out
+  transition: opacity .2s ease-in-out
 
 #newpost_headline:focus:-ms-input-placeholder
   opacity: 0.4
-  +transition(opacity 0.2s ease-in-out)
+  -webkit-transition: opacity .2s ease-in-out
+  -moz-transition: opacity .2s ease-in-out
+  -ms-transition: opacity .2s ease-in-out
+  -o-transition: opacity .2s ease-in-out
+  transition: opacity .2s ease-in-out
 
 #newpost_details
   // position: relative
@@ -368,10 +408,10 @@
       width: 50%
       height: 20%
       max-width: 300px
-      +box-shadow(0 15px 10px $color-shadow)
-      +rotate(-3deg)
+      box-shadow: 0 15px 10px $color-shadow
+      rotate: -3deg
 
     &:after
       right: 10px
       left: auto
-      +rotate(3deg)
+      rotate: 3deg

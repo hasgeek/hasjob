@@ -19,7 +19,7 @@
   padding-right: 15px
   // background: #ebe7e4
   border: none
-  +box-shadow(0 1px 5px $color-shadow, 0 0 10px rgba(0, 0, 0, 0.1) inset)
+  box-shadow: 0 1px 5px $color-shadow, 0 0 10px rgba(0, 0, 0, 0.1) inset
 
 .flash-interactive:before, .guide:before
   content: ""
@@ -107,13 +107,13 @@ tr > div // Fix for ParsleyJS inserting div tags in table rows in the campaign e
   margin: 0 -15px
   word-wrap: break-word
   border-bottom: 1px solid $color-sheet-border
-  +box-shadow(0 2px 10px $color-shadow)
+  box-shadow: 0 2px 10px $color-shadow
   text-rendering: optimizeLegibility
 
   .nav-tabs-top
     background: #ebe7e4
     border-bottom: 0
-    +box-shadow(0 0 10px rgba(0,0,0,0.1) inset)
+    box-shadow: 0 0 10px rgba(0,0,0,0.1) inset
 
     & > li
       margin-bottom: 0
@@ -129,21 +129,21 @@ tr > div // Fix for ParsleyJS inserting div tags in table rows in the campaign e
         border-radius: 0
 
   .nav-tabs-top>li.active>a
-    +box-shadow(0 10px 10px -10px rgba(0,0,0,0.1) inset)
+    box-shadow: 0 10px 10px -10px rgba(0,0,0,0.1) inset
     border: none
 
   .nav-tabs-top>li:first-child.active>a
-    +box-shadow(0 10px 10px -10px rgba(0,0,0,0.1) inset, 10px 0 10px -10px rgba(0,0,0,0.1) inset)
+    box-shadow: 0 10px 10px -10px rgba(0,0,0,0.1) inset, 10px 0 10px -10px rgba(0,0,0,0.1) inset
 
   .nav-tabs-top>li>a:hover
-    +box-shadow(0 10px 10px -10px rgba(0,0,0,0.1) inset, 0 -10px 10px -10px rgba(0,0,0,0.1) inset)
+    box-shadow: 0 10px 10px -10px rgba(0,0,0,0.1) inset, 0 -10px 10px -10px rgba(0,0,0,0.1) inset
 
   .nav-tabs-top>li.active>a:hover, .nav-tabs-top>li.active>a:focus
-    +box-shadow(0 10px 10px -10px rgba(0,0,0,0.1) inset)
+    box-shadow: 0 10px 10px -10px rgba(0,0,0,0.1) inset
     border: none
 
   .nav-tabs-top>li:first-child.active>a:hover, .nav-tabs-top>li:first-child.active>a:focus
-    +box-shadow(0 10px 10px -10px rgba(0,0,0,0.1) inset, 10px 0 10px -10px rgba(0,0,0,0.1) inset)
+    box-shadow: 0 10px 10px -10px rgba(0,0,0,0.1) inset, 10px 0 10px -10px rgba(0,0,0,0.1) inset
 
   .list-group
     margin: 0 -15px
@@ -161,10 +161,10 @@ tr > div // Fix for ParsleyJS inserting div tags in table rows in the campaign e
     color: inherit
 
   .list-group-item:first-child
-    +border-top-radius(0)
+    border-top-radius: 0
 
   .list-group-item:last-child
-    +border-bottom-radius(0)
+    border-bottom-radius: 0
     margin-bottom: -1px
 
   .list-group-item.no-bottom-border
@@ -262,8 +262,8 @@ tr > div // Fix for ParsleyJS inserting div tags in table rows in the campaign e
     padding: 14px 30px 1px
     margin: 12px 0 24px
     border: 1px solid $color-sheet-border
-    +border-radius(4px)
-    +box-shadow(0 2px 10px $color-shadow)
+    border-radius: 4px
+    box-shadow: 0 2px 10px $color-shadow
 
   .guide, .post-guide
     form
@@ -275,15 +275,15 @@ tr > div // Fix for ParsleyJS inserting div tags in table rows in the campaign e
   .sheet
     margin: 12px 0 24px
     border: 1px solid $color-sheet-border
-    +border-radius(4px)
-    +box-shadow(0 2px 10px $color-shadow, 0 0 10px rgba(0, 0, 0, 0.1) inset)
+    border-radius: 4px
+    box-shadow: 0 2px 10px $color-shadow, 0 0 10px rgba(0, 0, 0, 0.1) inset
 
     .nav-tabs
-      +border-top-left-radius(4px)
-      +border-top-right-radius(4px)
+      border-top-left-radius: 4px
+      border-top-right-radius: 4px
 
       & > li > a
-        +border-radius(4px 4px 0 0)
+        border-radius: 4px 4px 0 0
 
   .sheet + .post-guide
     margin-top: 0
