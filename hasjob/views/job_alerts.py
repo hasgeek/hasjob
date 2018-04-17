@@ -9,7 +9,7 @@ from pyisemail import is_email
 from html2text import html2text
 from baseframe import _
 from .. import app, mail
-from ..models import (db, JobPostSubscription, Filterset)
+from ..models import (db, JobPostSubscription, Filterset, EMAIL_FREQUENCY)
 
 
 @job('hasjob')
@@ -49,7 +49,13 @@ def subscribe_to_job_alerts():
         filterset = Filterset(board=g.board, filters=request.json.get('filters'))
         db.session.add(filterset)
 
-    subscription = JobPostSubscription(filterset=filterset, email=email, user=g.user, anon_user=g.anon_user)
+    email_frequency = EMAIL_FREQUENCY.WEEKLY if request.json.get('email_frequency') == EMAIL_FREQUENCY.WEEKLY else EMAIL_FREQUENCY.DAILY
+    subscription = JobPostSubscription(
+        filterset=filterset,
+        email=email,
+        user=g.user,
+        email_frequency=email_frequency,
+        anon_user=g.anon_user)
     if verified_user:
         subscription.verify_email()
 
