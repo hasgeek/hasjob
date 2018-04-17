@@ -1094,10 +1094,10 @@ tr > div {
   margin-left: -0.2em; }
 
 #i40x.offline {
-  font-size: 100px;
-  letter-spacing: -0.1em;
+  font-size: 80px;
+  letter-spacing: 0;
   margin-left: 0em;
-  margin-right: 0.1em; }
+  margin-right: 0; }
 
 #i40x:after {
   display: block;

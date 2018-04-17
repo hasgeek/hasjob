@@ -31,7 +31,7 @@
           {{ response_form.hidden_tag() }}
           {%- if job_application.response.CAN_REJECT %}
             <div id="appl-options">
-              <p>
+              <p class="button-bar">
                 <button class="btn btn-success" id="appl-reply" name="action" value="reply">Respond</button>
                 <button class="btn btn-info" id="appl-reject" name="action" value="reject">Reject</button>
                 {% if not job_application.response.IGNORED %}<button class="btn btn-info" type="submit" name="action" value="ignore">Ignore candidate</button>{% endif %}

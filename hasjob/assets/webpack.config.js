@@ -106,7 +106,7 @@ module.exports = {
     new workboxPlugin({
       globDirectory: path.resolve(__dirname, "../static/build"),
       globPatterns: ['**/*.{js,css}'],
-      globIgnores: ['**/app-css.*.js'],
+      globIgnores: ['**/app-css.*.js', '**/manifest.json'],
       swSrc: path.resolve(__dirname, "service-worker-template.js"),
       swDest: path.resolve(__dirname, "../static/service-worker.js"),
     })
