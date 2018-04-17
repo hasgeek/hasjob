@@ -38,7 +38,7 @@ def campaignviews():
 
 
 @periodic.command
-def send_job_alerts():
+def send_jobpost_alerts():
     """Run email alerts every 10 minutes"""
     send_email_alerts.delay()
 
