@@ -46,6 +46,7 @@ class Filterset(BaseScopedNameMixin, db.Model):
     """
 
     __tablename__ = 'filterset'
+    __title_blank_allowed__ = True
 
     board_id = db.Column(None, db.ForeignKey('board.id'), nullable=False, index=True)
     board = db.relationship(Board)
@@ -77,9 +78,6 @@ class Filterset(BaseScopedNameMixin, db.Model):
     def __init__(self, **kwargs):
         filters = kwargs.pop('filters') if kwargs.get('filters') else {}
         super(Filterset, self).__init__(**kwargs)
-
-        if not self.title:
-            self.title = buid()
 
         if filters:
             if filters.get('t'):

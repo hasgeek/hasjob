@@ -65,9 +65,13 @@ def upgrade():
     )
     op.add_column(u'filterset', sa.Column('sitemap', sa.Boolean(), nullable=True))
     op.create_index(op.f('ix_filterset_sitemap'), 'filterset', ['sitemap'], unique=False)
+    op.alter_column('filterset', 'name', existing_type=sa.Unicode(), nullable=True)
+    op.alter_column('filterset', 'title', existing_type=sa.Unicode(), nullable=True)
 
 
 def downgrade():
+    op.alter_column('filterset', 'name', existing_type=sa.Unicode(), nullable=False)
+    op.alter_column('filterset', 'title', existing_type=sa.Unicode(), nullable=False)
     op.drop_index(op.f('ix_filterset_sitemap'), table_name='filterset')
     op.drop_column(u'filterset', 'sitemap')
     op.drop_table('jobpost_jobpost_alert')
