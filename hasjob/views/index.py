@@ -13,7 +13,7 @@ from .. import app, lastuser
 from ..models import (db, JobCategory, JobPost, JobType, POST_STATE, newlimit, agelimit, JobLocation, Board, Filterset,
     Domain, Location, Tag, JobPostTag, Campaign, CAMPAIGN_POSITION, CURRENCY, JobApplication, starred_job_table, BoardJobPost)
 from ..views.helper import (getposts, getallposts, gettags, location_geodata, load_viewcounts, session_jobpost_ab,
-    bgroup, make_pay_graph, index_is_paginated, get_post_viewcounts)
+    bgroup, make_pay_graph, index_is_paginated, get_post_viewcounts, get_max_counts)
 from ..uploads import uploaded_logos
 from ..utils import string_to_number
 
@@ -437,8 +437,17 @@ def index(basequery=None, filters={}, md5sum=None, tag=None, domain=None, locati
     if data['domain'] and data['domain'] not in db.session:
         data['domain'] = db.session.merge(data['domain'])
     data['show_viewcounts'] = show_viewcounts
+
+    postids = [jobpost.id for jobpost in data['posts']]
+    max_counts = get_max_counts(postids)
+    data['max_impressions'] = max_counts['max_impressions']
+    data['max_views'] = max_counts['max_views']
+    data['max_opens'] = max_counts['max_opens']
+    data['max_applied'] = max_counts['max_applied']
+
     if filterset:
         data['filterset'] = filterset
+
     return data
 
 
@@ -818,3 +827,18 @@ def logoimage(domain, hashid):
 @app.route('/search')
 def search():
     return redirect(url_for('index', **request.args))
+
+
+@app.route('/api/1/template/offline')
+def offline():
+    return render_template('offline.html.jinja2')
+
+
+@app.route('/service-worker.js', methods=['GET'])
+def sw():
+    return app.send_static_file('service-worker.js')
+
+
+@app.route('/manifest.json', methods=['GET'])
+def manifest():
+    return app.send_static_file('manifest.json')

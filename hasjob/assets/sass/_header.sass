@@ -1,6 +1,6 @@
 body
   font-family: $font-default
-  background: #e8e7e6 image-url("canvas.jpg")
+  background: #e8e7e6 url("~/static/img/canvas.jpg")
 
 header
   margin-bottom: 0
@@ -11,6 +11,7 @@ header
     font-size: 16px
     margin-top: 10px
     margin-bottom: 10px
+
     small
       display: inline-block
       color: $color-title-geek
@@ -22,14 +23,10 @@ header
       text-decoration: none
       border-bottom: none
 
-    a:hover, a:focus, a:active
-      // background-image: linear-gradient(to top, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0) 8px, $color-title-jobs 8px, $color-title-jobs 13px, rgba(0, 0, 0, 0) 13px)
-      background-image: linear-gradient(to top, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0) 12%, $color-title-jobs 12%, $color-title-jobs 23%, rgba(0, 0, 0, 0) 23%)
-
   #hgnav
     background: #ebe7e4
     border-bottom: 1px solid rgba(0,0,0,0.1)
-    +box-shadow(0 1px 5px $color-shadow)
+    box-shadow: 0 1px 5px $color-shadow
     min-height: 62px
 
     .container
@@ -41,7 +38,7 @@ header
       background-color: $color-title-geek
       border-color: $color-title-geek
       border-bottom: 2px solid $color-title-geek-darker
-      margin-top: 6px
+      margin-top: 15px
       margin-right: 4px
       padding: 0 15px
       color: #fff
@@ -49,21 +46,39 @@ header
     .btn-post-job:hover
       background-color: $color-title-geek-dark
 
+    a#hg-login-btn
+      margin-top: 19px
+
+    .nav>li>button
+      margin-top: 13px
+
     .hg-header-app-nav
       max-width: 58%
       overflow: hidden
+      margin-top: 4px
 
       h1 a, h1 a small
-        display: block
         overflow: hidden
         text-overflow: ellipsis
         white-space: nowrap
 
+    .hasjob-mobile-logo
+      height: 40px
+      width: 40px
+      margin: 5px 5px 0 0
+
+    .hasjob-large-logo
+      display: none
+
+    .board-title
+      position: relative
+      top: -4px
+
     .board-caption
-      position: absolute
-      left: 15px
-      right: 15px
-      top: 28px
+      position: relative
+      left: -50px
+      top: 14px
+      line-height: 1
 
     .board-caption h1 a
       width: 100%
@@ -116,12 +131,12 @@ header
   border-bottom: none
 
 #logo
-  +replace-text-with-dimensions('logo-star.png')
+  +replace-text-with-dimensions('~/static/img/logo-star.png')
 
 .filters-wrapper
   width: 100%
   background: #ebe7e4
-  margin: 20px 0 0
+  margin: 8px 0 0
 
   label
     font-weight: normal
@@ -212,6 +227,10 @@ header
 .job-filter-location-search-clear
   cursor: pointer
 
+@media (min-width: 360px)
+  header #hgnav .board-caption
+    left: -60px
+
 @media (min-width: 480px)
   header #hgnav .hg-header-app-nav
     max-width: 70%
@@ -230,13 +249,34 @@ header
     #hgnav 
       min-height: 0
 
+      .hasjob-large-logo
+        height: 30px
+        width: 30px
+        margin: -4px 5px 0 0
+        display: inline-block
+
+      .hasjob-mobile-logo
+        display: none
+
+      .btn-post-job
+        margin-top: 10px
+
+      a#hg-login-btn
+        margin-top: 10px
+
+      .nav>li>button
+        padding-top: 5px
+        margin-top: 0
+
       .container
         height: auto
 
       .hg-header-app-nav
         max-width: 76%
+        margin-top: 4px
 
-      .board-caption
+      .board-caption,
+      .board-title
         position: static
 
       .hg-header-app-nav h1 a small
@@ -247,7 +287,7 @@ header
 
       .filters-wrapper
         width: 100%
-        padding: 10px 0 5px
+        padding: 2px 0 9px
         min-height: 0
         margin: 0
 
@@ -291,6 +331,7 @@ header
 
   .filters
     padding: 0 10px 0 0
+    margin-bottom: 0
     width: 19.8%
 
   .filters-col1

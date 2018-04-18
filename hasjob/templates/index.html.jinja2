@@ -171,6 +171,14 @@
 
 {%- block footerscripts -%}
   <script type="text/javascript">
+    {%- if show_viewcounts -%}
+      window.Hasjob.Config.MaxCounts = {
+        'max_impressions': {{ max_impressions }},
+        'max_views': {{ max_views }},
+        'max_opens': {{ max_opens }},
+        'max_applied': {{ max_applied }}
+      }
+    {%- endif %}
     $(function(){
       var loadmore = {{loadmore | tojson}};
       var paginated = {{paginated | tojson}};
@@ -188,6 +196,9 @@
       } else {
         window.Hasjob.StickieList.loadmore({enable: false});
       }
+      {%- if not paginated and not request.is_xhr -%}
+        window.Hasjob.StickieList.init();
+      {%- endif %}
     });
   </script>
   {%- if not paginated -%}

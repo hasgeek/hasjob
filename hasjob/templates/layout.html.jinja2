@@ -24,6 +24,17 @@
 {%- endblock %}
 
 {%- block layoutheaders %}
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#816894">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="js">
+  <link rel="icon" sizes="192x192" href="/static/img/hasjob-logo.svg">
+  <link rel="apple-touch-icon" href="/static/img/apple-touch-icon.png">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/static/img/hasjob-logo.svg">
+
+  <link rel="stylesheet" type="text/css" href='{{ asset_path('app-css') }}' />
   <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Fira+Sans:400,400i,700,700i|McLaren&amp;subset=latin-ext">
   {#
   <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=McLaren" />
@@ -62,11 +73,11 @@
   <header>
   {% macro site_title() %}
     <div class="page-header">
-      <h1><a href="{{ url_for('index') }}">
+      <h1><a href="{{ url_for('index') }}"><img src="{{ url_for('static', filename='img/hasjob-logo-small.png', _external=true) }}" class='hasjob-mobile-logo' alt="hasjob"><img src="{{ url_for('static', filename='img/hasjob-logo.svg', _external=true) }}" class='hasjob-large-logo' alt="hasjob">
       {%- if g.board -%}
-        {{ g.board.title }} <small class="board-caption">{%- if g.board.caption -%} {{ g.board.caption }} {%- else -%} Powered by Hasjob {%- endif -%}</small>
+        <span class="board-title">{{ g.board.title }}</span> <small class="board-caption">{%- if g.board.caption -%} {{ g.board.caption }} {%- else -%} Powered by Hasjob {%- endif -%}</small>
       {%- else -%}
-        Hasjob <small>The HasGeek Job Board</small>
+        <span class="board-title">Hasjob</span> <small>The HasGeek Job Board</small>
       {%- endif -%}
       </a></h1>
     </div>
@@ -81,14 +92,14 @@
         <script id='filters-ractive' type='text/ractive'>
           <div class="nav hg-site-nav" id="hg-sitenav">
             <div class="filters-wrapper" id="filter-dropdown">
-              <form id="js-job-filters" role="form">
+              <form id="js-job-filters" role="form" autocomplete="off">
                 {{ #jobsArchive }}
                   <input type="hidden" name="archive" value="{{ jobsArchive }}" />
                 {{/jobsArchive}}
                 {{#if isMobile}}
-                <div class="visible-xs search">
-                  <input id="job-filters-keywords" class="filter-select form-control js-handle-keyword-update search-field js-search-box" type="text" placeholder="&#xF002; Search" name="q" value={{selectedQuery}} on-click="openOnMobile(event)">
-                </div>
+                  <div class="search">
+                    <input id="job-filters-keywords" class="filter-select form-control js-handle-keyword-update search-field js-search-box" type="text" placeholder="&#xF002; Search" name="q" value={{selectedQuery}} on-click="openOnMobile(event)">
+                  </div>
                 {{/if}}
                 <div class="row {{#if isMobile}}filter-dropdown{{/if}} {{#if show}}active{{/if}}">
                   <div class="filters filters-col1 location-filter col-xs-12 col-sm-4 col-md-3">
@@ -152,16 +163,16 @@
                     </div>
                   </div>
                   {{#if !isMobile}}
-                  <div class="filters col-xs-12 col-sm-4 col-md-3 hidden-xs">
-                    <input id="job-filters-keywords" class="filter-select form-control search-field js-handle-keyword-update" type="text" placeholder="&#xF002; Search" name="q" value={{selectedQuery}} />
-                  </div>
+                    <div class="filters col-xs-12 col-sm-4 col-md-3 hidden-xs">
+                      <input id="job-filters-keywords" class="filter-select form-control search-field js-handle-keyword-update" type="text" placeholder="&#xF002; Search" name="q" value={{selectedQuery}} />
+                    </div>
                   {{/if}}
                   {{#if isMobile}}
-                  <div class="col-xs-12">
-                    <button id='js-mobile-filter-done' class="btn btn-default submit-btn" on-click="closeOnMobile(event)">
-                      <span><i class="fa fa-check"></i>Done</span>
-                    </button>
-                  </div>
+                    <div class="col-xs-12">
+                      <button id='js-mobile-filter-done' class="btn btn-default submit-btn" on-click="closeOnMobile(event)">
+                        <span><i class="fa fa-check"></i>Done</span>
+                      </button>
+                    </div>
                   {{/if}}
                 </div>
               </form>
@@ -184,6 +195,9 @@
     {%- endif %}
     {%- if g.user and g.user.flags.has_jobpost_unconfirmed_month %}
       {% set user_links = user_links + [{'title': "Drafts", 'url': url_for('browse_drafts')}] %}
+    {%- endif %}
+    {%- if is_siteadmin %}
+      {% set user_links = user_links + [{'title': "Dashboard", 'url': url_for('AdminDashboard_dashboard')}, {'title': "Campaign", 'url': url_for('AdminCampaignList_list_current')}] %}
     {%- endif %}
     {%- if request.path != url_for('newjob') %}
         {% set site_links = site_links + [{'title': "Post a job", 'url': url_for('newjob')|usessl, 'class': 'btn btn-sm btn-post-job hidden-xs'}] %}
@@ -230,6 +244,32 @@
 
 {% block layoutscripts %}
   {%- if header_campaign %}{{ campaign_script() }}{% endif %}
+  <script src='{{ asset_path('manifest') }}' type="text/javascript"></script>
+  <script src='{{ asset_path('app') }}' type="text/javascript"></script>
+  <script src='{{ asset_path('vendor') }}' type="text/javascript"></script>
+  <script type="text/javascript">
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/service-worker.js')
+        .then(function(registration) {
+          console.log('Service Worker registration successful with scope: ',
+          registration.scope);
+        })
+        .catch(function(err) {
+          console.log('Service Worker registration failed: ', err);
+        });
+      });
+
+      // Setup a listener to track Add to Homescreen events.
+      window.addEventListener('beforeinstallprompt', event => {
+        event.userChoice.then(choice => {
+          if (window.ga) {
+            window.ga('send', 'event', 'Add to Home', choice.outcome);
+          }
+        });
+      });
+    }
+  </script>
   {% block footerscripts %}{% endblock %}
   {{ anon_user_script() }}
 {% endblock %}

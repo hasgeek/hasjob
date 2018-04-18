@@ -1,0 +1,40 @@
+{
+  "name": "hasjob",
+  "version": "0.0.1",
+  "description": "Hasjob is India’s premier job board for tech startups",
+  "main": "app.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "dev": "NODE_ENV=development node_modules/.bin/webpack --progress --profile --colors",
+    "build": "NODE_ENV=production node_modules/.bin/webpack --progress --profile --colors"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hasgeek/hasjob.git"
+  },
+  "author": "HasGeek team",
+  "license": "AGPLv3",
+  "bugs": {
+    "url": "https://github.com/hasgeek/hasjob/issues"
+  },
+  "homepage": "https://github.com/hasgeek/hasjob#readme",
+  "devDependencies": {
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.2",
+    "babel-preset-es2015": "^6.24.1",
+    "clean-webpack-plugin": "^0.1.18",
+    "compass-mixins": "^0.12.10",
+    "copy-webpack-plugin": "^4.5.1",
+    "css-loader": "^0.28.9",
+    "extract-text-webpack-plugin": "^3.0.2",
+    "file-loader": "^1.1.9",
+    "filemanager-webpack-plugin": "^1.0.25",
+    "node-sass": "^4.7.2",
+    "sass-loader": "^6.0.6",
+    "style-loader": "^0.20.2",
+    "webpack": "^3.11.0",
+    "workbox-webpack-plugin": "^2.1.2"
+  }
+}
