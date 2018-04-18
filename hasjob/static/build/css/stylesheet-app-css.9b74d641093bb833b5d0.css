@@ -51,12 +51,9 @@ header {
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap; }
-    header #hgnav .hasjob-mobile-logo {
-      height: 40px;
-      width: 40px;
+    header #hgnav .hasjob-logo {
+      height: 38px;
       margin: 5px 5px 0 0; }
-    header #hgnav .hasjob-large-logo {
-      display: none; }
     header #hgnav .board-title {
       position: relative;
       top: -4px; }
@@ -217,13 +214,10 @@ header {
       display: inline; }
     header #hgnav {
       min-height: 0; }
-      header #hgnav .hasjob-large-logo {
+      header #hgnav .hasjob-logo {
         height: 30px;
-        width: 30px;
         margin: -4px 5px 0 0;
         display: inline-block; }
-      header #hgnav .hasjob-mobile-logo {
-        display: none; }
       header #hgnav .btn-post-job {
         margin-top: 10px; }
       header #hgnav a#hg-login-btn {

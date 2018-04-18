@@ -73,7 +73,7 @@
   <header>
   {% macro site_title() %}
     <div class="page-header">
-      <h1><a href="{{ url_for('index') }}"><img src="{{ url_for('static', filename='img/hasjob-logo-small.png', _external=true) }}" class='hasjob-mobile-logo' alt="hasjob"><img src="{{ url_for('static', filename='img/hasjob-logo.svg', _external=true) }}" class='hasjob-large-logo' alt="hasjob">
+      <h1><a href="{{ url_for('index') }}"><img src="{{ url_for('static', filename='img/hasjob-logo.svg', _external=true) }}" class='hasjob-logo' alt="hasjob">
       {%- if g.board -%}
         <span class="board-title">{{ g.board.title }}</span> <small class="board-caption">{%- if g.board.caption -%} {{ g.board.caption }} {%- else -%} Powered by Hasjob {%- endif -%}</small>
       {%- else -%}
