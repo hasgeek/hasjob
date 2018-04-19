@@ -10,6 +10,7 @@ from html2text import html2text
 from baseframe import _
 from .. import app, mail
 from ..models import (db, JobPostSubscription, Filterset)
+from ..forms import JobPostSubscriptionForm
 
 
 @job('hasjob')
@@ -24,29 +25,37 @@ def send_confirmation_email_for_job_alerts(to_address, token):
 @app.route('/api/1/subscribe_to_job_alerts', subdomain='<subdomain>', methods=['POST'])
 @app.route('/api/1/subscribe_to_job_alerts', methods=['POST'])
 def subscribe_to_job_alerts():
-    if not request.json or not request.json.get('filters'):
-        abort(400)
+    form = JobPostSubscriptionForm()
+    if not form.validate_on_submit():
+        flash(_(u"Oops! Sorry, we need an valid email address to send you alerts."), 'danger')
+        return redirect(url_for('index'), code=302)
 
     if g.user and g.user.email:
         email = g.user.email
         message = _(u"Thank you for signing up to receive job alerts from us! We'll keep you posted.")
         verified_user = True
-    elif request.json.get('email') and is_email(request.json.get('email')):
-        email = request.json.get('email')
+    elif form.email.data:
+        email = form.email.data
         message = _(u"Thank you for signing up to receive job alerts from us! We've sent you a confirmation email, please do confirm it so we can keep you posted.")
         verified_user = False
-    else:
-        flash(_(u"Oops! Sorry, we need an email address to send you alerts."), 'danger')
-        return redirect(url_for('index'), code=302)
 
-    filterset = Filterset.from_filters(g.board, request.json.get('filters'))
+    filters = {
+        'l': request.args.getlist('l'),
+        't': request.args.getlist('t'),
+        'c': request.args.getlist('c'),
+        'currency': request.args.get('currency'),
+        'pay': request.args.get('pay'),
+        'equity': request.args.get('equity'),
+        'q': request.args.get('q')
+    }
+    filterset = Filterset.from_filters(g.board, filters)
     if filterset:
         existing_subscription = JobPostSubscription.get(filterset, email)
         if existing_subscription:
             flash(_(u"You've already subscribed to receive alerts for jobs that match this filtering criteria."), 'danger')
             return redirect(url_for('index'), code=302)
     else:
-        filterset = Filterset(board=g.board, filters=request.json.get('filters'))
+        filterset = Filterset(board=g.board, filters=filters)
         db.session.add(filterset)
 
     subscription = JobPostSubscription(filterset=filterset, email=email, user=g.user, anon_user=g.anon_user)

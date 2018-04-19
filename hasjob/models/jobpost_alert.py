@@ -5,7 +5,7 @@ from coaster.sqlalchemy import StateManager
 from ..utils import random_long_key
 from . import db, BaseMixin, LabeledEnum, User, AnonUser
 
-__all__ = ['JobPostSubscription', 'JobPostAlert', 'jobpost_alert_table']
+__all__ = ['JobPostSubscription', 'JobPostAlert', 'jobpost_alert_table', 'EMAIL_FREQUENCY']
 
 
 class EMAIL_FREQUENCY(LabeledEnum):

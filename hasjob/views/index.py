@@ -9,7 +9,7 @@ from coaster.utils import getbool, parse_isoformat, for_tsquery
 from coaster.views import render_with
 from baseframe import _  # , dogpile
 
-from .. import app, lastuser
+from .. import app, lastuser, forms
 from ..models import (db, JobCategory, JobPost, JobType, newlimit, agelimit, JobLocation, Board, Filterset,
     Domain, Location, Tag, JobPostTag, Campaign, CAMPAIGN_POSITION, CURRENCY, JobApplication, starred_job_table, BoardJobPost)
 from ..views.helper import (getposts, getallposts, gettags, location_geodata, load_viewcounts, session_jobpost_ab,
@@ -447,6 +447,8 @@ def index(basequery=None, filters={}, md5sum=None, tag=None, domain=None, locati
     data['max_views'] = max_counts['max_views']
     data['max_opens'] = max_counts['max_opens']
     data['max_applied'] = max_counts['max_applied']
+    data['max_applied'] = max_counts['max_applied']
+    data['subscription_form'] = forms.JobPostSubscriptionForm()
 
     if filterset:
         data['filterset'] = filterset

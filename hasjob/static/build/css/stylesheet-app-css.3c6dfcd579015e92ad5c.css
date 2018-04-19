@@ -300,6 +300,9 @@ header {
   border-top-color: #df5e0e;
   border-left-color: #df5e0e; }
 
+.form-inline .listwidget ul input {
+  top: 6px; }
+
 .input-group-btn > .btn {
   border-bottom: 1px solid #ccc; }
   .input-group-btn > .btn:hover, .input-group-btn > .btn:focus, .input-group-btn > .btn:active {

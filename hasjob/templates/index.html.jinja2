@@ -1,5 +1,5 @@
 {%- from "domain.html.jinja2" import org_profile, user_profile with context %}
-{% from "baseframe/forms.html.jinja2" import renderfield, widgetscripts %}
+{% from "baseframe/forms.html.jinja2" import renderfield, rendersubmit, widgetscripts %}
 {%- macro pagetitle() %}{% if title %}{% if domain %}Jobs at {% endif%}{{ title }} | {% endif %}{% if g.board %}{{ g.board.title }}{% if g.board.not_root %} ({{ config['SITE_TITLE'] }}){% endif %}{% else %}{{ config['SITE_TITLE'] }}{% endif %}{%- endmacro %}
 {%- if not request.is_xhr -%}
   {% extends "layout.html.jinja2" %}
@@ -70,6 +70,24 @@
         {{ filterset.description | safe }}
       </div>
     {%- endif %}
+    <div class="row">
+      <div class="col-md-10 col-md-offset-1 col-xs-12 col-sm-12">
+        <div class="flash info">
+          <h2>Subscribe to job alerts</h2>
+          <p>We will send you alerts that match the filtering criteria you've selected above.</p>
+          <form id="subscribe-jobalerts" class="form-group form-inline" action="/api/1/subscribe_to_job_alerts" method="post">
+            {{ subscription_form.hidden_tag() }}
+            {{ renderfield(subscription_form.email_frequency, style='horizlist', nolabel=true) }}
+            {%- if g.user and g.user.email %}
+              <input class="jshidden" name="email" type="text" value="{{ g.user.email }}"/>
+            {%- else %}
+              {{ renderfield(subscription_form.email, autofocus=true, css_class="clearfix") }}
+            {%- endif %}
+            {{ rendersubmit([(None, "Subscribe", 'btn-primary')]) }}
+          </form>
+        </div>
+      </div>
+    </div>
     {%- if location and location.use_title and location.description and not paginated %}
       <div class="flash info">
         <h2>{{ location.use_title }}</h2>
@@ -197,7 +215,9 @@
         window.Hasjob.StickieList.loadmore({enable: false});
       }
       {%- if not paginated and not request.is_xhr -%}
-        window.Hasjob.StickieList.init();
+        window.addEventListener('load', function() {
+          window.Hasjob.StickieList.init();
+        });
       {%- endif %}
     });
   </script>
