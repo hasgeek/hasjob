@@ -30,7 +30,7 @@ def upgrade():
         sa.Column('unsubscribed_at', sa.DateTime(), nullable=True),
         sa.Column('email_frequency', sa.Integer(), nullable=True),
         sa.Column('id', sa.Integer(), nullable=False),
-        sa.CheckConstraint(u'CASE WHEN (user_id IS NOT NULL) THEN 1 ELSE 0 END + CASE WHEN (anon_user_id IS NOT NULL) THEN 1 ELSE 0 END <= 1', name='jobpost_subscription_user_id_or_anon_user_id'),
+        sa.CheckConstraint(u'CASE WHEN (jobpost_subscription.user_id IS NOT NULL) THEN 1 ELSE 0 END + CASE WHEN (jobpost_subscription.anon_user_id IS NOT NULL) THEN 1 ELSE 0 END = 1', name='jobpost_subscription_user_id_or_anon_user_id'),
         sa.ForeignKeyConstraint(['anon_user_id'], ['anon_user.id'], ),
         sa.ForeignKeyConstraint(['filterset_id'], ['filterset.id'], ),
         sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),

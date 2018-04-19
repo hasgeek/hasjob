@@ -38,7 +38,7 @@ class JobPostSubscription(BaseMixin, db.Model):
 
     __table_args__ = (db.UniqueConstraint('filterset_id', 'email'),
         db.CheckConstraint(
-            db.case([(user_id != None, 1)], else_=0) + db.case([(anon_user_id != None, 1)], else_=0) <= 1,  # NOQA
+            db.case([(user_id != None, 1)], else_=0) + db.case([(anon_user_id != None, 1)], else_=0) == 1,  # NOQA
             name='jobpost_subscription_user_id_or_anon_user_id'))
 
     @classmethod
