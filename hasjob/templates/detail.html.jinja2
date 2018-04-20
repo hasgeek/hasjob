@@ -102,13 +102,13 @@
             {%- if g.user %}
               {% if g.user.has_starred_post(post) %}
                 <a class="list-group-item pstar" href="#">
-                  <i class="fa fa-fw fa-star" data-id="{{ post.hashid }}"></i>
-                  &nbsp;&nbsp; <span class="pstar-caption">Bookmarked</span>
+                  <i class="fa fa-fw fa-star" data-id="{{ post.hashid }}"></i>&nbsp;&nbsp; 
+                  <span class="pstar-caption">Bookmarked</span>
                 </a>
               {% else %}
                 <a class="list-group-item pstar" href="#">
-                  <i class="fa fa-fw fa-star-o" data-id="{{ post.hashid }}"></i>
-                  &nbsp;&nbsp; <span class="pstar-caption">Bookmark this</span>
+                  <i class="fa fa-fw fa-star-o" data-id="{{ post.hashid }}"></i>&nbsp;&nbsp; 
+                  <span class="pstar-caption">Bookmark this</span>
                 </a>
               {%- endif %}
             {%- endif %}
