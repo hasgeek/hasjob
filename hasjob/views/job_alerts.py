@@ -58,13 +58,9 @@ def subscribe_to_job_alerts():
         filterset = Filterset(board=g.board, filters=filters)
         db.session.add(filterset)
 
-    email_frequency = EMAIL_FREQUENCY.WEEKLY if request.json.get('email_frequency') == EMAIL_FREQUENCY.WEEKLY else EMAIL_FREQUENCY.DAILY
-    subscription = JobPostSubscription(
-        filterset=filterset,
-        email=email,
-        user=g.user,
-        email_frequency=email_frequency,
-        anon_user=g.anon_user)
+    subscription = JobPostSubscription(filterset=filterset, user=g.user, anon_user=g.anon_user)
+    form.populate_obj(subscription)
+
     if verified_user:
         subscription.verify_email()
 
