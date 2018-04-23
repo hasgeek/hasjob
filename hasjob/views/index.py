@@ -845,4 +845,4 @@ def sw():
 @app.route('/manifest.json', methods=['GET'], subdomain='<subdomain>')
 @app.route('/manifest.json', methods=['GET'])
 def manifest():
-    return app.send_static_file('manifest.json')
+    return render_template('manifest.json')
