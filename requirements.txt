@@ -31,3 +31,4 @@ git+https://github.com/hasgeek/flask-lastuser
 git+https://github.com/hasgeek/baseframe
 Flask-Migrate
 progressbar2
+flask_monitoringdashboard

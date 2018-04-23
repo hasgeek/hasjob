@@ -25,3 +25,5 @@ hasjob/static/gen
 *.gz
 *.bz2
 hasjob/assets/node_modules
+admindash-config.cfg
+flask_monitoringdashboard.db
