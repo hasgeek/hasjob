@@ -302,17 +302,14 @@ header {
   border-top-color: #df5e0e;
   border-left-color: #df5e0e; }
 
-#subscribe-jb-form .subscribeform {
-  background-image: url("/static/img/form-border.png");
-  background-position: 100% 0;
-  background-repeat: repeat-x;
-  background-size: 40px 3px; }
-
 #subscribe-jb-form .form-inline .listwidget ul input {
   top: 6px; }
 
 #subscribe-jb-form .form-inline .no-left-padding .controls {
   padding: 0; }
+
+#subscribe-jb-form .form-inline .field-email {
+  width: 100%; }
 
 .input-group-btn > .btn {
   border-bottom: 1px solid #ccc; }

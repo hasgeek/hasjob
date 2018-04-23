@@ -8,19 +8,19 @@ const workboxSW = new self.WorkboxSW({
 
 workboxSW.precache([
   {
-    "url": "/static/build/css/stylesheet-app-css.bf0fec291a76efe07fc5.css",
-    "revision": "3f712cf67b9405201a4075648af9e04c"
+    "url": "/static/build/css/stylesheet-app-css.4ae34a71f5396f93a5f7.css",
+    "revision": "29bf4620ef5a019af29348f4fb6b14d7"
   },
   {
-    "url": "/static/build/js/app.bf0fec291a76efe07fc5.js",
+    "url": "/static/build/js/app.4ae34a71f5396f93a5f7.js",
     "revision": "114869d8de2180fa11f38b774335c944"
   },
   {
-    "url": "/static/build/js/manifest.bf0fec291a76efe07fc5.js",
+    "url": "/static/build/js/manifest.4ae34a71f5396f93a5f7.js",
     "revision": "fe684bf23b9518850a7a3dd90492001d"
   },
   {
-    "url": "/static/build/js/vendor.bf0fec291a76efe07fc5.js",
+    "url": "/static/build/js/vendor.4ae34a71f5396f93a5f7.js",
     "revision": "12a1ca8d2cb2caab35d21438cb595e94"
   }
 ]);
