@@ -41,6 +41,11 @@ window.Hasjob.Subscribe = {
       submitUrl,
       redirectOnSubmit, redirectOnSubmit, {}
     );
+
+    $('#close-subscribe-form').on('click', function(e) {
+      e.preventDefault();
+      $("#subscribe-jb-form").slideUp();
+    });
   },
   init: function() {
     this.handleEmailSubscription();

@@ -53,6 +53,27 @@
     {%- endif %}
   {% endblock %}
 {% endif %}
+{% block subscribeform %}
+  <div class="row" id="subscribe-jb-form">
+    <div class="col-md-10 col-md-offset-1 col-xs-12 col-sm-12">
+      <div class="flash info subscribeform">
+        <h2>Subscribe to job alerts</h2>
+        <p>We will send you alerts that match the filtering criteria you've selected above.</p>
+        <form id="subscribe-jobalerts" class="form-group form-inline" action="/api/1/subscribe_to_job_alerts" method="post">
+          {{ subscription_form.hidden_tag() }}
+          {{ renderfield(subscription_form.email_frequency, style='horizlist', nolabel=true, css_class="no-left-padding") }}
+          {%- if g.user and g.user.email %}
+            <input class="jshidden" name="email" type="text" value="{{ g.user.email }}"/>
+          {%- else %}
+            {{ renderfield(subscription_form.email, autofocus=true, css_class="clearfix") }}
+          {%- endif %}
+          {{ rendersubmit([(None, "Subscribe", 'btn-primary')]) }}
+          <button name="close" class="close" id="close-subscribe-form" aria-label="Close"><i class="fa fa-times" aria-hidden="true"></i></button>
+        </form>
+      </div>
+    </div>
+  </div>
+{% endblock %}
 {% block content %}
   {%- from "macros.html.jinja2" import stickie %}
   {% with gkiosk=g.kiosk, gboard=g.board, guser=g.user, gstarred_ids=g.starred_ids %}
@@ -70,24 +91,6 @@
         {{ filterset.description | safe }}
       </div>
     {%- endif %}
-    <div class="row">
-      <div class="col-md-10 col-md-offset-1 col-xs-12 col-sm-12">
-        <div class="flash info">
-          <h2>Subscribe to job alerts</h2>
-          <p>We will send you alerts that match the filtering criteria you've selected above.</p>
-          <form id="subscribe-jobalerts" class="form-group form-inline" action="/api/1/subscribe_to_job_alerts" method="post">
-            {{ subscription_form.hidden_tag() }}
-            {{ renderfield(subscription_form.email_frequency, style='horizlist', nolabel=true) }}
-            {%- if g.user and g.user.email %}
-              <input class="jshidden" name="email" type="text" value="{{ g.user.email }}"/>
-            {%- else %}
-              {{ renderfield(subscription_form.email, autofocus=true, css_class="clearfix") }}
-            {%- endif %}
-            {{ rendersubmit([(None, "Subscribe", 'btn-primary')]) }}
-          </form>
-        </div>
-      </div>
-    </div>
     {%- if location and location.use_title and location.description and not paginated %}
       <div class="flash info">
         <h2>{{ location.use_title }}</h2>

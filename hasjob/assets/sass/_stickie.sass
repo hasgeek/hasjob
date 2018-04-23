@@ -91,6 +91,9 @@
   .count-items.impressions
     flex: 1.5
 
+  .count-items.applied
+    flex: 1.2
+
   .count-arrow
     float: right
 
@@ -148,6 +151,7 @@
       z-index: 2
 
     .applied.background
+      flex: 1.2
       position: relative
       z-index: 1
 
@@ -409,9 +413,17 @@
       height: 20%
       max-width: 300px
       box-shadow: 0 15px 10px $color-shadow
-      rotate: -3deg
+      -webkit-transform: rotate(-3deg)
+      -moz-transform: rotate(-3deg)
+      -ms-transform: rotate(-3deg)
+      -o-transform: rotate(-3deg)
+      transform: rotate(-3deg)
 
     &:after
       right: 10px
       left: auto
-      rotate: 3deg
+      -webkit-transform: rotate(3deg)
+      -moz-transform: rotate(3deg)
+      -ms-transform: rotate(3deg)
+      -o-transform: rotate(3deg)
+      transform: rotate(3deg)

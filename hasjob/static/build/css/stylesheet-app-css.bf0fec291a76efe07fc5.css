@@ -61,9 +61,11 @@ header {
       position: relative;
       top: -4px; }
     header #hgnav .board-caption {
+      display: block;
+      width: 74%;
       position: relative;
-      left: -50px;
-      top: 14px;
+      left: 44px;
+      top: -14px;
       line-height: 1; }
     header #hgnav .board-caption h1 a {
       width: 100%;
@@ -121,7 +123,7 @@ header {
 .filters-wrapper {
   width: 100%;
   background: #ebe7e4;
-  margin: 8px 0 0; }
+  margin: 0; }
   .filters-wrapper label {
     font-weight: normal;
     font-size: 14px; }
@@ -300,8 +302,17 @@ header {
   border-top-color: #df5e0e;
   border-left-color: #df5e0e; }
 
-.form-inline .listwidget ul input {
+#subscribe-jb-form .subscribeform {
+  background-image: url("/static/img/form-border.png");
+  background-position: 100% 0;
+  background-repeat: repeat-x;
+  background-size: 40px 3px; }
+
+#subscribe-jb-form .form-inline .listwidget ul input {
   top: 6px; }
+
+#subscribe-jb-form .form-inline .no-left-padding .controls {
+  padding: 0; }
 
 .input-group-btn > .btn {
   border-bottom: 1px solid #ccc; }
@@ -499,9 +510,9 @@ tr > div {
   .sheet a.list-group-item {
     color: inherit; }
   .sheet .list-group-item:first-child {
-    border-top-radius: 0; }
+    border-top-right-radius: 0; }
   .sheet .list-group-item:last-child {
-    border-bottom-radius: 0;
+    border-bottom-right-radius: 0;
     margin-bottom: -1px; }
   .sheet .list-group-item.no-bottom-border {
     border-bottom: 0;
@@ -789,6 +800,8 @@ tr > div {
     width: calc(100% - 6px); }
   .stickie .count-items.impressions {
     flex: 1.5; }
+  .stickie .count-items.applied {
+    flex: 1.2; }
   .stickie .count-arrow {
     float: right; }
   .stickie .count-text,
@@ -834,6 +847,7 @@ tr > div {
       position: relative;
       z-index: 2; }
     .stickie .count-background .applied.background {
+      flex: 1.2;
       position: relative;
       z-index: 1; }
     .stickie .count-background .background.arrow:before {
@@ -1072,11 +1086,19 @@ tr > div {
     height: 20%;
     max-width: 300px;
     box-shadow: 0 15px 10px rgba(0, 0, 0, 0.4);
-    rotate: -3deg; }
+    -webkit-transform: rotate(-3deg);
+    -moz-transform: rotate(-3deg);
+    -ms-transform: rotate(-3deg);
+    -o-transform: rotate(-3deg);
+    transform: rotate(-3deg); }
   .stickie:after {
     right: 10px;
     left: auto;
-    rotate: 3deg; } }
+    -webkit-transform: rotate(3deg);
+    -moz-transform: rotate(3deg);
+    -ms-transform: rotate(3deg);
+    -o-transform: rotate(3deg);
+    transform: rotate(3deg); } }
 
 #main-40x {
   text-align: center; }

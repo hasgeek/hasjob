@@ -216,6 +216,7 @@
 {% endblock %}
 
 {% block basecontent -%}
+  {% block subscribeform %}{% endblock %}
   {%- if header_campaign %}<div id="header-campaign"></div>{% endif %}
   <div id='main-content'>
   {% block pagecontent %}{% block content %}{% endblock %}{% endblock %}
