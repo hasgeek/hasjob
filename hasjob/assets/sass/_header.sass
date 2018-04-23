@@ -53,7 +53,7 @@ header
       margin-top: 13px
 
     .hg-header-app-nav
-      max-width: 58%
+      width: 65%
       overflow: hidden
       margin-top: 4px
 
@@ -71,9 +71,11 @@ header
       top: -4px
 
     .board-caption
+      display: block
+      width: calc(100% - 40px)
       position: relative
-      left: -50px
-      top: 14px
+      left: 44px
+      top: -14px
       line-height: 1
 
     .board-caption h1 a
@@ -132,7 +134,7 @@ header
 .filters-wrapper
   width: 100%
   background: #ebe7e4
-  margin: 8px 0 0
+  margin: 0
 
   label
     font-weight: normal
@@ -223,13 +225,9 @@ header
 .job-filter-location-search-clear
   cursor: pointer
 
-@media (min-width: 360px)
-  header #hgnav .board-caption
-    left: -60px
-
 @media (min-width: 480px)
   header #hgnav .hg-header-app-nav
-    max-width: 70%
+    width: 70%
 
 @media (min-width: 768px)
   header
@@ -267,12 +265,14 @@ header
         max-width: 76%
         margin-top: 4px
 
-      .board-caption,
-      .board-title
-        position: static
+        .board-title
+          top: 0
 
-      .hg-header-app-nav h1 a small
-        display: inline
+        .board-caption
+          display: inline-block
+          top: 3px
+          left: 0
+          width: 75%
 
       .hg-site-nav
         margin: 0
@@ -310,7 +310,7 @@ header
     margin-bottom: 70px
 
     #hgnav .hg-header-app-nav
-      max-width: 90%
+      width: 90%
 
   .filters-wrapper
     padding-bottom: 4px

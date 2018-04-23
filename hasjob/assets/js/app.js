@@ -308,7 +308,7 @@ window.Hasjob.Filters = {
     var filters = this;
     var keywordTimeout;
     var isFilterDropdownClosed = true;
-    var filterMenuHeight = $('#hgnav').height() - $('#hg-sitenav').height();
+    var filterMenuHeight = $('#hg-sitenav').height();
     var pageScrollTimerId;
 
     filters.dropdownMenu = new Ractive({
@@ -373,7 +373,7 @@ window.Hasjob.Filters = {
         }
       }
       else {
-        filterMenuHeight = $('#hgnav').height() - $('#hg-sitenav').height();
+        filterMenuHeight = $('#hg-sitenav').height();
         if(!pageScrollTimerId) {
           pageScrollTimerId = pageScrollTimer();
         }
