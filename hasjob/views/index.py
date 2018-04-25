@@ -830,16 +830,19 @@ def search():
     return redirect(url_for('index', **request.args))
 
 
+@app.route('/api/1/template/offline', subdomain='<subdomain>')
 @app.route('/api/1/template/offline')
 def offline():
     return render_template('offline.html.jinja2')
 
 
+@app.route('/service-worker.js', methods=['GET'], subdomain='<subdomain>')
 @app.route('/service-worker.js', methods=['GET'])
 def sw():
     return app.send_static_file('service-worker.js')
 
 
+@app.route('/manifest.json', methods=['GET'], subdomain='<subdomain>')
 @app.route('/manifest.json', methods=['GET'])
 def manifest():
-    return app.send_static_file('manifest.json')
+    return Response(render_template('manifest.json.jinja2'), mimetype='application/json')
