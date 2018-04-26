@@ -386,14 +386,22 @@ def get_post_viewcounts(jobpost_id):
 
 
 def get_max_counts(postids):
+    if not postids:
+        return {
+            'max_impressions': 0,
+            'max_views': 0,
+            'max_opens': 0,
+            'max_applied': 0
+        }
+
     values = g.maxcounts if 'maxcounts' in g else {}
     if not values:
         view_counts = [get_post_viewcounts(postid) for postid in postids]
         values = {
-            'max_impressions': max([vc['impressions'] for vc in view_counts] or [0]),
-            'max_views': max([vc['viewed'] for vc in view_counts] or [0]),
-            'max_opens': max([vc['opened'] for vc in view_counts] or [0]),
-            'max_applied': max([vc['applied'] for vc in view_counts] or [0])
+            'max_impressions': max([vc['impressions'] for vc in view_counts]),
+            'max_views': max([vc['viewed'] for vc in view_counts]),
+            'max_opens': max([vc['opened'] for vc in view_counts]),
+            'max_applied': max([vc['applied'] for vc in view_counts])
         }
         redis_store.hset(MAX_COUNTS_KEY, 'max_impressions', values['max_impressions'])
         redis_store.hset(MAX_COUNTS_KEY, 'max_views', values['max_views'])
