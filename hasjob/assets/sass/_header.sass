@@ -53,7 +53,7 @@ header
       margin-top: 13px
 
     .hg-header-app-nav
-      max-width: 58%
+      width: 65%
       overflow: hidden
       margin-top: 4px
 
@@ -62,13 +62,9 @@ header
         text-overflow: ellipsis
         white-space: nowrap
 
-    .hasjob-mobile-logo
-      height: 40px
-      width: 40px
+    .hasjob-logo
+      height: 38px
       margin: 5px 5px 0 0
-
-    .hasjob-large-logo
-      display: none
 
     .board-title
       position: relative
@@ -76,7 +72,7 @@ header
 
     .board-caption
       display: block
-      width: 74%
+      width: calc(100% - 40px)
       position: relative
       left: 44px
       top: -14px
@@ -229,13 +225,9 @@ header
 .job-filter-location-search-clear
   cursor: pointer
 
-@media (min-width: 360px)
-  header #hgnav .board-caption
-    left: -60px
-
 @media (min-width: 480px)
   header #hgnav .hg-header-app-nav
-    max-width: 70%
+    width: 70%
 
 @media (min-width: 768px)
   header
@@ -251,14 +243,10 @@ header
     #hgnav 
       min-height: 0
 
-      .hasjob-large-logo
+      .hasjob-logo
         height: 30px
-        width: 30px
         margin: -4px 5px 0 0
         display: inline-block
-
-      .hasjob-mobile-logo
-        display: none
 
       .btn-post-job
         margin-top: 10px
@@ -277,12 +265,14 @@ header
         max-width: 76%
         margin-top: 4px
 
-      .board-caption,
-      .board-title
-        position: static
+        .board-title
+          top: 0
 
-      .hg-header-app-nav h1 a small
-        display: inline
+        .board-caption
+          display: inline-block
+          top: 3px
+          left: 0
+          width: 75%
 
       .hg-site-nav
         margin: 0
@@ -320,7 +310,7 @@ header
     margin-bottom: 70px
 
     #hgnav .hg-header-app-nav
-      max-width: 90%
+      width: 90%
 
   .filters-wrapper
     padding-bottom: 4px
@@ -359,8 +349,11 @@ header
     .listwidget ul input
       top: 6px
 
-    .no-left-padding .controls
-      padding: 0
-
     .field-email
       width: 100%
+
+@media (min-width: 768px)
+  #subscribe-jb-form
+    .form-inline
+      .no-left-padding .controls
+        padding: 0

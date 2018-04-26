@@ -44,25 +44,22 @@ header {
     header #hgnav .nav > li > button {
       margin-top: 13px; }
     header #hgnav .hg-header-app-nav {
-      max-width: 58%;
+      width: 65%;
       overflow: hidden;
       margin-top: 4px; }
       header #hgnav .hg-header-app-nav h1 a, header #hgnav .hg-header-app-nav h1 a small {
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap; }
-    header #hgnav .hasjob-mobile-logo {
-      height: 40px;
-      width: 40px;
+    header #hgnav .hasjob-logo {
+      height: 38px;
       margin: 5px 5px 0 0; }
-    header #hgnav .hasjob-large-logo {
-      display: none; }
     header #hgnav .board-title {
       position: relative;
       top: -4px; }
     header #hgnav .board-caption {
       display: block;
-      width: 74%;
+      width: calc(100% - 40px);
       position: relative;
       left: 44px;
       top: -14px;
@@ -201,13 +198,9 @@ header {
 .job-filter-location-search-clear {
   cursor: pointer; }
 
-@media (min-width: 360px) {
-  header #hgnav .board-caption {
-    left: -60px; } }
-
 @media (min-width: 480px) {
   header #hgnav .hg-header-app-nav {
-    max-width: 70%; } }
+    width: 70%; } }
 
 @media (min-width: 768px) {
   header {
@@ -219,13 +212,10 @@ header {
       display: inline; }
     header #hgnav {
       min-height: 0; }
-      header #hgnav .hasjob-large-logo {
+      header #hgnav .hasjob-logo {
         height: 30px;
-        width: 30px;
         margin: -4px 5px 0 0;
         display: inline-block; }
-      header #hgnav .hasjob-mobile-logo {
-        display: none; }
       header #hgnav .btn-post-job {
         margin-top: 10px; }
       header #hgnav a#hg-login-btn {
@@ -238,11 +228,13 @@ header {
       header #hgnav .hg-header-app-nav {
         max-width: 76%;
         margin-top: 4px; }
-      header #hgnav .board-caption,
-      header #hgnav .board-title {
-        position: static; }
-      header #hgnav .hg-header-app-nav h1 a small {
-        display: inline; }
+        header #hgnav .hg-header-app-nav .board-title {
+          top: 0; }
+        header #hgnav .hg-header-app-nav .board-caption {
+          display: inline-block;
+          top: 3px;
+          left: 0;
+          width: 75%; }
       header #hgnav .hg-site-nav {
         margin: 0; }
       header #hgnav .filters-wrapper {
@@ -274,7 +266,7 @@ header {
   header {
     margin-bottom: 70px; }
     header #hgnav .hg-header-app-nav {
-      max-width: 90%; }
+      width: 90%; }
   .filters-wrapper {
     padding-bottom: 4px; }
     .filters-wrapper .submit-btn {
@@ -305,11 +297,12 @@ header {
 #subscribe-jb-form .form-inline .listwidget ul input {
   top: 6px; }
 
-#subscribe-jb-form .form-inline .no-left-padding .controls {
-  padding: 0; }
-
 #subscribe-jb-form .form-inline .field-email {
   width: 100%; }
+
+@media (min-width: 768px) {
+  #subscribe-jb-form .form-inline .no-left-padding .controls {
+    padding: 0; } }
 
 .input-group-btn > .btn {
   border-bottom: 1px solid #ccc; }
@@ -554,7 +547,8 @@ tr > div {
   line-height: 24px;
   color: #666; }
 
-.form-horizontal .help-required {
+.form-horizontal .help-required,
+.form-inline .help-required {
   display: none; }
 
 .sliderholder {
@@ -1140,7 +1134,6 @@ tr > div {
   position: relative; }
 
 #i40x-message {
-  font-family: "McLaren", sans-serif;
   color: #816894;
   max-width: 400px; }
 

@@ -53,6 +53,7 @@
     {%- endif %}
   {% endblock %}
 {% endif %}
+{%- if not paginated %}
 {% block subscribeform %}
   <div class="row" id="subscribe-jb-form">
     <div class="col-md-10 col-md-offset-1 col-xs-12 col-sm-12">
@@ -74,6 +75,7 @@
     </div>
   </div>
 {% endblock %}
+{%- endif %}
 {% block content %}
   {%- from "macros.html.jinja2" import stickie %}
   {% with gkiosk=g.kiosk, gboard=g.board, guser=g.user, gstarred_ids=g.starred_ids %}

@@ -28,19 +28,22 @@ Hasjob.Util = {
 
 window.Hasjob.Subscribe = {
   handleEmailSubscription: function() {
-    var redirectUrl = window.location.href;
-
-    var redirectOnSubmit = function() {
-      window.location.href = redirectUrl;
-    }
-
-    var submitUrl = $('#subscribe-jobalerts').attr('action') + '?' + window.Hasjob.Filters.toParam();
-
-    window.Baseframe.Forms.handleFormSubmit(
-      'subscribe-jobalerts',
-      submitUrl,
-      redirectOnSubmit, redirectOnSubmit, {}
-    );
+    $("#subscribe-jobalerts").on('submit', function(event) {
+      event.preventDefault();
+      var form = this;
+      $.ajax({
+        url: $(this).attr('action') + '?' + window.Hasjob.Filters.toParam(),
+        type: 'POST',
+        data: $(form).serialize(),
+        dataType: 'json',
+        beforeSend: function() {
+          $(form).find('button[type="submit"]').prop('disabled', true);
+          $(form).find(".loading").removeClass('hidden');
+        }
+      }).complete(function (remoteData) {
+        window.location.href = window.location.href;
+      });
+    });
 
     $('#close-subscribe-form').on('click', function(e) {
       e.preventDefault();
@@ -334,7 +337,7 @@ window.Hasjob.Filters = {
     var filters = this;
     var keywordTimeout;
     var isFilterDropdownClosed = true;
-    var filterMenuHeight = $('#hgnav').height() - $('#hg-sitenav').height();
+    var filterMenuHeight = $('#hg-sitenav').height();
     var pageScrollTimerId;
 
     filters.dropdownMenu = new Ractive({
@@ -399,7 +402,7 @@ window.Hasjob.Filters = {
         }
       }
       else {
-        filterMenuHeight = $('#hgnav').height() - $('#hg-sitenav').height();
+        filterMenuHeight = $('#hg-sitenav').height();
         if(!pageScrollTimerId) {
           pageScrollTimerId = pageScrollTimer();
         }

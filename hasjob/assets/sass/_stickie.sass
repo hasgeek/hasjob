@@ -413,17 +413,9 @@
       height: 20%
       max-width: 300px
       box-shadow: 0 15px 10px $color-shadow
-      -webkit-transform: rotate(-3deg)
-      -moz-transform: rotate(-3deg)
-      -ms-transform: rotate(-3deg)
-      -o-transform: rotate(-3deg)
-      transform: rotate(-3deg)
+      @include transform(rotate(-3deg))
 
     &:after
       right: 10px
       left: auto
-      -webkit-transform: rotate(3deg)
-      -moz-transform: rotate(3deg)
-      -ms-transform: rotate(3deg)
-      -o-transform: rotate(3deg)
-      transform: rotate(3deg)
+      @include transform(rotate(3deg))

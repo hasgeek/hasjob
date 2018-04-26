@@ -58,8 +58,7 @@ def subscribe_to_job_alerts():
         filterset = Filterset(board=g.board, filters=filters)
         db.session.add(filterset)
 
-    subscription = JobPostSubscription(filterset=filterset, user=g.user, anon_user=g.anon_user)
-    form.populate_obj(subscription)
+    subscription = JobPostSubscription(filterset=filterset, email=email, user=g.user, anon_user=g.anon_user)
 
     if verified_user:
         subscription.verify_email()
