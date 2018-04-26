@@ -213,6 +213,11 @@ class JobPost(BaseMixin, db.Model):
         """Returns a SQLAlchemy query object for JobPost"""
         return cls.query.filter_by(hashid=hashid).options(load_only('id', 'headline', 'headlineb', 'hashid', 'datetime', '_state', 'email_domain', 'review_comments', 'company_url'))
 
+    @classmethod
+    def fetch_active(cls):
+        """Returns a SQLAlchemy query object for active job posts"""
+        return cls.query.filter(JobPost.state.PUBLIC, (cls.datetime + agelimit) >= datetime.utcnow()).options(db.load_only('id', 'hashid', 'headline'))
+
     def __repr__(self):
         return '<JobPost {hashid} "{headline}">'.format(hashid=self.hashid, headline=self.headline.encode('utf-8'))
 
