@@ -101,7 +101,7 @@ class EventSessionBase(object):
     def save_to_cache(self, key):
         # Use cache instead of redis_store because we're too lazy to handle type marshalling
         # manually. Redis only stores string values in a hash and we have some integer data.
-        cache.set('anon/' + str(key), self.as_dict(), timeout=120)
+        cache.set('anon/' + str(key), self.as_dict(), timeout=300)
 
     def load_from_cache(self, key, eventclass):
         result = cache.get('anon/' + str(key))

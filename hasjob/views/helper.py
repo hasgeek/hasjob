@@ -60,8 +60,8 @@ def load_user_data(user):
     Part 2: Are we in kiosk mode? Is there a preview campaign?
     Part 3: Look up user's IP address location as geonameids for use in targeting.
     """
-    g.anon_user = None
-    g.event_data = {}
+    g.anon_user = None  # Could change below
+    g.event_data = {}  # Views can add data to the current pageview event
     g.esession = None
     g.viewcounts = {}
     g.impressions = session.pop('impressions', {})  # Retrieve from cookie session if present there
@@ -81,8 +81,10 @@ def load_user_data(user):
                 if anon_user:
                     if g.user:
                         anon_user.user = g.user
+                        g.anon_user = None
                         session.pop('au', None)
-                    g.anon_user = anon_user
+                    else:
+                        g.anon_user = anon_user
                 else:
                     # the AnonUser record has been deleted for some reason,
                     # this should not happen.

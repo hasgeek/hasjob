@@ -28,18 +28,18 @@ def anon_session():
     """
     Load anon user:
 
-    1. If client returns valid csrf token, create and set g.anon_user
+    1. If client sends valid csrf token, create and set g.anon_user
     2. if g.anon_user exists, set session['au'] to anon_user.id
     """
     csrf_form = FlaskForm()
-    if csrf_form.validate_on_submit():
-        # This client sent us back valid csrf token
+    if not g.user and not g.anon_user and csrf_form.validate_on_submit():
+        # This client sent us valid csrf token
         g.anon_user = AnonUser()
         db.session.add(g.anon_user)
         g.esession = EventSession.new_from_request(request)
         g.esession.anon_user = g.anon_user
+        g.esession.load_from_cache(session['au'], UserEvent)
         db.session.add(g.esession)
-        # We'll update session['au'] below after database commit
         db.session.commit()
 
     if g.anon_user:
