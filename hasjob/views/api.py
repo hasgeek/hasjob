@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-
+from datetime import datetime
 from flask import jsonify, g, session, request, Response
 from flask_wtf import FlaskForm
 from coaster.views import requestargs, render_with
-
-from ..models import db, Tag, Domain, AnonUser, EventSession, EventSessionBase, UserEvent
+from .helper import rq_save_impressions
+from ..models import db, Tag, Domain, AnonUser, EventSession, UserEvent
 from .. import app, lastuser
 
 
@@ -31,6 +31,8 @@ def anon_session():
     1. If client sends valid csrf token, create and set g.anon_user
     2. if g.anon_user exists, set session['au'] to anon_user.id
     """
+    now = datetime.utcnow()
+
     csrf_form = FlaskForm()
     if not g.user and not g.anon_user and csrf_form.validate_on_submit():
         # This client sent us valid csrf token
@@ -38,13 +40,13 @@ def anon_session():
         db.session.add(g.anon_user)
         g.esession = EventSession.new_from_request(request)
         g.esession.anon_user = g.anon_user
-        g.esession.load_from_cache(session['au'], UserEvent)
+        g.esession.load_from_cache(session['es'], UserEvent)
         db.session.add(g.esession)
         db.session.commit()
 
     if g.anon_user:
         session['au'] = g.anon_user.id
-        g.esession.load_from_cache(session['au'], UserEvent)
-        session.permanent = True
+        if 'impression' in session:
+            rq_save_impressions(g.esession.id, session.pop('impressions').values(), now, delay=False)
 
     return Response({'status': 'ok'})

@@ -100,9 +100,9 @@ def load_user_data(user):
             session['es'] = g.esession.uuid
 
         if g.anon_user and 'impressions' in session:
-            # Run this in the foreground since we need this later in the request for A/B display consistency.
-            # This is most likely being called from the UI-non-blocking sniffle.gif anyway.
-            save_impressions(g.esession.id, session.pop('impressions').values(), now)
+            # Run this in the foreground
+            # since we need this later in the request for A/B display consistency.
+            rq_save_impressions(g.esession.id, session.pop('impressions').values(), now, delay=False)
 
     # We have a user, now look up everything else
     if session.get('kiosk'):
@@ -259,8 +259,7 @@ def record_views_and_events(response):
                     jobpost_id=g.jobpost_viewed[0],
                     bgroup=g.jobpost_viewed[1])
         else:
-            if 'au' in session:
-                g.esession.save_to_cache(session['au'])
+            g.esession.save_to_cache(session['es'])
             if g.impressions:
                 # Save impressions to user's cookie session to write to db later
                 session['impressions'] = g.impressions
@@ -582,6 +581,12 @@ def save_impressions(session_id, impressions, viewed_time):
             except IntegrityError:  # Parallel request, skip this and move on
                 db.session.rollback()
         mark_dirty_impression_counts([postid for pinned, postid, bgroup in impressions])
+
+
+def rq_save_impressions(session_id, impressions, viewed_time, delay=True):
+    func = save_impressions.delay if delay else save_impressions
+    print func, session_id
+    func(session_id, impressions, viewed_time)
 
 
 @job('hasjob')
