@@ -1,6 +1,5 @@
-{% extends "inc/email_layout_lite.html.jinja2" %}
-
-{% block content %}
+{% extends "inc/email_layout.html.jinja2" %}
+{% block innercontent %}
   <p>Hi {% if post.user %}{{ post.user.fullname }}{% else %}{{ post.company_name }}{% endif %},</p>
   <p>This is regarding your job post(s) on Hasjob. A moderator ({{ post.reviewer.fullname }}) reviewed your post(s) and determined that you represent a recruitment agency or other class of employer that is not accepted on Hasjob, and has therefore taken down the following jobs:
   </p>
