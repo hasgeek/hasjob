@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from collections import defaultdict
 from datetime import datetime, timedelta
 from werkzeug import cached_property
 from flask import url_for, escape, Markup
@@ -10,8 +9,9 @@ from sqlalchemy.orm import defer, deferred, load_only
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.dialects.postgresql import TSVECTOR
 import tldextract
+from coaster.utils import classmethodproperty
 from coaster.sqlalchemy import make_timestamp_columns, Query, JsonDict, StateManager
-from baseframe import cache, _, __
+from baseframe import cache, __
 from baseframe.utils import is_public_email_domain
 from .. import redis_store
 from . import newlimit, agelimit, db, POST_STATE, EMPLOYER_RESPONSE, PAY_TYPE, BaseMixin, TimestampMixin
@@ -212,6 +212,11 @@ class JobPost(BaseMixin, db.Model):
     def fetch(cls, hashid):
         """Returns a SQLAlchemy query object for JobPost"""
         return cls.query.filter_by(hashid=hashid).options(load_only('id', 'headline', 'headlineb', 'hashid', 'datetime', '_state', 'email_domain', 'review_comments', 'company_url'))
+
+    @classmethodproperty
+    def query_listed(cls):
+        """Returns a SQLAlchemy query for listed jobposts"""
+        return cls.query.filter(JobPost.state.LISTED).options(db.load_only('id', 'hashid'))
 
     def __repr__(self):
         return '<JobPost {hashid} "{headline}">'.format(hashid=self.hashid, headline=self.headline.encode('utf-8'))

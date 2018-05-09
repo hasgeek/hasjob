@@ -19,9 +19,9 @@ from baseframe.signals import form_validation_error, form_validation_success
 
 from .. import app, redis_store, lastuser
 from ..extapi import location_geodata
-from ..models import (newlimit, db, JobCategory, JobPost, JobType, BoardJobPost, Tag, JobPostTag,
+from ..models import (db, JobCategory, JobPost, JobType, BoardJobPost, Tag, JobPostTag,
     Campaign, CampaignView, CampaignAnonView, EventSessionBase, EventSession, UserEventBase, UserEvent, JobImpression,
-    JobViewSession, AnonUser, campaign_event_session_table, JobLocation, PAY_TYPE, UserJobView, JobApplication)
+    JobViewSession, AnonUser, campaign_event_session_table, JobLocation, PAY_TYPE)
 from ..utils import scrubemail, redactemail, cointoss
 
 
@@ -385,7 +385,15 @@ def get_post_viewcounts(jobpost_id):
     return values
 
 
-def get_max_counts(postids):
+def get_max_counts():
+    values = g.maxcounts if 'maxcounts' in g else {}
+    if not values:
+        values = set_max_counts()
+    return values
+
+
+def set_max_counts():
+    postids = [post.id for post in JobPost.query_listed.all()]
     if not postids:
         return {
             'max_impressions': 0,
@@ -394,20 +402,18 @@ def get_max_counts(postids):
             'max_applied': 0
         }
 
-    values = g.maxcounts if 'maxcounts' in g else {}
-    if not values:
-        view_counts = [get_post_viewcounts(postid) for postid in postids]
-        values = {
-            'max_impressions': max([vc['impressions'] for vc in view_counts]),
-            'max_views': max([vc['viewed'] for vc in view_counts]),
-            'max_opens': max([vc['opened'] for vc in view_counts]),
-            'max_applied': max([vc['applied'] for vc in view_counts])
-        }
-        redis_store.hset(MAX_COUNTS_KEY, 'max_impressions', values['max_impressions'])
-        redis_store.hset(MAX_COUNTS_KEY, 'max_views', values['max_views'])
-        redis_store.hset(MAX_COUNTS_KEY, 'max_opens', values['max_opens'])
-        redis_store.hset(MAX_COUNTS_KEY, 'max_applied', values['max_applied'])
-        redis_store.expire(MAX_COUNTS_KEY, 86400)
+    view_counts = [get_post_viewcounts(postid) for postid in postids]
+    values = {
+        'max_impressions': max([vc['impressions'] for vc in view_counts]),
+        'max_views': max([vc['viewed'] for vc in view_counts]),
+        'max_opens': max([vc['opened'] for vc in view_counts]),
+        'max_applied': max([vc['applied'] for vc in view_counts])
+    }
+    redis_store.hset(MAX_COUNTS_KEY, 'max_impressions', values['max_impressions'])
+    redis_store.hset(MAX_COUNTS_KEY, 'max_views', values['max_views'])
+    redis_store.hset(MAX_COUNTS_KEY, 'max_opens', values['max_opens'])
+    redis_store.hset(MAX_COUNTS_KEY, 'max_applied', values['max_applied'])
+    redis_store.expire(MAX_COUNTS_KEY, 86400)
     return values
 
 
