@@ -19,9 +19,9 @@ from baseframe.signals import form_validation_error, form_validation_success
 
 from .. import app, redis_store, lastuser
 from ..extapi import location_geodata
-from ..models import (newlimit, db, POST_STATE, JobCategory, JobPost, JobType, BoardJobPost, Tag, JobPostTag,
+from ..models import (db, JobCategory, JobPost, JobType, BoardJobPost, Tag, JobPostTag,
     Campaign, CampaignView, CampaignAnonView, EventSessionBase, EventSession, UserEventBase, UserEvent, JobImpression,
-    JobViewSession, AnonUser, campaign_event_session_table, JobLocation, PAY_TYPE, UserJobView)
+    JobViewSession, AnonUser, campaign_event_session_table, JobLocation, PAY_TYPE)
 from ..utils import scrubemail, redactemail, cointoss
 
 
@@ -393,7 +393,7 @@ def get_max_counts():
 
 
 def set_max_counts():
-    postids = [post.id for post in JobPost.fetch_active().all()]
+    postids = [post.id for post in JobPost.query_listed.all()]
     if not postids:
         return {
             'max_impressions': 0,
