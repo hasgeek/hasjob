@@ -686,7 +686,7 @@ def confirm(domain, hashid):
     # We get here if it's (a) POST_STATE.UNPUBLISHED and (b) the user is confirmed authorised
     if 'form.id' in request.form and form.validate_on_submit():
         # User has accepted terms of service. Now send email and/or wait for payment
-        msg = Message(subject="Confirmation of your job post at Hasjob",
+        msg = Message(subject="Confirm your job post: {headline}".format(headline=post.headline),
             recipients=[post.email])
         msg.html = email_transform(render_template('confirm_email.html.jinja2', post=post), base_url=request.url_root)
         msg.body = html2text(msg.html)
