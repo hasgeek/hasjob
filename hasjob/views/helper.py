@@ -74,7 +74,7 @@ def load_user_data(user):
         if 'au' in session and session['au'] is not None:
             if unicode(session['au']).startswith('test'):
                 # old test token that we no longer need
-                session.pop('au', None)
+                session.pop('au')
             else:
                 # fetch anon user and set anon_user.user if g.user exists
                 anon_user = AnonUser.query.get(session['au'])
@@ -88,21 +88,26 @@ def load_user_data(user):
                 else:
                     # the AnonUser record has been deleted for some reason,
                     # this should not happen.
-                    session.pop('au', None)
-        elif not g.user:
-            # g.user, g.anon_user, session['au'], none of them are set
-            g.esession = EventSessionBase.new_from_request(request)
+                    session.pop('au')
 
         # Prepare event session if it's not already present
-        if g.user or g.anon_user and not g.esession:
-            g.esession = EventSession.get_session(uuid=session.get('es'), user=g.user, anon_user=g.anon_user)
-        if g.esession:
-            session['es'] = g.esession.uuid
+        if g.esession is None:
+            if 'es' in session and session['es'] is not None:
+                # it's in cache or the db, load it
+                if g.user or g.anon_user:
+                    g.esession = EventSession.get_session(uuid=session['es'], user=g.user, anon_user=g.anon_user)
+                else:
+                    g.esession = EventSessionBase.new_from_request(request)
+                    g.esession.load_from_cache(session['es'], UserEvent)
+            else:
+                # create a new session
+                g.esession = EventSessionBase.new_from_request(request)
+                session['es'] = g.esession.uuid
 
         if g.anon_user and 'impressions' in session:
             # Run this in the foreground
             # since we need this later in the request for A/B display consistency.
-            rq_save_impressions(g.esession.id, session.pop('impressions').values(), now, delay=False)
+            save_impressions(g.esession.id, session.pop('impressions').values(), now)
 
     # We have a user, now look up everything else
     if session.get('kiosk'):
@@ -581,12 +586,6 @@ def save_impressions(session_id, impressions, viewed_time):
             except IntegrityError:  # Parallel request, skip this and move on
                 db.session.rollback()
         mark_dirty_impression_counts([postid for pinned, postid, bgroup in impressions])
-
-
-def rq_save_impressions(session_id, impressions, viewed_time, delay=True):
-    func = save_impressions.delay if delay else save_impressions
-    print func, session_id
-    func(session_id, impressions, viewed_time)
 
 
 @job('hasjob')

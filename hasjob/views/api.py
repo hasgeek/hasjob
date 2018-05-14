@@ -3,7 +3,7 @@ from datetime import datetime
 from flask import jsonify, g, session, request, Response
 from flask_wtf import FlaskForm
 from coaster.views import requestargs, render_with
-from .helper import rq_save_impressions
+from .helper import save_impressions
 from ..models import db, Tag, Domain, AnonUser, EventSession, UserEvent
 from .. import app, lastuser
 
@@ -46,7 +46,7 @@ def anon_session():
 
     if g.anon_user:
         session['au'] = g.anon_user.id
-        if 'impression' in session:
-            rq_save_impressions(g.esession.id, session.pop('impressions').values(), now, delay=False)
+        if 'impressions' in session:
+            save_impressions(g.esession.id, session.pop('impressions').values(), now)
 
     return Response({'status': 'ok'})
