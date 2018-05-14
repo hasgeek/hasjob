@@ -72,31 +72,37 @@
   {%- endif -%}
 {%- endmacro -%}
 
-{%- macro jobheader(post, kiosk=false, return=false, user=none, headline=none) -%}
+{%- macro jobheader(post, post_url, kiosk=false, return=false, user=none, headline=none) -%}
   {%- if post.company_logo %}
     <div class="row">
       <div class="img-container col-xs-12 col-sm-3 col-sm-push-9 post-company-logo">
-        <img itemprop="image" alt="Logo" src="{{ post.url_for('logo') }}"/>
+        <img alt="Logo" src="{{ post.url_for('logo') }}"/>
       </div>
       <div class="col-xs-12 col-sm-9 col-sm-pull-3">
   {%- endif %}
-    <h1 itemprop="name">{{ headline or post.headline }}</h1>
-    <p class="post-date">Posted <time itemprop="datePublished" content="{{ post.datetime.isoformat() }}Z" datetime="{{ post.datetime.isoformat() }}Z">{{ post.datetime|longdate }}</time>
-      {%- if post.user %} by <span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">{{ post.user.pickername }}</span></span>{% endif %}</p>
+    <h1 itemprop="title">{{ headline or post.headline }}</h1>
+    <p class="post-date">Posted <time itemprop="datePosted" content="{{ post.datetime.isoformat() }}Z" datetime="{{ post.datetime.isoformat() }}Z">{{ post.datetime|longdate }}</time>
+      {%- if post.user %} by <span>{{ post.user.pickername }}</span>{% endif %}</p>
+    <time itemprop="validThrough" datetime="{{ post.expiry_date.isoformat() }}Z"></time>
     <p>
       {% if return %}<a href="{{ post.url_for() }}"><i class="fa fa-angle-left"></i> Post</a> &middot; {% endif -%}
-      <span itemprop="sourceOrganization" itemscope itemtype="http://schema.org/Organization"><a itemprop="url" href="{{ post.url_for('browse') }}"><strong itemprop="name">{{ post.company_name }}</strong></a></span>,
+      <span itemprop="hiringOrganization" itemscope itemtype="http://schema.org/Organization"><a href="{{ post.url_for('browse') }}"><strong itemprop="name">{{ post.company_name }}</strong></a>
+      {%- if post.company_logo %}
+        <img itemprop="logo" src="{{ post.url_for('logo') }}" class="hidden"/>
+      {%- endif %}
+      <span itemprop="url" class="hidden">{{ post_url }}</span>
+      </span>,
       {% if post.relocation_assist -%}
-        <span id="post-location" data-toggle="tooltip" data-placement="bottom" title="Relocation assistance available">{{ joblocation(post) }} <i class="fa fa-truck fa-flip-horizontal"></i></span>
+        <span id="post-location" data-toggle="tooltip" data-placement="bottom" title="Relocation assistance available" itemprop="jobLocation" itemscope itemtype="http://schema.org/Place">{{ joblocation(post) }} <i class="fa fa-truck fa-flip-horizontal"></i></span>
       {%- else -%}
-        <span id="post-location">{{ joblocation(post) }}</span>
+         <span itemprop="jobLocation" itemscope itemtype="http://schema.org/Place"><span itemprop="address" itemscope itemtype="http://schema.org/PostalAddress"><span id="post-location" itemprop="addressRegion">{{ joblocation(post) }}</span></span></span>
       {%- endif %}
       {%- if post.company_url %}
         &middot; {% if kiosk %}{{ post.company_url|cleanurl }}{% else %}<a href="{{ post.company_url }}" target="_blank" rel="nofollow noopener">{{ post.company_url|cleanurl }}</a>{% endif %}
       {%- endif %}
       {% if not post.state.ANNOUNCEMENT %}
-        &middot; <a href="{{url_for('index', t=post.type.name)}}">{{ post.type.title }}</a>
-        &middot; <a href="{{url_for('index', c=post.category.name)}}">{{ post.category.title }}</a>
+        &middot; <a href="{{url_for('index', t=post.type.name)}}">{{ post.type.title }}</a><span itemprop="employmentType" class="hidden">{{ post.type.title }}</span>
+        &middot; <a href="{{url_for('index', c=post.category.name)}}">{{ post.category.title }}</a><span itemprop="occupationalCategory" class="hidden">{{ post.category.title }}</span>
       {%- endif %}
     </p>
   {%- if post.company_logo %}

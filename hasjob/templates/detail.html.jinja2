@@ -85,12 +85,18 @@
   {% endif %}
 {% endblock %}
 {% block content %}
+  <div itemscope itemtype="http://schema.org/JobPosting">
     <div class="section first">
-      {{ jobheader(post, kiosk=g.kiosk, user=g.user, headline=headline) }}
+      {%- if g.board and g.board.not_root %}
+        {%- set post_url=post.url_for(subdomain=none) %}
+      {%- else %}
+        {%- set post_url=request.base_url %}
+      {%- endif %}
+      {{ jobheader(post, post_url=post_url, kiosk=g.kiosk, user=g.user, headline=headline) }}
     </div>
     <div class="section">
       <div class="row">
-        <div itemprop="articleBody" class="col-md-9 jobdescription">
+        <div itemprop="description" class="col-md-9 jobdescription">
           {{ post.description|safe }}
           {% if post.perks %}
             <h2>Job Perks</h2>
@@ -312,6 +318,7 @@
         </p>
       </div>
     {%- endif %}
+  </div>
 {% endblock %}
 {% block postsheet %}
   {%- if can_see_post_stats %}
