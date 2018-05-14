@@ -44,6 +44,32 @@
   <!-- Feed and search -->
   <link rel="search" type="application/opensearchdescription+xml" href="{{ url_for('opensearch') }}" title="{% if g.board %}{{ g.board.title }}{% else %}{{ config['SITE_TITLE'] }}{% endif %}" />
   <link rel="alternate" type="application/atom+xml" title="All jobs | {% if g.board -%} {{ g.board.title }} {%- if g.board.not_root %} ({{ config['SITE_TITLE'] }}) {%- endif -%} {%- else -%} {{ config['SITE_TITLE'] }} {%- endif %}" href="{{ url_for('feed') }}" />
+  <div itemscope itemtype="http://schema.org/WebSite">
+    <link itemprop="url" href="{{ request.base_url }}"/>
+    <form itemprop="potentialAction" itemscope itemtype="http://schema.org/SearchAction">
+    <meta itemprop="target" content="{{ request.base_url }}?q={query}"/>
+      <input itemprop="query-input" type="text" name="query"/>
+      <input type="submit"/>
+    </form>
+  </div>
+  <script type="application/ld+json">
+    {
+      "@context" : "http://schema.org",
+      "@type" : "Organization",
+      "name" : "Hasjob",
+      "url" : "https://{{ config['SERVER_NAME'] }}",
+      "logo" : "{{ url_for('static', filename='img/hasjob-logo.svg', _external=true) }}",
+      "contactPoint" : [{
+        "@type" : "ContactPoint",
+        "telephone" : "+91 7676 33 2020",
+        "contactType" : "customer service"
+      }],
+      "sameAs" : [
+        "https://twitter.com/hasjob",
+        "https://www.facebook.com/hasjob"
+      ]
+    }
+  </script>
   {% block pageheaders %}{% endblock %}
   {%- block twittercards %}
     <meta name="twitter:card" content="summary" />
