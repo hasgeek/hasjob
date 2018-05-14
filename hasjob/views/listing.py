@@ -18,7 +18,7 @@ from coaster.views import load_model
 from hasjob import app, forms, mail, lastuser
 from hasjob.models import (
     agelimit, db, Domain, JobCategory, JobType, JobPost, JobPostReport,
-    POST_STATE, EMPLOYER_RESPONSE, PAY_TYPE, ReportCode, UserJobView,
+    PAY_TYPE, ReportCode, UserJobView,
     AnonJobView, JobApplication, Campaign, CAMPAIGN_POSITION, unique_hash,
     viewstats_by_id_hour, viewstats_by_id_day)
 from hasjob.twitter import tweet
@@ -189,17 +189,17 @@ def job_related_posts(domain, hashid):
     if is_siteadmin or (g.user and g.user.flags.get('is_employer_month')):
         load_viewcounts(related_posts)
     g.impressions = {rp.id: (False, rp.id, bgroup(jobpost_ab, rp)) for rp in related_posts}
-    postids = [related_post.id for related_post in related_posts]
-    max_counts = get_max_counts(postids)
+    max_counts = get_max_counts()
     return jsonify(template=render_template('related_posts.html.jinja2', post=post,
             related_posts=related_posts,
             is_siteadmin=is_siteadmin
-        ),
+            ),
         max_impressions=max_counts['max_impressions'],
         max_views=max_counts['max_views'],
         max_opens=max_counts['max_opens'],
         max_applied=max_counts['max_applied']
-    )
+        )
+
 
 @app.route('/<domain>/<hashid>/star', defaults={'domain': None}, methods=['POST'], subdomain='<subdomain>')
 @app.route('/<domain>/<hashid>/star', defaults={'domain': None}, methods=['POST'])
@@ -736,9 +736,9 @@ def confirm_email(domain, hashid, key):
         else:
             if app.config.get('THROTTLE_LIMIT', 0) > 0:
                 post_count = JobPost.query.filter(
-                        JobPost.email_domain == post.email_domain
+                    JobPost.email_domain == post.email_domain
                     ).filter(~JobPost.state.UNPUBLISHED).filter(
-                        JobPost.datetime > datetime.utcnow() - timedelta(days=1)
+                    JobPost.datetime > datetime.utcnow() - timedelta(days=1)
                     ).count()
                 if post_count > app.config['THROTTLE_LIMIT']:
                     flash(u"We have received too many posts with %s addresses in the last 24 hours. "
@@ -849,7 +849,7 @@ def editjob(hashid, key, domain=None, form=None, validated=False, newpost=None):
                 db.or_(
                     db.and_(JobPost.email_domain == form_email_domain, ~JobPost.state.UNPUBLISHED),
                     JobPost.state.SPAM)
-                ).filter(JobPost.state.LISTED).all():
+                    ).filter(JobPost.state.LISTED).all():
                 if not post or (oldpost.id != post.id):
                     if oldpost.words:
                         s = SequenceMatcher(None, form_words, oldpost.words)
