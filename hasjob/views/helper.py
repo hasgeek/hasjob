@@ -155,8 +155,11 @@ def load_user_data(user):
 
 @app.after_request
 def record_views_and_events(response):
-    if len(db.session.dirty) > 0 or len(db.session.new) > 0:
-        db.session.commit()
+    # if there were any transaction changes in load_user_data(), that'll get commited here.
+    # commit() is supposed to raise an error if no transaction exists,
+    # but the default behavior of the Session is that a transaction is always present;
+    # http://docs.sqlalchemy.org/en/latest/orm/session_basics.html#committing
+    db.session.commit()
 
     # We had a few error reports with g.* variables missing in this function, so now
     # we look again and make note if something is missing. We haven't encountered
