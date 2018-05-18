@@ -8,6 +8,7 @@ from flask_assets import Bundle
 from flask_rq import RQ
 from flask_mail import Mail
 from flask_redis import FlaskRedis
+import flask_monitoringdashboard as dashboard
 from flask_lastuser import Lastuser
 from flask_lastuser.sqlalchemy import UserManager
 from baseframe import baseframe, assets, Version
@@ -59,3 +60,16 @@ mail.init_app(app)
 redis_store.init_app(app)
 lastuser.init_app(app)
 lastuser.init_usermanager(UserManager(db, models.User))
+
+
+def get_user_id():
+    from coaster.auth import current_auth
+    if current_auth.user is not None:
+        return current_auth.user.username
+    else:
+        return 'anon'
+
+
+dashboard.config.get_group_by = get_user_id
+dashboard.config.init_from(file='admindash-config.cfg')
+dashboard.bind(app)
