@@ -44,14 +44,19 @@
   <!-- Feed and search -->
   <link rel="search" type="application/opensearchdescription+xml" href="{{ url_for('opensearch') }}" title="{% if g.board %}{{ g.board.title }}{% else %}{{ config['SITE_TITLE'] }}{% endif %}" />
   <link rel="alternate" type="application/atom+xml" title="All jobs | {% if g.board -%} {{ g.board.title }} {%- if g.board.not_root %} ({{ config['SITE_TITLE'] }}) {%- endif -%} {%- else -%} {{ config['SITE_TITLE'] }} {%- endif %}" href="{{ url_for('feed') }}" />
-  <div itemscope itemtype="http://schema.org/WebSite">
-    <link itemprop="url" href="{{ request.base_url }}"/>
-    <form itemprop="potentialAction" itemscope itemtype="http://schema.org/SearchAction">
-    <meta itemprop="target" content="{{ request.base_url }}?q={query}"/>
-      <input itemprop="query-input" type="text" name="query"/>
-      <input type="submit"/>
-    </form>
-  </div>
+  <script type="application/ld+json">
+    {
+      "@context": "http://schema.org",
+      "@type": "WebSite",
+      "name": "{{ self.title()|e }}",
+      "url": "{{ url_for('index', _external=true) }}",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "{{ url_for('index', _external=true) }}?q={query}",
+        "query-input": "required name=query"
+      }
+    }
+  </script>
   <script type="application/ld+json">
     {
       "@context" : "http://schema.org",
