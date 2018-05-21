@@ -62,7 +62,7 @@
       {%- if token['geoname'] -%}
         <a itemscope itemtype="http://schema.org/Place" href="{{ url_for('browse_by_location', location=token['geoname'].get('name') or token['geoname'].get('geonameid')) }}"><span itemprop="name">{{ token['token'] }}</span></a>
       {%- elif token['remote'] -%}
-        <a href="{{ url_for('browse_by_anywhere') }}">{{ token['token'] }}</a>
+        <a itemscope itemtype="http://schema.org/Place" href="{{ url_for('browse_by_anywhere') }}"><span itemprop="name">{{ token['token'] }}</span></a>
       {%- else -%}
         {{ token['token'] }}
       {%- endif %}
@@ -93,7 +93,7 @@
       <span itemprop="url" class="hidden">{{ post_url }}</span>
       </span>,
       {% if post.relocation_assist -%}
-        <span id="post-location" data-toggle="tooltip" data-placement="bottom" title="Relocation assistance available" itemprop="jobLocation" itemscope itemtype="http://schema.org/Place">{{ joblocation(post) }} <i class="fa fa-truck fa-flip-horizontal"></i></span>
+        <span id="post-location" data-toggle="tooltip" data-placement="bottom" title="Relocation assistance available" itemprop="jobLocation" itemscope itemtype="http://schema.org/Place"><span itemprop="address" itemscope itemtype="http://schema.org/PostalAddress"><span itemprop="addressRegion">{{ joblocation(post) }} <i class="fa fa-truck fa-flip-horizontal"></i></span></span></span>
       {%- else -%}
          <span itemprop="jobLocation" itemscope itemtype="http://schema.org/Place"><span itemprop="address" itemscope itemtype="http://schema.org/PostalAddress"><span id="post-location" itemprop="addressRegion">{{ joblocation(post) }}</span></span></span>
       {%- endif %}
