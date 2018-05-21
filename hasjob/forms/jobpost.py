@@ -206,7 +206,7 @@ class ListingForm(forms.Form):
 
         caps = len(CAPS_RE.findall(field.data))
         small = len(SMALL_RE.findall(field.data))
-        if small == 0 or caps / float(small) > 0.5:
+        if small == 0 or caps / float(small) > 1.0:
             raise forms.ValidationError(_("Surely this location isn't named in uppercase?"))
 
     def validate_job_pay_cash_min(form, field):
@@ -270,7 +270,7 @@ class ListingForm(forms.Form):
         success = super(ListingForm, self).validate(send_signals=False)
         if success:
             if (not self.job_type_ob.nopay_allowed) and self.job_pay_type.data == PAY_TYPE.NOCASH:
-                self.job_pay_type.errors.append(_(u"“%%s” cannot pay nothing") % self.job_type_ob.title)
+                self.job_pay_type.errors.append(_(u"“%s” cannot pay nothing") % self.job_type_ob.title)
                 success = False
 
             domain_name = get_email_domain(self.poster_email.data)
