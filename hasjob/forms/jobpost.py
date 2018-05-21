@@ -270,7 +270,7 @@ class ListingForm(forms.Form):
         success = super(ListingForm, self).validate(send_signals=False)
         if success:
             if (not self.job_type_ob.nopay_allowed) and self.job_pay_type.data == PAY_TYPE.NOCASH:
-                self.job_pay_type.errors.append(_(u"“%s” cannot pay nothing") % self.job_type_ob.title)
+                self.job_pay_type.errors.append(_(u"“%%s” cannot pay nothing") % self.job_type_ob.title)
                 success = False
 
             domain_name = get_email_domain(self.poster_email.data)
