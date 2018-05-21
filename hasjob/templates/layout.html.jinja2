@@ -47,32 +47,31 @@
   <script type="application/ld+json">
     {
       "@context": "http://schema.org",
-      "@type": "WebSite",
-      "name": "{{ self.title()|e }}",
-      "url": "{{ url_for('index', _external=true) }}",
-      "potentialAction": {
-        "@type": "SearchAction",
-        "target": "{{ url_for('index', _external=true) }}?q={query}",
-        "query-input": "required name=query"
-      }
-    }
-  </script>
-  <script type="application/ld+json">
-    {
-      "@context" : "http://schema.org",
-      "@type" : "Organization",
-      "name" : "Hasjob",
-      "url" : "https://{{ config['SERVER_NAME'] }}",
-      "logo" : "{{ url_for('static', filename='img/hasjob-logo.svg', _external=true) }}",
-      "contactPoint" : [{
-        "@type" : "ContactPoint",
-        "telephone" : "+91 7676 33 2020",
-        "contactType" : "customer service"
-      }],
-      "sameAs" : [
-        "https://twitter.com/hasjob",
-        "https://www.facebook.com/hasjob"
-      ]
+      "@graph": [{
+        "@type": "WebSite",
+        "name": "{{ self.title()|e }}",
+        "url": "{{ url_for('index', _external=true) }}",
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": "{{ url_for('index', _external=true) }}?q={query}",
+          "query-input": "required name=query"
+        }
+      },
+      {
+        "@type" : "Organization",
+        "name" : "Hasjob",
+        "url" : "https://{{ config['SERVER_NAME'] }}",
+        "logo" : "{{ url_for('static', filename='img/hasjob-logo.svg', _external=true) }}",
+        "contactPoint" : [{
+          "@type" : "ContactPoint",
+          "telephone" : "+91 7676 33 2020",
+          "contactType" : "customer service"
+        }],
+        "sameAs" : [
+          "https://twitter.com/hasjob",
+          "https://www.facebook.com/hasjob"
+        ]
+      }]
     }
   </script>
   {% block pageheaders %}{% endblock %}
