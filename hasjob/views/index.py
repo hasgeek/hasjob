@@ -77,7 +77,7 @@ def json_index(data):
                 rgroup['posts'].append(stickie_dict(
                     post=post, url=post.url_for(b=is_bgroup), pinned=pinned, is_bgroup=is_bgroup,
                     show_viewcounts=is_siteadmin or current_auth.is_authenticated and g.user.flags.get('is_employer_month'),
-                    show_pay=is_siteadmin, starred=g.user and post.id in g.starred_ids
+                    show_pay=is_siteadmin, starred=current_auth.is_authenticated and post.id in g.starred_ids
                     ))
             result['grouped'].append(rgroup)
     if pinsandposts:
@@ -85,7 +85,7 @@ def json_index(data):
             result['posts'].append(stickie_dict(
                 post=post, url=post.url_for(b=is_bgroup), pinned=pinned, is_bgroup=is_bgroup,
                 show_viewcounts=is_siteadmin or current_auth.is_authenticated and g.user.flags.get('is_employer_month'),
-                show_pay=is_siteadmin, starred=g.user and post.id in g.starred_ids
+                show_pay=is_siteadmin, starred=current_auth.is_authenticated and post.id in g.starred_ids
                 ))
 
     return jsonify(result)
