@@ -5,6 +5,7 @@ from collections import OrderedDict
 
 from sqlalchemy.exc import ProgrammingError
 from flask import abort, redirect, render_template, request, Response, url_for, g, flash, jsonify, Markup
+from coaster.auth import current_auth
 from coaster.utils import getbool, parse_isoformat, for_tsquery
 from coaster.views import render_with
 from baseframe import _  # , dogpile
@@ -75,7 +76,7 @@ def json_index(data):
             for pinned, post, is_bgroup in group:
                 rgroup['posts'].append(stickie_dict(
                     post=post, url=post.url_for(b=is_bgroup), pinned=pinned, is_bgroup=is_bgroup,
-                    show_viewcounts=is_siteadmin or g.user and g.user.flags.get('is_employer_month'),
+                    show_viewcounts=is_siteadmin or current_auth.is_authenticated and g.user.flags.get('is_employer_month'),
                     show_pay=is_siteadmin, starred=g.user and post.id in g.starred_ids
                     ))
             result['grouped'].append(rgroup)
@@ -83,7 +84,7 @@ def json_index(data):
         for pinned, post, is_bgroup in pinsandposts:
             result['posts'].append(stickie_dict(
                 post=post, url=post.url_for(b=is_bgroup), pinned=pinned, is_bgroup=is_bgroup,
-                show_viewcounts=is_siteadmin or g.user and g.user.flags.get('is_employer_month'),
+                show_viewcounts=is_siteadmin or current_auth.is_authenticated and g.user.flags.get('is_employer_month'),
                 show_pay=is_siteadmin, starred=g.user and post.id in g.starred_ids
                 ))
 
@@ -361,7 +362,7 @@ def index(basequery=None, filters={}, md5sum=None, tag=None, domain=None, locati
         is_index = True
     else:
         is_index = False
-    if basequery is None and not (g.user or g.kiosk or (board and not board.require_login)):
+    if basequery is None and not (current_auth.is_authenticated or g.kiosk or (board and not board.require_login)):
         showall = False
         batched = False
 
@@ -392,12 +393,12 @@ def index(basequery=None, filters={}, md5sum=None, tag=None, domain=None, locati
         # For logging
         g.event_data['filters'] = data['data_filters']
 
-    if g.user:
+    if current_auth.is_authenticated:
         g.starred_ids = set(g.user.starred_job_ids(agelimit if not ageless else None))
     else:
         g.starred_ids = set()
 
-    if is_siteadmin or (g.user and g.user.flags.get('is_employer_month')):
+    if is_siteadmin or (current_auth.is_authenticated and g.user.flags.get('is_employer_month')):
         load_viewcounts(data['posts'])
         show_viewcounts = True
     else:
@@ -423,7 +424,7 @@ def index(basequery=None, filters={}, md5sum=None, tag=None, domain=None, locati
     # Test values for development:
     # if not g.user_geonameids:
     #     g.user_geonameids = [1277333, 1277331, 1269750]
-    if not location and 'l' not in request.args and g.user_geonameids and (g.user or g.anon_user) and (
+    if not location and 'l' not in request.args and g.user_geonameids and (current_auth.is_authenticated or g.anon_user) and (
             (not g.board.auto_locations) if g.board else True):
         # No location filters? Prompt the user
         ldata = location_geodata(g.user_geonameids)

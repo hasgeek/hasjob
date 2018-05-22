@@ -101,7 +101,7 @@
         {%- else %}
           {#{{ renderfield(form.poster_name) }}-#} {# Deprecated 2013-11-20 -#}
           {{ renderfield(form.poster_email) }}
-          {%- if g.user %}
+          {%- if current_auth.is_authenticated %}
             <p>
               Only you, <strong>{{ g.user.fullname }}</strong>, will be able to respond to candidates.
               To allow others to respond, add them as a collaborator.

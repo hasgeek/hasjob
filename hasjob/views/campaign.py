@@ -332,7 +332,7 @@ AdminCampaignActionView.init_app(app)
 def campaign_action_redirect(campaign, action):
     if action.type != CAMPAIGN_ACTION.LINK:
         abort(405)
-    if g.user:
+    if current_auth.is_authenticated:
         cua = CampaignUserAction.get(action, g.user)
         if not cua:
             cua = CampaignUserAction(action=action, user=g.user)
@@ -362,7 +362,7 @@ def campaign_action(campaign):
 
     dismissed = 'dismiss' in request.form
     if dismissed:
-        if g.user:
+        if current_auth.is_authenticated:
             view = campaign.view_for(g.user)
             if view:
                 view.dismissed = True
@@ -382,7 +382,7 @@ def campaign_action(campaign):
             campaign=campaign,
             message=Markup("<p>Unknown action selected</p>"))
     cua = None
-    if g.user:
+    if current_auth.is_authenticated:
         cua = CampaignUserAction.get(action, g.user)
         if not cua:
             cua = CampaignUserAction(action=action, user=g.user)
