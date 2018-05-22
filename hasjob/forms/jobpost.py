@@ -206,7 +206,7 @@ class ListingForm(forms.Form):
 
         caps = len(CAPS_RE.findall(field.data))
         small = len(SMALL_RE.findall(field.data))
-        if small == 0 or caps / float(small) > 0.5:
+        if small == 0 or caps / float(small) > 1.0:
             raise forms.ValidationError(_("Surely this location isn't named in uppercase?"))
 
     def validate_job_pay_cash_min(form, field):
