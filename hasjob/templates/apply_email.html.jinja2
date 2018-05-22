@@ -11,19 +11,19 @@
       <link itemprop="url" href="{{ url_for('index', subdomain=none, _external=true) }}"/>
     </div>
   </div>
-  <p>
-    <em>{{ job_application.fullname }}</strong> has applied for <a href="{{ post.url_for(_external=true) }}" target="_blank">{{ post.headline }}</a>:</em>
+  <p>{{ job_application.fullname }}</strong> has applied for <a href="{{ post.url_for(_external=true) }}" target="_blank">{{ post.headline }}</a>:
   </p>
-  <hr>
   {{ job_application.message|safe }}
-  <hr>
-  <p>
+  <p class="center">
     <a class="btn" href="{{ archive_url }}" target="_blank">Respond to candidate</a>
-    or
-    <a class="btn" href="{{ archive_url }}" target="_blank">Report this</a>
   </p>
   <p>
     <strong>Note:</strong> The message above is exactly as the candidate submitted it. We do not accept attachments or reformat documents.
     <img src="{{ job_application.url_for('track-open', _external=true) }}" alt="" width="1" height="1">
+  </p>
+  <hr class="separator">
+  <p>
+    {% if g.board and g.board.not_root %}[{{ g.board.title }}][board] is powered by Hasjob. {% endif -%}
+    <a href="{{ url_for('index', subdomain=none, _external=true) }}">Hasjob</a> is a service of <a href="https://hasgeek.com/">HasGeek</a>. Write to us at <a href="mailto:{{ config['SUPPORT_EMAIL'] }}">{{ config['SUPPORT_EMAIL'] }}</a> if you have suggestions or questions on this service.
   </p>
 {% endblock %}

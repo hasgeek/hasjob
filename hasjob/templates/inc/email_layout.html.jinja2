@@ -2,11 +2,12 @@
 <style type="text/css">
   .btn, a.btn:link, a.btn:visited {
     background-color: #816894;
-    border-color: #816894;
-    border-bottom: 2px solid #554562;
-    padding: 0 15px;
+    padding: 6px 12px;
     color: #fff;
-    margin: 0 15px;
+    text-decoration: none;
+    display: inline-block;
+    border-radius: 3px;
+    border-bottom: 3px solid #554562;
   }
   .board-title {
     display: inline-block;
@@ -23,12 +24,8 @@
     margin-top: 16px;
   }
   .wrapper {
-    background-color: #e9e6e3;
-    background-image: url("{{ url_for('static', filename='img/envelope.png', _external=true) }}"), url("{{ url_for('static', filename='img/envelope.png', _external=true) }}");
-    padding: 15px 15px 120px;
-    background-position: 0 25%, 0 75%;
-    background-repeat: repeat-x;
-    background-size: 82px;
+    background-color: #F9FAFC;
+    padding: 30px;
   }
   .title {
     display: block;
@@ -44,11 +41,14 @@
   .box {
     min-width: 250px;
     width: 70%;
-    padding: 30px 30px 0;
+    padding: 30px;
     border-radius: 2px;
     background-color: #ffffff;
-    border: solid 1px rgba(118, 118, 118, 0.27);
     margin: auto;
+  }
+  .separator {
+    border-bottom: 2px solid #dddddd;
+    border-top: 0
   }
   .address,
   .copyright {
@@ -56,12 +56,22 @@
     text-align: center;
     color: #666666;
   }
+  .center {
+    text-align: center;
+  }
 </style>
 {%- endblock %}
 
 {% block content %}
   <div class="wrapper">
-    <a href="hasjob.co" class="title"><img src="https://hasjob.co/static/img/hasjob-logo.svg" class='hasjob-logo' alt="hasjob"><span class="board-title">Hasjob</span> <small class="board-caption">The HasGeek Job Board</small>
+    <a href="{{ url_for('index', _external=true) }}" class="title">
+      <!-- <img src="{{ url_for('static', filename='img/android-chrome-192x192.png', _external=true) }}" class='hasjob-logo' alt="hasjob"> -->
+      <img src="https://images.hasgeek.com/embed/file/c45fde85b3344aa3a4fc6431f317e2e2" class='hasjob-logo' alt="hasjob">
+      {%- if g.board -%}
+        <span class="board-title">{{ g.board.title }}</span> <small class="board-caption">{%- if g.board.caption -%} {{ g.board.caption }} {%- else -%} Powered by Hasjob {%- endif -%}</small>
+      {%- else -%}
+        <span class="board-title">Hasjob</span> <small>The HasGeek Job Board</small>
+      {%- endif -%}
     </a>
     <div class="box">
       {% block innercontent %}
