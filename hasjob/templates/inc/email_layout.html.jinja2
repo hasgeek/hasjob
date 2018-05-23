@@ -1,35 +1,65 @@
 {% block stylesheet -%}
 <style type="text/css">
+  @import url(https://fonts.googleapis.com/css?family=Fira+Sans:300,400,600); 
+  p {
+    font-size: 16px;
+    line-height: 24px;
+    font-family: 'Fira Sans', Arial, sans-serif;
+  }
   .btn, a.btn:link, a.btn:visited {
-    background-color: #816894;
-    padding: 6px 12px;
-    color: #fff;
+    background: #7a6891;
+    padding: 12px 12px 10px 12px;
+    font-family: 'Fira Sans', Arial, sans-serif;
+    font-size: 16px;
+    text-align: center;
     text-decoration: none;
     display: inline-block;
     border-radius: 3px;
     border-bottom: 3px solid #554562;
+    color: #fff;
+    margin-bottom: 15px;
   }
-  .board-title {
-    display: inline-block;
-    color: #df5e0e;
-    font-size: 25px;
-    vertical-align: top;
-    margin-top: 9px;
+  @media screen and (max-width:599px) {
+    .board-title {
+      display: inline-block;
+      vertical-align: top;
+      color: #df5e0e;
+      font-size: 20px;
+      font-weight: bold;
+    }
+    .board-caption {
+      display: block;
+      color: #816894;
+      font-size: 12px;
+      margin-top: -16px;
+      margin-left: 43px;
+      font-weight: bold;
+    }
   }
-  .board-caption {
-    display: inline-block;
-    color: #816894;
-    font-size: 17px;
-    vertical-align: top;
-    margin-top: 16px;
+  @media (min-width:600px) {
+    .board-title {
+      display: inline-block;
+      vertical-align: top;
+      color: #df5e0e;
+      font-size: 25px;
+      margin-top: 9px;
+      font-weight: bold;
+    }
+    .board-caption {
+      display: inline-block;
+      vertical-align: top;
+      color: #816894;
+      font-size: 17px;
+      margin-top: 16px;
+      font-weight: bold;
+    }
   }
   .wrapper {
     background-color: #F9FAFC;
-    padding: 30px;
+    padding: 15px;
   }
   .title {
     display: block;
-    min-width: 250px;
     width: 70%;
     margin: 0 auto 12px;
     text-decoration: none;
@@ -39,9 +69,8 @@
     margin: 0 5px 0 0;
   }
   .box {
-    min-width: 250px;
     width: 70%;
-    padding: 30px;
+    padding: 15px;
     border-radius: 2px;
     background-color: #ffffff;
     margin: auto;
@@ -53,26 +82,16 @@
   .address,
   .copyright {
     font-size: 12px;
+    line-height: 21px;
     text-align: center;
     color: #666666;
   }
   .center {
     text-align: center;
   }
-  /* New styles */
-  .btn-a{
-    background: #7a6891;
-    padding: 12px 12px 10px 12px;
-    font-family: 'Fira Sans', Arial, sans-serif;
-    font-size: 16px;
-    text-align: center;
-    text-decoration: none;
-    display: block;
-    border-radius: 3px;
-    border-bottom: 3px solid #554562;
-  }
-  .font-white{
-    color: #ffffff;
+  table {
+    width: 100%;
+    border: 0;
   }
 </style>
 {%- endblock %}
@@ -83,9 +102,9 @@
       <!-- <img src="{{ url_for('static', filename='img/android-chrome-192x192.png', _external=true) }}" class='hasjob-logo' alt="hasjob"> -->
       <img src="https://images.hasgeek.com/embed/file/c45fde85b3344aa3a4fc6431f317e2e2" class='hasjob-logo' alt="hasjob">
       {%- if g.board -%}
-        <span class="board-title">{{ g.board.title }}</span> <small class="board-caption">{%- if g.board.caption -%} {{ g.board.caption }} {%- else -%} Powered by Hasjob {%- endif -%}</small>
+        <span class="board-title">{{ g.board.title }}</span> <span class="board-caption">{%- if g.board.caption -%} {{ g.board.caption }} {%- else -%} Powered by Hasjob {%- endif -%}</span>
       {%- else -%}
-        <span class="board-title">Hasjob</span> <small>The HasGeek Job Board</small>
+        <span class="board-title">Hasjob</span> <span class="board-caption">The HasGeek Job Board</span>
       {%- endif -%}
     </a>
     <div class="box">
