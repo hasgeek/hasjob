@@ -1,6 +1,5 @@
-{% extends "inc/email_layout_lite.html.jinja2" %}
-
-{% block content %}
+{% extends "inc/email_layout.html.jinja2" %}
+{% block innercontent %}
   <p>Hi {{ post.company_name }},</p>
   <p>This is regarding your job post on Hasjob titled "<strong>{{ post.headline }}</strong>". Unfortunately, your post is not in compliance with our <a href="{{ url_for('terms_of_service', _external=true) }}">Terms of Service</a> and has been taken down. Your post was reviewed by {{ post.reviewer.fullname }}, who left the following comment:</p>
   <p>"<strong>{{ post.review_comments }}</strong>"</p>

@@ -1,5 +1,5 @@
-{% extends "inc/email_layout_lite.html.jinja2" %}
-{% block content %}
+{% extends "inc/email_layout.html.jinja2" %}
+{% block innercontent %}
   <div itemscope itemtype="http://schema.org/EmailMessage">
     <div itemprop="action" itemscope itemtype="http://schema.org/ConfirmAction">
       <meta itemprop="name" content="Confirm job post"/>
@@ -16,14 +16,30 @@
   <p>Hello,</p>
   <p>This is a confirmation email for the job you listed at {% if g.board -%} {{ g.board.title }} {%- else -%} {{ config['SITE_TITLE'] }} {%- endif %}:
   <strong>{{ post.headline|e }}</strong></p>
-  <p><a class="btn" href="{{ post.url_for('confirm-link', _external=true) }}">Confirm job post</a></p>
+<!--   <p><a class="btn" href="{{ post.url_for('confirm-link', _external=true) }}">Confirm job post</a></p> -->
+  <table>
+    <tbody>
+      <tr>
+        <td>
+          <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="left">
+            <tbody>
+              <tr>
+                <td>
+                  <a href="{{ post.url_for('confirm-link', _external=true) }}" class="btn-a"target="_blank">
+                    <span class="font-white">Confirm job post</span>
+                  </a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </td>
+      </tr>
+    </tbody>
+  </table>
   <p>Save this email for the next 30 days while the post is active. Use these
   links if you need to edit the post, or if the position has been filled
-  and you wish to withdraw it:</p>
-  <ul>
-    <li><a href="{{ post.url_for('edit', _external=true) }}">Edit job post</a></li>
-    <li><a href="{{ post.url_for('withdraw', _external=true) }}">Withdraw job post</a></li>
-  </ul>
+  and you wish to withdraw it: <a href="{{ post.url_for('edit', _external=true) }}">Edit job post</a> | <a href="{{ post.url_for('withdraw', _external=true) }}">Withdraw job post</a></p>
+  <hr class="separator">
   <p>
     {% if g.board and g.board.not_root %}[{{ g.board.title }}][board] is powered by Hasjob. {% endif -%}
     <a href="{{ url_for('index', subdomain=none, _external=true) }}">Hasjob</a> is a service of <a href="https://hasgeek.com/">HasGeek</a>. Write to us at <a href="mailto:{{ config['SUPPORT_EMAIL'] }}">{{ config['SUPPORT_EMAIL'] }}</a> if you have suggestions or questions on this service.
