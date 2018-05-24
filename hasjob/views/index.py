@@ -574,7 +574,7 @@ def filterset_view(name):
         abort(404)
     return index(filters=filterset.to_filters(translate_geonameids=True),
         query_string=filterset.keywords,
-        filterset=filterset)
+        filterset=filterset, title=filterset.title)
 
 
 @app.route('/opensearch.xml', subdomain='<subdomain>')
