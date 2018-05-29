@@ -99,8 +99,7 @@
 {% block content %}
   <div class="wrapper">
     <a href="{{ url_for('index', _external=true) }}" class="title">
-      <!-- <img src="{{ url_for('static', filename='img/android-chrome-192x192.png', _external=true) }}" class='hasjob-logo' alt="hasjob"> -->
-      <img src="https://images.hasgeek.com/embed/file/c45fde85b3344aa3a4fc6431f317e2e2" class='hasjob-logo' alt="hasjob">
+      <img src="{{ url_for('static', filename='img/android-chrome-192x192.png', _external=true) }}" class='hasjob-logo' alt="hasjob">
       {%- if g.board -%}
         <span class="board-title">{{ g.board.title }}</span> <span class="board-caption">{%- if g.board.caption -%} {{ g.board.caption }} {%- else -%} Powered by Hasjob {%- endif -%}</span>
       {%- else -%}
