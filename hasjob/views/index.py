@@ -574,7 +574,7 @@ def filterset_view(name):
     if not filterset:
         abort(404)
     return index(filters=filterset.to_filters(translate_geonameids=True),
-        query_string=filterset.keywords, filterset=filterset, title=filterset.title, pagetype='filtered View')
+        query_string=filterset.keywords, filterset=filterset, title=filterset.title, pagetype='filtered jobpost view')
 
 
 @app.route('/opensearch.xml', subdomain='<subdomain>')
