@@ -342,7 +342,7 @@ def fetch_cached_jobposts(request_args, request_values, filters, is_index, board
 @app.route('/', methods=['GET', 'POST'], subdomain='<subdomain>')
 @app.route('/', methods=['GET', 'POST'])
 @render_with({'text/html': 'index.html.jinja2', 'application/json': json_index}, json=False)
-def index(basequery=None, filters={}, md5sum=None, tag=None, domain=None, location=None, title=None, showall=True, statusfilter=None, batched=True, ageless=False, cached=False, query_string=None, filterset=None, template_vars={}):
+def index(basequery=None, filters={}, md5sum=None, tag=None, domain=None, location=None, title=None, showall=True, statusfilter=None, batched=True, ageless=False, cached=False, query_string=None, filterset=None, template_vars={}, pagetag='home'):
     now = datetime.utcnow()
     is_siteadmin = lastuser.has_permission('siteadmin')
     board = g.board
@@ -444,6 +444,7 @@ def index(basequery=None, filters={}, md5sum=None, tag=None, domain=None, locati
     data['max_views'] = max_counts['max_views']
     data['max_opens'] = max_counts['max_opens']
     data['max_applied'] = max_counts['max_applied']
+    data['pagetag'] = pagetag
 
     if filterset:
         data['filterset'] = filterset
@@ -456,7 +457,7 @@ def index(basequery=None, filters={}, md5sum=None, tag=None, domain=None, locati
 @lastuser.requires_login
 def browse_drafts():
     basequery = JobPost.query.filter_by(user=g.user)
-    return index(basequery=basequery, ageless=True, statusfilter=JobPost.state.UNPUBLISHED, cached=False)
+    return index(basequery=basequery, ageless=True, statusfilter=JobPost.state.UNPUBLISHED, cached=False, pagetag='drafts')
 
 
 @app.route('/my', methods=['GET', 'POST'], subdomain='<subdomain>')
@@ -464,7 +465,7 @@ def browse_drafts():
 @lastuser.requires_login
 def my_posts():
     basequery = JobPost.query.filter_by(user=g.user)
-    return index(basequery=basequery, ageless=True, statusfilter=JobPost.state.MY, cached=False)
+    return index(basequery=basequery, ageless=True, statusfilter=JobPost.state.MY, cached=False, pagetag='my')
 
 
 @app.route('/bookmarks', subdomain='<subdomain>')
@@ -472,7 +473,7 @@ def my_posts():
 @lastuser.requires_login
 def bookmarks():
     basequery = JobPost.query.join(starred_job_table).filter(starred_job_table.c.user_id == g.user.id)
-    return index(basequery=basequery, ageless=True, statusfilter=JobPost.state.ARCHIVED, cached=False)
+    return index(basequery=basequery, ageless=True, statusfilter=JobPost.state.ARCHIVED, cached=False, pagetag='bookmarks')
 
 
 @app.route('/applied', subdomain='<subdomain>')
@@ -480,7 +481,7 @@ def bookmarks():
 @lastuser.requires_login
 def applied():
     basequery = JobPost.query.join(JobApplication).filter(JobApplication.user == g.user)
-    return index(basequery=basequery, ageless=True, statusfilter=JobPost.state.ARCHIVED, cached=False)
+    return index(basequery=basequery, ageless=True, statusfilter=JobPost.state.ARCHIVED, cached=False, pagetag='applied')
 
 
 @app.route('/type/<name>', methods=['GET', 'POST'], subdomain='<subdomain>')
@@ -502,7 +503,7 @@ def browse_by_domain(domain):
     if obj.is_banned:
         abort(410)
     basequery = JobPost.query.join(Domain).filter(JobPost.domain == obj)
-    return index(basequery=basequery, domain=obj, title=obj.use_title, showall=True)
+    return index(basequery=basequery, domain=obj, title=obj.use_title, showall=True, pagetag='company page')
 
 
 @app.route('/at/<domain>', methods=['GET', 'POST'], subdomain='<subdomain>')
@@ -527,7 +528,7 @@ def browse_by_email(md5sum):
     basequery = JobPost.query.filter_by(md5sum=md5sum)
     jobpost = basequery.first_or_404()
     jobpost_user = jobpost.user
-    return index(basequery=basequery, md5sum=md5sum, showall=True, cached=False, template_vars={'jobpost_user': jobpost_user})
+    return index(basequery=basequery, md5sum=md5sum, showall=True, cached=False, template_vars={'jobpost_user': jobpost_user}, pagetag='job posts by user')
 
 
 @app.route('/in/<location>', methods=['GET', 'POST'], subdomain='<subdomain>')
@@ -540,7 +541,7 @@ def browse_by_location(location):
         return redirect(url_for('index', l=location), code=302)
     if location != geodata['name']:
         return redirect(url_for('browse_by_location', location=geodata['name']))
-    return index(location=geodata, title=geodata['use_title'])
+    return index(location=geodata, title=geodata['use_title'], pagetag='filtered view')
 
 
 @app.route('/in/anywhere', methods=['GET', 'POST'], subdomain='<subdomain>')
@@ -555,13 +556,13 @@ def browse_by_tag(tag):
     tag = Tag.query.filter_by(name=tag).first_or_404()
     basequery = JobPost.query.filter(db.and_(
         JobPostTag.jobpost_id == JobPost.id, JobPostTag.tag == tag))
-    return index(basequery=basequery, tag=tag, title=tag.title)
+    return index(basequery=basequery, tag=tag, title=tag.title, pagetag='filtered tag view')
 
 
 @app.route('/tag', subdomain='<subdomain>')
 @app.route('/tag')
 def browse_tags():
-    return render_template('tags.html.jinja2', tags=gettags(alltime=getbool(request.args.get('all'))))
+    return render_template('tags.html.jinja2', tags=gettags(alltime=getbool(request.args.get('all'))), pagetag='tags')
 
 
 # POST is required for pagination
@@ -573,7 +574,7 @@ def filterset_view(name):
     if not filterset:
         abort(404)
     return index(filters=filterset.to_filters(translate_geonameids=True),
-        query_string=filterset.keywords, filterset=filterset, title=filterset.title)
+        query_string=filterset.keywords, filterset=filterset, title=filterset.title, pagetag='filtered view')
 
 
 @app.route('/opensearch.xml', subdomain='<subdomain>')
@@ -747,7 +748,7 @@ def archive():
     return render_template(tmpl, order_by=request.args.get('order_by'),
         posts=posts, start=start, limit=limit, count=count,
         # Pass some functions
-        min=min, max=max, sortarchive=sortarchive)
+        min=min, max=max, sortarchive=sortarchive, pagetag='archive')
 
 
 @app.route('/sitemap.xml', defaults={'key': None}, subdomain='<subdomain>')

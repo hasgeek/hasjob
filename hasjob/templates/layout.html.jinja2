@@ -275,6 +275,10 @@
 </p>
 {% endblock %}
 
+{% block customgasettings -%}
+  ga('set', 'dimension1', '{{ pagetag }}');
+{%- endblock %}
+
 {% block layoutscripts %}
   {%- if header_campaign %}{{ campaign_script() }}{% endif %}
   <script src='{{ asset_path('manifest') }}' type="text/javascript"></script>
