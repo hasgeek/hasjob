@@ -157,7 +157,7 @@ def jobdetail(domain, hashid):
         jobview=jobview, report=report, moderateform=moderateform,
         domain_mismatch=domain_mismatch, header_campaign=header_campaign,
         is_bgroup=is_bgroup, is_siteadmin=is_siteadmin,
-        can_see_post_stats=has_post_stats(post), post_viewcounts=post_viewcounts)
+        can_see_post_stats=has_post_stats(post), post_viewcounts=post_viewcounts, pagetype='job post')
 
 
 @app.route('/<domain>/<hashid>/viewstats', subdomain='<subdomain>')
@@ -1020,7 +1020,7 @@ def newjob():
     # 1. GET request, page loaded for the first time
     # 2. POST request from this page, with errors
     return render_template('postjob.html.jinja2', form=form, no_removelogo=True, archived_post=archived_post,
-        header_campaign=header_campaign)
+        header_campaign=header_campaign, pagetype='form')
 
 
 @app.route('/<domain>/<hashid>/close', methods=('GET', 'POST'), defaults={'key': None}, subdomain='<subdomain>')

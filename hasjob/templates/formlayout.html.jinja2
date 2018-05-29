@@ -24,6 +24,10 @@
   </div>
 {% endblock %}
 
+{% block customgasettings -%}
+  ga('set', 'dimension1', 'form');
+{%- endblock %}
+
 {% block layoutscripts %}
   {{ super() }}
   {% assets "js_tinymce" %}<script src="{{ ASSET_URL }}" type="text/javascript"></script>{% endassets %}
