@@ -1,2 +1,2 @@
-coverage
+coverage==4.5.1
 nose-progressive
