@@ -1,0 +1,125 @@
+{% block stylesheet -%}
+<style type="text/css">
+  .btn, a.btn:link, a.btn:visited {
+    padding: 6px 12px;
+    color: #fff;
+    background-color: #428bca;
+    border: 1px solid #357ebd;
+    border-radius: 4px;
+    text-decoration: none;
+    margin-bottom: 5px;
+  }
+  .stickie-wrapper {
+    padding-left: 0;
+    list-style: none;
+    margin-bottom: 0;
+    margin-top: 12px;
+    margin-left: -15px;
+    margin-right: -15px;
+  }
+  .stickie-block {
+    display: inline-block;
+    margin-bottom: 30px;
+    width: 200px;
+    padding: 0 15px;
+  }
+  .stickie {
+    background: #ffffa2;
+    position: relative;
+    vertical-align: top;
+    display: block;
+    overflow: visible;
+    padding: 24px 0 24px;
+    border-radius: 2px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3), 0 0 10px rgba(0, 0, 0, 0.1) inset;
+    position: relative;
+    text-decoration-line: none;
+  }
+  .stickie .top-right {
+    font-size: 75%;
+    display: block;
+    position: absolute;
+    color: #816894;
+    overflow: hidden;
+    white-space: nowrap;
+    height: 1.5em;
+    top: .1em;
+    right: .5em; 
+  }
+  .stickie .top-left {
+    font-size: 75%;
+    display: block;
+    position: absolute;
+    color: #816894;
+    overflow: hidden;
+    white-space: nowrap;
+    height: 1.5em;
+    top: .1em;
+    left: .5em;
+    width: 75%; 
+  }
+  .stickie .headline {
+    display: block;
+    padding: 0 18px;
+    position: static;
+    color: #333;
+  }
+  .stickie .bottom-right {
+    font-size: 75%;
+    display: block;
+    position: absolute;
+    color: #816894;
+    overflow: hidden;
+    white-space: nowrap;
+    height: 1.5em; 
+    bottom: .1em;
+    right: .5em;
+    width: 75%;
+    text-align: right;
+  }
+  .stickie .bottom-left {
+    font-size: 75%;
+    display: block;
+    position: absolute;
+    color: #816894;
+    overflow: hidden;
+    white-space: nowrap;
+    height: 1.5em;
+    color: #df5e0e;
+    bottom: .1em;
+    left: .5em;
+  }
+
+</style>
+{%- endblock %}
+
+{% block content %}
+  <div itemscope itemtype="http://schema.org/EmailMessage">
+  	<div itemprop="action" itemscope itemtype="http://schema.org/ViewAction">
+  		<meta itemprop="name" content="Job Posts"/>
+  	</div>
+  	<meta itemprop="description" content="Job alerts"/>
+  	<div itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+  	    <meta itemprop="name" content="Hasjob"/>
+  	    <link itemprop="url" href="{{ url_for('index', subdomain=none, _external=true) }}"/>
+  	</div>
+  </div>
+  <ul class="stickie-wrapper">
+    {%- for post in posts %}
+    <li class="stickie-block">
+      <a class="stickie" href={{ post.url_for(_external=True) }}>
+        <span class="top-left">{{ post.location }}</span>
+        <span class="top-right">{{ post.datetime|shortdate }}</span>
+        <span class="headline">{{ post.headline }}</span>
+        {%- if post.state.NEW %}
+          <span class="bottom-left">New!</span>
+        {%- endif %}
+        <span class="bottom-right">{{ post.company_name }}</span>
+      </a>
+    </li>
+    {%- endfor %}
+  </ul>
+  <p><a class="btn" href="{{ url_for('index', subdomain=none, _external=true) }}">View more job post</a></p>
+  <hr>
+  <p><a href="{{ url_for('index', subdomain=none, _external=true) }}">Hasjob</a> is a service of <a href="https://hasgeek.com/">HasGeek</a>. Write to us at <a href="mailto:{{ config['SUPPORT_EMAIL'] }}">{{ config['SUPPORT_EMAIL'] }}</a> if you have suggestions or questions on this service.</p>
+{% endblock %}

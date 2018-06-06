@@ -8,6 +8,7 @@ import hasjob.forms as forms
 import hasjob.views as views
 from hasjob.models import db
 from hasjob import app
+from hasjob.jobs.job_alerts import send_email_alerts
 from datetime import datetime, timedelta
 
 periodic = Manager(usage="Periodic tasks from cron (with recommended intervals)")
@@ -34,6 +35,12 @@ def impressions():
 def campaignviews():
     """Reset campaign views after more than 30 days since last view (1d)"""
     views.helper.reset_campaign_views()
+
+
+@periodic.command
+def send_jobpost_alerts():
+    """Run email alerts every 10 minutes"""
+    send_email_alerts.delay()
 
 
 if __name__ == '__main__':

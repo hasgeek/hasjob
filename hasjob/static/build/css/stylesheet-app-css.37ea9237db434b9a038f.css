@@ -294,6 +294,16 @@ header {
   border-top-color: #df5e0e;
   border-left-color: #df5e0e; }
 
+#subscribe-jb-form .form-inline .listwidget ul input {
+  top: 6px; }
+
+#subscribe-jb-form .form-inline .field-email {
+  width: 100%; }
+
+@media (min-width: 768px) {
+  #subscribe-jb-form .form-inline .no-left-padding .controls {
+    padding: 0; } }
+
 .input-group-btn > .btn {
   border-bottom: 1px solid #ccc; }
   .input-group-btn > .btn:hover, .input-group-btn > .btn:focus, .input-group-btn > .btn:active {
@@ -537,7 +547,8 @@ tr > div {
   line-height: 24px;
   color: #666; }
 
-.form-horizontal .help-required {
+.form-horizontal .help-required,
+.form-inline .help-required {
   display: none; }
 
 .sliderholder {

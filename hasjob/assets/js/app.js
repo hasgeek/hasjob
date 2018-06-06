@@ -26,6 +26,35 @@ Hasjob.Util = {
   }
 };
 
+window.Hasjob.Subscribe = {
+  handleEmailSubscription: function() {
+    $("#subscribe-jobalerts").on('submit', function(event) {
+      event.preventDefault();
+      var form = this;
+      $.ajax({
+        url: $(this).attr('action') + '?' + window.Hasjob.Filters.toParam(),
+        type: 'POST',
+        data: $(form).serialize(),
+        dataType: 'json',
+        beforeSend: function() {
+          $(form).find('button[type="submit"]').prop('disabled', true);
+          $(form).find(".loading").removeClass('hidden');
+        }
+      }).complete(function (remoteData) {
+        window.location.href = window.location.href;
+      });
+    });
+
+    $('#close-subscribe-form').on('click', function(e) {
+      e.preventDefault();
+      $("#subscribe-jb-form").slideUp();
+    });
+  },
+  init: function() {
+    this.handleEmailSubscription();
+  }
+}
+
 window.Hasjob.JobPost = {
   handleStarClick: function () {
     $('#main-content').on('click', '.pstar', function(e) {
@@ -694,6 +723,7 @@ $(function() {
   });
 
   window.Hasjob.Filters.init();
+  window.Hasjob.Subscribe.init();
   window.Hasjob.JobPost.handleStarClick();
   window.Hasjob.JobPost.handleGroupClick();
   window.Hasjob.StickieList.initFunnelViz();

@@ -33,3 +33,4 @@ from .campaign import *  # NOQA
 from .domain import *    # NOQA
 from .jobpost import *   # NOQA
 from .filterset import *   # NOQA
+from .subscribe import *   # NOQA

@@ -9,8 +9,8 @@ from coaster.utils import getbool, parse_isoformat, for_tsquery
 from coaster.views import render_with
 from baseframe import _  # , dogpile
 
-from .. import app, lastuser
-from ..models import (db, JobCategory, JobPost, JobType, POST_STATE, newlimit, agelimit, JobLocation, Board, Filterset,
+from .. import app, lastuser, forms
+from ..models import (db, JobCategory, JobPost, JobType, newlimit, agelimit, JobLocation, Board, Filterset,
     Domain, Location, Tag, JobPostTag, Campaign, CAMPAIGN_POSITION, CURRENCY, JobApplication, starred_job_table, BoardJobPost)
 from ..views.helper import (getposts, getallposts, gettags, location_geodata, load_viewcounts, session_jobpost_ab,
     bgroup, make_pay_graph, index_is_paginated, get_post_viewcounts, get_max_counts)
@@ -90,38 +90,38 @@ def json_index(data):
     return jsonify(result)
 
 
-def fetch_jobposts(request_args, request_values, filters, is_index, board, board_jobs, gkiosk, basequery, md5sum, domain, location, title, showall, statusfilter, batched, ageless, template_vars, search_query=None, query_string=None):
+def fetch_jobposts(request_args={}, request_values={}, filters={}, is_index=False, board=None, board_jobs={}, gkiosk=False, basequery=None, md5sum=None, domain=None, location=None, title=None, showall=True, statusfilter=None, batched=True, ageless=False, template_vars={}, search_query=None, query_string=None, posts_only=False):
     if basequery is None:
         basequery = JobPost.query
 
     # Apply request.args filters
     data_filters = {}
-    f_types = filters.get('t') or request_args.getlist('t')
+    f_types = filters.get('t') or (request_args and request_args.getlist('t'))
     while '' in f_types:
         f_types.remove('')
     if f_types:
         data_filters['types'] = f_types
         basequery = basequery.join(JobType).filter(JobType.name.in_(f_types))
-    f_categories = filters.get('c') or request_args.getlist('c')
+    f_categories = filters.get('c') or (request_args and request_args.getlist('c'))
     while '' in f_categories:
         f_categories.remove('')
     if f_categories:
         data_filters['categories'] = f_categories
         basequery = basequery.join(JobCategory).filter(JobCategory.name.in_(f_categories))
 
-    f_domains = filters.get('d') or request_args.getlist('d')
+    f_domains = filters.get('d') or (request_args and request_args.getlist('d'))
     while '' in f_domains:
         f_domains.remove('')
     if f_domains:
         basequery = basequery.join(Domain).filter(Domain.name.in_(f_domains))
 
-    f_tags = filters.get('k') or request_args.getlist('k')
+    f_tags = filters.get('k') or (request_args and request_args.getlist('k'))
     while '' in f_tags:
         f_tags.remove('')
     if f_tags:
         basequery = basequery.join(JobPostTag).join(Tag).filter(Tag.name.in_(f_tags))
 
-    data_filters['location_names'] = r_locations = filters.get('l') or request_args.getlist('l')
+    data_filters['location_names'] = r_locations = filters.get('l') or (request_args and request_args.getlist('l'))
     if location:
         r_locations.append(location['geonameid'])
     f_locations = []
@@ -201,11 +201,13 @@ def fetch_jobposts(request_args, request_values, filters, is_index, board, board
         data_filters['query_string'] = query_string
         basequery = basequery.filter(JobPost.search_vector.match(search_query, postgresql_regconfig='english'))
 
+    posts = getposts(basequery, pinned=True, showall=showall, statusfilter=statusfilter, ageless=ageless).all()
+    if posts_only:
+        return posts
+
     if data_filters:
         showall = True
         batched = True
-
-    posts = getposts(basequery, pinned=True, showall=showall, statusfilter=statusfilter, ageless=ageless).all()
 
     if posts:
         employer_name = posts[0].company_name
@@ -267,7 +269,7 @@ def fetch_jobposts(request_args, request_values, filters, is_index, board, board
         batchsize = 32
 
         # list of posts that were pinned at the time of first load
-        pinned_hashids = request_args.getlist('ph')
+        pinned_hashids = (request_args and request_args.getlist('ph'))
         # Depending on the display mechanism (grouped or ungrouped), extract the batch
         if grouped:
             if not startdate:
@@ -444,6 +446,8 @@ def index(basequery=None, filters={}, md5sum=None, tag=None, domain=None, locati
     data['max_views'] = max_counts['max_views']
     data['max_opens'] = max_counts['max_opens']
     data['max_applied'] = max_counts['max_applied']
+    data['max_applied'] = max_counts['max_applied']
+    data['subscription_form'] = forms.JobPostSubscriptionForm()
 
     if filterset:
         data['filterset'] = filterset
@@ -770,7 +774,7 @@ def sitemap(key):
                       '  </url>\n'
 
     # Add filtered views to sitemap
-    for item in Filterset.query.all():
+    for item in Filterset.query.filter(Filterset.sitemap == True):
         sitemapxml += '  <url>\n'\
                     '    <loc>%s</loc>\n' % item.url_for(_external=True) + \
                     '    <lastmod>%s</lastmod>\n' % (item.updated_at.isoformat() + 'Z') + \
