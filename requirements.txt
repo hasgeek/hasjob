@@ -1,4 +1,4 @@
-Flask
+Flask==1.0.2
 Flask-SQLAlchemy
 Flask-WTF
 Flask-Mail
