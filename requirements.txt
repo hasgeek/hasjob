@@ -16,7 +16,7 @@ tweepy==3.6.0
 bitlyapi==0.1.1
 coverage==4.5.1
 bleach==2.1.3
-ordereddict
+ordereddict==1.1
 jsmin
 psycopg2
 dnspython
