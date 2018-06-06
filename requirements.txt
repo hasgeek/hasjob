@@ -14,7 +14,7 @@ pytz==2018.4
 markdown==2.6.11
 tweepy==3.6.0
 bitlyapi==0.1.1
-coverage
+coverage==4.5.1
 bleach
 ordereddict
 jsmin
