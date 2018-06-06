@@ -5,7 +5,7 @@ Flask-Mail==0.9.1
 Flask-Assets==0.12
 Flask-Uploads==0.2.1
 Flask-RQ==0.2
-Flask-Testing
+Flask-Testing==0.7.1
 Flask-Redis>=0.3.0
 Pillow
 sqlalchemy_utils
