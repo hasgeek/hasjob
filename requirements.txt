@@ -13,7 +13,7 @@ SQLAlchemy>=1.0.0
 pytz==2018.4
 markdown==2.6.11
 tweepy==3.6.0
-bitlyapi
+bitlyapi==0.1.1
 coverage
 bleach
 ordereddict
