@@ -2,7 +2,7 @@ Flask==1.0.2
 Flask-SQLAlchemy==2.3.2
 Flask-WTF==0.14.2
 Flask-Mail==0.9.1
-Flask-Assets
+Flask-Assets==0.12
 Flask-Uploads
 Flask-RQ
 Flask-Testing
