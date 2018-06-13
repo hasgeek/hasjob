@@ -99,143 +99,153 @@
   {%- endif %}
 {%- endblock %}
 
+{% block bodytag %}
+  {%- if embed %}
+    <body class="hasjob-iframe">
+  {% else %}
+    {{ super() }}
+  {% endif %}
+{% endblock %}
+
 {% block headerbox %}
-  <header>
-  {% macro site_title() %}
-    <div class="page-header">
-      <h1><a href="{{ url_for('index') }}"><img src="{{ url_for('static', filename='img/hasjob-logo.svg', _external=true) }}" class='hasjob-logo' alt="hasjob">
-      {%- if g.board -%}
-        <span class="board-title">{{ g.board.title }}</span> <small class="board-caption">{%- if g.board.caption -%} {{ g.board.caption }} {%- else -%} Powered by Hasjob {%- endif -%}</small>
-      {%- else -%}
-        <span class="board-title">Hasjob</span> <small>The HasGeek Job Board</small>
-      {%- endif -%}
-      </a></h1>
-    </div>
-  {% endmacro %}
-  {% macro site_nav_button() %}
-    <div class="hidden">
-    </div>
-  {% endmacro %}
-  {% macro site_nav() %}
-    <div id='job-filters-ractive-template'>
-      {%- raw %}
-        <script id='filters-ractive' type='text/ractive'>
-          <div class="nav hg-site-nav" id="hg-sitenav">
-            <div class="filters-wrapper" id="filter-dropdown">
-              <form id="js-job-filters" role="form" autocomplete="off">
-                {{ #jobsArchive }}
-                  <input type="hidden" name="archive" value="{{ jobsArchive }}" />
-                {{/jobsArchive}}
-                {{#if isMobile}}
-                  <div class="search">
-                    <input id="job-filters-keywords" class="filter-select form-control js-handle-keyword-update search-field js-search-box" type="text" placeholder="&#xF002; Search" name="q" value={{selectedQuery}} on-click="openOnMobile(event)">
-                  </div>
-                {{/if}}
-                <div class="row {{#if isMobile}}filter-dropdown{{/if}} {{#if show}}active{{/if}}">
-                  <div class="filters filters-col1 location-filter col-xs-12 col-sm-4 col-md-3">
-                    <select id="job-filters-location" name="l" multiple="multiple" class="job-filters-select2 notselect hidden js-handle-filter-change js-refresh-location" placeholder="Location">
-                      {{ #jobLocations }}
-                        <option value={{ name }} {{#if selectedLocations.indexOf(name) > -1}}selected="selected"{{/if}} {{#if !available}}class="unavailable"{{/if}}>{{title}}</option>
-                      {{/jobLocations}}
-                    </select>
-                  </div>
-                  <div class="filters col-xs-12 col-sm-4 col-md-3">
-                    <select id="job-filters-type" name="t" multiple="multiple" class="job-filters-select2 notselect hidden js-handle-filter-change js-refresh-type" placeholder="Job Type">
-                      {{ #jobTypes }}
-                          <option value={{ name }} {{#if selectedTypes.indexOf(name) > -1}}selected="selected"{{/if}} {{#if !available}}class="unavailable"{{/if}}>{{title}}</option>
-                      {{/jobTypes}}
-                    </select>
-                  </div>
-                  <div class="filters col-xs-12 col-sm-4 col-md-3 category-filter">
-                    <select id="job-filters-category" name="c" multiple="multiple" class="job-filters-select2 notselect hidden js-handle-filter-change js-refresh-category" placeholder="Job Category">
-                      {{ #jobCategories}}
-                        <option value={{ name }} {{#if selectedCategories.indexOf(name) > -1}}selected="selected"{{/if}} {{#if !available}}class="unavailable"{{/if}}>{{title}}</option>
-                      {{/jobCategories}}
-                    </select>
-                  </div>
-                  <div class="filters dropdown col-xs-12 col-sm-4 col-md-3">
-                    <div id="job-filters-pay" class="btn-group btn-block no-jshidden">
-                      <button type="button" class="btn btn-default dropdown-toggle btn-block" data-toggle="dropdown" aria-expanded="false">
-                        <span id="job-filters-pay-text" class="pay-field"></span>
-                        <span class="caret"></span>
-                      </button>
-                      <ul class="dropdown-menu pay-filter-dropdown" role="menu" aria-labelledby="job-filters-pay">
-                        <li class="clearfix">
-                          <div class="currency-checkbox">
-                            <input type="radio" class='js-handle-filter-change' id="job-filters-na" name="currency" value="NA" />
-                            <label for="job-filters-na">Any</label>
-                          </div>
-                          <div class="currency-checkbox">
-                            <input type="radio" class='js-handle-filter-change' id="job-filters-inr" name="currency" value="INR" />
-                            <label for="job-filters-inr">INR</label>
-                          </div>
-                          <div class="currency-checkbox">
-                            <input type="radio" class='js-handle-filter-change' id="job-filters-usd" name="currency" value="USD" />
-                            <label for="job-filters-usd">USD</label>
-                          </div>
-                          <div class="currency-checkbox">
-                            <input type="radio" class='js-handle-filter-change' id="job-filters-eur" name="currency" value="EUR" />
-                            <label for="job-filters-eur">EUR</label>
-                          </div>
-                        </li>
-                        <li class="pay-filter-slider">
-                          <div>
-                            <input type="hidden" name="pay" id="job-filters-payval">
-                            <div id="pay-slider"></div>
-                          </div>
-                        </li>
-                        <li>
-                          <label for="job-filters-equity" class="equity-label">
-                            <input type="checkbox" class='js-handle-filter-change' name="equity" id="job-filters-equity" {{#if e}} checked="checked" {{/if}} value="1" /> Equity
-                          </label>
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                  {{#if !isMobile}}
-                    <div class="filters col-xs-12 col-sm-4 col-md-3 hidden-xs">
-                      <input id="job-filters-keywords" class="filter-select form-control search-field js-handle-keyword-update" type="text" placeholder="&#xF002; Search" name="q" value={{selectedQuery}} />
-                    </div>
-                  {{/if}}
+  {%- if not embed -%}
+    <header>
+    {% macro site_title() %}
+      <div class="page-header">
+        <h1><a href="{{ url_for('index') }}"><img src="{{ url_for('static', filename='img/hasjob-logo.svg', _external=true) }}" class='hasjob-logo' alt="hasjob">
+        {%- if g.board -%}
+          <span class="board-title">{{ g.board.title }}</span> <small class="board-caption">{%- if g.board.caption -%} {{ g.board.caption }} {%- else -%} Powered by Hasjob {%- endif -%}</small>
+        {%- else -%}
+          <span class="board-title">Hasjob</span> <small>The HasGeek Job Board</small>
+        {%- endif -%}
+        </a></h1>
+      </div>
+    {% endmacro %}
+    {% macro site_nav_button() %}
+      <div class="hidden">
+      </div>
+    {% endmacro %}
+    {% macro site_nav() %}
+      <div id='job-filters-ractive-template'>
+        {%- raw %}
+          <script id='filters-ractive' type='text/ractive'>
+            <div class="nav hg-site-nav" id="hg-sitenav">
+              <div class="filters-wrapper" id="filter-dropdown">
+                <form id="js-job-filters" role="form" autocomplete="off">
+                  {{ #jobsArchive }}
+                    <input type="hidden" name="archive" value="{{ jobsArchive }}" />
+                  {{/jobsArchive}}
                   {{#if isMobile}}
-                    <div class="col-xs-12">
-                      <button id='js-mobile-filter-done' class="btn btn-default submit-btn" on-click="closeOnMobile(event)">
-                        <span><i class="fa fa-check"></i>Done</span>
-                      </button>
+                    <div class="search">
+                      <input id="job-filters-keywords" class="filter-select form-control js-handle-keyword-update search-field js-search-box" type="text" placeholder="&#xF002; Search" name="q" value={{selectedQuery}} on-click="openOnMobile(event)">
                     </div>
                   {{/if}}
-                </div>
-              </form>
+                  <div class="row {{#if isMobile}}filter-dropdown{{/if}} {{#if show}}active{{/if}}">
+                    <div class="filters filters-col1 location-filter col-xs-12 col-sm-4 col-md-3">
+                      <select id="job-filters-location" name="l" multiple="multiple" class="job-filters-select2 notselect hidden js-handle-filter-change js-refresh-location" placeholder="Location">
+                        {{ #jobLocations }}
+                          <option value={{ name }} {{#if selectedLocations.indexOf(name) > -1}}selected="selected"{{/if}} {{#if !available}}class="unavailable"{{/if}}>{{title}}</option>
+                        {{/jobLocations}}
+                      </select>
+                    </div>
+                    <div class="filters col-xs-12 col-sm-4 col-md-3">
+                      <select id="job-filters-type" name="t" multiple="multiple" class="job-filters-select2 notselect hidden js-handle-filter-change js-refresh-type" placeholder="Job Type">
+                        {{ #jobTypes }}
+                            <option value={{ name }} {{#if selectedTypes.indexOf(name) > -1}}selected="selected"{{/if}} {{#if !available}}class="unavailable"{{/if}}>{{title}}</option>
+                        {{/jobTypes}}
+                      </select>
+                    </div>
+                    <div class="filters col-xs-12 col-sm-4 col-md-3 category-filter">
+                      <select id="job-filters-category" name="c" multiple="multiple" class="job-filters-select2 notselect hidden js-handle-filter-change js-refresh-category" placeholder="Job Category">
+                        {{ #jobCategories}}
+                          <option value={{ name }} {{#if selectedCategories.indexOf(name) > -1}}selected="selected"{{/if}} {{#if !available}}class="unavailable"{{/if}}>{{title}}</option>
+                        {{/jobCategories}}
+                      </select>
+                    </div>
+                    <div class="filters dropdown col-xs-12 col-sm-4 col-md-3">
+                      <div id="job-filters-pay" class="btn-group btn-block no-jshidden">
+                        <button type="button" class="btn btn-default dropdown-toggle btn-block" data-toggle="dropdown" aria-expanded="false">
+                          <span id="job-filters-pay-text" class="pay-field"></span>
+                          <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu pay-filter-dropdown" role="menu" aria-labelledby="job-filters-pay">
+                          <li class="clearfix">
+                            <div class="currency-checkbox">
+                              <input type="radio" class='js-handle-filter-change' id="job-filters-na" name="currency" value="NA" />
+                              <label for="job-filters-na">Any</label>
+                            </div>
+                            <div class="currency-checkbox">
+                              <input type="radio" class='js-handle-filter-change' id="job-filters-inr" name="currency" value="INR" />
+                              <label for="job-filters-inr">INR</label>
+                            </div>
+                            <div class="currency-checkbox">
+                              <input type="radio" class='js-handle-filter-change' id="job-filters-usd" name="currency" value="USD" />
+                              <label for="job-filters-usd">USD</label>
+                            </div>
+                            <div class="currency-checkbox">
+                              <input type="radio" class='js-handle-filter-change' id="job-filters-eur" name="currency" value="EUR" />
+                              <label for="job-filters-eur">EUR</label>
+                            </div>
+                          </li>
+                          <li class="pay-filter-slider">
+                            <div>
+                              <input type="hidden" name="pay" id="job-filters-payval">
+                              <div id="pay-slider"></div>
+                            </div>
+                          </li>
+                          <li>
+                            <label for="job-filters-equity" class="equity-label">
+                              <input type="checkbox" class='js-handle-filter-change' name="equity" id="job-filters-equity" {{#if e}} checked="checked" {{/if}} value="1" /> Equity
+                            </label>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                    {{#if !isMobile}}
+                      <div class="filters col-xs-12 col-sm-4 col-md-3 hidden-xs">
+                        <input id="job-filters-keywords" class="filter-select form-control search-field js-handle-keyword-update" type="text" placeholder="&#xF002; Search" name="q" value={{selectedQuery}} />
+                      </div>
+                    {{/if}}
+                    {{#if isMobile}}
+                      <div class="col-xs-12">
+                        <button id='js-mobile-filter-done' class="btn btn-default submit-btn" on-click="closeOnMobile(event)">
+                          <span><i class="fa fa-check"></i>Done</span>
+                        </button>
+                      </div>
+                    {{/if}}
+                  </div>
+                </form>
+              </div>
             </div>
-          </div>
-        </script>
-      {%- endraw %}
-    </div>
-  {% endmacro %}
-  {% if not g.kiosk %}
-  {% with site_links=[], user_links = [] %}
-    {%- if g.user and g.user.flags.is_candidate_alltime %}
-      {% set user_links = user_links + [{'title': "Applied jobs", 'url': url_for('applied')}] %}
+          </script>
+        {%- endraw %}
+      </div>
+    {% endmacro %}
+    {% if not g.kiosk %}
+    {% with site_links=[], user_links = [] %}
+      {%- if g.user and g.user.flags.is_candidate_alltime %}
+        {% set user_links = user_links + [{'title': "Applied jobs", 'url': url_for('applied')}] %}
+      {%- endif %}
+      {%- if g.user %}
+        {% set user_links = user_links + [{'title': "Bookmarks", 'url': url_for('bookmarks')}] %}
+      {%- endif %}
+      {%- if g.user and g.user.flags.is_employer_alltime %}
+        {% set user_links = user_links + [{'title': "My posts", 'url': url_for('my_posts')}] %}
+      {%- endif %}
+      {%- if g.user and g.user.flags.has_jobpost_unconfirmed_month %}
+        {% set user_links = user_links + [{'title': "Drafts", 'url': url_for('browse_drafts')}] %}
+      {%- endif %}
+      {%- if is_siteadmin %}
+        {% set user_links = user_links + [{'title': "Dashboard", 'url': url_for('AdminDashboard_dashboard')}, {'title': "Campaign", 'url': url_for('AdminCampaignList_list_current')}] %}
+      {%- endif %}
+      {%- if request.path != url_for('newjob') %}
+          {% set site_links = site_links + [{'title': "Post a job", 'url': url_for('newjob')|usessl, 'class': 'btn btn-sm btn-post-job hidden-xs'}] %}
+      {%- endif %}
+      {{ hgnav(site_title=site_title(), site_nav_button=site_nav_button(), site_nav=site_nav(), site_links=site_links, user_links=user_links) }}
+    {% endwith %}
     {%- endif %}
-    {%- if g.user %}
-      {% set user_links = user_links + [{'title': "Bookmarks", 'url': url_for('bookmarks')}] %}
-    {%- endif %}
-    {%- if g.user and g.user.flags.is_employer_alltime %}
-      {% set user_links = user_links + [{'title': "My posts", 'url': url_for('my_posts')}] %}
-    {%- endif %}
-    {%- if g.user and g.user.flags.has_jobpost_unconfirmed_month %}
-      {% set user_links = user_links + [{'title': "Drafts", 'url': url_for('browse_drafts')}] %}
-    {%- endif %}
-    {%- if is_siteadmin %}
-      {% set user_links = user_links + [{'title': "Dashboard", 'url': url_for('AdminDashboard_dashboard')}, {'title': "Campaign", 'url': url_for('AdminCampaignList_list_current')}] %}
-    {%- endif %}
-    {%- if request.path != url_for('newjob') %}
-        {% set site_links = site_links + [{'title': "Post a job", 'url': url_for('newjob')|usessl, 'class': 'btn btn-sm btn-post-job hidden-xs'}] %}
-    {%- endif %}
-    {{ hgnav(site_title=site_title(), site_nav_button=site_nav_button(), site_nav=site_nav(), site_links=site_links, user_links=user_links) }}
-  {% endwith %}
+    </header>
   {%- endif %}
-</header>
 {% endblock %}
 
 {% block messages %}
@@ -245,63 +255,83 @@
 {% endblock %}
 
 {% block basecontent -%}
-  {%- if header_campaign %}<div id="header-campaign"></div>{% endif %}
+  {%- if header_campaign and not embed %}<div id="header-campaign"></div>{% endif %}
   <div id='main-content'>
   {% block pagecontent %}{% block content %}{% endblock %}{% endblock %}
   </div>
-  {%- if header_campaign %}{{ campaign_header(g, header_campaign) }}{% endif %}
+  {%- if header_campaign and not embed %}{{ campaign_header(g, header_campaign) }}{% endif %}
 {%- endblock %}
 
+{% block basefooter -%}
+  {%- if not embed %}
+    {{ super() }}
+  {% endif %}
+{% endblock %}
+
 {% block footer %}
-<p>
-  {%- if g.kiosk %}
-    Hasjob is a service of HasGeek. You are in kiosk mode with a limited view of posts.
-  {%- elif g.board and g.board.not_root %}
-    Powered by <a href="{{ url_for('index', subdomain=none) }}">Hasjob</a>, a service of <a href="https://hasgeek.com/">HasGeek</a>.
-    Subscribe to <a href="{{ url_for('feed') }}">the feed</a> or follow
-    <a href="https://twitter.com/hasjob">@hasjob on Twitter</a>
-    to find out when new jobs are posted. Hosted by
-    <a href="http://e2enetworks.com/">E2E Networks</a>.
-  {%- else %}
-    Hasjob is a service of <a href="https://hasgeek.com/">HasGeek</a>.
-    Subscribe to <a href="{{ url_for('feed') }}">the feed</a> or follow
-    <a href="https://twitter.com/hasjob">@hasjob on Twitter</a>
-    to find out when new jobs are posted. Hosted by
-    <a href="http://e2enetworks.com/">E2E Networks</a>.
-  {%- endif %}
-  {%- if not g.user and not g.anon_user %}
-    <img src="{{ url_for('sniffle') }}" width="1" height="1" alt=""/>
-  {%- endif %}
-</p>
+  <p>
+    {%- if g.kiosk %}
+      Hasjob is a service of HasGeek. You are in kiosk mode with a limited view of posts.
+    {%- elif g.board and g.board.not_root %}
+      Powered by <a href="{{ url_for('index', subdomain=none) }}">Hasjob</a>, a service of <a href="https://hasgeek.com/">HasGeek</a>.
+      Subscribe to <a href="{{ url_for('feed') }}">the feed</a> or follow
+      <a href="https://twitter.com/hasjob">@hasjob on Twitter</a>
+      to find out when new jobs are posted. Hosted by
+      <a href="http://e2enetworks.com/">E2E Networks</a>.
+    {%- else %}
+      Hasjob is a service of <a href="https://hasgeek.com/">HasGeek</a>.
+      Subscribe to <a href="{{ url_for('feed') }}">the feed</a> or follow
+      <a href="https://twitter.com/hasjob">@hasjob on Twitter</a>
+      to find out when new jobs are posted. Hosted by
+      <a href="http://e2enetworks.com/">E2E Networks</a>.
+    {%- endif %}
+    {%- if not g.user and not g.anon_user %}
+      <img src="{{ url_for('sniffle') }}" width="1" height="1" alt=""/>
+    {%- endif %}
+  </p>
 {% endblock %}
 
 {% block layoutscripts %}
-  {%- if header_campaign %}{{ campaign_script() }}{% endif %}
-  <script src='{{ asset_path('manifest') }}' type="text/javascript"></script>
-  <script src='{{ asset_path('app') }}' type="text/javascript"></script>
-  <script src='{{ asset_path('vendor') }}' type="text/javascript"></script>
-  <script type="text/javascript">
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', function() {
-        navigator.serviceWorker.register('/service-worker.js')
-        .then(function(registration) {
-          console.log('Service Worker registration successful with scope: ',
-          registration.scope);
-        })
-        .catch(function(err) {
-          console.log('Service Worker registration failed: ', err);
+  {%- if not embed %}
+    {%- if header_campaign %}{{ campaign_script() }}{% endif %}
+    <script src='{{ asset_path('manifest') }}' type="text/javascript"></script>
+    <script src='{{ asset_path('app') }}' type="text/javascript"></script>
+    <script src='{{ asset_path('vendor') }}' type="text/javascript"></script>
+    <script type="text/javascript">
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.register('/service-worker.js')
+          .then(function(registration) {
+            console.log('Service Worker registration successful with scope: ',
+            registration.scope);
+          })
+          .catch(function(err) {
+            console.log('Service Worker registration failed: ', err);
+          });
         });
-      });
 
-      // Setup a listener to track Add to Homescreen events.
-      window.addEventListener('beforeinstallprompt', event => {
-        event.userChoice.then(choice => {
-          if (window.ga) {
-            window.ga('send', 'event', 'Add to Home', choice.outcome);
-          }
+        // Setup a listener to track Add to Homescreen events.
+        window.addEventListener('beforeinstallprompt', event => {
+          event.userChoice.then(choice => {
+            if (window.ga) {
+              window.ga('send', 'event', 'Add to Home', choice.outcome);
+            }
+          });
         });
-      });
-    }
-  </script>
+      }
+    </script>
+  {%- else %}
+    <script type="text/javascript">
+      window.Hasjob.sendIframeSize = function() {
+        window.parent.postMessage(JSON.stringify({
+          context: "iframe.resize", 
+          height: document.body.scrollHeight,
+          width: document.body.scrollWidth
+          }), '*');
+      }
+      window.addEventListener('resize', window.Hasjob.sendIframeSize, false);
+      window.addEventListener('load', window.Hasjob.sendIframeSize, false);
+    </script>
+  {% endif %}
   {% block footerscripts %}{% endblock %}
 {% endblock %}

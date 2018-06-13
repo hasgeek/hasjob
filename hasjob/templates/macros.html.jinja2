@@ -1,8 +1,8 @@
-{%- macro stickie(post, url, pinned, get_post_viewcounts, groupedunder=false, dataurl=none, show_viewcounts=false, show_pay=false, starred=none, is_bgroup=none) -%}
+{%- macro stickie(post, url, pinned, get_post_viewcounts, groupedunder=false, dataurl=none, show_viewcounts=false, show_pay=false, starred=none, is_bgroup=none, embed=false) -%}
   {%- if groupedunder %}
     <div class="stickie {%- if post.state.ANNOUNCEMENT %} announcement{% endif %} grouped under" {%- if dataurl %} data-href="{{ dataurl }}"{% endif %}>
   {%- else %}
-    <a class="stickie {%- if post.state.ANNOUNCEMENT %} announcement{% endif %}" href="{{ url }}" rel="bookmark" {%- if dataurl %} data-href="{{ dataurl }}"{% endif %}>
+    <a class="stickie {%- if post.state.ANNOUNCEMENT %} announcement{% endif %}" {%- if embed %} href="{{ url }}?utm_campaign=embed" {% else %} href="{{ url }}" {% endif %} rel="bookmark" {%- if embed %} target="_blank"{% endif %} {%- if dataurl %} data-href="{{ dataurl }}"{% endif %}>
   {%- endif %}
     {%- if pinned %}<span class="pinned">Pinned!</span>{% endif %}
     <span class="annotation top-left">{{ post.location }}</span>

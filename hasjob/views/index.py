@@ -207,13 +207,23 @@ def fetch_jobposts(request_args, request_values, filters, is_index, board, board
 
     posts = getposts(basequery, pinned=True, showall=showall, statusfilter=statusfilter, ageless=ageless).all()
 
+    if getbool(request_args.get('embed')):
+        embed = True
+        if posts:
+            if request_args.get('limit'):
+                posts = posts[:int(request_args.get('limit'))]
+            else:
+                posts = posts[:8]
+    else:
+        embed = False
+
     if posts:
         employer_name = posts[0].company_name
     else:
         employer_name = u'a single employer'
 
     jobpost_ab = session_jobpost_ab()
-    if is_index and posts and not gkiosk:
+    if is_index and posts and not gkiosk and not embed:
         # Group posts by email_domain on index page only, when not in kiosk mode
         grouped = OrderedDict()
         for post in posts:
@@ -331,7 +341,8 @@ def fetch_jobposts(request_args, request_values, filters, is_index, board, board
         md5sum=md5sum, domain=domain, location=location, employer_name=employer_name,
         showall=showall, f_locations=f_locations, loadmore=loadmore,
         query_params=query_params, data_filters=data_filters,
-        pay_graph_data=pay_graph_data, paginated=index_is_paginated(), template_vars=template_vars)
+        pay_graph_data=pay_graph_data, paginated=index_is_paginated(),
+        template_vars=template_vars, embed=embed)
 
 
 # @dogpile.region('hasjob_index')
@@ -702,7 +713,7 @@ def archive():
             if reverse is None:
                 reverse = False
             try:
-                reverse = bool(int(reverse))
+                reverse = bool( (reverse))
             except ValueError:
                 reverse = False
             reverse = int(not reverse)
@@ -844,3 +855,9 @@ def sw():
 @app.route('/manifest.json', methods=['GET'])
 def manifest():
     return Response(render_template('manifest.json.jinja2'), mimetype='application/json')
+
+
+@app.route('/embed.js', methods=['GET'], subdomain='<subdomain>')
+@app.route('/embed.js', methods=['GET'])
+def embed():
+    return app.send_static_file('embed.js')
