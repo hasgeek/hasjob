@@ -37,7 +37,6 @@
   function handleMessage(event) {
     if(hostnames.indexOf(event.origin) !== -1) {
       var message = JSON.parse(event.data);
-      console.log('mess', message);
       if(message.context == "iframe.resize" && message.id) {
         document.getElementById(message.id).setAttribute('height', message.height);
       }
