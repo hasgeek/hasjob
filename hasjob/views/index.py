@@ -713,7 +713,7 @@ def archive():
             if reverse is None:
                 reverse = False
             try:
-                reverse = bool( (reverse))
+                reverse = bool(int(reverse))
             except ValueError:
                 reverse = False
             reverse = int(not reverse)
@@ -857,7 +857,7 @@ def manifest():
     return Response(render_template('manifest.json.jinja2'), mimetype='application/json')
 
 
-@app.route('/embed.js', methods=['GET'], subdomain='<subdomain>')
-@app.route('/embed.js', methods=['GET'])
+@app.route('/api/1/embed.js', methods=['GET'], subdomain='<subdomain>')
+@app.route('/api/1/embed.js', methods=['GET'])
 def embed():
     return app.send_static_file('embed.js')
