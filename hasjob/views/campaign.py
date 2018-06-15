@@ -180,7 +180,7 @@ class AdminCampaignView(UrlForView, InstanceLoader, ModelView):
     @route('views.csv')
     def view_counts(self, **kwargs):
         campaign = self.obj
-        timezone = current_auth.actor.timezone if current_auth.is_authenticated else 'UTC'
+        timezone = current_auth.actor.timezone if current_auth else 'UTC'
         viewdict = defaultdict(dict)
 
         interval = chart_interval_for(campaign)
@@ -332,7 +332,7 @@ AdminCampaignActionView.init_app(app)
 def campaign_action_redirect(campaign, action):
     if action.type != CAMPAIGN_ACTION.LINK:
         abort(405)
-    if current_auth.is_authenticated:
+    if current_auth:
         cua = CampaignUserAction.get(action, g.user)
         if not cua:
             cua = CampaignUserAction(action=action, user=g.user)
@@ -362,7 +362,7 @@ def campaign_action(campaign):
 
     dismissed = 'dismiss' in request.form
     if dismissed:
-        if current_auth.is_authenticated:
+        if current_auth:
             view = campaign.view_for(g.user)
             if view:
                 view.dismissed = True
@@ -382,7 +382,7 @@ def campaign_action(campaign):
             campaign=campaign,
             message=Markup("<p>Unknown action selected</p>"))
     cua = None
-    if current_auth.is_authenticated:
+    if current_auth:
         cua = CampaignUserAction.get(action, g.user)
         if not cua:
             cua = CampaignUserAction(action=action, user=g.user)

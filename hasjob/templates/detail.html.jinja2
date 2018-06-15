@@ -105,7 +105,7 @@
         </div>
         <div class="col-md-3">{% if not g.kiosk %}
           <div class="list-group">
-            {%- if current_auth.is_authenticated %}
+            {%- if current_auth %}
               {% if g.user.has_starred_post(post) %}
                 <a class="list-group-item pstar" href="#">
                   <i class="fa fa-fw fa-star" data-id="{{ post.hashid }}"></i>&nbsp;&nbsp;
@@ -142,7 +142,7 @@
                 </a>
                 <div class="popup-box" id="report">
                   <a class="close-popup" href="#">&#10005;</a>
-                  {%- if current_auth.is_authenticated %}
+                  {%- if current_auth %}
                     <h2>What’s wrong with it?</h2>
                     {% include "inc/reportform.html.jinja2" %}
                   {%- else %}
@@ -196,7 +196,7 @@
                 </div>
               </div>
             {%- endif %}
-            {%- if is_siteadmin or (current_auth.is_authenticated and g.board and g.board.owner_is(g.user)) %}
+            {%- if is_siteadmin or (current_auth and g.board and g.board.owner_is(g.user)) %}
               <div class="list-group-item">
                 <a class="popup" href="#makepinned">
                   <i class="fa fa-fw fa-thumb-tack"></i>&nbsp;&nbsp; Pin this
@@ -207,7 +207,7 @@
                 </div>
               </div>
             {%- endif %}
-            {%- if current_auth.is_authenticated and g.user.flags.has_boards %}
+            {%- if current_auth and g.user.flags.has_boards %}
               <div class="list-group-item">
                 <a class="popup" href="#add-to-board">
                   <i class="fa fa-fw fa-plus"></i>&nbsp;&nbsp; Add to board
@@ -275,7 +275,7 @@
           <p id="apply-info-para">
             {%- if post.state.DRAFT %}{# Always show when in draft state #}
               {{ post.how_to_apply|hideemail }}
-            {%- elif current_auth.is_authenticated %}
+            {%- elif current_auth %}
               <a class="btn btn-primary" id="reveal-button" href="{{ post.url_for('reveal') }}">Show instructions</a> <span class="loading hidden"></span>
             {%- else %}
               <a class="btn btn-primary" href="{{ url_for('login') }}">Login with Google or GitHub</a>
@@ -285,7 +285,7 @@
           </p>
         {%- endif %}
       </div>
-      {%- if not post.state.DRAFT and (current_auth.is_authenticated or g.kiosk) and applyform %}
+      {%- if not post.state.DRAFT and (current_auth or g.kiosk) and applyform %}
         <div id="apply-section" class="section hidden">
         </div>
       {%- endif %}
