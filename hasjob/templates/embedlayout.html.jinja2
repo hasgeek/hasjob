@@ -30,6 +30,17 @@
   <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Fira+Sans:400,700,400italic,700italic&subset=latin,latin-ext">
   <link rel="stylesheet" type="text/css" href="//code.cdn.mozilla.net/fonts/fira.css">
   -#}
+  <script>
+    if (typeof window.Hasjob === 'undefined') {
+      window.Hasjob = {};
+    }
+    // Use Hasjob.Config for server-generated responses
+    if (typeof window.Hasjob.Config === 'undefined') {
+      window.Hasjob.Config = {
+        baseURL: "/"
+      }
+    }
+  </script>
 {%- endblock %}
 
 {% block bodytag %}
