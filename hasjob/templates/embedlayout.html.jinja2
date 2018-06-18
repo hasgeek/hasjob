@@ -1,25 +1,4 @@
-{%- extends "baseframe.html.jinja2" -%}
-
-{%- block doctypehtml -%}
-<!DOCTYPE html>
-<!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="en" {% block manifest %}{%- if g.kiosk %} manifest="{{ url_for('kiosk_manifest') }}" {%- endif %}{% endblock %}> <![endif]-->
-<!--[if IE 7]>    <html class="no-js lt-ie9 lt-ie8" lang="en" {{ self.manifest() }}> <![endif]-->
-<!--[if IE 8]>    <html class="no-js lt-ie9" lang="en" {{ self.manifest() }}> <![endif]-->
-<!--[if gt IE 8]><!--> <html lang="en" class="no-js {%- if g.user %} userlogin {%- else %} no-userlogin {%- endif %}" {{ self.manifest() }}> <!--<![endif]-->
-{%- endblock -%}
-
-{%- block titletags %}
-  <title>{% block title %}{{ title }}{% endblock %} | {% if g.board %}{{ g.board.title }}{% if g.board.not_root %} ({{ config['SITE_TITLE'] }}){% endif %}{% else %}{{ config['SITE_TITLE'] }}{% endif %}</title>
-  <meta name="DC.title" content="{{ self.title()|e }}" />
-  <meta property="og:title" content="{{ self.title()|e }}" />
-{%- endblock %}
-
-{%- block description %}{% if g.board and g.board.description %}{{ g.board.description|firstline }}{% else %}Hasjob is India’s best job board for tech startups{% endif %}{% endblock %}
-
-{% block image_src -%}
-  <link rel="image_src" href="{{ url_for('static', filename='img/logo-star.png', _external=true) }}" />
-  <meta property="og:image" content="{{ url_for('static', filename='img/logo-star.png', _external=true) }}" />
-{%- endblock %}
+{%- extends "layout.html.jinja2" -%}
 
 {%- block layoutheaders %}
   <link rel="icon" sizes="192x192" href="/static/img/hasjob-logo.svg">
