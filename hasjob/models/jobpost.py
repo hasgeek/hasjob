@@ -343,7 +343,7 @@ class JobPost(BaseMixin, db.Model):
         perms = super(JobPost, self).permissions(user, inherited)
         if self.state.PUBLIC:
             perms.add('view')
-        if self.admin_is(user):
+        if self.admin_is(user):  # XXX: Can we use current_roles here?
             if self.state.UNPUBLISHED:
                 perms.add('view')
             perms.add('edit')
