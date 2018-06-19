@@ -45,7 +45,7 @@ def index_is_paginated():
 
 def has_post_stats(post):
     is_siteadmin = lastuser.has_permission('siteadmin')
-    return is_siteadmin or post.admin_is(g.user) or (g.user and g.user.flags.get('is_employer_month'))
+    return is_siteadmin or post.current_roles.admin or (g.user and g.user.flags.get('is_employer_month'))
 
 
 @form_validation_success.connect

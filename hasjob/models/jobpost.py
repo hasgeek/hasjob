@@ -351,6 +351,12 @@ class JobPost(BaseMixin, db.Model):
             perms.add('withdraw')
         return perms
 
+    def roles_for(self, actor=None, anchors=()):
+        roles = super(JobPost, self).roles_for(actor, anchors)
+        if actor == self.user or actor in self.admins:
+            roles.add('admin')
+        return roles
+
     @property
     def from_webmail_domain(self):
         return is_public_email_domain(self.email_domain, default=False)

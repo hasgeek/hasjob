@@ -108,12 +108,12 @@
             {%- if g.user %}
               {% if g.user.has_starred_post(post) %}
                 <a class="list-group-item pstar" href="#">
-                  <i class="fa fa-fw fa-star" data-id="{{ post.hashid }}"></i>&nbsp;&nbsp; 
+                  <i class="fa fa-fw fa-star" data-id="{{ post.hashid }}"></i>&nbsp;&nbsp;
                   <span class="pstar-caption">Bookmarked</span>
                 </a>
               {% else %}
                 <a class="list-group-item pstar" href="#">
-                  <i class="fa fa-fw fa-star-o" data-id="{{ post.hashid }}"></i>&nbsp;&nbsp; 
+                  <i class="fa fa-fw fa-star-o" data-id="{{ post.hashid }}"></i>&nbsp;&nbsp;
                   <span class="pstar-caption">Bookmark this</span>
                 </a>
               {%- endif %}
@@ -152,7 +152,7 @@
                 </div>
               </div>
             {%- endif %}
-            {%- if post.admin_is(g.user) %}
+            {%- if post.current_roles.admin %}
               <a class="list-group-item" href="{{ post.url_for('edit') }}">
                 <i class="fa fa-fw fa-pencil"></i>&nbsp;&nbsp; Edit this
               </a>
@@ -223,7 +223,7 @@
                 </div>
               </div>
             {%- endif %}
-            {%- if is_siteadmin or post.admin_is(g.user) %}
+            {%- if is_siteadmin or post.current_roles.admin %}
               {%- if post.pay_type is not none and not post.state.ANNOUNCEMENT %}
                 <span class="list-group-item">
                   <i class="fa fa-fw fa-money"></i>&nbsp;&nbsp; {{ post.pay_label() }}
@@ -326,7 +326,7 @@
       <h2>Statistics</h2>
       <div>Logged-in users: <span id="post-viewed">⋯</span> viewed › <span id="post-opened">⋯</span> opened form › <span id="post-applied">⋯</span> applied &middot; Per <span id="post-stats-unit"></span>:</div>
       <div id="viewstats-chart"></div>
-      {%- if post.headlineb and (is_siteadmin or post.admin_is(g.user)) %}
+      {%- if post.headlineb and (is_siteadmin or post.current_roles.admin) %}
         <h2>A/B test results</h2>
         <table class="table">
           <thead>
