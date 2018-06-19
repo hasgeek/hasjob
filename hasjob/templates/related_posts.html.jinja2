@@ -2,7 +2,7 @@
 {%- if related_posts %}
   {%- for post in related_posts -%}
     <li class="col-xs-12 col-md-3 col-sm-4">
-      {{ stickie(post, post.url_for(), false, get_post_viewcounts, show_viewcounts=is_siteadmin or g.user and g.user.flags.is_employer_month, show_pay=is_siteadmin, starred=g.user and post.id in g.starred_ids) }}
+      {{ stickie(post, post.url_for(), false, get_post_viewcounts, show_viewcounts=is_siteadmin or current_auth and g.user.flags.is_employer_month, show_pay=is_siteadmin, starred=current_auth and post.id in g.starred_ids) }}
     </li>
   {%- endfor -%}
 {%- endif %}
