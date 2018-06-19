@@ -251,7 +251,7 @@ class JobPost(BaseMixin, db.Model):
     def close(self):
         self.closed_datetime = db.func.utcnow()
 
-    @state.transition(state.UNPUBLISHED, state.CONFIRMED, title=__("Confirm"), message=__("This job post has been confirmed"), type='success')
+    @state.transition(state.UNPUBLISHED_OR_MODERATED, state.CONFIRMED, title=__("Confirm"), message=__("This job post has been confirmed"), type='success')
     def confirm(self):
         self.email_verified = True
         self.datetime = db.func.utcnow()
