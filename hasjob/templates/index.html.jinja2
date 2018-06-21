@@ -1,7 +1,10 @@
 {%- from "domain.html.jinja2" import org_profile, user_profile with context %}
 {% from "baseframe/forms.html.jinja2" import renderfield, widgetscripts %}
 {%- macro pagetitle() %}{% if title %}{% if domain %}Jobs at {% endif%}{{ title }} | {% endif %}{% if g.board %}{{ g.board.title }}{% if g.board.not_root %} ({{ config['SITE_TITLE'] }}){% endif %}{% else %}{{ config['SITE_TITLE'] }}{% endif %}{%- endmacro %}
-{%- if not request.is_xhr -%}
+
+{%- if embed -%}
+  {% extends "embedlayout.html.jinja2" %}
+{%- elif not request.is_xhr -%}
   {% extends "layout.html.jinja2" %}
   {% block titletags -%}
     <title>{% block title %}{{ pagetitle() }}{% endblock %}</title>
@@ -53,88 +56,58 @@
     {%- endif %}
   {% endblock %}
 {% endif %}
+
 {% block content %}
-  {%- from "macros.html.jinja2" import stickie %}
-  {% with gkiosk=g.kiosk, gboard=g.board, guser=g.user, gstarred_ids=g.starred_ids %}
-    {%- if gboard and gboard.not_root and not paginated and not (domain or md5sum or location or tag) %}
-      <div class="flash info">
-        {{ gboard.description|safe }}
-        {%- if gkiosk and g.peopleflow_url %}
-          <p>If you find a job worth applying for here, tap your badge on the reader attached to this kiosk and we’ll send an email connecting you with the employer.</p>
-        {%- endif %}
-      </div>
-    {%- endif %}
-    {%- if filterset and filterset.description and not paginated %}
-      <div class="flash info">
-        <h2>{{ filterset.title }}</h2>
-        {{ filterset.description | safe }}
-      </div>
-    {%- endif %}
-    {%- if location and location.use_title and location.description and not paginated %}
-      <div class="flash info">
-        <h2>{{ location.use_title }}</h2>
-        {{ location.description }}
-      </div>
-    {%- elif location_prompts and not domain and not paginated %}
-      <div class="flash info">
-        <p>In {{ location_prompts[0]['use_title'] }}? Filter this view:</p>
-        <p class="button-bar">
-          {%- for loc in location_prompts %}
-            <a class="btn btn-sm btn-default" data-geonameid="{{ loc['geonameid'] }}" href="{{ request.base_url + '?l=' + loc['name']|urlencode }}">{{ loc['picker_title'] }}</a>
-          {%- endfor %}
-          <a class="btn btn-sm btn-default" href="{{ request.base_url }}?anywhere=1">Anywhere</a>
-        </p>
-      </div>
-    {%- endif %}
-    {%- if domain and not paginated %}
-      {{ org_profile(domain) }}
-    {%- elif md5sum and not paginated %}
-      {%- if template_vars['jobpost_user'] %}
-        {{ user_profile(template_vars['jobpost_user']) }}
+  {%- from "macros.html.jinja2" import stickiecontainer %}
+  {%- if embed %}
+    {{ stickiecontainer(false, pinsandposts, embed=true) }}
+  {%- else %}
+    {% with gkiosk=g.kiosk, gboard=g.board, guser=g.user, gstarred_ids=g.starred_ids %}
+      {%- if gboard and gboard.not_root and not paginated and not (domain or md5sum or location or tag) %}
+        <div class="flash info">
+          {{ gboard.description|safe }}
+          {%- if gkiosk and g.peopleflow_url %}
+            <p>If you find a job worth applying for here, tap your badge on the reader attached to this kiosk and we’ll send an email connecting you with the employer.</p>
+          {%- endif %}
+        </div>
       {%- endif %}
-    {%- endif %}
-    {%- if pay_graph_data and not paginated %}
-      <div class="flash info">
-        <h2>What these jobs pay per annum</h2>
-        <div id="pay-graph"></div>
-      </div>
-    {%- endif %}
-    {%- if not paginated %}
-    <ul id="stickie-area" class="row">
-    {%- endif %}
-      {%- if grouped -%}
-        {%- for grouping, group in grouped.items() -%}{%- with pinned, post, is_bgroup=group[0] -%}
-          {%- if group|length == 1 -%}
-            <li class="col-xs-12 col-md-3 col-sm-4">
-              {{ stickie(post, post.url_for(b=is_bgroup), pinned, get_post_viewcounts, show_viewcounts=show_viewcounts, show_pay=is_siteadmin, starred=guser and post.id in gstarred_ids, is_bgroup=is_bgroup) }}
-            </li>
-          {%- else -%}
-            <li class="grouped col-xs-12 col-md-3 col-sm-4">
-              {%- if grouping[0] in ['sd', 'nd'] -%}
-                {{ stickie(post, url_for('browse_by_domain', domain=grouping[1]), pinned, get_post_viewcounts, dataurl=post.url_for(b=is_bgroup), show_viewcounts=show_viewcounts, show_pay=is_siteadmin, starred=guser and post.id in gstarred_ids, is_bgroup=is_bgroup) }}
-              {%- elif grouping[0] in ['se', 'ne'] -%}
-                {{ stickie(post, url_for('browse_by_email', md5sum=grouping[1]), pinned, get_post_viewcounts, dataurl=post.url_for(b=is_bgroup), show_viewcounts=show_viewcounts, show_pay=is_siteadmin, starred=guser and post.id in gstarred_ids, is_bgroup=is_bgroup) }}
-              {%- endif -%}
-              {%- for pinned, post, is_bgroup in group[1:] -%}
-                {{ stickie(post, none, false, get_post_viewcounts, groupedunder=true, dataurl=post.url_for(b=is_bgroup), show_viewcounts=show_viewcounts, show_pay=is_siteadmin, starred=guser and post.id in gstarred_ids, is_bgroup=is_bgroup) }}
-              {%- endfor -%}
-            </li>
-          {%- endif -%}
-        {%- endwith -%}{%- endfor -%}
-      {%- else %}
-        {%- for pinned, post, is_bgroup in pinsandposts -%}
-          <li class="col-xs-12 col-md-3 col-sm-4">
-            {{ stickie(post, post.url_for(b=is_bgroup), pinned, get_post_viewcounts, show_viewcounts=show_viewcounts, show_pay=is_siteadmin, starred=guser and post.id in gstarred_ids, is_bgroup=is_bgroup) }}
-          </li>
-        {%- else -%}
-          <li class="col-xs-12 col-md-3 col-sm-4">
-            <span class="stickie special">Sorry, no jobs listed.</span>
-          </li>
-        {%- endfor -%}
-      {%- endif -%}
-    {%- if not paginated -%}
-    </ul>
-    {%- endif -%}
+      {%- if filterset and filterset.description and not paginated %}
+        <div class="flash info">
+          <h2>{{ filterset.title }}</h2>
+          {{ filterset.description | safe }}
+        </div>
+      {%- endif %}
+      {%- if location and location.use_title and location.description and not paginated %}
+        <div class="flash info">
+          <h2>{{ location.use_title }}</h2>
+          {{ location.description }}
+        </div>
+      {%- elif location_prompts and not domain and not paginated %}
+        <div class="flash info">
+          <p>In {{ location_prompts[0]['use_title'] }}? Filter this view:</p>
+          <p class="button-bar">
+            {%- for loc in location_prompts %}
+              <a class="btn btn-sm btn-default" data-geonameid="{{ loc['geonameid'] }}" href="{{ request.base_url + '?l=' + loc['name']|urlencode }}">{{ loc['picker_title'] }}</a>
+            {%- endfor %}
+            <a class="btn btn-sm btn-default" href="{{ request.base_url }}?anywhere=1">Anywhere</a>
+          </p>
+        </div>
+      {%- endif %}
+      {%- if domain and not paginated %}
+        {{ org_profile(domain) }}
+      {%- elif md5sum and not paginated %}
+        {%- if template_vars['jobpost_user'] %}
+          {{ user_profile(template_vars['jobpost_user']) }}
+        {%- endif %}
+      {%- endif %}
+      {%- if pay_graph_data and not paginated %}
+        <div class="flash info">
+          <h2>What these jobs pay per annum</h2>
+          <div id="pay-graph"></div>
+        </div>
+      {%- endif %}
+      {{ stickiecontainer(grouped, pinsandposts, paginated, get_post_viewcounts, show_viewcounts, show_pay, guser, gstarred_ids, false ) }}
+    {%- endwith %}
     {%- if loadmore and not paginated -%}
       <noscript>
         <div class="row text-center">
@@ -158,14 +131,14 @@
         {%- endraw %}
       </div>
     {%- endif -%}
-  {%- endwith %}
-  {%- if not showall -%}
-    <div class="flash info">
-      <p>
-        You are only seeing jobs listed in the last 24 hours. To see everything,
-        <a class="btn btn-primary btn-sm" href="{{ url_for('login') }}">Login with Google or GitHub</a>
-      </p>
-    </div>
+    {%- if not showall -%}
+      <div class="flash info">
+        <p>
+          You are only seeing jobs listed in the last 24 hours. To see everything,
+          <a class="btn btn-primary btn-sm" href="{{ url_for('login') }}">Login with Google or GitHub</a>
+        </p>
+      </div>
+    {%- endif -%}
   {%- endif -%}
 {%- endblock -%}
 

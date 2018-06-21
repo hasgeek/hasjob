@@ -1,8 +1,47 @@
-{%- macro stickie(post, url, pinned, get_post_viewcounts, groupedunder=false, dataurl=none, show_viewcounts=false, show_pay=false, starred=none, is_bgroup=none) -%}
+{%- macro stickiecontainer(grouped, pinsandposts, paginated=false, get_post_viewcounts=false, show_viewcounts=false, show_pay=false, guser=None, gstarred_ids=false, embed=false) -%}
+  {%- if not paginated %}
+  <ul id="stickie-area" class="row">
+  {%- endif %}
+    {%- if grouped -%}
+      {%- for grouping, group in grouped.items() -%}{%- with pinned, post, is_bgroup=group[0] -%}
+        {%- if group|length == 1 -%}
+          <li class="col-xs-12 col-md-3 col-sm-4">
+            {{ stickie(post, post.url_for(b=is_bgroup), pinned, get_post_viewcounts, show_viewcounts=show_viewcounts, show_pay=is_siteadmin, starred=guser and post.id in gstarred_ids, is_bgroup=is_bgroup, embed=embed) }}
+          </li>
+        {%- else -%}
+          <li class="grouped col-xs-12 col-md-3 col-sm-4">
+            {%- if grouping[0] in ['sd', 'nd'] -%}
+              {{ stickie(post, url_for('browse_by_domain', domain=grouping[1]), pinned, get_post_viewcounts, dataurl=post.url_for(b=is_bgroup), show_viewcounts=show_viewcounts, show_pay=is_siteadmin, starred=guser and post.id in gstarred_ids, is_bgroup=is_bgroup, embed=embed) }}
+            {%- elif grouping[0] in ['se', 'ne'] -%}
+              {{ stickie(post, url_for('browse_by_email', md5sum=grouping[1]), pinned, get_post_viewcounts, dataurl=post.url_for(b=is_bgroup), show_viewcounts=show_viewcounts, show_pay=is_siteadmin, starred=guser and post.id in gstarred_ids, is_bgroup=is_bgroup, embed=embed) }}
+            {%- endif -%}
+            {%- for pinned, post, is_bgroup in group[1:] -%}
+              {{ stickie(post, none, false, get_post_viewcounts, groupedunder=true, dataurl=post.url_for(b=is_bgroup), show_viewcounts=show_viewcounts, show_pay=is_siteadmin, starred=guser and post.id in gstarred_ids, is_bgroup=is_bgroup, embed=embed) }}
+            {%- endfor -%}
+          </li>
+        {%- endif -%}
+      {%- endwith -%}{%- endfor -%}
+    {%- else %}
+      {%- for pinned, post, is_bgroup in pinsandposts -%}
+        <li class="col-xs-12 col-md-3 col-sm-4">
+          {{ stickie(post, post.url_for(b=is_bgroup), pinned, get_post_viewcounts, show_viewcounts=show_viewcounts, show_pay=is_siteadmin, starred=guser and post.id in gstarred_ids, is_bgroup=is_bgroup, embed=embed) }}
+        </li>
+      {%- else -%}
+        <li class="col-xs-12 col-md-3 col-sm-4">
+          <span class="stickie special">Sorry, no jobs listed.</span>
+        </li>
+      {%- endfor -%}
+    {%- endif -%}
+  {%- if not paginated -%}
+  </ul>
+  {%- endif -%}
+{%- endmacro -%}
+
+{%- macro stickie(post, url, pinned, get_post_viewcounts, groupedunder=false, dataurl=none, show_viewcounts=false, show_pay=false, starred=none, is_bgroup=none, embed=false) -%}
   {%- if groupedunder %}
     <div class="stickie {%- if post.state.ANNOUNCEMENT %} announcement{% endif %} grouped under" {%- if dataurl %} data-href="{{ dataurl }}"{% endif %}>
   {%- else %}
-    <a class="stickie {%- if post.state.ANNOUNCEMENT %} announcement{% endif %}" href="{{ url }}" rel="bookmark" {%- if dataurl %} data-href="{{ dataurl }}"{% endif %}>
+    <a class="stickie {%- if post.state.ANNOUNCEMENT %} announcement{% endif %}" {%- if embed %} href="{{ url }}?utm_campaign=embed" {% else %} href="{{ url }}" {% endif %} rel="bookmark" {%- if embed %} target="_blank"{% endif %} {%- if dataurl %} data-href="{{ dataurl }}"{% endif %}>
   {%- endif %}
     {%- if pinned %}<span class="pinned">Pinned!</span>{% endif %}
     <span class="annotation top-left">{{ post.location }}</span>
