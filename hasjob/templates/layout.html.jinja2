@@ -7,20 +7,24 @@
 <!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="en" {% block manifest %}{%- if g.kiosk %} manifest="{{ url_for('kiosk_manifest') }}" {%- endif %}{% endblock %}> <![endif]-->
 <!--[if IE 7]>    <html class="no-js lt-ie9 lt-ie8" lang="en" {{ self.manifest() }}> <![endif]-->
 <!--[if IE 8]>    <html class="no-js lt-ie9" lang="en" {{ self.manifest() }}> <![endif]-->
-<!--[if gt IE 8]><!--> <html lang="en" class="no-js {%- if g.user %} userlogin {%- else %} no-userlogin {%- endif %}" {{ self.manifest() }}> <!--<![endif]-->
+<!--[if gt IE 8]><!--> <html lang="en" class="no-js {%- if current_auth %} userlogin {%- else %} no-userlogin {%- endif %}" {{ self.manifest() }}> <!--<![endif]-->
 {%- endblock -%}
 
 {%- block titletags %}
   <title>{% block title %}{{ title }}{% endblock %} | {% if g.board %}{{ g.board.title }}{% if g.board.not_root %} ({{ config['SITE_TITLE'] }}){% endif %}{% else %}{{ config['SITE_TITLE'] }}{% endif %}</title>
   <meta name="DC.title" content="{{ self.title()|e }}" />
   <meta property="og:title" content="{{ self.title()|e }}" />
+  <meta property="og:type" content="website">
 {%- endblock %}
 
 {%- block description %}{% if g.board and g.board.description %}{{ g.board.description|firstline }}{% else %}Hasjob is India’s best job board for tech startups{% endif %}{% endblock %}
 
 {% block image_src -%}
-  <link rel="image_src" href="{{ url_for('static', filename='img/logo-star.png', _external=true) }}" />
-  <meta property="og:image" content="{{ url_for('static', filename='img/logo-star.png', _external=true) }}" />
+  <link rel="image_src" href="{{ url_for('static', filename='img/hasjob-logo-200x200.png', _external=true) }}" />
+  <meta property="og:image" content="{{ url_for('static', filename='img/hasjob-logo-200x200.png', _external=true) }}" />
+  <meta property="og:image:type" content="image/png" />
+  <meta property="og:image:width" content="200" />
+  <meta property="og:image:height" content="200" />
 {%- endblock %}
 
 {%- block layoutheaders %}
@@ -214,16 +218,16 @@
   {% endmacro %}
   {% if not g.kiosk %}
   {% with site_links=[], user_links = [] %}
-    {%- if g.user and g.user.flags.is_candidate_alltime %}
+    {%- if current_auth and g.user.flags.is_candidate_alltime %}
       {% set user_links = user_links + [{'title': "Applied jobs", 'url': url_for('applied')}] %}
     {%- endif %}
-    {%- if g.user %}
+    {%- if current_auth %}
       {% set user_links = user_links + [{'title': "Bookmarks", 'url': url_for('bookmarks')}] %}
     {%- endif %}
-    {%- if g.user and g.user.flags.is_employer_alltime %}
+    {%- if current_auth and g.user.flags.is_employer_alltime %}
       {% set user_links = user_links + [{'title': "My posts", 'url': url_for('my_posts')}] %}
     {%- endif %}
-    {%- if g.user and g.user.flags.has_jobpost_unconfirmed_month %}
+    {%- if current_auth and g.user.flags.has_jobpost_unconfirmed_month %}
       {% set user_links = user_links + [{'title': "Drafts", 'url': url_for('browse_drafts')}] %}
     {%- endif %}
     {%- if is_siteadmin %}
@@ -269,7 +273,7 @@
     to find out when new jobs are posted. Hosted by
     <a href="http://e2enetworks.com/">E2E Networks</a>.
   {%- endif %}
-  {%- if not g.user and not g.anon_user %}
+  {%- if not current_auth and not g.anon_user %}
     <img src="{{ url_for('sniffle') }}" width="1" height="1" alt=""/>
   {%- endif %}
 </p>
