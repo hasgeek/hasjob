@@ -9,6 +9,7 @@ from baseframe import _, __
 import baseframe.forms as forms
 from baseframe.utils import is_public_email_domain
 from coaster.utils import getbool, get_email_domain
+from coaster.auth import current_auth
 from flask_lastuser import LastuserResourceException
 
 from ..models import User, JobType, JobApplication, PAY_TYPE, CURRENCY, Domain
@@ -206,7 +207,7 @@ class ListingForm(forms.Form):
 
         caps = len(CAPS_RE.findall(field.data))
         small = len(SMALL_RE.findall(field.data))
-        if small == 0 or caps / float(small) > 0.5:
+        if small == 0 or caps / float(small) > 1.0:
             raise forms.ValidationError(_("Surely this location isn't named in uppercase?"))
 
     def validate_job_pay_cash_min(form, field):
@@ -381,7 +382,7 @@ class ApplicationForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super(ApplicationForm, self).__init__(*args, **kwargs)
         self.apply_email.choices = []
-        if g.user:
+        if current_auth:
             self.apply_email.description = Markup(
                 _(u'Add new email addresses from <a href="{}" target="_blank">your profile</a>').format(
                     g.user.profile_url))
