@@ -221,11 +221,6 @@ class JobPost(BaseMixin, db.Model):
     def __repr__(self):
         return '<JobPost {hashid} "{headline}">'.format(hashid=self.hashid, headline=self.headline.encode('utf-8'))
 
-    def admin_is(self, user):
-        if user is None:
-            return False
-        return user == self.user or bool(self.admins.options(db.load_only('id')).filter_by(id=user.id).count())
-
     @property
     def expiry_date(self):
         return self.datetime + agelimit
@@ -343,7 +338,7 @@ class JobPost(BaseMixin, db.Model):
         perms = super(JobPost, self).permissions(user, inherited)
         if self.state.PUBLIC:
             perms.add('view')
-        if user in self.admins:
+        if user == self.user or user in self.admins:
             if self.state.UNPUBLISHED:
                 perms.add('view')
             perms.add('edit')
