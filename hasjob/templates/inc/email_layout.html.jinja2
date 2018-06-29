@@ -6,6 +6,10 @@
     line-height: 24px;
     font-family: 'Fira Sans', Arial, sans-serif;
   }
+  table {
+    width: 100%;
+    border: 0;
+  }
   .btn, a.btn:link, a.btn:visited {
     background: #7a6891;
     padding: 12px 12px 10px 12px;
@@ -19,57 +23,59 @@
     color: #fff;
     margin-bottom: 15px;
   }
+  .wrapper {
+    background-color: #F9FAFC;
+    padding: 15px;
+  }
+  .logo-row {
+    width: 40px;
+  }
+  .title-row {
+    min-width: 200px;
+  }
+  .title {
+    display: block;
+    width: 90%;
+    margin: 0 auto 12px;
+  }
+  .index-url {
+    text-decoration: none;
+  }
   @media screen and (max-width:599px) {
     .board-title {
-      display: inline-block;
-      vertical-align: top;
       color: #df5e0e;
       font-size: 20px;
       font-weight: bold;
     }
     .board-caption {
-      display: block;
       color: #816894;
       font-size: 12px;
-      margin-top: -16px;
-      margin-left: 43px;
       font-weight: bold;
     }
   }
   @media (min-width:600px) {
     .board-title {
-      display: inline-block;
-      vertical-align: top;
       color: #df5e0e;
       font-size: 25px;
       margin-top: 9px;
       font-weight: bold;
     }
     .board-caption {
-      display: inline-block;
-      vertical-align: top;
       color: #816894;
       font-size: 17px;
       margin-top: 16px;
       font-weight: bold;
     }
-  }
-  .wrapper {
-    background-color: #F9FAFC;
-    padding: 15px;
-  }
-  .title {
-    display: block;
-    width: 70%;
-    margin: 0 auto 12px;
-    text-decoration: none;
+    .break {
+      display: none;
+    }
   }
   .hasjob-logo {
     height: 38px;
     margin: 0 5px 0 0;
   }
   .box {
-    width: 70%;
+    width: 90%;
     padding: 15px;
     border-radius: 2px;
     background-color: #ffffff;
@@ -89,23 +95,29 @@
   .center {
     text-align: center;
   }
-  table {
-    width: 100%;
-    border: 0;
-  }
 </style>
 {%- endblock %}
 
 {% block content %}
   <div class="wrapper">
-    <a href="{{ url_for('index', _external=true) }}" class="title">
-      <img src="{{ url_for('static', filename='img/android-chrome-192x192.png', _external=true) }}" class='hasjob-logo' alt="hasjob">
-      {%- if g.board -%}
-        <span class="board-title">{{ g.board.title }}</span> <span class="board-caption">{%- if g.board.caption -%} {{ g.board.caption }} {%- else -%} Powered by Hasjob {%- endif -%}</span>
-      {%- else -%}
-        <span class="board-title">Hasjob</span> <span class="board-caption">The HasGeek Job Board</span>
-      {%- endif -%}
-    </a>
+    <table role="presentation" class="title">
+      <tbody>
+        <tr>
+          <td class="logo-row">
+            <a href="{{ url_for('index', _external=true) }}" class="index-url"><img src="{{ url_for('static', filename='img/android-chrome-192x192.png', _external=true) }}" class='hasjob-logo' alt="hasjob"></a>
+          </td>
+          <td class="title-row">
+            <a href="{{ url_for('index', _external=true) }}" class="index-url">
+            {%- if g.board -%}
+              <span class="board-title">{{ g.board.title }}</span> <br class="break"><span class="board-caption">{%- if g.board.caption -%} {{ g.board.caption }} {%- else -%} Powered by Hasjob {%- endif -%}</span>
+            {%- else -%}
+              <span class="board-title">Hasjob</span> <br class="break"><span class="board-caption">The HasGeek Job Board</span>
+            {%- endif -%}
+            </a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
     <div class="box">
       {% block innercontent %}
       {% endblock %}
