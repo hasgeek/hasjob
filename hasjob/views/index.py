@@ -435,7 +435,7 @@ def index(basequery=None, filters={}, md5sum=None, tag=None, domain=None, locati
     # Test values for development:
     # if not g.user_geonameids:
     #     g.user_geonameids = [1277333, 1277331, 1269750]
-    if not location and 'l' not in request.args and g.user_geonameids and current_auth and (
+    if not location and 'l' not in request.args and g.user_geonameids and (current_auth.not_anonymous or g.anon_user) and (
             (not g.board.auto_locations) if g.board else True):
         # No location filters? Prompt the user
         ldata = location_geodata(g.user_geonameids)
