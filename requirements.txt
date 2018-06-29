@@ -10,7 +10,7 @@ Flask-Redis>=0.3.0
 Pillow==5.2.0
 sqlalchemy_utils==0.33.3
 SQLAlchemy>=1.0.0
-pytz==2018.4
+pytz==2018.5
 markdown==2.6.11
 tweepy==3.6.0
 bitlyapi==0.1.1
