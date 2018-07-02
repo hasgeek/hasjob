@@ -12,7 +12,6 @@ from flask import abort, flash, g, redirect, render_template, request, url_for, 
 from flask_mail import Message
 from baseframe import cache  # , dogpile
 from baseframe.forms import Form
-from coaster.auth import current_auth
 from coaster.utils import getbool, get_email_domain, md5sum, base_domain_matches
 from coaster.views import load_model
 from hasjob import app, forms, mail, lastuser
@@ -597,10 +596,10 @@ def rejectjob(domain, hashid):
         banned_posts = []
         if request.form.get('submit') == 'reject':
             flashmsg = "This job post has been rejected"
-            post.reject(rejectform.reason.data, current_auth.user)
+            post.reject(rejectform.reason.data, g.user)
         elif request.form.get('submit') == 'spam':
             flashmsg = "This job post has been marked as spam"
-            post.mark_spam(rejectform.reason.data, current_auth.user)
+            post.mark_spam(rejectform.reason.data, g.user)
         elif request.form.get('submit') == 'ban':
             # Moderator asked for a ban, so ban the user and reject
             # all posts from the domain if it's not a webmail domain
@@ -608,7 +607,7 @@ def rejectjob(domain, hashid):
                 post.user.blocked = True
             if post.domain.is_webmail:
                 flashmsg = "This job post has been rejected and the user banned"
-                post.reject(rejectform.reason.data, current_auth.user)
+                post.reject(rejectform.reason.data, g.user)
                 banned_posts = [post]
             else:
                 flashmsg = "This job post has been rejected and the user and domain banned"
@@ -619,7 +618,7 @@ def rejectjob(domain, hashid):
 
                 for jobpost in post.domain.jobposts:
                     if jobpost.state.PUBLIC:
-                        jobpost.reject(rejectform.reason.data, current_auth.user)
+                        jobpost.reject(rejectform.reason.data, g.user)
                         banned_posts.append(jobpost)
         else:
             # We're not sure what button the moderator hit
@@ -651,7 +650,7 @@ def moderatejob(domain, hashid):
         abort(410)
     moderateform = forms.ModerateForm()
     if moderateform.validate_on_submit():
-        post.moderate(moderateform.reason.data, current_auth.user)
+        post.moderate(moderateform.reason.data, g.user)
         flashmsg = post.moderate.data['message']
         msg = Message(subject="About your job post on Hasjob",
             recipients=[post.email])

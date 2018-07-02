@@ -2,7 +2,6 @@
 
 from flask import flash, g, abort
 from coaster.views import route, viewdata, UrlForView, ModelView
-from coaster.auth import current_auth
 from baseframe import __
 from baseframe.forms import render_form, render_redirect
 from .. import app

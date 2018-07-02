@@ -8,7 +8,6 @@ from pytz import UTC
 import unicodecsv
 from flask import g, request, flash, url_for, redirect, render_template, Markup, abort
 from coaster.utils import suuid, make_name, classmethodproperty
-from coaster.auth import current_auth
 from coaster.views import load_model, load_models, ModelView, InstanceLoader, UrlForView, route, viewdata
 from baseframe import __
 from baseframe.forms import render_form, render_delete_sqla, render_redirect
@@ -180,7 +179,7 @@ class AdminCampaignView(UrlForView, InstanceLoader, ModelView):
     @route('views.csv')
     def view_counts(self, **kwargs):
         campaign = self.obj
-        timezone = current_auth.actor.timezone if current_auth.is_authenticated else 'UTC'
+        timezone = g.user.timezone if g.user else 'UTC'
         viewdict = defaultdict(dict)
 
         interval = chart_interval_for(campaign)
