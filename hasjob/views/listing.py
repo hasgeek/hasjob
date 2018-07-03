@@ -58,7 +58,7 @@ def jobdetail(domain, hashid):
         return redirect(post.url_for(), code=301)
 
     if post.state.UNPUBLISHED:
-        if not (current_auth and post.admin_is(g.user)):
+        if not (current_auth and post.current_roles.admin):
             abort(403)
     if post.state.GONE:
         abort(410)
@@ -147,7 +147,7 @@ def jobdetail(domain, hashid):
 
     is_bgroup = getbool(request.args.get('b'))
     headline = post.headlineb if is_bgroup and post.headlineb else post.headline
-    if is_siteadmin or post.admin_is(g.user) or (current_auth and g.user.flags.get('is_employer_month')):
+    if is_siteadmin or post.current_roles.admin or (current_auth and g.user.flags.get('is_employer_month')):
         post_viewcounts = get_post_viewcounts(post.id)
     else:
         post_viewcounts = None
@@ -167,7 +167,7 @@ def jobdetail(domain, hashid):
 def job_viewstats(domain, hashid):
     is_siteadmin = lastuser.has_permission('siteadmin')
     post = JobPost.query.filter_by(hashid=hashid).options(db.load_only('id', 'datetime')).first_or_404()
-    if is_siteadmin or post.admin_is(g.user) or (current_auth and g.user.flags.get('is_employer_month')):
+    if is_siteadmin or post.current_roles.admin or (current_auth and g.user.flags.get('is_employer_month')):
         return jsonify({
             "unittype": post.viewstats[0],
             "stats": post.viewstats[1],
@@ -416,7 +416,7 @@ def view_application_email_gif(domain, hashid, application):
 def view_application(domain, hashid, application):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
     # Transition code until we force all employers to login before posting
-    if post.user and not (post.admin_is(g.user) or lastuser.has_permission('siteadmin')):
+    if post.user and not (post.current_roles.admin or lastuser.has_permission('siteadmin')):
         if not current_auth:
             return redirect(url_for('login', message=u"You need to be logged in to view candidate applications on Hasjob."))
         else:
@@ -455,7 +455,7 @@ def view_application(domain, hashid, application):
 @app.route('/apply/<hashid>/<application>', defaults={'domain': None}, methods=['POST'])
 def process_application(domain, hashid, application):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
-    if post.user and not post.admin_is(g.user):
+    if post.user and not post.current_roles.admin:
         if not current_auth:
             return redirect(url_for('login'))
         else:
@@ -488,7 +488,7 @@ def process_application(domain, hashid, application):
                     base_url=request.url_root)
                 email_text = html2text(email_html)
 
-                sender_name = g.user.fullname if post.admin_is(g.user) else post.fullname or post.company_name
+                sender_name = g.user.fullname if post.current_roles.admin else post.fullname or post.company_name
                 sender_formatted = u'{sender} (via {site})'.format(
                     sender=sender_name,
                     site=app.config['SITE_TITLE'])
@@ -587,7 +587,7 @@ def rejectjob(domain, hashid):
         mail.send(msg)
 
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
-    if post.state.UNPUBLISHED and not post.admin_is(g.user):
+    if post.state.UNPUBLISHED and not post.current_roles.admin:
         abort(403)
     if post.state.GONE:
         abort(410)
@@ -775,7 +775,7 @@ def confirm_email(domain, hashid, key):
 def withdraw(domain, hashid, key):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
     form = forms.WithdrawForm()
-    if not ((key is None and current_auth and post.admin_is(g.user)) or (key == post.edit_key)):
+    if not ((key is None and current_auth and post.current_roles.admin) or (key == post.edit_key)):
         abort(403)
     if post.state.WITHDRAWN:
         flash("Your job post has already been withdrawn", "info")
@@ -812,7 +812,7 @@ def editjob(hashid, key, domain=None, form=None, validated=False, newpost=None):
 
     if not newpost:
         post = JobPost.query.filter_by(hashid=hashid).first_or_404()
-        if not ((key is None and current_auth and post.admin_is(g.user)) or (key == post.edit_key)):
+        if not ((key is None and current_auth and post.current_roles.admin) or (key == post.edit_key)):
             abort(403)
 
         # Once this post is published, require editing at /domain/<hashid>/edit
@@ -994,7 +994,7 @@ def newjob():
         archived_post = JobPost.get(request.args['template'])
         if not archived_post:
             abort(404)
-        if not archived_post.admin_is(g.user):
+        if not archived_post.current_roles.admin:
             abort(403)
         if archived_post.state.LISTED:
             flash("This post is currently active and cannot be posted again.")
@@ -1029,7 +1029,7 @@ def close(domain, hashid, key):
     post = JobPost.get(hashid)
     if not post:
         abort(404)
-    if not post.admin_is(g.user):
+    if not post.current_roles.admin:
         abort(403)
     if request.method == 'GET' and post.state.CLOSED:
         return redirect(post.url_for('reopen'), code=303)
@@ -1053,7 +1053,7 @@ def reopen(domain, hashid, key):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
     if not post:
         abort(404)
-    if not post.admin_is(g.user):
+    if not post.current_roles.admin:
         abort(403)
     # Only closed posts can be reopened
     if not post.state.CLOSED:

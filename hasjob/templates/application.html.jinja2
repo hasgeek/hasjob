@@ -79,16 +79,16 @@
         </form>
         <div id="appl-response" class="hidden">
           <p>
-            <strong>From:</strong> {{ g.user.fullname if post.admin_is(g.user) else post.fullname or post.company_name }} (via {{ config['SITE_TITLE'] }}) &lt;{{ config['MAIL_SENDER'] }}&gt;<br>
-            <span class="appl-msg-reply hidden"><strong>Reply-To:</strong> {{ g.user.fullname if post.admin_is(g.user) else post.fullname or post.company_name }} &lt;{{ post.email }}&gt;<br></span>
+            <strong>From:</strong> {{ g.user.fullname if post.current_roles.admin else post.fullname or post.company_name }} (via {{ config['SITE_TITLE'] }}) &lt;{{ config['MAIL_SENDER'] }}&gt;<br>
+            <span class="appl-msg-reply hidden"><strong>Reply-To:</strong> {{ g.user.fullname if post.current_roles.admin else post.fullname or post.company_name }} &lt;{{ post.email }}&gt;<br></span>
             <strong>To:</strong> {{ job_application.fullname }}<br>
             <strong>Subject:</strong> <span class="appl-msg-reply hidden">Job response:</span><span class="appl-msg-reject hidden">Job declined:</span> {{ post.headline }}
           </p>
           <p class="appl-msg-reply hidden">
-            <em>{{ g.user.fullname if post.admin_is(g.user) else post.fullname or post.company_name }} has responded to your application for {{ post.headline }}:</em>
+            <em>{{ g.user.fullname if post.current_roles.admin else post.fullname or post.company_name }} has responded to your application for {{ post.headline }}:</em>
           </p>
           <p class="appl-msg-reject hidden">
-            <em>{{ g.user.fullname if post.admin_is(g.user) else post.fullname or post.company_name }} has declined your application for {{ post.headline }}:</em>
+            <em>{{ g.user.fullname if post.current_roles.admin else post.fullname or post.company_name }} has declined your application for {{ post.headline }}:</em>
           </p>
           {% include "inc/replyform.html.jinja2" %}
         </div>

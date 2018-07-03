@@ -221,11 +221,6 @@ class JobPost(BaseMixin, db.Model):
     def __repr__(self):
         return '<JobPost {hashid} "{headline}">'.format(hashid=self.hashid, headline=self.headline.encode('utf-8'))
 
-    def admin_is(self, user):
-        if user is None:
-            return False
-        return user == self.user or bool(self.admins.options(db.load_only('id')).filter_by(id=user.id).count())
-
     @property
     def expiry_date(self):
         return self.datetime + agelimit
@@ -343,13 +338,19 @@ class JobPost(BaseMixin, db.Model):
         perms = super(JobPost, self).permissions(user, inherited)
         if self.state.PUBLIC:
             perms.add('view')
-        if self.admin_is(user):
+        if user == self.user or user in self.admins:
             if self.state.UNPUBLISHED:
                 perms.add('view')
             perms.add('edit')
             perms.add('manage')
             perms.add('withdraw')
         return perms
+
+    def roles_for(self, actor=None, anchors=()):
+        roles = super(JobPost, self).roles_for(actor, anchors)
+        if actor == self.user or actor in self.admins:
+            roles.add('admin')
+        return roles
 
     @property
     def from_webmail_domain(self):
