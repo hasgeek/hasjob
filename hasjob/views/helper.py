@@ -46,7 +46,7 @@ def index_is_paginated():
 
 def has_post_stats(post):
     is_siteadmin = lastuser.has_permission('siteadmin')
-    return is_siteadmin or post.admin_is(g.user) or (current_auth and g.user.flags.get('is_employer_month'))
+    return is_siteadmin or post.admin_is(g.user) or (current_auth.not_anonymous and g.user.flags.get('is_employer_month'))
 
 
 @form_validation_success.connect
@@ -128,7 +128,7 @@ def load_user_data(user):
                     g.anon_user = anon_user
 
     # Prepare event session if it's not already present
-    if current_auth or g.anon_user and not g.esession:
+    if current_auth.not_anonymous or g.anon_user and not g.esession:
         g.esession = EventSession.get_session(uuid=session.get('es'), user=g.user, anon_user=g.anon_user)
     if g.esession:
         session['es'] = g.esession.uuid
@@ -254,7 +254,7 @@ def record_views_and_events(response):
     if g.impressions:
         g.event_data['impressions'] = g.impressions.values()
 
-    if current_auth:
+    if current_auth.not_anonymous:
         for campaign in g.campaign_views:
             if not CampaignView.exists(campaign, g.user):
                 db.session.begin_nested()
@@ -278,7 +278,7 @@ def record_views_and_events(response):
             campaign_view_count_update.delay(campaign_id=campaign.id, anon_user_id=g.anon_user.id)
 
     if g.esession:  # Will be None for anon static requests
-        if current_auth or g.anon_user:
+        if current_auth.not_anonymous or g.anon_user:
             ue = UserEvent.new_from_request(request)
         else:
             ue = UserEventBase.new_from_request(request)
@@ -306,7 +306,6 @@ def record_views_and_events(response):
             if g.impressions:
                 # Save impressions to user's cookie session to write to db later
                 session['impressions'] = g.impressions
-
     return response
 
 

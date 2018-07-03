@@ -382,7 +382,7 @@ class ApplicationForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super(ApplicationForm, self).__init__(*args, **kwargs)
         self.apply_email.choices = []
-        if current_auth:
+        if current_auth.not_anonymous:
             self.apply_email.description = Markup(
                 _(u'Add new email addresses from <a href="{}" target="_blank">your profile</a>').format(
                     g.user.profile_url))

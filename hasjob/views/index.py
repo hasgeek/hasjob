@@ -76,16 +76,16 @@ def json_index(data):
             for pinned, post, is_bgroup in group:
                 rgroup['posts'].append(stickie_dict(
                     post=post, url=post.url_for(b=is_bgroup), pinned=pinned, is_bgroup=is_bgroup,
-                    show_viewcounts=is_siteadmin or current_auth and g.user.flags.get('is_employer_month'),
-                    show_pay=is_siteadmin, starred=current_auth and post.id in g.starred_ids
+                    show_viewcounts=is_siteadmin or current_auth.not_anonymous and g.user.flags.get('is_employer_month'),
+                    show_pay=is_siteadmin, starred=current_auth.not_anonymous and post.id in g.starred_ids
                     ))
             result['grouped'].append(rgroup)
     if pinsandposts:
         for pinned, post, is_bgroup in pinsandposts:
             result['posts'].append(stickie_dict(
                 post=post, url=post.url_for(b=is_bgroup), pinned=pinned, is_bgroup=is_bgroup,
-                show_viewcounts=is_siteadmin or current_auth and g.user.flags.get('is_employer_month'),
-                show_pay=is_siteadmin, starred=current_auth and post.id in g.starred_ids
+                show_viewcounts=is_siteadmin or current_auth.not_anonymous and g.user.flags.get('is_employer_month'),
+                show_pay=is_siteadmin, starred=current_auth.not_anonymous and post.id in g.starred_ids
                 ))
 
     return jsonify(result)
@@ -373,7 +373,7 @@ def index(basequery=None, filters={}, md5sum=None, tag=None, domain=None, locati
         is_index = True
     else:
         is_index = False
-    if basequery is None and not (current_auth or g.kiosk or (board and not board.require_login)):
+    if basequery is None and not (current_auth.not_anonymous or g.kiosk or (board and not board.require_login)):
         showall = False
         batched = False
 
@@ -404,12 +404,12 @@ def index(basequery=None, filters={}, md5sum=None, tag=None, domain=None, locati
         # For logging
         g.event_data['filters'] = data['data_filters']
 
-    if current_auth:
+    if current_auth.not_anonymous:
         g.starred_ids = set(g.user.starred_job_ids(agelimit if not ageless else None))
     else:
         g.starred_ids = set()
 
-    if is_siteadmin or (current_auth and g.user.flags.get('is_employer_month')):
+    if is_siteadmin or (current_auth.not_anonymous and g.user.flags.get('is_employer_month')):
         load_viewcounts(data['posts'])
         show_viewcounts = True
     else:
@@ -435,7 +435,7 @@ def index(basequery=None, filters={}, md5sum=None, tag=None, domain=None, locati
     # Test values for development:
     # if not g.user_geonameids:
     #     g.user_geonameids = [1277333, 1277331, 1269750]
-    if not location and 'l' not in request.args and g.user_geonameids and (current_auth or g.anon_user) and (
+    if not location and 'l' not in request.args and g.user_geonameids and (current_auth.not_anonymous or g.anon_user) and (
             (not g.board.auto_locations) if g.board else True):
         # No location filters? Prompt the user
         ldata = location_geodata(g.user_geonameids)
