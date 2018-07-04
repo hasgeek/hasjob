@@ -9,7 +9,6 @@ from baseframe import _, __
 import baseframe.forms as forms
 from baseframe.utils import is_public_email_domain
 from coaster.utils import getbool, get_email_domain
-from coaster.auth import current_auth
 from flask_lastuser import LastuserResourceException
 
 from ..models import User, JobType, JobApplication, PAY_TYPE, CURRENCY, Domain
@@ -382,7 +381,7 @@ class ApplicationForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super(ApplicationForm, self).__init__(*args, **kwargs)
         self.apply_email.choices = []
-        if current_auth:
+        if g.user:
             self.apply_email.description = Markup(
                 _(u'Add new email addresses from <a href="{}" target="_blank">your profile</a>').format(
                     g.user.profile_url))

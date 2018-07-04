@@ -12,7 +12,6 @@ from flask import abort, flash, g, redirect, render_template, request, url_for, 
 from flask_mail import Message
 from baseframe import cache  # , dogpile
 from baseframe.forms import Form
-from coaster.auth import current_auth
 from coaster.utils import getbool, get_email_domain, md5sum, base_domain_matches
 from coaster.views import load_model
 from hasjob import app, forms, mail, lastuser
@@ -58,11 +57,11 @@ def jobdetail(domain, hashid):
         return redirect(post.url_for(), code=301)
 
     if post.state.UNPUBLISHED:
-        if not (current_auth and post.admin_is(g.user)):
+        if not (g.user and post.admin_is(g.user)):
             abort(403)
     if post.state.GONE:
         abort(410)
-    if current_auth:
+    if g.user:
         jobview = UserJobView.get(post, g.user)
         if jobview is None:
             jobview = UserJobView(user=g.user, jobpost=post)
@@ -87,7 +86,7 @@ def jobdetail(domain, hashid):
             except IntegrityError:
                 db.session.rollback()
 
-    if current_auth:
+    if g.user:
         report = JobPostReport.query.filter_by(post=post, user=g.user).first()
     else:
         report = None
@@ -106,7 +105,7 @@ def jobdetail(domain, hashid):
         pinnedform = forms.PinnedForm(obj=post)
 
     if reportform.validate_on_submit():
-        if current_auth:
+        if g.user:
             if report is None:
                 report = JobPostReport(post=post, user=g.user)
             report.reportcode_id = reportform.report_code.data
@@ -140,14 +139,14 @@ def jobdetail(domain, hashid):
     else:
         header_campaign = None
 
-    if current_auth and not g.kiosk:
+    if g.user and not g.kiosk:
         g.starred_ids = set(g.user.starred_job_ids(agelimit))
     else:
         g.starred_ids = set()
 
     is_bgroup = getbool(request.args.get('b'))
     headline = post.headlineb if is_bgroup and post.headlineb else post.headline
-    if is_siteadmin or post.admin_is(g.user) or (current_auth and g.user.flags.get('is_employer_month')):
+    if is_siteadmin or post.admin_is(g.user) or (g.user and g.user.flags.get('is_employer_month')):
         post_viewcounts = get_post_viewcounts(post.id)
     else:
         post_viewcounts = None
@@ -167,7 +166,7 @@ def jobdetail(domain, hashid):
 def job_viewstats(domain, hashid):
     is_siteadmin = lastuser.has_permission('siteadmin')
     post = JobPost.query.filter_by(hashid=hashid).options(db.load_only('id', 'datetime')).first_or_404()
-    if is_siteadmin or post.admin_is(g.user) or (current_auth and g.user.flags.get('is_employer_month')):
+    if is_siteadmin or post.admin_is(g.user) or (g.user and g.user.flags.get('is_employer_month')):
         return jsonify({
             "unittype": post.viewstats[0],
             "stats": post.viewstats[1],
@@ -186,7 +185,7 @@ def job_related_posts(domain, hashid):
     post = JobPost.query.filter_by(hashid=hashid).options(*JobPost._defercols).first_or_404()
     jobpost_ab = session_jobpost_ab()
     related_posts = post.related_posts().all()
-    if is_siteadmin or (current_auth and g.user.flags.get('is_employer_month')):
+    if is_siteadmin or (g.user and g.user.flags.get('is_employer_month')):
         load_viewcounts(related_posts)
     g.impressions = {rp.id: (False, rp.id, bgroup(jobpost_ab, rp)) for rp in related_posts}
     max_counts = get_max_counts()
@@ -290,7 +289,7 @@ def applyjob(domain, hashid):
     if post.email_domain != domain:
         return redirect(post.url_for('apply'), code=301)
 
-    if current_auth:
+    if g.user:
         job_application = JobApplication.query.filter_by(user=g.user, jobpost=post).first()
     else:
         job_application = None
@@ -308,7 +307,7 @@ def applyjob(domain, hashid):
             applyform = forms.ApplicationForm()
         applyform.post = post
         if applyform.validate_on_submit():
-            if current_auth and g.user.blocked:
+            if g.user and g.user.blocked:
                 flashmsg = "Your account has been blocked from applying to jobs"
             else:
                 if g.kiosk:
@@ -417,7 +416,7 @@ def view_application(domain, hashid, application):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
     # Transition code until we force all employers to login before posting
     if post.user and not (post.admin_is(g.user) or lastuser.has_permission('siteadmin')):
-        if not current_auth:
+        if not g.user:
             return redirect(url_for('login', message=u"You need to be logged in to view candidate applications on Hasjob."))
         else:
             abort(403)
@@ -456,7 +455,7 @@ def view_application(domain, hashid, application):
 def process_application(domain, hashid, application):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
     if post.user and not post.admin_is(g.user):
-        if not current_auth:
+        if not g.user:
             return redirect(url_for('login'))
         else:
             abort(403)
@@ -597,10 +596,10 @@ def rejectjob(domain, hashid):
         banned_posts = []
         if request.form.get('submit') == 'reject':
             flashmsg = "This job post has been rejected"
-            post.reject(rejectform.reason.data, current_auth.user)
+            post.reject(rejectform.reason.data, g.user)
         elif request.form.get('submit') == 'spam':
             flashmsg = "This job post has been marked as spam"
-            post.mark_spam(rejectform.reason.data, current_auth.user)
+            post.mark_spam(rejectform.reason.data, g.user)
         elif request.form.get('submit') == 'ban':
             # Moderator asked for a ban, so ban the user and reject
             # all posts from the domain if it's not a webmail domain
@@ -608,7 +607,7 @@ def rejectjob(domain, hashid):
                 post.user.blocked = True
             if post.domain.is_webmail:
                 flashmsg = "This job post has been rejected and the user banned"
-                post.reject(rejectform.reason.data, current_auth.user)
+                post.reject(rejectform.reason.data, g.user)
                 banned_posts = [post]
             else:
                 flashmsg = "This job post has been rejected and the user and domain banned"
@@ -619,7 +618,7 @@ def rejectjob(domain, hashid):
 
                 for jobpost in post.domain.jobposts:
                     if jobpost.state.PUBLIC:
-                        jobpost.reject(rejectform.reason.data, current_auth.user)
+                        jobpost.reject(rejectform.reason.data, g.user)
                         banned_posts.append(jobpost)
         else:
             # We're not sure what button the moderator hit
@@ -651,7 +650,7 @@ def moderatejob(domain, hashid):
         abort(410)
     moderateform = forms.ModerateForm()
     if moderateform.validate_on_submit():
-        post.moderate(moderateform.reason.data, current_auth.user)
+        post.moderate(moderateform.reason.data, g.user)
         flashmsg = post.moderate.data['message']
         msg = Message(subject="About your job post on Hasjob",
             recipients=[post.email])
@@ -775,7 +774,7 @@ def confirm_email(domain, hashid, key):
 def withdraw(domain, hashid, key):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
     form = forms.WithdrawForm()
-    if not ((key is None and current_auth and post.admin_is(g.user)) or (key == post.edit_key)):
+    if not ((key is None and g.user is not None and post.admin_is(g.user)) or (key == post.edit_key)):
         abort(403)
     if post.state.WITHDRAWN:
         flash("Your job post has already been withdrawn", "info")
@@ -812,7 +811,7 @@ def editjob(hashid, key, domain=None, form=None, validated=False, newpost=None):
 
     if not newpost:
         post = JobPost.query.filter_by(hashid=hashid).first_or_404()
-        if not ((key is None and current_auth and post.admin_is(g.user)) or (key == post.edit_key)):
+        if not ((key is None and g.user is not None and post.admin_is(g.user)) or (key == post.edit_key)):
             abort(403)
 
         # Once this post is published, require editing at /domain/<hashid>/edit
@@ -962,7 +961,7 @@ def editjob(hashid, key, domain=None, form=None, validated=False, newpost=None):
 def newjob():
     form = forms.ListingForm()
     archived_post = None
-    if not current_auth:
+    if not g.user:
         return redirect(url_for('login', next=url_for('newjob'),
             message=u"Hasjob now requires you to login before posting a job. Please login as yourself."
                 u" We'll add details about your company later"))
@@ -983,7 +982,7 @@ def newjob():
     if request.method == 'GET':
         header_campaign = Campaign.for_context(CAMPAIGN_POSITION.BEFOREPOST, board=g.board, user=g.user,
                 anon_user=g.anon_user, geonameids=g.user_geonameids)
-        if current_auth:
+        if g.user:
             # form.poster_name.data = g.user.fullname  # Deprecated 2013-11-20
             form.poster_email.data = g.user.email
     else:
