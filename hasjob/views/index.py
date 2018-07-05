@@ -878,7 +878,7 @@ def oembed(url):
     if not parsed.netloc.endswith(u'hasjob.co'):
         # is this a legit hasjob domain or subdomain? if not, then return 404
         abort(404)
-    elif parsed.path == '/' and parsed.query == 'embed=1':
+    elif parsed.path in ['/', ''] and parsed.query == 'embed=1':
         # Checking like this so that it's easier in future to embed more type of content
         oembedjs = {
             "provider_url": "https://hasjob.co/",
