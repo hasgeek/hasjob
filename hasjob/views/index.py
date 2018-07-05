@@ -2,11 +2,12 @@
 
 from datetime import datetime
 from collections import OrderedDict
+from urlparse import urlparse
 
 from sqlalchemy.exc import ProgrammingError
 from flask import abort, redirect, render_template, request, Response, url_for, g, flash, jsonify, Markup
 from coaster.utils import getbool, parse_isoformat, for_tsquery
-from coaster.views import render_with
+from coaster.views import render_with, requestargs
 from baseframe import _  # , dogpile
 
 from .. import app, lastuser
@@ -861,3 +862,35 @@ def manifest():
 @app.route('/api/1/embed.js', methods=['GET'])
 def embed():
     return app.send_static_file('embed.js')
+
+
+@app.route('/api/1/oembed', methods=['GET'], subdomain='<subdomain>')
+@app.route('/api/1/oembed', methods=['GET'])
+@requestargs('url')
+def oembed(url):
+    """
+    Endpoint to support oEmbed - https://oembed.com/
+    Required for services like embed.ly
+    """
+    oembedjs = {}
+
+    parsed = urlparse(url)
+    if not parsed.netloc.endswith(u'hasjob.co'):
+        # is this a legit hasjob domain or subdomain? if not, then return 404
+        abort(404)
+    elif parsed.path == '/' and parsed.query == 'embed=1':
+        # Checking like this so that it's easier in future to embed more type of content
+        oembedjs = {
+            "provider_url": "https://hasjob.co/",
+            "provider_name": "Hasjob",
+            "thumbnail_width": 200,
+            "thumbnail_height": 200,
+            "thumbnail_url": "https://hasjob.co/static/img/hasjob-logo-200x200.png",
+            "author_name": "Hasjob",
+            "title": "Hasjob | Hasjob.co",
+            "html": "<iframe src='{}'>".format(url),
+            "version": "1.0",
+            "author_url": "https://hasjob.co/humans.txt",
+            "type": "rich"
+        }
+    return jsonify(oembedjs)
