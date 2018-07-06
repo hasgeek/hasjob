@@ -878,7 +878,17 @@ def oembed(url):
     if not parsed.netloc.endswith(u'hasjob.co'):
         # is this a legit hasjob domain or subdomain? if not, then return 404
         abort(404)
-    elif parsed.path in ['/', ''] and parsed.query == 'embed=1':
+
+    boardname, _ = parsed.netloc.split('.', 1)
+    if boardname == 'hasjob':
+        # in case the url is https://hasjob.co/?embed=1
+        boardname = 'www'
+
+    board = Board.query.filter_by(name=boardname).first()
+    if not board:
+        abort(404)
+
+    if parsed.path in ['/', '']:
         # Checking like this so that it's easier in future to embed more type of content
         oembedjs = {
             "provider_url": "https://hasjob.co/",
@@ -887,10 +897,10 @@ def oembed(url):
             "thumbnail_height": 200,
             "thumbnail_url": "https://hasjob.co/static/img/hasjob-logo-200x200.png",
             "author_name": "Hasjob",
-            "title": "Hasjob | Hasjob.co",
-            "html": "<iframe src='{}'>".format(url),
-            "version": "1.0",
             "author_url": "https://hasjob.co/humans.txt",
+            "title": ' | '.join([board.title, board.caption]),
+            "html": "<iframe src='{url}&{query}'>".format(url=board.url_for('oembed'), query=parsed.query),
+            "version": "1.0",
             "type": "rich"
         }
     return jsonify(oembedjs)
