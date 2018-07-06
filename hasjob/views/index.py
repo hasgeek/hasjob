@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from uuid import uuid4
 from datetime import datetime
 from collections import OrderedDict
 from urlparse import urlparse, urljoin
@@ -891,6 +892,8 @@ def oembed(url):
     if not board:
         abort(404)
 
+    iframeid = 'hasjob-iframe-' + unicode(uuid4())
+
     if parsed.path in ['/', '']:
         # Checking like this so that it's easier in future to embed more type of content
         oembedjs = {
@@ -902,7 +905,8 @@ def oembed(url):
             "author_name": app.config.get('SITE_TITLE'),
             "author_url": urljoin(url_for('index', _external=True), "humans.txt"),
             "title": ' | '.join([board.title, board.caption]),
-            "html": "<iframe src='{url}&{query}'>".format(url=board.url_for('oembed'), query=parsed.query),
+            "html": "<iframe id='{iframeid}' src='{url}&iframeid={iframeid}&{query}' width='100%' height='724' frameborder='0' scrolling='no'>".format(
+                url=board.url_for('oembed', _external=True), iframeid=iframeid, query=parsed.query),
             "version": "1.0",
             "type": "rich"
         }
