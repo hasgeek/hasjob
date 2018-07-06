@@ -870,6 +870,9 @@ def embed():
 def oembed(url):
     """
     Endpoint to support oEmbed - https://oembed.com/
+
+    Example request - http://hasjob.co/api/1/oembed?url=https://hasjob.co/
+
     Required for services like embed.ly
     """
     oembedjs = {}
