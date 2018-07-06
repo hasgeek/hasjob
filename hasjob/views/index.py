@@ -2,7 +2,7 @@
 
 from datetime import datetime
 from collections import OrderedDict
-from urlparse import urlparse
+from urlparse import urlparse, urljoin
 
 from sqlalchemy.exc import ProgrammingError
 from flask import abort, redirect, render_template, request, Response, url_for, g, flash, jsonify, Markup
@@ -891,13 +891,13 @@ def oembed(url):
     if parsed.path in ['/', '']:
         # Checking like this so that it's easier in future to embed more type of content
         oembedjs = {
-            "provider_url": "https://hasjob.co/",
-            "provider_name": "Hasjob",
+            "provider_url": url_for('index', _external=True),
+            "provider_name": app.config.get('SITE_TITLE'),
             "thumbnail_width": 200,
             "thumbnail_height": 200,
-            "thumbnail_url": "https://hasjob.co/static/img/hasjob-logo-200x200.png",
-            "author_name": "Hasjob",
-            "author_url": "https://hasjob.co/humans.txt",
+            "thumbnail_url": url_for('static', filename='img/hasjob-logo-200x200.png', _external=True),
+            "author_name": app.config.get('SITE_TITLE'),
+            "author_url": urljoin(url_for('index', _external=True), "humans.txt"),
             "title": ' | '.join([board.title, board.caption]),
             "html": "<iframe src='{url}&{query}'>".format(url=board.url_for('oembed'), query=parsed.query),
             "version": "1.0",
