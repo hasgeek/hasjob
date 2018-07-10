@@ -218,7 +218,7 @@ class Board(BaseNameMixin, db.Model):
 
     def url_for(self, action='view', _external=False):
         if action == 'view':
-            if self.name == u'www':
+            if self.is_root:
                 # Specialcase 'www'. Don't use www.hasjob.co.
                 return url_for('index', subdomain=None, _external=_external)
             else:
@@ -228,7 +228,7 @@ class Board(BaseNameMixin, db.Model):
         elif action == 'delete':
             return url_for('board_delete', board=self.name, _external=_external)
         elif action == 'oembed':
-            if self.name == u'www':
+            if self.is_root:
                 return url_for('index', subdomain=None, _external=_external) + "?embed=1"
             else:
                 return url_for('index', subdomain=self.name, _external=_external) + "?embed=1"

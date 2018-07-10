@@ -4,6 +4,7 @@ from uuid import uuid4
 from datetime import datetime
 from collections import OrderedDict
 from urlparse import urlparse, urljoin
+from werkzeug.routing import NotFound, MethodNotAllowed, RequestRedirect
 
 from sqlalchemy.exc import ProgrammingError
 from flask import abort, redirect, render_template, request, Response, url_for, g, flash, jsonify, Markup
@@ -879,22 +880,28 @@ def oembed(url):
     oembedjs = {}
 
     parsed = urlparse(url)
-    if not parsed.netloc.endswith(u'hasjob.co'):
+    if not parsed.netloc.endswith(app.config['SERVER_NAME']):
         # is this a legit hasjob domain or subdomain? if not, then return 404
         abort(404)
 
     boardname, _ = parsed.netloc.split('.', 1)
     if boardname == 'hasjob':
-        # in case the url is https://hasjob.co/?embed=1
+        # in case the url is https://hasjob.co/
         boardname = 'www'
 
-    board = Board.query.filter_by(name=boardname).first()
+    board = Board.get(boardname)
     if not board:
+        abort(404)
+
+    try:
+        adapter = app.url_map.bind_to_environ(request)
+        url_name, _ = adapter.match(parsed.path)
+    except (NotFound, RequestRedirect, MethodNotAllowed):
         abort(404)
 
     iframeid = 'hasjob-iframe-' + unicode(uuid4())
 
-    if parsed.path in ['/', '']:
+    if url_name == 'index':
         # Checking like this so that it's easier in future to embed more type of content
         oembedjs = {
             "provider_url": url_for('index', _external=True),
