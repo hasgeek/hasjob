@@ -44,7 +44,14 @@ def tweet(title, url, location=None, parsed_location=None, username=None):
         text = text + ' ' + locationtag
     if username:
         text = text + ' @' + username
-    api.update_status(text)
+    tweet_status = api.update_status(text)
+    return tweet_status.id
+
+
+def retweet(post):
+    # Need to add the By-line like A job by Company has been posted on hasjob, check it out + post.headline
+    tweet_id = tweet(post.headline, post.url_for(_external=True))
+    return tweet_id
 
 
 def shorten(url):

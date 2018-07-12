@@ -21,6 +21,7 @@ from hasjob.models import (
     AnonJobView, JobApplication, Campaign, CAMPAIGN_POSITION, unique_hash,
     viewstats_by_id_hour, viewstats_by_id_day)
 from hasjob.twitter import tweet
+from hasjob.twitter import retweet
 from hasjob.tagging import tag_locations, add_to_boards, tag_jobpost
 from hasjob.uploads import uploaded_logos
 from hasjob.utils import get_word_bag, redactemail, random_long_key, common_legal_names
@@ -746,6 +747,7 @@ def confirm_email(domain, hashid, key):
                         % post.email_domain, category='info')
                     return redirect(url_for('index'))
             post.confirm()
+            post.tweetid = retweet(post)
             db.session.commit()
             if app.config['TWITTER_ENABLED']:
                 if post.headlineb:
