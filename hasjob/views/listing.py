@@ -20,8 +20,7 @@ from hasjob.models import (
     PAY_TYPE, ReportCode, UserJobView,
     AnonJobView, JobApplication, Campaign, CAMPAIGN_POSITION, unique_hash,
     viewstats_by_id_hour, viewstats_by_id_day)
-from hasjob.twitter import tweet
-from hasjob.twitter import retweet
+from hasjob.twitter import tweet_post
 from hasjob.tagging import tag_locations, add_to_boards, tag_jobpost
 from hasjob.uploads import uploaded_logos
 from hasjob.utils import get_word_bag, redactemail, random_long_key, common_legal_names
@@ -747,17 +746,9 @@ def confirm_email(domain, hashid, key):
                         % post.email_domain, category='info')
                     return redirect(url_for('index'))
             post.confirm()
-            post.tweetid = retweet(post)
             db.session.commit()
             if app.config['TWITTER_ENABLED']:
-                if post.headlineb:
-                    tweet.delay(post.headline, post.url_for(b=0, _external=True),
-                        post.location, dict(post.parsed_location or {}), username=post.twitter)
-                    tweet.delay(post.headlineb, post.url_for(b=1, _external=True),
-                        post.location, dict(post.parsed_location or {}), username=post.twitter)
-                else:
-                    tweet.delay(post.headline, post.url_for(_external=True),
-                        post.location, dict(post.parsed_location or {}), username=post.twitter)
+                tweet_post.delay(post.id)
             add_to_boards.delay(post.id)
             flash("Congratulations! Your job post has been published. As a bonus for being an employer on Hasjob, "
                 "you can now see how your post is performing relative to others. Look in the footer of any post.",
