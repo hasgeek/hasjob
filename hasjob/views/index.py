@@ -906,7 +906,7 @@ def oembed(url):
 
     try:
         adapter = app.url_map.bind_to_environ(request)
-        url_name, _ = adapter.match(parsed.path)
+        url_name, extra = adapter.match(parsed.path)
     except (NotFound, RequestRedirect, MethodNotAllowed):
         abort(404)
 
