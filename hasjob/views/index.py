@@ -866,7 +866,6 @@ def embed():
     return app.send_static_file('embed.js')
 
 
-@app.route('/api/1/oembed', methods=['GET'], subdomain='<subdomain>')
 @app.route('/api/1/oembed', methods=['GET'])
 @requestargs('url')
 def oembed(url):
@@ -884,9 +883,18 @@ def oembed(url):
         # is this a legit hasjob domain or subdomain? if not, then return 404
         abort(404)
 
-    boardname, _ = parsed.netloc.split('.', 1)
-    if boardname == 'hasjob':
-        # in case the url is https://hasjob.co/
+    url_server_name = parsed.netloc.split('.')
+    current_server_name = app.config['SERVER_NAME'].split('.')
+    offset = -len(current_server_name)
+    if url_server_name[offset:] != current_server_name:
+        # This is when this kind of url gets called - http://subdomain.hasjob.co/api/1/oembed?url=https://hasjob.co/
+        # we currently dont support this.
+        boardname = '<invalid>'
+    else:
+        boardname = '.'.join(filter(None, url_server_name[:offset]))
+
+    if not boardname:
+        # in case `url` is same as the current server name
         boardname = 'www'
 
     board = Board.get(boardname)
