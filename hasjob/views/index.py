@@ -901,6 +901,8 @@ def oembed(url):
     if boardname not in valid_boardnames:
         # doing this so that the user mentioned boardname doesn't touch database
         abort(404)
+    else:
+        board = Board.get(boardname)
 
     try:
         adapter = app.url_map.bind_to_environ(request)
