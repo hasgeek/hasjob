@@ -897,8 +897,9 @@ def oembed(url):
         # in case `url` is same as the current server name
         boardname = 'www'
 
-    board = Board.get(boardname)
-    if not board:
+    valid_boardnames = [b[0] for b in Board.query.values(Board.name)]
+    if boardname not in valid_boardnames:
+        # doing this so that the user mentioned boardname doesn't touch database
         abort(404)
 
     try:
