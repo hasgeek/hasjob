@@ -229,9 +229,9 @@ class Board(BaseNameMixin, db.Model):
             return url_for('board_delete', board=self.name, _external=_external)
         elif action == 'oembed':
             if self.is_root:
-                return url_for('index', subdomain=None, _external=_external) + "?embed=1"
+                return url_for('index', subdomain=None, embed=1, _external=_external)
             else:
-                return url_for('index', subdomain=self.name, _external=_external) + "?embed=1"
+                return url_for('index', subdomain=self.name, embed=1, _external=_external)
 
     @classmethod
     def get(cls, name):
