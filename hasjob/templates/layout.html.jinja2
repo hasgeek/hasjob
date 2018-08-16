@@ -48,7 +48,7 @@
   <!-- Feed and search -->
   <link rel="search" type="application/opensearchdescription+xml" href="{{ url_for('opensearch') }}" title="{% if g.board %}{{ g.board.title }}{% else %}{{ config['SITE_TITLE'] }}{% endif %}" />
   <link rel="alternate" type="application/atom+xml" title="All jobs | {% if g.board -%} {{ g.board.title }} {%- if g.board.not_root %} ({{ config['SITE_TITLE'] }}) {%- endif -%} {%- else -%} {{ config['SITE_TITLE'] }} {%- endif %}" href="{{ url_for('feed') }}" />
-  <link rel="alternate" type="application/json+oembed" title="All jobs | {% if g.board -%} {{ g.board.title }} {%- if g.board.not_root %} ({{ config['SITE_TITLE'] }}) {%- endif -%} {%- else -%} {{ config['SITE_TITLE'] }} {%- endif %}" href="{{ url_for('oembed', url=request.url, _external=true) }}" />
+  <link rel="alternate" type="application/json+oembed" title="{{ self.title() }}" href="{{ url_for('oembed', url=request.url, _external=true) }}" />
   <script type="application/ld+json">
     {
       "@context": "http://schema.org",
