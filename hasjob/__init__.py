@@ -17,7 +17,7 @@ from ._version import __version__
 
 # First, make an app and config it
 
-app = Flask(__name__, instance_relative_config=True)
+app = Flask(__name__, instance_relative_config=True, subdomain_matching=True)
 app.static_folder = 'static'
 mail = Mail()
 lastuser = Lastuser()

@@ -3,17 +3,16 @@
 from uuid import uuid4
 from datetime import datetime
 from collections import OrderedDict
-from urlparse import urlparse, urljoin
-from werkzeug.routing import NotFound, MethodNotAllowed, RequestRedirect
+from six.moves.urllib.parse import urlsplit, SplitResult
 
 from sqlalchemy.exc import ProgrammingError
 from flask import abort, redirect, render_template, request, Response, url_for, g, flash, jsonify, Markup
 from coaster.utils import getbool, parse_isoformat, for_tsquery
-from coaster.views import render_with, requestargs
+from coaster.views import render_with, requestargs, endpoint_for
 from baseframe import _  # , dogpile
 
 from .. import app, lastuser
-from ..models import (db, JobCategory, JobPost, JobType, POST_STATE, newlimit, agelimit, JobLocation, Board, Filterset,
+from ..models import (db, JobCategory, JobPost, JobType, newlimit, agelimit, JobLocation, Board, Filterset,
     Domain, Location, Tag, JobPostTag, Campaign, CAMPAIGN_POSITION, CURRENCY, JobApplication, starred_job_table, BoardJobPost)
 from ..views.helper import (getposts, getallposts, gettags, location_geodata, load_viewcounts, session_jobpost_ab,
     bgroup, make_pay_graph, index_is_paginated, get_post_viewcounts, get_max_counts)
@@ -866,66 +865,52 @@ def embed():
     return app.send_static_file('embed.js')
 
 
+# For oEmbed. Needs to be moved somewhere better maintained than this.
+embed_index_views = ['index', 'browse_drafts', 'browse_by_anywhere', 'browse_by_category',
+    'browse_by_domain', 'browse_by_email', 'browse_by_location', 'browse_by_tag', 'browse_by_type']
+
+
 @app.route('/api/1/oembed', methods=['GET'])
 @requestargs('url')
 def oembed(url):
     """
-    Endpoint to support oEmbed - https://oembed.com/
+    Endpoint to support oEmbed (see https://oembed.com/). Example request::
 
-    Example request - http://hasjob.co/api/1/oembed?url=https://hasjob.co/
+        https://hasjob.co/api/1/oembed?url=https://hasjob.co/
 
-    Required for services like embed.ly
+    Required for services like embed.ly, which need a registered oEmbed API handler.
     """
-    oembedjs = {}
 
-    parsed = urlparse(url)
-    if not parsed.netloc.endswith(app.config['SERVER_NAME']):
-        # is this a legit hasjob domain or subdomain? if not, then return 404
-        abort(404)
+    endpoint, view_args = endpoint_for(url)
+    if endpoint not in embed_index_views:
+        return jsonify({})
 
-    url_server_name = parsed.netloc.split('.')
-    current_server_name = app.config['SERVER_NAME'].split('.')
-    offset = -len(current_server_name)
-    if url_server_name[offset:] != current_server_name:
-        # This is when this kind of url gets called - http://subdomain.hasjob.co/api/1/oembed?url=https://hasjob.co/
-        # we currently dont support this.
-        boardname = '<invalid>'
-    else:
-        boardname = '.'.join(filter(None, url_server_name[:offset]))
-
-    if not boardname:
-        # in case `url` is same as the current server name
-        boardname = 'www'
-
-    valid_boardnames = [b[0] for b in Board.query.values(Board.name)]
-    if boardname not in valid_boardnames:
-        # doing this so that the user mentioned boardname doesn't touch database
-        abort(404)
-    else:
-        board = Board.get(boardname)
-
-    try:
-        adapter = app.url_map.bind_to_environ(request)
-        url_name, extra = adapter.match(parsed.path)
-    except (NotFound, RequestRedirect, MethodNotAllowed):
-        abort(404)
-
+    board = Board.get(view_args.get('subdomain', u'www'))
     iframeid = 'hasjob-iframe-' + unicode(uuid4())
 
-    if url_name == 'index':
-        # Checking like this so that it's easier in future to embed more type of content
-        oembedjs = {
-            "provider_url": url_for('index', _external=True),
-            "provider_name": app.config.get('SITE_TITLE'),
-            "thumbnail_width": 200,
-            "thumbnail_height": 200,
-            "thumbnail_url": url_for('static', filename='img/hasjob-logo-200x200.png', _external=True),
-            "author_name": app.config.get('SITE_TITLE'),
-            "author_url": urljoin(url_for('index', _external=True), "humans.txt"),
-            "title": ' | '.join([board.title, board.caption]),
-            "html": "<iframe id='{iframeid}' src='{url}&iframeid={iframeid}&{query}' width='100%' height='724' frameborder='0' scrolling='no'>".format(
-                url=board.url_for('oembed', _external=True), iframeid=iframeid, query=parsed.query),
-            "version": "1.0",
-            "type": "rich"
-        }
-    return jsonify(oembedjs)
+    parsed_url = urlsplit(url)
+    embed_url = SplitResult(
+        parsed_url.scheme,
+        parsed_url.netloc,
+        parsed_url.path,
+        parsed_url.query + ('&' if parsed_url.query else '') + 'embed=1&iframeid=' + iframeid,
+        parsed_url.fragment
+        ).geturl()
+
+    return jsonify({
+        'provider_url': url_for('index', subdomain=None, _external=True),
+        'provider_name': app.config['SITE_TITLE'],
+        'thumbnail_width': 200,
+        'thumbnail_height': 200,
+        'thumbnail_url': url_for('static', filename='img/hasjob-logo-200x200.png', _external=True),
+        'author_name': board.title if board else app.config['SITE_TITLE'],
+        'author_url': board.url_for(_external=True) if board else url_for('index', subdomain=None, _external=True),
+        'title': ' | '.join([board.title, board.caption]) if board else app.config['SITE_TITLE'],
+        'html': ('<iframe id="{iframeid}" src="{url}" '
+            'width="100%" height="724" frameborder="0" scrolling="no">'.format(
+                url=embed_url, iframeid=iframeid)),
+        'version': '1.0',
+        'type': 'rich'
+        })
+
+    return jsonify({})
