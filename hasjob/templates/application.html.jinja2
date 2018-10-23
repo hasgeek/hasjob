@@ -25,8 +25,7 @@
         </p>
         {{ job_application.message|safe }}
         <hr>
-        <form id="response_form" method="POST" action="{{ job_application.url_for('process') }}">
-          <input type="hidden" name="_charset_"/>
+        <form id="response_form" method="POST" action="{{ job_application.url_for('process') }}" accept-charset="UTF-8">
           <input type="hidden" name="form.id" value="process_application_form"/>
           {{ response_form.hidden_tag() }}
           {%- if job_application.response.CAN_REJECT %}
