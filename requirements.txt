@@ -25,7 +25,7 @@ premailer==3.2.0
 langid>=1.1.4dev
 tldextract==2.2.0
 unicodecsv==0.14.1
-geoip2==2.8.0
+geoip2==2.9.0
 git+https://github.com/hasgeek/coaster
 git+https://github.com/hasgeek/flask-lastuser
 git+https://github.com/hasgeek/baseframe
