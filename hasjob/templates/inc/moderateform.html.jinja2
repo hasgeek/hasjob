@@ -1,6 +1,5 @@
 {% from "baseframe/forms.html.jinja2" import renderfield, ajaxform %}
-<form id="moderateform" method="POST" action="{{ post.url_for('moderate') }}" class="form-horizontal">
-  <input type="hidden" name="_charset_"/>
+<form id="moderateform" method="POST" action="{{ post.url_for('moderate') }}" class="form-horizontal" accept-charset="UTF-8">
   <input type="hidden" name="form.id" value="moderateform"/>
   {{ moderateform.hidden_tag() }}
   {{ renderfield(moderateform.reason, rows=6, style="wide", nolabel=true) }}

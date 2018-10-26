@@ -1,6 +1,5 @@
 {% from "baseframe/forms.html.jinja2" import renderfield, ajaxform %}
-<form id="reportform" method="POST" class="form-horizontal">
-  <input type="hidden" name="_charset_"/>
+<form id="reportform" method="POST" class="form-horizontal" accept-charset="UTF-8">
   <input type="hidden" name="form.id" value="reportform"/>
   {{ reportform.hidden_tag() }}
   {{ renderfield(reportform.report_code, style="wide", nolabel=True) }}

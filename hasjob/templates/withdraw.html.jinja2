@@ -11,8 +11,7 @@
         <strong>You will not be able to re-post this job or a similarly worded job
         until {{ post.after_expiry_date|longdate }}.</strong>
       </p>
-      <form method="POST" class="form-horizontal">
-        <input type="hidden" name="_charset_"/>
+      <form method="POST" class="form-horizontal" accept-charset="UTF-8">
         <input type="hidden" name="form.id" value="withdrawjob"/>
         {{ form.hidden_tag() }}
         {{ renderfield(form.really_withdraw, style="wide") }}

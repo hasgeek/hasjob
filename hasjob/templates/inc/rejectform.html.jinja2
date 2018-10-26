@@ -1,6 +1,5 @@
 {% from "baseframe/forms.html.jinja2" import renderfield, ajaxform %}
-<form id="rejectform" method="POST" action="{{ post.url_for('reject') }}" class="form-horizontal">
-  <input type="hidden" name="_charset_"/>
+<form id="rejectform" method="POST" action="{{ post.url_for('reject') }}" class="form-horizontal" accept-charset="UTF-8">
   <input type="hidden" name="form.id" value="rejectform"/>
   {{ rejectform.hidden_tag() }}
   {{ renderfield(rejectform.reason, style="wide", nolabel=true) }}

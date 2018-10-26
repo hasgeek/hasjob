@@ -9,8 +9,7 @@
           <h1>Terms of service</h1>
         </div>
         {% include "inc/tos.html.jinja2" %}
-        <form method="POST" class="form-horizontal">
-          <input type="hidden" name="_charset_"/>
+        <form method="POST" class="form-horizontal" accept-charset="UTF-8">
           <input type="hidden" name="form.id" value="confirmjob"/>
           {{ form.hidden_tag() }}
           {{ renderfield(form.terms_accepted, style="wide") }}

@@ -1,6 +1,5 @@
 {% from "baseframe/forms.html.jinja2" import renderfield, ajaxform %}
-<form id="pinnedform" method="POST" action="{{ post.url_for('pin') }}" class="form-horizontal">
-  <input type="hidden" name="_charset_"/>
+<form id="pinnedform" method="POST" action="{{ post.url_for('pin') }}" class="form-horizontal" accept-charset="UTF-8">
   <input type="hidden" name="form.id" value="pinnedform"/>
   {{ pinnedform.hidden_tag() }}
   {{ renderfield(pinnedform.pinned, style="wide") }}
