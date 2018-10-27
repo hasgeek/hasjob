@@ -61,9 +61,23 @@ In a production environment, you must set `FLASK_ENV` globally for it to be avai
 
 Hasjob without Docker requires manual installation of all dependencies.
 
-#### Postgres and Redis
+#### Setting up Postgres and Redis 
 
-Hasjob requires Postgres >= 9.4 and Redis. To set up a Postgres DB:
+Setting up a flask environment 
+
+    $ export $FLASK_ENV=development 
+
+Hasjob requires Postgres >= 9.4 and Redis. 
+
+For Postgres Installation :
+
+https://www.digitalocean.com/community/tutorials/how-to-install-and-use-postgresql-on-ubuntu-18-04
+
+For Redis Installation :
+
+https://redis.io/topics/quickstart
+
+To set up a Postgres DB:
 
 On OS X using the [Postgres App](http://postgresapp.com):
 
@@ -75,12 +89,22 @@ On OS X using the [Postgres App](http://postgresapp.com):
 
 On any Linux distribution:
 
+* Create a user with name 'hasgeek' in postgres db
+
+    ```
     $ sudo -u postgres createuser -d hasgeek
+    ```
+
+* Create a db with name 'hasjob' in postgres and assign 'hasgeek' as the owner
+
+    ```
     $ sudo -u postgres createdb -O hasgeek hasjob
-
-Edit `instance/development.py` to set the variable `SQLALCHEMY_DATABASE_URI` to `postgres://hasjob:YOUR_PASSWORD_HERE@localhost:5432/hasjob`.
-
-Redis does not require special configuration, but must listen on localhost and port 6379 (default).
+    ```
+* Set a password to hasgeek 
+   ```
+   $ sudo -u postgres psql
+    postgres=#\ password hasgeek
+    ```
 
 #### Local URLs
 
@@ -94,19 +118,71 @@ Hasjob makes use of subdomains to serve different sub-boards for jobs. To set it
     127.0.0.1    subboard.hasjob.your-machine.local
     ```
 
-* Edit `instance/development.py` and change `SERVER_NAME` to `'hasjob.your-machine.local:5000'`
+#### Other Configurations
+Rename the `instance/development.docker.py` to `instance/development.py`
+
+In `instance/development.py`:-
+
+* change `SERVER_NAME` to `'hasjob.your-machine.local:5000'`
+
+If redis running on local server
+
+* change `CACHE_REDIS_HOST = 'localhost'`
+* change `REDIS_URL = 'redis://localhost:6379'`
+
+Edit `instance/development.py` to set the variable `SQLALCHEMY_DATABASE_URI` to `postgres://database_owner:OWNER_PASSWORD_HERE@host:port/database`.
+
+Example:- `postgres://hasgeek:password@localhost:5432/hasjob`
+
+ 
+From `instance/settings-sample.py` copy the following to `instance/settings.py`, 
+**it is necessary** to build project
+
+    ASSET_MANIFEST_PATH = 'static/build/manifest.json'
+    ASSET_BASE_PATH = '/static/build'
+    
+
+
+We need to specify `LASTUSER_CLIENT_ID` and `LASTUSER_CLIENT_SECRET` in `instance/development.py` for authentication before we can start the server 
+
+* Go to `https://auth.hasgeek.com` and create an account
+* After logging in go to **Client applications**
+* Specify your application title and description
+* Application website should be `'https://hasjob.your-machine.local:5000/'`
+* Client namespace, Redirect url and Notification url can be the same url as above
+* Register your app after filling the details
+* Once you have registered your app, go to `'New access key'` in admin panel 
+* Click create to generate the Client access key and Client secret  
+* Paste the generated Client access key and Client secret in development.py
 
 #### Install dependencies
 
 Hasjob runs on [Python](https://www.python.org) with the [Flask](http://flask.pocoo.org/) microframework.
 
+* Make sure to install python version 2.7
+
 ##### Virutalenv + pip + webpack
+
+ Install pip for the python version 2.7
 
 If you are going to use a computer on which you would work on multiple Python based projects, [Virtualenv](docs.python-guide.org/en/latest/dev/virtualenvs/) is strongly recommended to ensure Hasjob’s elaborate and sometimes version-specific requirements doesn't clash with anything else.
 
-You will need to install all the requirements listed in `requirements.txt` using `pip`:
+* Create a virtual environment
+    ```
+    $ sudo pip install virtualenv
+    $ mkdir .virtual
+    $ cd .virtual 
+    $ virtualenv virtualenv_name
+    ```
+* Activate virtual environment
+```
+    $ source virtualenv_name/bin/activate
+```
+* Install all the requirements listed in `requirements.txt` using `pip` in the **virtual environment**
+    ```
+     (virtualenv_name) dev hasjob $ pip install -r requirements.txt
+    ```
 
-    $ pip install -r requirements.txt
 
 If you intend to actively contribute to Hasjob code, some functionality is sourced from the related libraries [coaster](https://github.com/hasgeek/coaster), [baseframe](https://github.com/hasgeek/baseframe) and [Flask-Lastuser](https://github.com/hasgeek/flask-lastuser). You may want to clone these repositories separately and put them in development mode:
 
@@ -120,7 +196,7 @@ If you intend to actively contribute to Hasjob code, some functionality is sourc
 
 Finish configuration with:
 
-    $ python manage.py db create
+    $ python manage.py createdb
 
 You will need to install all dependencies listed in `package.json`
      
@@ -130,9 +206,12 @@ You will need to install all dependencies listed in `package.json`
 You will need to run Webpack to bundle CSS, JS files & generate the service-worker.js
 
     $ cd hasjob/assets
-    $ yarn build
+    $ npm run build
 
-Before you run the server in development mode, make sure you have Postgres server and Redis server running as well. To start Hasjob:
+
+#### Starting the Server
+
+Before you run the server in development mode, make sure you have **Postgres server** and **Redis server** running as well. To start Hasjob:
 
     $ python runserver.py
 
