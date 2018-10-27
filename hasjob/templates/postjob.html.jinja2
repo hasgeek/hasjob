@@ -99,7 +99,6 @@
           </div>
         {%- else %}
           {#{{ renderfield(form.poster_name) }}-#} {# Deprecated 2013-11-20 -#}
-          {{ renderfield(form.poster_email) }}
           {%- if g.user %}
             <p>
               Only you, <strong>{{ g.user.fullname }}</strong>, will be able to respond to candidates.
