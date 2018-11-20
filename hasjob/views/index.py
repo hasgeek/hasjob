@@ -211,13 +211,12 @@ def fetch_jobposts(request_args, request_values, filters, is_index, board, board
 
     if getbool(request_args.get('embed')):
         embed = True
-        DEFAULT_LIMIT = 8
         if posts:
             limit = string_to_number(request_args.get('limit'))
             if limit is not None:
                 posts = posts[:limit]
             else:
-                posts = posts[:DEFAULT_LIMIT]
+                posts = posts[:8]
     else:
         embed = False
 
