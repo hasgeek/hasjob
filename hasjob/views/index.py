@@ -212,8 +212,9 @@ def fetch_jobposts(request_args, request_values, filters, is_index, board, board
     if getbool(request_args.get('embed')):
         embed = True
         if posts:
-            if request_args.get('limit'):
-                posts = posts[:int(request_args.get('limit'))]
+            limit = string_to_number(request_args.get('limit'))
+            if limit is not None:
+                posts = posts[:limit]
             else:
                 posts = posts[:8]
     else:
