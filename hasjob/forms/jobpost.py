@@ -165,8 +165,12 @@ class ListingForm(forms.Form):
     def validate_company_name(form, field):
         if len(field.data) > 6:
             caps = len(CAPS_RE.findall(field.data))
-            small = len(SMALL_RE.findall(field.data))
-            if small == 0 or caps / float(small) > 0.8:
+
+            # small = len(SMALL_RE.findall(field.data))  # deprecated on 30-11-2018
+            # if small == 0 or caps / float(small) > 0.8:  # deprecated on 30-11-2018
+
+            # For now, only 6 capital letters are allowed in company name
+            if caps > 6:
                 raise forms.ValidationError(_(u"Surely your organization isn’t named in uppercase?"))
 
     def validate_company_logo(form, field):
