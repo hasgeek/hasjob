@@ -12,6 +12,7 @@ from flask import abort, flash, g, redirect, render_template, request, url_for, 
 from flask_mail import Message
 from baseframe import cache  # , dogpile
 from baseframe.forms import Form
+from baseframe.utils import is_public_email_domain
 from coaster.utils import getbool, get_email_domain, md5sum, base_domain_matches
 from coaster.views import load_model
 from hasjob import app, forms, mail, lastuser
@@ -982,7 +983,7 @@ def newjob():
     if request.method == 'GET':
         header_campaign = Campaign.for_context(CAMPAIGN_POSITION.BEFOREPOST, board=g.board, user=g.user,
                 anon_user=g.anon_user, geonameids=g.user_geonameids)
-        if g.user:
+        if g.user and not is_public_email_domain(g.user.email, default=False):
             # form.poster_name.data = g.user.fullname  # Deprecated 2013-11-20
             form.poster_email.data = g.user.email
     else:
