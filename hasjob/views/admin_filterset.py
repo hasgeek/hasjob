@@ -13,9 +13,9 @@ from ..forms import FiltersetForm
 class AdminFiltersetView(UrlForView, ModelView):
     model = Filterset
 
-    def loader(self, kwargs):
-        if 'name' in kwargs:
-            return Filterset.get(g.board, kwargs.get('name'))
+    def loader(self, name=None):
+        if name:
+            return Filterset.get(g.board, name)
 
     @route('new', methods=['GET', 'POST'])
     @viewdata(title=__("New"))
@@ -40,7 +40,7 @@ class AdminFiltersetView(UrlForView, ModelView):
 
     @route('<name>/edit', methods=['GET', 'POST'])
     @viewdata(title=__("Edit"))
-    def edit(self, **kwargs):
+    def edit(self):
         if 'edit-filterset' not in g.board.current_permissions:
             abort(403)
 
@@ -56,5 +56,6 @@ class AdminFiltersetView(UrlForView, ModelView):
                 flash(u"There already exists a filterset with the selected criteria", 'interactive')
         return render_form(form=form, title=u"Edit filterset…", submit="Update",
             formid="filterset_edit", ajax=False)
+
 
 AdminFiltersetView.init_app(app)
