@@ -74,6 +74,7 @@ class AdminCampaignList(AdminView):
         return render_form(form=form, title=u"Create a campaign…", submit="Next",
             formid="campaign_new", cancel_url=url_for(self.list_current.endpoint), ajax=False)
 
+
 AdminCampaignList.init_app(app)
 
 
@@ -134,12 +135,12 @@ class AdminCampaignView(UrlForView, InstanceLoader, ModelView):
         return AdminCampaignList.tabs
 
     @route('')
-    def view(self, **kwargs):
+    def view(self):
         return render_template('campaign_info.html.jinja2',
             campaign=self.obj, interval=chart_interval_for(self.obj, default=None))
 
     @route('edit', methods=['GET', 'POST'])
-    def edit(self, **kwargs):
+    def edit(self):
         form = CampaignForm(obj=self.obj)
         if form.validate_on_submit():
             form.populate_obj(self.obj)
@@ -151,7 +152,7 @@ class AdminCampaignView(UrlForView, InstanceLoader, ModelView):
             formid="campaign_edit", cancel_url=self.obj.url_for(), ajax=False)
 
     @route('delete', methods=['GET', 'POST'])
-    def delete(self, **kwargs):
+    def delete(self):
         return render_delete_sqla(self.obj, db, title=u"Confirm delete",
             message=u"Delete campaign '%s'?" % self.obj.title,
             success=u"You have deleted campaign '%s'." % self.obj.title,
@@ -159,7 +160,7 @@ class AdminCampaignView(UrlForView, InstanceLoader, ModelView):
             cancel_url=self.obj.url_for())
 
     @route('new', methods=['GET', 'POST'])
-    def action_new(self, **kwargs):
+    def action_new(self):
         self.form_header = Markup(render_template('campaign_action_edit_header.html.jinja2', campaign=self.obj))
         form = CampaignActionForm()
         if request.method == 'GET':
@@ -177,7 +178,7 @@ class AdminCampaignView(UrlForView, InstanceLoader, ModelView):
             formid="campaign_action_new", cancel_url=self.obj.url_for(), ajax=False)
 
     @route('views.csv')
-    def view_counts(self, **kwargs):
+    def view_counts(self):
         campaign = self.obj
         timezone = g.user.timezone if g.user else 'UTC'
         viewdict = defaultdict(dict)
@@ -265,6 +266,7 @@ class AdminCampaignView(UrlForView, InstanceLoader, ModelView):
 
         return outfile.getvalue(), 200, {'Content-Type': 'text/plain'}
 
+
 AdminCampaignView.init_app(app)
 
 
@@ -286,7 +288,7 @@ class AdminCampaignActionView(UrlForView, InstanceLoader, ModelView):
         return Markup(render_template('campaign_action_edit_header.html.jinja2', campaign=self.obj.parent))
 
     @route('edit', methods=['GET', 'POST'])
-    def edit(self, **kwargs):
+    def edit(self):
         form = CampaignActionForm(obj=self.obj)
         if form.validate_on_submit():
             form.populate_obj(self.obj)
@@ -298,14 +300,14 @@ class AdminCampaignActionView(UrlForView, InstanceLoader, ModelView):
             formid="campaign_action_edit", cancel_url=self.obj.parent.url_for(), ajax=False)
 
     @route('delete', methods=['GET', 'POST'])
-    def delete(self, **kwargs):
+    def delete(self):
         return render_delete_sqla(self.obj, db, title=u"Confirm delete",
             message=u"Delete campaign action '%s'?" % self.obj.title,
             success=u"You have deleted campaign action '%s'." % self.obj.title,
             next=self.obj.parent.url_for())
 
     @route('csv', methods=['GET', 'POST'])
-    def csv(self, **kwargs):
+    def csv(self):
         if self.obj.type not in ('Y', 'N', 'M', 'F'):
             abort(403)
         outfile = StringIO()
@@ -316,6 +318,7 @@ class AdminCampaignActionView(UrlForView, InstanceLoader, ModelView):
         return outfile.getvalue(), 200, {'Content-Type': 'text/csv',
             'Content-Disposition': 'attachment; filename="%s-%s.csv"' % (
                 make_name(self.obj.parent.title), make_name(self.obj.title))}
+
 
 AdminCampaignActionView.init_app(app)
 
