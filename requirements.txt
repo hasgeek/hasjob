@@ -4,7 +4,7 @@ Flask-WTF==0.14.2
 Flask-Mail==0.9.1
 Flask-Assets==0.12
 Flask-Uploads==0.2.1
-Flask-RQ==0.2
+Flask-RQ2==18.2.1
 Flask-Testing==0.7.1
 Flask-Redis>=0.3.0
 Pillow==5.3.0

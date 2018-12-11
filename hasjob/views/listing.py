@@ -749,14 +749,14 @@ def confirm_email(domain, hashid, key):
             db.session.commit()
             if app.config['TWITTER_ENABLED']:
                 if post.headlineb:
-                    tweet.delay(post.headline, post.url_for(b=0, _external=True),
+                    tweet.queue(post.headline, post.url_for(b=0, _external=True),
                         post.location, dict(post.parsed_location or {}), username=post.twitter)
-                    tweet.delay(post.headlineb, post.url_for(b=1, _external=True),
+                    tweet.queue(post.headlineb, post.url_for(b=1, _external=True),
                         post.location, dict(post.parsed_location or {}), username=post.twitter)
                 else:
-                    tweet.delay(post.headline, post.url_for(_external=True),
+                    tweet.queue(post.headline, post.url_for(_external=True),
                         post.location, dict(post.parsed_location or {}), username=post.twitter)
-            add_to_boards.delay(post.id)
+            add_to_boards.queue(post.id)
             flash("Congratulations! Your job post has been published. As a bonus for being an employer on Hasjob, "
                 "you can now see how your post is performing relative to others. Look in the footer of any post.",
                 "interactive")
@@ -941,8 +941,8 @@ def editjob(hashid, key, domain=None, form=None, validated=False, newpost=None):
                     post.company_logo = None
 
             db.session.commit()
-            tag_jobpost.delay(post.id)    # Keywords
-            tag_locations.delay(post.id)  # Locations
+            tag_jobpost.queue(post.id)    # Keywords
+            tag_locations.queue(post.id)  # Locations
             post.uncache_viewcounts('pay_label')
             session.pop('userkeys', None)  # Remove legacy userkeys dict
             session.permanent = True

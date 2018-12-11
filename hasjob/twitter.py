@@ -1,15 +1,14 @@
 # -*- coding: utf-8 -*-
 
-from flask_rq import job
 from tweepy import OAuthHandler, API
 import bitlyapi
 import urllib2
 import json
 import re
-from hasjob import app
+from hasjob import app, rq
 
 
-@job('hasjob')
+@rq.job('hasjob')
 def tweet(title, url, location=None, parsed_location=None, username=None):
     auth = OAuthHandler(app.config['TWITTER_CONSUMER_KEY'], app.config['TWITTER_CONSUMER_SECRET'])
     auth.set_access_token(app.config['TWITTER_ACCESS_KEY'], app.config['TWITTER_ACCESS_SECRET'])
