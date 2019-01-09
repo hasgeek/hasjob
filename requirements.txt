@@ -15,7 +15,7 @@ markdown==3.0.1
 tweepy==3.7.0
 bitlyapi==0.1.1
 coverage==4.5.2
-bleach==3.0.2
+bleach==3.1.0
 ordereddict==1.1
 jsmin==2.2.2
 psycopg2==2.7.6.1
