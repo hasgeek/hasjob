@@ -2,7 +2,6 @@
 
 from os import path
 from datetime import datetime, timedelta
-from uuid import uuid4
 from urllib import quote, quote_plus
 import hashlib
 import bleach
@@ -27,16 +26,6 @@ from ..utils import scrubemail, redactemail, cointoss
 
 gif1x1 = 'R0lGODlhAQABAJAAAP8AAAAAACH5BAUQAAAALAAAAAABAAEAAAICBAEAOw=='.decode('base64')
 MAX_COUNTS_KEY = u'maxcounts'
-
-
-@app.route('/_sniffle.gif')
-def sniffle():
-    return gif1x1, 200, {
-        'Content-Type': 'image/gif',
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0'
-    }
 
 
 def index_is_paginated():
@@ -67,18 +56,12 @@ def load_user_data(user):
     """
     All pre-request utilities, run after g.user becomes available.
 
-    Part 1: Load anon user:
-
-    1. If there's g.user and session['anon_user'], it loads that anon_user and tags with user=g.user, then removes anon
-    2. If there's no g.user and no session['anon_user'], sets session['anon_user'] = 'test'
-    3. If there's no g.user and there is session['anon_user'] = 'test', creates a new anon user, then saves to cookie
-    4. If there's no g.user and there is session['anon_user'] != 'test', loads g.anon_user
-
+    Part 1: If session['au'] exists, either set g.anon_user or set anon_user.user (if g.user exists).
     Part 2: Are we in kiosk mode? Is there a preview campaign?
     Part 3: Look up user's IP address location as geonameids for use in targeting.
     """
     g.anon_user = None  # Could change below
-    g.event_data = {}   # Views can add data to the current pageview event
+    g.event_data = {}  # Views can add data to the current pageview event
     g.esession = None
     g.viewcounts = {}
     g.impressions = session.pop('impressions', {})  # Retrieve from cookie session if present there
@@ -88,65 +71,45 @@ def load_user_data(user):
     now = datetime.utcnow()
 
     if request.endpoint not in ('static', 'baseframe.static'):
-        # Loading an anon user only if we're not rendering static resources
-        if user:
-            if 'au' in session and session['au'] is not None and not unicode(session['au']).startswith(u'test'):
+        if 'au' in session and session['au'] is not None:
+            if unicode(session['au']).startswith('test'):
+                # old test token that we no longer need
+                session.pop('au')
+            else:
+                # fetch anon user and set anon_user.user if g.user exists
                 anon_user = AnonUser.query.get(session['au'])
                 if anon_user:
-                    anon_user.user = user
-            session.pop('au', None)
-        else:
-            if not session.get('au'):
-                session['au'] = u'test-' + unicode(uuid4())
-                g.esession = EventSessionBase.new_from_request(request)
-                g.event_data['anon_cookie_test'] = session['au']
-            # elif session['au'] == 'test':  # Legacy test cookie, original request now lost
-            #     g.anon_user = AnonUser()
-            #     db.session.add(g.anon_user)
-            #     g.esession = EventSession.new_from_request(request)
-            #     g.esession.anon_user = g.anon_user
-            #     db.session.add(g.esession)
-            #     # We'll update session['au'] below after database commit
-            # elif unicode(session['au']).startswith('test-'):  # Newer redis-backed test cookie
-            #     # This client sent us back our test cookie, so set a real value now
-            #     g.anon_user = AnonUser()
-            #     db.session.add(g.anon_user)
-            #     g.esession = EventSession.new_from_request(request)
-            #     g.esession.anon_user = g.anon_user
-            #     db.session.add(g.esession)
-            #     g.esession.load_from_cache(session['au'], UserEvent)
-            #     # We'll update session['au'] below after database commit
-            else:
-                anon_user = None  # AnonUser.query.get(session['au'])
-                if not anon_user:
-                    # XXX: We got a fake value? This shouldn't happen
-                    g.event_data['anon_cookie_test'] = session['au']
-                    session['au'] = u'test-' + unicode(uuid4())  # Try again
-                    g.esession = EventSessionBase.new_from_request(request)
+                    if g.user:
+                        anon_user.user = g.user
+                        g.anon_user = None
+                        session.pop('au', None)
+                    else:
+                        g.anon_user = anon_user
                 else:
-                    g.anon_user = anon_user
+                    # the AnonUser record has been deleted for some reason,
+                    # this should not happen.
+                    session.pop('au')
 
-    # Prepare event session if it's not already present
-    if g.user or g.anon_user and not g.esession:
-        g.esession = EventSession.get_session(uuid=session.get('es'), user=g.user, anon_user=g.anon_user)
-    if g.esession:
-        session['es'] = g.esession.uuid
+        # Prepare event session if it's not already present
+        if g.esession is None:
+            if 'es' in session and session['es'] is not None:
+                # it's in cache or the db, load it
+                if g.user or g.anon_user:
+                    g.esession = EventSession.get_session(uuid=session['es'], user=g.user, anon_user=g.anon_user)
+                else:
+                    g.esession = EventSessionBase.new_from_request(request)
+                    g.esession.load_from_cache(session['es'], UserEvent)
+            else:
+                # create a new session
+                g.esession = EventSessionBase.new_from_request(request)
+                session['es'] = g.esession.uuid
 
-    # Don't commit here. It flushes SQLAlchemy's session cache and forces
-    # fresh database hits. Let after_request commit. (Commented out 30-03-2016)
-    # db.session.commit()
-    g.db_commit_needed = True
-
-    if g.anon_user:
-        session['au'] = g.anon_user.id
-        session.permanent = True
-        if 'impressions' in session:
-            # Run this in the foreground since we need this later in the request for A/B display consistency.
-            # This is most likely being called from the UI-non-blocking sniffle.gif anyway.
+        if g.anon_user and 'impressions' in session:
+            # Run this in the foreground
+            # since we need this later in the request for A/B display consistency.
             save_impressions(g.esession.id, session.pop('impressions').values(), now)
 
     # We have a user, now look up everything else
-
     if session.get('kiosk'):
         g.kiosk = True
     else:
@@ -192,8 +155,11 @@ def load_user_data(user):
 
 @app.after_request
 def record_views_and_events(response):
-    if hasattr(g, 'db_commit_needed') and g.db_commit_needed:
-        db.session.commit()
+    # if there were any transaction changes in load_user_data(), that'll get commited here.
+    # commit() is supposed to raise an error if no transaction exists,
+    # but the default behavior of the Session is that a transaction is always present;
+    # http://docs.sqlalchemy.org/en/latest/orm/session_basics.html#committing
+    db.session.commit()
 
     # We had a few error reports with g.* variables missing in this function, so now
     # we look again and make note if something is missing. We haven't encountered
@@ -301,7 +267,7 @@ def record_views_and_events(response):
                     jobpost_id=g.jobpost_viewed[0],
                     bgroup=g.jobpost_viewed[1])
         else:
-            g.esession.save_to_cache(session['au'])
+            g.esession.save_to_cache(session['es'])
             if g.impressions:
                 # Save impressions to user's cookie session to write to db later
                 session['impressions'] = g.impressions

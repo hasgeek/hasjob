@@ -1,6 +1,6 @@
 {%- extends "baseframe.html.jinja2" -%}
 {%- from "baseframe/components.html.jinja2" import hgnav -%}
-{%- from "macros.html.jinja2" import campaign_header, campaign_script, filters_setup_script -%}
+{%- from "macros.html.jinja2" import campaign_header, campaign_script, filters_setup_script, anon_user_script -%}
 
 {%- block doctypehtml -%}
 <!DOCTYPE html>
@@ -100,7 +100,7 @@
       {{ filters_setup_script(job_filters, data_filters) }}
     {%- else %}
       {{ filters_setup_script(job_filters) }}
-  {%- endif %}
+    {%- endif %}
   {%- endif %}
 {%- endblock %}
 
@@ -274,9 +274,6 @@
     to find out when new jobs are posted. Hosted by
     <a href="http://e2enetworks.com/">E2E Networks</a>.
   {%- endif %}
-  {%- if not g.user and not g.anon_user %}
-    <img src="{{ url_for('sniffle') }}" width="1" height="1" alt=""/>
-  {%- endif %}
 </p>
 {% endblock %}
 
@@ -309,4 +306,5 @@
     }
   </script>
   {% block footerscripts %}{% endblock %}
+  {{ anon_user_script() }}
 {% endblock %}

@@ -269,3 +269,37 @@
     </script>
   {%- endwith %}
 {%- endmacro -%}
+
+{%- macro anon_user_script() -%}
+  {%- if not g.user and not g.anon_user %}
+  <script type="text/javascript">
+    $(function () {
+      var anonymized = false;
+      var csrf_token = $('meta[name="csrf-token"]').attr('content');
+      var anonymize = function (event) {
+        $.post(
+          "{{ url_for('anon_session') }}",
+          {
+            event: event,
+            csrf_token: csrf_token
+          },
+          function (data) {
+            console.log(data);
+          });
+        anonymized = true;
+      }
+      window.onscroll = function (e) {
+        if (!anonymized) {
+          anonymize("scroll");
+        }
+      }
+      window.onpointermove = function (e) {
+        if (!anonymized) {
+          anonymize("pointermove");
+        }
+      }
+    })
+  </script>
+  {%- endif %}
+{%- endmacro -%}
+

@@ -367,7 +367,6 @@ def index(basequery=None, filters={}, md5sum=None, tag=None, domain=None, locati
                 BoardJobPost.board == g.board, JobPost.state.LISTED).options(
                     db.load_only('jobpost_id', 'pinned')).all()
         }
-
     else:
         board_jobs = {}
 
