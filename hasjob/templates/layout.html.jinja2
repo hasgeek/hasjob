@@ -236,7 +236,11 @@
     {%- if request.path != url_for('newjob') %}
         {% set site_links = site_links + [{'title': "Post a job", 'url': url_for('newjob')|usessl, 'class': 'btn btn-sm btn-post-job hidden-xs'}] %}
     {%- endif %}
-    {{ hgnav(site_title=site_title(), site_nav_button=site_nav_button(), site_nav=site_nav(), site_links=site_links, user_links=user_links) }}
+    {% if g.kiosk %}
+      {{ hgnav(site_title=site_title(), site_nav_button=site_nav_button(), site_nav=site_nav(), auth=false, network=false) }}
+    {%- else %}
+      {{ hgnav(site_title=site_title(), site_nav_button=site_nav_button(), site_nav=site_nav(), site_links=site_links, user_links=user_links) }}
+    {%- endif %}
   {% endwith %}
 </header>
 {% endblock %}
