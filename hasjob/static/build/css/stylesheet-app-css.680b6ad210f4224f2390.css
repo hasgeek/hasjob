@@ -75,7 +75,7 @@ header {
     header #hgnav .hg-site-nav {
       clear: both; }
     header #hgnav .search-field {
-      font-family: "Fira Sans", arial, sans-serif, FontAwesome; }
+      font-family: FontAwesome, "Fira Sans", arial, sans-serif; }
     header #hgnav .filter-dropdown {
       position: absolute;
       top: -500px;
