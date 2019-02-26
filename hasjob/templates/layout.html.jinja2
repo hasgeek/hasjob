@@ -217,7 +217,6 @@
       {%- endraw %}
     </div>
   {% endmacro %}
-  {% if not g.kiosk %}
   {% with site_links=[], user_links = [] %}
     {%- if g.user and g.user.flags.is_candidate_alltime %}
       {% set user_links = user_links + [{'title': "Applied jobs", 'url': url_for('applied')}] %}
@@ -237,9 +236,12 @@
     {%- if request.path != url_for('newjob') %}
         {% set site_links = site_links + [{'title': "Post a job", 'url': url_for('newjob')|usessl, 'class': 'btn btn-sm btn-post-job hidden-xs'}] %}
     {%- endif %}
-    {{ hgnav(site_title=site_title(), site_nav_button=site_nav_button(), site_nav=site_nav(), site_links=site_links, user_links=user_links) }}
+    {% if g.kiosk %}
+      {{ hgnav(site_title=site_title(), site_nav_button=site_nav_button(), site_nav=site_nav(), auth=false, network=false) }}
+    {%- else %}
+      {{ hgnav(site_title=site_title(), site_nav_button=site_nav_button(), site_nav=site_nav(), site_links=site_links, user_links=user_links) }}
+    {%- endif %}
   {% endwith %}
-  {%- endif %}
 </header>
 {% endblock %}
 
@@ -308,5 +310,22 @@
       });
     }
   </script>
+  {% if g.kiosk %}
+    <script type="text/javascript">
+      $(function() {
+        var idleTimer, idleTimeOut = 120000;
+        $('body').bind('mousemove click keypress submit change scroll resize dblclick touchmove mousewheel', function (event) {
+          clearTimeout(idleTimer);
+          idleTimer = setTimeout(function () {
+            if(window.location.pathname !== '/') {
+              window.location.href = "/";
+            } else {
+              $('html, body').animate({ scrollTop: 0 });
+            }
+          }, idleTimeOut);
+        });
+      });
+    </script>
+  {%- endif %}
   {% block footerscripts %}{% endblock %}
 {% endblock %}
