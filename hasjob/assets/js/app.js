@@ -134,13 +134,12 @@ window.Hasjob.StickieList = {
           }
         });
 
-        stickielist.loadmoreRactive.on('forceload', function(event) {
-          load();
-        });
-
         $("#loadmore").appear().on('appear', function(event, element) {
           load();
         });
+
+        $.force_appear();
+
       } else {
         // Update rendered template
         this.loadmoreRactive.set('url', config.url);
