@@ -23,7 +23,7 @@ dnspython==1.16.0
 html2text==2018.1.9
 premailer==3.3.0
 langid>=1.1.4dev
-tldextract==2.2.0
+tldextract==2.2.1
 unicodecsv==0.14.1
 geoip2==2.9.0
 git+https://github.com/hasgeek/coaster
