@@ -274,6 +274,8 @@ def fetch_jobposts(request_args, request_values, filters, is_index, board, board
         if 'startdate' in request_values:
             try:
                 startdate = parse_isoformat(request_values['startdate'])
+            except TypeError:
+                abort(400)
             except ValueError:
                 pass
 
