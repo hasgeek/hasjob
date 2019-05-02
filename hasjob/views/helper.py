@@ -724,21 +724,6 @@ def jobpost_location_hierarchy(self):
 JobPost.location_hierarchy = property(jobpost_location_hierarchy)
 
 
-@app.template_filter('shortdate')
-def shortdate(date):
-    if date > (datetime.utcnow() - timedelta(days=30)):
-        return utc.localize(date).astimezone(get_timezone()).strftime('%e %b')
-    else:
-        # The string replace hack is to deal with inconsistencies in the underlying
-        # implementation of strftime. See https://bugs.python.org/issue8304
-        return unicode(utc.localize(date).astimezone(get_timezone()).strftime("%e %b '%y")).replace(u"'", u"’")
-
-
-@app.template_filter('longdate')
-def longdate(date):
-    return utc.localize(date).astimezone(get_timezone()).strftime('%e %B %Y')
-
-
 @app.template_filter('cleanurl')
 def cleanurl(url):
     if url.startswith('http://'):
