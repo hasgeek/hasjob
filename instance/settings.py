@@ -60,6 +60,9 @@ BITLY_KEY = ''
 PERIODIC_KEY = ''
 #: Throttle limit for email domain
 THROTTLE_LIMIT = 5
+#: Don't show year for dates within this many days
+SHORTDATE_THRESHOLD_DAYS = 60
+#: Email address to display when asking users to contact support
 SUPPORT_EMAIL = 'support@hasgeek.com'
 #: Words banned in the title and their error messages
 BANNED_WORDS = [
