@@ -41,7 +41,7 @@ def stickie_dict(post, url, pinned=False, show_viewcounts=False, show_pay=False,
             'viewed': post_viewcounts['viewed'],
             'opened': post_viewcounts['opened'],
             'applied': post_viewcounts['applied']
-        }
+            }
     if show_pay:
         result['pay'] = post_viewcounts['pay_label']
     return result
@@ -368,7 +368,7 @@ def index(basequery=None, filters={}, md5sum=None, tag=None, domain=None, locati
             BoardJobPost.query.join(BoardJobPost.jobpost).filter(
                 BoardJobPost.board == g.board, JobPost.state.LISTED).options(
                     db.load_only('jobpost_id', 'pinned')).all()
-        }
+            }
 
     else:
         board_jobs = {}
@@ -553,7 +553,7 @@ def browse_by_location(location):
     if loc:
         geodata = {'geonameid': loc.id, 'name': loc.name, 'use_title': loc.title, 'description': Markup(loc.description)}
     else:
-        return redirect(url_for('index', l=location), code=302)
+        return redirect(url_for('index', l=location), code=302)  # NOQA
     if location != geodata['name']:
         return redirect(url_for('browse_by_location', location=geodata['name']))
     return index(location=geodata, title=geodata['use_title'])
@@ -562,7 +562,7 @@ def browse_by_location(location):
 @app.route('/in/anywhere', methods=['GET', 'POST'], subdomain='<subdomain>')
 @app.route('/in/anywhere', methods=['GET', 'POST'])
 def browse_by_anywhere():
-    return redirect(url_for('index', l='anywhere'), code=302)
+    return redirect(url_for('index', l='anywhere'), code=302)  # NOQA
 
 
 @app.route('/tag/<tag>', methods=['GET', 'POST'], subdomain='<subdomain>')
@@ -788,10 +788,10 @@ def sitemap(key):
     # Add filtered views to sitemap
     for item in Filterset.query.all():
         sitemapxml += '  <url>\n'\
-                    '    <loc>%s</loc>\n' % item.url_for(_external=True) + \
-                    '    <lastmod>%s</lastmod>\n' % (item.updated_at.isoformat() + 'Z') + \
-                    '    <changefreq>daily</changefreq>\n'\
-                    '  </url>\n'
+                      '    <loc>%s</loc>\n' % item.url_for(_external=True) + \
+                      '    <lastmod>%s</lastmod>\n' % (item.updated_at.isoformat() + 'Z') + \
+                      '    <changefreq>daily</changefreq>\n'\
+                      '  </url>\n'
 
     # Add locations to sitemap
     for item in Location.query.filter(Location.board_id.in_(board_ids)).all():

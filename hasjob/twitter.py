@@ -32,7 +32,7 @@ def tweet(title, url, location=None, parsed_location=None, username=None):
     if not locationtag and location:
         # Make a hashtag from the first word in the location. This catches
         # locations like 'Anywhere' which have no geonameid but are still valid
-        locationtag = u'#' + re.split('\W+', location)[0]
+        locationtag = u'#' + re.split(r'\W+', location)[0]
         maxlength -= len(locationtag) + 1
 
     if len(title) > maxlength:

@@ -407,4 +407,5 @@ def _user_flags(self):
         cache.set(cache_key, flags, timeout=3600)  # Cache for one hour
     return flags
 
+
 User.flags = cached_property(_user_flags)

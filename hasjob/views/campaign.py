@@ -187,14 +187,14 @@ class AdminCampaignView(UrlForView, InstanceLoader, ModelView):
 
         hourly_views = db.session.query('hour', 'count').from_statement(db.text(
             '''SELECT date_trunc(:interval, campaign_view.datetime AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS hour, COUNT(*) AS count FROM campaign_view WHERE campaign_id=:campaign_id GROUP BY hour ORDER BY hour;'''
-        )).params(interval=interval, timezone=timezone, campaign_id=campaign.id)
+            )).params(interval=interval, timezone=timezone, campaign_id=campaign.id)
 
         for hour, count in hourly_views:
             viewdict[hour]['_views'] = count
 
         hourly_views = db.session.query('hour', 'count').from_statement(db.text(
             '''SELECT date_trunc(:interval, campaign_anon_view.datetime AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS hour, COUNT(*) AS count FROM campaign_anon_view WHERE campaign_id=:campaign_id GROUP BY hour ORDER BY hour;'''
-        )).params(interval=interval, timezone=timezone, campaign_id=campaign.id)
+            )).params(interval=interval, timezone=timezone, campaign_id=campaign.id)
 
         for hour, count in hourly_views:
             viewdict[hour]['_views'] = viewdict[hour].setdefault('_views', 0) + count
@@ -219,13 +219,13 @@ class AdminCampaignView(UrlForView, InstanceLoader, ModelView):
             action_names.append(action.name)
             hourly_views = db.session.query('hour', 'count').from_statement(db.text(
                 '''SELECT date_trunc(:interval, campaign_user_action.created_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS hour, COUNT(*) AS count FROM campaign_user_action WHERE action_id=:action_id GROUP BY hour ORDER BY hour;'''
-            )).params(interval=interval, timezone=timezone, action_id=action.id)
+                )).params(interval=interval, timezone=timezone, action_id=action.id)
             for hour, count in hourly_views:
                 viewdict[hour][action.name] = count
 
             hourly_views = db.session.query('hour', 'count').from_statement(db.text(
                 '''SELECT date_trunc(:interval, campaign_anon_user_action.created_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS hour, COUNT(*) AS count FROM campaign_anon_user_action WHERE action_id=:action_id GROUP BY hour ORDER BY hour;'''
-            )).params(interval=interval, timezone=timezone, action_id=action.id)
+                )).params(interval=interval, timezone=timezone, action_id=action.id)
             for hour, count in hourly_views:
                 viewdict[hour][action.name] = viewdict[hour].setdefault(action.name, 0) + count
 

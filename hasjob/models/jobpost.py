@@ -430,7 +430,7 @@ class JobPost(BaseMixin, db.Model):
             Markup('<div>') + Markup(escape(self.headline)) + Markup('</div>'),
             Markup('<div>') + Markup(self.description) + Markup('</div>'),
             Markup('<div>') + Markup(self.perks) + Markup('</div>')
-        ))
+            ))
 
     @staticmethod
     def viewcounts_key(jobpost_id):
@@ -823,8 +823,8 @@ class JobApplication(BaseMixin, db.Model):
         grouped = JobApplication.response.group(
             JobApplication.query.filter(JobApplication.user == self.user).filter(
                 JobApplication.created_at > date_min, JobApplication.created_at < date_max
-            ).options(db.load_only('id'))
-        )
+                ).options(db.load_only('id'))
+            )
         counts = {k.label.name: len(v) for k, v in grouped.items()}
         counts['count'] = sum(counts.values())
         return counts

@@ -33,7 +33,7 @@ def upgrade():
         sa.PrimaryKeyConstraint('id'),
         sa.ForeignKeyConstraint(['board_id'], ['board.id'], ),
         sa.UniqueConstraint('name')
-    )
+        )
 
     op.create_index(op.f('ix_filterset_remote_location'), 'filterset', ['remote_location'], unique=False)
     op.create_index(op.f('ix_filterset_pay_currency'), 'filterset', ['pay_currency'], unique=False)
@@ -52,7 +52,7 @@ def upgrade():
         sa.ForeignKeyConstraint(['filterset_id'], ['filterset.id'], ),
         sa.ForeignKeyConstraint(['jobcategory_id'], ['jobcategory.id'], ),
         sa.PrimaryKeyConstraint('filterset_id', 'jobcategory_id')
-    )
+        )
 
     op.create_table('filterset_jobtype',
         sa.Column('filterset_id', sa.Integer(), nullable=False),
@@ -61,7 +61,7 @@ def upgrade():
         sa.ForeignKeyConstraint(['filterset_id'], ['filterset.id'], ),
         sa.ForeignKeyConstraint(['jobtype_id'], ['jobtype.id'], ),
         sa.PrimaryKeyConstraint('filterset_id', 'jobtype_id')
-    )
+        )
 
     op.create_table('filterset_tag',
         sa.Column('filterset_id', sa.Integer(), nullable=False),
@@ -70,7 +70,7 @@ def upgrade():
         sa.ForeignKeyConstraint(['filterset_id'], ['filterset.id'], ),
         sa.ForeignKeyConstraint(['tag_id'], ['tag.id'], ),
         sa.PrimaryKeyConstraint('filterset_id', 'tag_id')
-    )
+        )
 
     op.create_table('filterset_domain',
         sa.Column('filterset_id', sa.Integer(), nullable=False),
@@ -79,7 +79,7 @@ def upgrade():
         sa.ForeignKeyConstraint(['domain_id'], ['domain.id'], ),
         sa.ForeignKeyConstraint(['filterset_id'], ['filterset.id'], ),
         sa.PrimaryKeyConstraint('filterset_id', 'domain_id')
-    )
+        )
 
     op.create_index(op.f('ix_filterset_jobcategory_jobcategory_id'), 'filterset_jobcategory', ['jobcategory_id'], unique=False)
     op.create_index(op.f('ix_filterset_jobtype_jobtype_id'), 'filterset_jobtype', ['jobtype_id'], unique=False)

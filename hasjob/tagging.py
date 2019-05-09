@@ -109,18 +109,18 @@ def add_to_boards(jobpost_id):
 
 
 def tag_named_entities(post):
-        entities = extract_named_entities(text_blocks(post.tag_content()))
-        links = set()
-        for entity in entities:
-            tag = Tag.get(entity, create=True)
-            link = JobPostTag.get(post, tag)
-            if not link:
-                link = JobPostTag(jobpost=post, tag=tag, status=TAG_TYPE.AUTO)
-                post.taglinks.append(link)
-            links.add(link)
-        for link in post.taglinks:
-            if link.status == TAG_TYPE.AUTO and link not in links:
-                link.status = TAG_TYPE.REMOVED
+    entities = extract_named_entities(text_blocks(post.tag_content()))
+    links = set()
+    for entity in entities:
+        tag = Tag.get(entity, create=True)
+        link = JobPostTag.get(post, tag)
+        if not link:
+            link = JobPostTag(jobpost=post, tag=tag, status=TAG_TYPE.AUTO)
+            post.taglinks.append(link)
+        links.add(link)
+    for link in post.taglinks:
+        if link.status == TAG_TYPE.AUTO and link not in links:
+            link.status = TAG_TYPE.REMOVED
 
 
 @job('hasjob')

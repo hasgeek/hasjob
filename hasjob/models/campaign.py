@@ -26,7 +26,7 @@ board_campaign_table = db.Table('campaign_board', db.Model.metadata,
     *(make_timestamp_columns() + (
         db.Column('board_id', None, db.ForeignKey('board.id'), primary_key=True),
         db.Column('campaign_id', None, db.ForeignKey('campaign.id'), primary_key=True, index=True),
-    )))
+        )))
 
 
 campaign_event_session_table = db.Table('campaign_event_session', db.Model.metadata,

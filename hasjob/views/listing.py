@@ -171,7 +171,7 @@ def job_viewstats(domain, hashid):
             "unittype": post.viewstats[0],
             "stats": post.viewstats[1],
             "counts": get_post_viewcounts(post.id)
-        })
+            })
     else:
         return abort(403)
 
@@ -473,12 +473,12 @@ def process_application(domain, hashid, application):
                     job_application.reply(
                         message=response_form.response_message.data,
                         user=g.user
-                    )
+                        )
                 else:
                     job_application.reject(
                         message=response_form.response_message.data,
                         user=g.user
-                    )
+                        )
 
                 email_html = email_transform(
                     render_template('respond_email.html.jinja2',
@@ -574,12 +574,12 @@ def rejectjob(domain, hashid):
             'reject': {
                 'subject': "About your job post on Hasjob",
                 'template': "reject_email.html.jinja2"
-            },
+                },
             'ban': {
                 'subject': "About your account and job posts on Hasjob",
                 'template': "reject_domain_email.html.jinja2"
+                }
             }
-        }
         msg = Message(subject=mail_meta[reject_type]['subject'], recipients=[post.email])
         msg.html = email_transform(render_template(mail_meta[reject_type]['template'], post=post, banned_posts=banned_posts), base_url=request.url_root)
         msg.body = html2text(msg.html)

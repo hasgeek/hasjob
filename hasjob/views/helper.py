@@ -6,7 +6,6 @@ from uuid import uuid4
 from urllib import quote, quote_plus
 import hashlib
 import bleach
-from pytz import utc
 from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
 from geoip2.errors import AddressNotFoundError
@@ -14,7 +13,7 @@ from flask import Markup, request, g, session
 from flask_rq import job
 from flask_lastuser import signal_user_looked_up
 from coaster.sqlalchemy import failsafe_add
-from baseframe import _, cache, get_timezone
+from baseframe import _, cache
 from baseframe.signals import form_validation_error, form_validation_success
 
 from .. import app, redis_store, lastuser
@@ -36,7 +35,7 @@ def sniffle():
         'Cache-Control': 'no-cache, no-store, must-revalidate',
         'Pragma': 'no-cache',
         'Expires': '0'
-    }
+        }
 
 
 def index_is_paginated():
@@ -165,10 +164,10 @@ def load_user_data(user):
         ipaddr = session.get('ipaddr')
         ipts = session.get('ipts')
         now = datetime.utcnow()
-        if (not ipts or
-                ipaddr != request.environ['REMOTE_ADDR'] or
-                'geonameids' not in session or
-                (ipts < now - timedelta(days=7))):
+        if (not ipts
+                or ipaddr != request.environ['REMOTE_ADDR']
+                or 'geonameids' not in session
+                or (ipts < now - timedelta(days=7))):
             # IP has changed or timed out or wasn't saved to the user's session. Look up location
             ipaddr = request.environ['REMOTE_ADDR']
             try:
@@ -400,7 +399,7 @@ def set_max_counts():
             'max_views': 0,
             'max_opens': 0,
             'max_applied': 0
-        }
+            }
 
     view_counts = [get_post_viewcounts(postid) for postid in postids]
     values = {
@@ -408,7 +407,7 @@ def set_max_counts():
         'max_views': max([vc['viewed'] for vc in view_counts]),
         'max_opens': max([vc['opened'] for vc in view_counts]),
         'max_applied': max([vc['applied'] for vc in view_counts])
-    }
+        }
     redis_store.hset(MAX_COUNTS_KEY, 'max_impressions', values['max_impressions'])
     redis_store.hset(MAX_COUNTS_KEY, 'max_views', values['max_views'])
     redis_store.hset(MAX_COUNTS_KEY, 'max_opens', values['max_opens'])
@@ -512,16 +511,16 @@ def gettags(alltime=False):
 
 pay_graph_buckets = {
     'INR': (
-        range(0, 200000, 25000) +
-        range(200000, 2000000, 50000) +
-        range(2000000, 10000000, 100000) +
-        range(10000000, 100000000, 1000000) +
-        [100000000]),
+        range(0, 200000, 25000)
+        + range(200000, 2000000, 50000)
+        + range(2000000, 10000000, 100000)
+        + range(10000000, 100000000, 1000000)
+        + [100000000]),
     'USD': (
-        range(0, 200000, 5000) +
-        range(200000, 1000000, 50000) +
-        range(1000000, 10000000, 100000) +
-        [10000000])
+        range(0, 200000, 5000)
+        + range(200000, 1000000, 50000)
+        + range(1000000, 10000000, 100000)
+        + [10000000])
     }
 pay_graph_buckets['EUR'] = pay_graph_buckets['USD']
 pay_graph_buckets['SGD'] = pay_graph_buckets['USD']
