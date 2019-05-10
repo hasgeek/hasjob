@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from os import path
-from datetime import datetime, timedelta
+from datetime import timedelta
 from uuid import uuid4
 from urllib import quote, quote_plus
 import hashlib
@@ -12,6 +12,7 @@ from geoip2.errors import AddressNotFoundError
 from flask import Markup, request, g, session
 from flask_rq import job
 from flask_lastuser import signal_user_looked_up
+from coaster.utils import utcnow
 from coaster.sqlalchemy import failsafe_add
 from baseframe import _, cache
 from baseframe.signals import form_validation_error, form_validation_success
@@ -84,7 +85,7 @@ def load_user_data(user):
     g.campaign_views = []
     g.jobpost_viewed = None, None
     g.bgroup = None
-    now = datetime.utcnow()
+    now = utcnow()
 
     if request.endpoint not in ('static', 'baseframe.static'):
         # Loading an anon user only if we're not rendering static resources
@@ -163,7 +164,7 @@ def load_user_data(user):
     if app.geoip:
         ipaddr = session.get('ipaddr')
         ipts = session.get('ipts')
-        now = datetime.utcnow()
+        now = utcnow()
         if (not ipts
                 or ipaddr != request.environ['REMOTE_ADDR']
                 or 'geonameids' not in session
@@ -199,7 +200,7 @@ def record_views_and_events(response):
     # this problem ever since after several days of logging, but this bit of code
     # remains just in case something turns up in future.
     missing_in_context = []
-    now = datetime.utcnow()
+    now = utcnow()
     if not hasattr(g, 'esession'):
         g.esession = None
         missing_in_context.append('esession')
@@ -656,14 +657,14 @@ def campaign_view_count_update(campaign_id, user_id=None, anon_user_id=None):
             db.session.add(cv)
     query = db.session.query(db.func.count(campaign_event_session_table.c.event_session_id)).filter(
         campaign_event_session_table.c.campaign_id == campaign_id).join(EventSession).filter(
-        EventSession.active_at >= (cv.reset_at or datetime.utcnow()))
+        EventSession.active_at >= (cv.reset_at or utcnow()))
 
     # FIXME: Run this in a cron job and de-link from post-request processing
     # query = query.filter(
     #    db.or_(
     #        # Is this event session closed? Criteria: it's been half an hour or the session's explicitly closed
     #        EventSession.ended_at != None,
-    #        EventSession.active_at < datetime.utcnow() - timedelta(minutes=30)))  # NOQA
+    #        EventSession.active_at < utcnow() - timedelta(minutes=30)))  # NOQA
 
     if user_id:
         query = query.filter(EventSession.user_id == user_id)
@@ -679,13 +680,13 @@ def reset_campaign_views():  # Periodic job (see manage.py)
     live_campaigns = Campaign.query.filter(Campaign.state.is_live).options(db.load_only(Campaign.id))
 
     CampaignView.query.filter(CampaignView.campaign_id.in_(live_campaigns),
-        CampaignView.last_viewed_at < datetime.utcnow() - timedelta(days=30)
+        CampaignView.last_viewed_at < utcnow() - timedelta(days=30)
         ).update(
             {'dismissed': False, 'session_count': 0, 'reset_at': db.func.utcnow()},
             synchronize_session=False)  # NOQA
 
     CampaignAnonView.query.filter(CampaignAnonView.campaign_id.in_(live_campaigns),
-        CampaignAnonView.last_viewed_at < datetime.utcnow() - timedelta(days=30)
+        CampaignAnonView.last_viewed_at < utcnow() - timedelta(days=30)
         ).update(
             {'dismissed': False, 'session_count': 0, 'reset_at': db.func.utcnow()},
             synchronize_session=False)  # NOQA

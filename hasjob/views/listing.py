@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import bleach
-from datetime import datetime, timedelta
+from datetime import timedelta
 from difflib import SequenceMatcher
 from html2text import html2text
 from premailer import transform as email_transform
@@ -12,7 +12,7 @@ from flask import abort, flash, g, redirect, render_template, request, url_for, 
 from flask_mail import Message
 from baseframe import cache  # , dogpile
 from baseframe.forms import Form
-from coaster.utils import getbool, get_email_domain, md5sum, base_domain_matches
+from coaster.utils import getbool, get_email_domain, md5sum, base_domain_matches, utcnow
 from coaster.views import load_model
 from hasjob import app, forms, mail, lastuser
 from hasjob.models import (
@@ -737,7 +737,7 @@ def confirm_email(domain, hashid, key):
                 post_count = JobPost.query.filter(
                     JobPost.email_domain == post.email_domain
                     ).filter(~JobPost.state.UNPUBLISHED).filter(
-                    JobPost.datetime > datetime.utcnow() - timedelta(days=1)
+                    JobPost.datetime > utcnow() - timedelta(days=1)
                     ).count()
                 if post_count > app.config['THROTTLE_LIMIT']:
                     flash(u"We have received too many posts with %s addresses in the last 24 hours. "

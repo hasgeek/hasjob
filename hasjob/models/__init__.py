@@ -9,6 +9,8 @@ from coaster.sqlalchemy import (BaseMixin, BaseNameMixin, TimestampMixin, BaseSc
 from baseframe import __
 from .. import app
 
+TimestampMixin.__with_timezone__ = True
+
 agelimit = timedelta(days=30)
 newlimit = timedelta(days=1)
 

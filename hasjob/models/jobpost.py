@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from datetime import datetime, timedelta
+from datetime import timedelta
 from werkzeug import cached_property
 from flask import url_for, escape, Markup
 from flask_babelex import format_datetime
@@ -9,7 +9,7 @@ from sqlalchemy.orm import defer, deferred, load_only
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.dialects.postgresql import TSVECTOR
 import tldextract
-from coaster.utils import classmethodproperty
+from coaster.utils import classmethodproperty, utcnow
 from coaster.sqlalchemy import make_timestamp_columns, Query, JsonDict, StateManager
 from baseframe import cache, __
 from baseframe.utils import is_public_email_domain
@@ -48,7 +48,7 @@ def number_abbreviate(number, indian=False):
 starred_job_table = db.Table('starred_job', db.Model.metadata,
     db.Column('user_id', None, db.ForeignKey('user.id'), primary_key=True),
     db.Column('jobpost_id', None, db.ForeignKey('jobpost.id'), primary_key=True),
-    db.Column('created_at', db.DateTime, default=db.func.utcnow(), nullable=False),
+    db.Column('created_at', db.TIMESTAMP(timezone=True), default=db.func.utcnow(), nullable=False),
     )
 
 
@@ -56,7 +56,7 @@ def starred_job_ids(user, agelimit=None):
     if agelimit:
         return [r[0] for r in db.session.query(starred_job_table.c.jobpost_id).filter(
             starred_job_table.c.user_id == user.id,
-            starred_job_table.c.created_at > datetime.utcnow() - agelimit)]
+            starred_job_table.c.created_at > utcnow() - agelimit)]
     else:
         return [r[0] for r in db.session.query(starred_job_table.c.jobpost_id).filter(
             starred_job_table.c.user_id == user.id)]
@@ -85,8 +85,8 @@ class JobPost(BaseMixin, db.Model):
     user = db.relationship(User, primaryjoin=user_id == User.id, backref=db.backref('jobposts', lazy='dynamic'))
 
     hashid = db.Column(db.String(5), nullable=False, unique=True)
-    datetime = db.Column(db.DateTime, default=db.func.utcnow(), nullable=False, index=True)  # Published
-    closed_datetime = db.Column(db.DateTime, nullable=True)  # If withdrawn or rejected
+    datetime = db.Column(db.TIMESTAMP(timezone=True), default=db.func.utcnow(), nullable=False, index=True)  # Published
+    closed_datetime = db.Column(db.TIMESTAMP(timezone=True), nullable=True)  # If withdrawn or rejected
     # Pinned on the home page. Boards use the BoardJobPost.pinned column
     sticky = db.Column(db.Boolean, nullable=False, default=False)
     pinned = db.synonym('sticky')
@@ -140,7 +140,7 @@ class JobPost(BaseMixin, db.Model):
     payment_received = db.Column(db.Boolean, nullable=False, default=False)
     reviewer_id = db.Column(None, db.ForeignKey('user.id'), nullable=True, index=True)
     reviewer = db.relationship(User, primaryjoin=reviewer_id == User.id, backref="reviewed_posts")
-    review_datetime = db.Column(db.DateTime, nullable=True)
+    review_datetime = db.Column(db.TIMESTAMP(timezone=True), nullable=True)
     review_comments = db.Column(db.Unicode(250), nullable=True)
 
     search_vector = deferred(db.Column(TSVECTOR, nullable=True))
@@ -235,9 +235,9 @@ class JobPost(BaseMixin, db.Model):
         return self.expiry_date + timedelta(days=1)
 
     # NEW = Posted within last 24 hours
-    state.add_conditional_state('NEW', state.PUBLIC, lambda jobpost: jobpost.datetime >= datetime.utcnow() - newlimit, label=('new', __("New!")))
+    state.add_conditional_state('NEW', state.PUBLIC, lambda jobpost: jobpost.datetime >= utcnow() - newlimit, label=('new', __("New!")))
     # LISTED = Posted within last 30 days
-    state.add_conditional_state('LISTED', state.PUBLIC, lambda jobpost: jobpost.datetime >= datetime.utcnow() - agelimit, label=('listed', __("Listed")))
+    state.add_conditional_state('LISTED', state.PUBLIC, lambda jobpost: jobpost.datetime >= utcnow() - agelimit, label=('listed', __("Listed")))
     # OLD = Posted more than 30 days ago
     state.add_conditional_state('OLD', state.PUBLIC, lambda jobpost: not jobpost.state.LISTED, label=('old', __("Old")))
     # Checks if current user has the permission to confirm the jobpost
@@ -498,14 +498,14 @@ class JobPost(BaseMixin, db.Model):
         viewcounts = self.viewcounts
         opened = int(viewcounts['opened'])
         applied = int(viewcounts['applied'])
-        age = datetime.utcnow() - self.datetime
+        age = utcnow() - self.datetime
         hours = age.days * 24 + age.seconds / 3600
 
         return ((applied * 3) + (opened - applied)) / pow((hours + 2), 1.8)
 
     @cached_property  # For multiple accesses in a single request
     def viewstats(self):
-        now = datetime.utcnow()
+        now = utcnow()
         delta = now - self.datetime
         hourly_stat_limit = 2  # days
         if delta.days < hourly_stat_limit:  # Less than {limit} days
@@ -531,7 +531,7 @@ def viewstats_helper(jobpost_id, interval, limit, daybatch=False):
     applied = db.session.query(JobApplication.created_at).filter_by(jobpost_id=jobpost_id).all()
 
     # Now batch them by size
-    now = datetime.utcnow()
+    now = utcnow()
     delta = now - post.datetime
     if daybatch:
         batches, remainder = divmod(delta.days, interval)
@@ -620,7 +620,7 @@ def viewstats_by_id_day(jobpost_id, limit=30):
 
 
 jobpost_admin_table = db.Table('jobpost_admin', db.Model.metadata,
-    *(make_timestamp_columns() + (
+    *(make_timestamp_columns(timezone=True) + (
         db.Column('user_id', None, db.ForeignKey('user.id'), primary_key=True),
         db.Column('jobpost_id', None, db.ForeignKey('jobpost.id'), primary_key=True)
         )))
@@ -669,7 +669,7 @@ class AnonJobView(db.Model):
     anon_user_id = db.Column(None, db.ForeignKey('anon_user.id'), primary_key=True, index=True)
     anon_user = db.relationship(AnonUser)
     #: Timestamp
-    created_at = db.Column(db.DateTime, default=db.func.utcnow(), nullable=False, index=True)
+    created_at = db.Column(db.TIMESTAMP(timezone=True), default=db.func.utcnow(), nullable=False, index=True)
 
     @classmethod
     def get(cls, jobpost, anon_user):
@@ -679,7 +679,7 @@ class AnonJobView(db.Model):
 class JobImpression(TimestampMixin, db.Model):
     __tablename__ = 'job_impression'
     #: Datetime when this activity happened (which is likely much before it was written to the database)
-    datetime = db.Column(db.DateTime, default=db.func.utcnow(), nullable=False, index=True)
+    datetime = db.Column(db.TIMESTAMP(timezone=True), default=db.func.utcnow(), nullable=False, index=True)
     #: Job post that was impressed
     jobpost_id = db.Column(None, db.ForeignKey('jobpost.id'), primary_key=True)
     jobpost = db.relationship(JobPost)
@@ -705,7 +705,7 @@ class JobImpression(TimestampMixin, db.Model):
 class JobViewSession(TimestampMixin, db.Model):
     __tablename__ = 'job_view_session'
     #: Datetime indicates the time, impression has made
-    datetime = db.Column(db.DateTime, default=db.func.utcnow(), nullable=False, index=True)
+    datetime = db.Column(db.TIMESTAMP(timezone=True), default=db.func.utcnow(), nullable=False, index=True)
     #: Job post that was impressed
     #: Event session in which jobpost was viewed
     #: This takes precedence as we'll be loading all instances
@@ -769,7 +769,7 @@ class JobApplication(BaseMixin, db.Model):
     replied_by_id = db.Column(None, db.ForeignKey('user.id'), nullable=True, index=True)
     replied_by = db.relationship(User, foreign_keys=replied_by_id)
     #: When they replied
-    replied_at = db.Column(db.DateTime, nullable=True)
+    replied_at = db.Column(db.TIMESTAMP(timezone=True), nullable=True)
 
     candidate_feedback = db.Column(db.SmallInteger, nullable=True)
 
