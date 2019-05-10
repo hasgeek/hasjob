@@ -272,7 +272,7 @@ def fetch_jobposts(request_args, request_values, filters, is_index, board, board
         startdate = None
         if 'startdate' in request_values:
             try:
-                startdate = parse_isoformat(request_values['startdate'])
+                startdate = parse_isoformat(request_values['startdate'], naive=False)
             except TypeError:
                 abort(400)
             except ValueError:
@@ -333,7 +333,7 @@ def fetch_jobposts(request_args, request_values, filters, is_index, board, board
 
     query_params = request_args.to_dict(flat=False)
     if loadmore:
-        query_params.update({'startdate': loadmore.isoformat() + 'Z', 'ph': pinned_hashids})
+        query_params.update({'startdate': loadmore.isoformat(), 'ph': pinned_hashids})
     if location:
         data_filters['location_names'].append(location['name'])
         query_params.update({'l': location['name']})
