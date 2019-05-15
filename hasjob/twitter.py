@@ -7,9 +7,25 @@ import urllib2
 import json
 import re
 from hasjob import app
+from hasjob.models import JobPost
+from hasjob.models import db
 
 
 @job('hasjob')
+def tweet_post(post_id):
+    print "in tweet post"
+    post = JobPost.query.get(post_id)
+    if post.headlineb:
+        post.tweetid = tweet(post.headline, post.url_for(b=0, _external=True),
+                             post.location, dict(post.parsed_location or {}), username=post.twitter)
+        tweet(post.headlineb, post.url_for(b=1, _external=True),
+              post.location, dict(post.parsed_location or {}), username=post.twitter)
+    else:
+        post.tweetid = tweet(post.headline, post.url_for(_external=True),
+                             post.location, dict(post.parsed_location or {}), username=post.twitter)
+    db.session.commit()
+
+
 def tweet(title, url, location=None, parsed_location=None, username=None):
     auth = OAuthHandler(app.config['TWITTER_CONSUMER_KEY'], app.config['TWITTER_CONSUMER_SECRET'])
     auth.set_access_token(app.config['TWITTER_ACCESS_KEY'], app.config['TWITTER_ACCESS_SECRET'])
@@ -44,7 +60,8 @@ def tweet(title, url, location=None, parsed_location=None, username=None):
         text = text + ' ' + locationtag
     if username:
         text = text + ' @' + username
-    api.update_status(text)
+    tweet_status = api.update_status(text)
+    return tweet_status.id
 
 
 def shorten(url):

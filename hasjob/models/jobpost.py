@@ -143,6 +143,9 @@ class JobPost(BaseMixin, db.Model):
     review_datetime = db.Column(db.DateTime, nullable=True)
     review_comments = db.Column(db.Unicode(250), nullable=True)
 
+    # Social media links
+    tweetid = db.Column(db.Unicode(30), nullable=True)
+
     search_vector = deferred(db.Column(TSVECTOR, nullable=True))
 
     _state = db.Column('status', db.Integer, StateManager.check_constraint('status', POST_STATE),
