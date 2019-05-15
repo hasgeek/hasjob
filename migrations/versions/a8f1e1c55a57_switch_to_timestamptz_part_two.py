@@ -16,10 +16,6 @@ from alembic import op
 import sqlalchemy as sa
 
 migrate_table_columns = [
-    ('event_session', 'active_at'),
-    ('event_session', 'created_at'),
-    ('event_session', 'ended_at'),
-    ('event_session', 'updated_at'),
     ('job_impression', 'created_at'),
     ('job_impression', 'datetime'),
     ('job_impression', 'updated_at'),

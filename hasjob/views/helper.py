@@ -6,6 +6,7 @@ from uuid import uuid4
 from urllib import quote, quote_plus
 import hashlib
 import bleach
+from pytz import UTC
 from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
 from geoip2.errors import AddressNotFoundError
@@ -164,6 +165,8 @@ def load_user_data(user):
     if app.geoip:
         ipaddr = session.get('ipaddr')
         ipts = session.get('ipts')
+        if ipts.tzinfo is None:
+            ipts = UTC.localize(ipts)
         now = utcnow()
         if (not ipts
                 or ipaddr != request.environ['REMOTE_ADDR']
