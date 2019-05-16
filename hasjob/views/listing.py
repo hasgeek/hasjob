@@ -94,7 +94,7 @@ def jobdetail(domain, hashid):
     g.jobpost_viewed = (post.id, getbool(request.args.get('b')))
 
     reportform = forms.ReportForm(obj=report)
-    reportform.report_code.choices = [(ob.id, ob.title) for ob in ReportCode.query.filter_by(public=True).order_by('seq')]
+    reportform.report_code.choices = [(ob.id, ob.title) for ob in ReportCode.query.filter_by(public=True).order_by(ReportCode.seq)]
     rejectform = forms.RejectForm()
     moderateform = forms.ModerateForm()
     if request.method == 'GET':

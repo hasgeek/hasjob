@@ -834,9 +834,11 @@ def filter_locations(board, filters):
     filtered_geonameids = [jobpost_location.geonameid for jobpost_location in filtered_basequery]
     remote_location_available = filtered_basequery.filter(JobPost.remote_location == True).count() > 0  # NOQA
     data = location_geodata(geonameids)
-    return [{'name': 'anywhere', 'title': _("Anywhere"), 'available': remote_location_available}] + [{'name': data[geonameid]['name'], 'title': data[geonameid]['picker_title'],
-            'available': False if not filtered_geonameids else geonameid in filtered_geonameids}
-            for geonameid in geonameids]
+    return [{'name': 'anywhere', 'title': _("Anywhere"), 'available': remote_location_available}] + [{
+        'name': data.get(geonameid, {}).get('name', ''),
+        'title': data.get(geonameid, {}).get('picker_title', ''),
+        'available': False if not filtered_geonameids else geonameid in filtered_geonameids}
+        for geonameid in geonameids]
 
 
 def filter_types(basequery, board, filters):
@@ -851,7 +853,7 @@ def filter_types(basequery, board, filters):
                 for job_type in board.types if not job_type.private]
     else:
         return [format_job_type(job_type)
-                for job_type in JobType.query.filter_by(private=False, public=True).order_by('seq')]
+                for job_type in JobType.query.filter_by(private=False, public=True).order_by(JobType.seq)]
 
 
 def filter_categories(basequery, board, filters):
@@ -866,7 +868,7 @@ def filter_categories(basequery, board, filters):
                 for job_category in board.categories if not job_category.private]
     else:
         return [format_job_category(job_category)
-                for job_category in JobCategory.query.filter_by(private=False, public=True).order_by('seq')]
+                for job_category in JobCategory.query.filter_by(private=False, public=True).order_by(JobCategory.seq)]
 
 
 @app.context_processor
