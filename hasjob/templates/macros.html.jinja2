@@ -120,9 +120,9 @@
       <div class="col-xs-12 col-sm-9 col-sm-pull-3">
   {%- endif %}
     <h1 itemprop="title">{{ headline or post.headline }}</h1>
-    <p class="post-date">Posted <time itemprop="datePosted" content="{{ post.datetime.isoformat() }}Z" datetime="{{ post.datetime.isoformat() }}Z">{{ post.datetime|longdate }}</time>
+    <p class="post-date">Posted <time itemprop="datePosted" content="{{ post.datetime.isoformat() }}" datetime="{{ post.datetime.isoformat() }}">{{ post.datetime|longdate }}</time>
       {%- if post.user %} by <span>{{ post.user.pickername }}</span>{% endif %}</p>
-    <time itemprop="validThrough" datetime="{{ post.expiry_date.isoformat() }}Z"></time>
+    <time itemprop="validThrough" datetime="{{ post.expiry_date.isoformat() }}"></time>
     <p>
       {% if return %}<a href="{{ post.url_for() }}"><i class="fa fa-angle-left"></i> Post</a> &middot; {% endif -%}
       <span itemprop="hiringOrganization" itemscope itemtype="http://schema.org/Organization"><a href="{{ post.url_for('browse') }}"><strong itemprop="name">{{ post.company_name }}</strong></a>

@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 
 from uuid import uuid4
-from datetime import datetime
 from collections import OrderedDict
 from six.moves.urllib.parse import urlsplit, SplitResult
 
 from sqlalchemy.exc import ProgrammingError
 from flask import abort, redirect, render_template, request, Response, url_for, g, flash, jsonify, Markup
-from coaster.utils import getbool, parse_isoformat, for_tsquery
+from coaster.utils import getbool, parse_isoformat, for_tsquery, utcnow
 from coaster.views import render_with, requestargs, endpoint_for
 from baseframe import _  # , dogpile
 
@@ -273,7 +272,7 @@ def fetch_jobposts(request_args, request_values, filters, is_index, board, board
         startdate = None
         if 'startdate' in request_values:
             try:
-                startdate = parse_isoformat(request_values['startdate'])
+                startdate = parse_isoformat(request_values['startdate'], naive=False)
             except TypeError:
                 abort(400)
             except ValueError:
@@ -334,7 +333,7 @@ def fetch_jobposts(request_args, request_values, filters, is_index, board, board
 
     query_params = request_args.to_dict(flat=False)
     if loadmore:
-        query_params.update({'startdate': loadmore.isoformat() + 'Z', 'ph': pinned_hashids})
+        query_params.update({'startdate': loadmore.isoformat(), 'ph': pinned_hashids})
     if location:
         data_filters['location_names'].append(location['name'])
         query_params.update({'l': location['name']})
@@ -359,7 +358,7 @@ def fetch_cached_jobposts(request_args, request_values, filters, is_index, board
 @app.route('/', methods=['GET', 'POST'])
 @render_with({'text/html': 'index.html.jinja2', 'application/json': json_index}, json=False)
 def index(basequery=None, filters={}, md5sum=None, tag=None, domain=None, location=None, title=None, showall=True, statusfilter=None, batched=True, ageless=False, cached=False, query_string=None, filterset=None, template_vars={}):
-    now = datetime.utcnow()
+    now = utcnow()
     is_siteadmin = lastuser.has_permission('siteadmin')
     board = g.board
 
@@ -618,7 +617,7 @@ def feed(basequery=None, type=None, category=None, md5sum=None, domain=None, loc
         if md5sum:
             title = posts[0].company_name
     else:
-        updated = datetime.utcnow().isoformat() + 'Z'
+        updated = utcnow().isoformat() + 'Z'
     return Response(render_template('feed-atom.xml', posts=posts, updated=updated, title=title),
         content_type='application/atom+xml; charset=utf-8')
 
@@ -631,7 +630,7 @@ def feed_indeed():
     if posts:  # Can't do this unless posts is a list
         updated = posts[0].datetime.isoformat() + 'Z'
     else:
-        updated = datetime.utcnow().isoformat() + 'Z'
+        updated = utcnow().isoformat() + 'Z'
     return Response(render_template('feed-indeed.xml', posts=posts, updated=updated, title=title),
         content_type='textxml; charset=utf-8')
 

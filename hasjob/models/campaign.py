@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
-from datetime import datetime, timedelta
+from datetime import timedelta
 from sqlalchemy import event
 from sqlalchemy.orm import deferred
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.orderinglist import ordering_list
 from flask import request, Markup
-from coaster.utils import LabeledEnum
+from coaster.utils import LabeledEnum, utcnow
 from coaster.sqlalchemy import JsonDict, StateManager, cached
 from baseframe import __
 from baseframe.forms import Form
@@ -23,7 +23,7 @@ _marker = object()
 
 
 board_campaign_table = db.Table('campaign_board', db.Model.metadata,
-    *(make_timestamp_columns() + (
+    *(make_timestamp_columns(timezone=True) + (
         db.Column('board_id', None, db.ForeignKey('board.id'), primary_key=True),
         db.Column('campaign_id', None, db.ForeignKey('campaign.id'), primary_key=True, index=True),
         )))
@@ -32,7 +32,7 @@ board_campaign_table = db.Table('campaign_board', db.Model.metadata,
 campaign_event_session_table = db.Table('campaign_event_session', db.Model.metadata,
     db.Column('campaign_id', None, db.ForeignKey('campaign.id'), primary_key=True),
     db.Column('event_session_id', None, db.ForeignKey('event_session.id'), primary_key=True, index=True),
-    db.Column('created_at', db.DateTime, nullable=False, default=db.func.utcnow())
+    db.Column('created_at', db.TIMESTAMP(timezone=True), nullable=False, default=db.func.utcnow())
     )
 
 
@@ -87,9 +87,9 @@ class Campaign(BaseNameMixin, db.Model):
     user_id = db.Column(None, db.ForeignKey('user.id'), nullable=False)
     user = db.relationship(User, backref='campaigns')
     #: When does this campaign go on air?
-    start_at = db.Column(db.DateTime, nullable=False, index=True)
+    start_at = db.Column(db.TIMESTAMP(timezone=True), nullable=False, index=True)
     #: When does it go off air?
-    end_at = db.Column(db.DateTime, nullable=False, index=True)
+    end_at = db.Column(db.TIMESTAMP(timezone=True), nullable=False, index=True)
     #: Is this campaign live?
     public = db.Column(db.Boolean, nullable=False, default=False)
     #: StateManager for campaign's state
@@ -164,22 +164,22 @@ class Campaign(BaseNameMixin, db.Model):
 
     # Campaign conditional states
     state.add_conditional_state('LIVE', state.ENABLED,
-        lambda obj: obj.start_at <= datetime.utcnow() < obj.end_at,
+        lambda obj: obj.start_at <= utcnow() < obj.end_at,
         lambda cls: db.and_(cls.start_at <= db.func.utcnow(), cls.end_at > db.func.utcnow()),
         label=('live', __("Live")))
     state.add_conditional_state('CURRENT', state.ENABLED,
-        lambda obj: obj.start_at <= obj.start_at <= datetime.utcnow() < obj.end_at <= datetime.utcnow() + timedelta(days=30),
+        lambda obj: obj.start_at <= obj.start_at <= utcnow() < obj.end_at <= utcnow() + timedelta(days=30),
         lambda cls: db.and_(
             cls.start_at <= db.func.utcnow(),
             cls.end_at > db.func.utcnow(),
-            cls.end_at <= datetime.utcnow() + timedelta(days=30)),
+            cls.end_at <= utcnow() + timedelta(days=30)),
         label=('current', __("Current")))
     state.add_conditional_state('LONGTERM', state.ENABLED,
-        lambda obj: obj.start_at <= obj.start_at <= datetime.utcnow() < datetime.utcnow() + timedelta(days=30) < obj.end_at,
-        lambda cls: db.and_(cls.start_at <= datetime.utcnow(), cls.end_at > datetime.utcnow() + timedelta(days=30)),
+        lambda obj: obj.start_at <= obj.start_at <= utcnow() < utcnow() + timedelta(days=30) < obj.end_at,
+        lambda cls: db.and_(cls.start_at <= utcnow(), cls.end_at > utcnow() + timedelta(days=30)),
         label=('longterm', __("Long term")))
     state.add_conditional_state('OFFLINE', state.ENABLED,
-        lambda obj: obj.start_at > datetime.utcnow() or obj.end_at <= datetime.utcnow(),
+        lambda obj: obj.start_at > utcnow() or obj.end_at <= utcnow(),
         lambda cls: db.or_(cls.start_at > db.func.utcnow(), cls.end_at <= db.func.utcnow()),
         label=('offline', __("Offline")))
 
@@ -410,7 +410,7 @@ class CampaignView(TimestampMixin, db.Model):
     """
     __tablename__ = 'campaign_view'
     #: Datetime when this activity happened (which is likely much before it was written to the database)
-    datetime = db.Column(db.DateTime, default=db.func.utcnow(), nullable=False, index=True)
+    datetime = db.Column(db.TIMESTAMP(timezone=True), default=db.func.utcnow(), nullable=False, index=True)
     #: Campaign
     campaign_id = db.Column(None, db.ForeignKey('campaign.id'), nullable=False, primary_key=True)
     campaign = db.relationship(Campaign, backref=db.backref('views', lazy='dynamic',
@@ -426,9 +426,9 @@ class CampaignView(TimestampMixin, db.Model):
     #: The last time this campaign was viewed. If the campaign has a refresh time (say, 30 days)
     #: and the view is older than that, we'll reset the session_count and dismissed flag (via a
     #: background job) so that the campaign shows again.
-    last_viewed_at = db.Column(db.DateTime, default=db.func.utcnow(), nullable=False)
+    last_viewed_at = db.Column(db.TIMESTAMP(timezone=True), default=db.func.utcnow(), nullable=False)
     #: The last time view counts were reset
-    reset_at = db.Column(db.DateTime, default=db.func.utcnow(), nullable=False)
+    reset_at = db.Column(db.TIMESTAMP(timezone=True), default=db.func.utcnow(), nullable=False)
     #: TODO: Maybe we need a permanently dismissed flag now, for when a user indicates they really
     #: don't want to see this again, and not just because they want it "done for now".
 
@@ -451,7 +451,7 @@ class CampaignAnonView(TimestampMixin, db.Model):
     """
     __tablename__ = 'campaign_anon_view'
     #: Datetime when this activity happened (which is likely much before it was written to the database)
-    datetime = db.Column(db.DateTime, default=db.func.utcnow(), nullable=False, index=True)
+    datetime = db.Column(db.TIMESTAMP(timezone=True), default=db.func.utcnow(), nullable=False, index=True)
     #: Campaign
     campaign_id = db.Column(None, db.ForeignKey('campaign.id'), nullable=False, primary_key=True)
     campaign = db.relationship(Campaign, backref=db.backref('anonviews', lazy='dynamic',
@@ -467,9 +467,9 @@ class CampaignAnonView(TimestampMixin, db.Model):
     #: The last time this campaign was viewed. If the campaign has a refresh time (say, 30 days)
     #: and the view is older than that, we'll reset the session_count and dismissed flag (via a
     #: background job) so that the campaign shows again.
-    last_viewed_at = db.Column(db.DateTime, default=db.func.utcnow(), nullable=False)
+    last_viewed_at = db.Column(db.TIMESTAMP(timezone=True), default=db.func.utcnow(), nullable=False)
     #: The last time view counts were reset
-    reset_at = db.Column(db.DateTime, default=db.func.utcnow(), nullable=False)
+    reset_at = db.Column(db.TIMESTAMP(timezone=True), default=db.func.utcnow(), nullable=False)
     #: TODO: Maybe we need a permanently dismissed flag now, for when a user indicates they really
     #: don't want to see this again, and not just because they want it "done for now".
 
