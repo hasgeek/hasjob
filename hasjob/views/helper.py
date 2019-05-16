@@ -165,7 +165,7 @@ def load_user_data(user):
     if app.geoip:
         ipaddr = session.get('ipaddr')
         ipts = session.get('ipts')
-        if ipts.tzinfo is None:
+        if ipts is not None and ipts.tzinfo is None:
             ipts = UTC.localize(ipts)
         now = utcnow()
         if (not ipts
