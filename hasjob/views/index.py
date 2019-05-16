@@ -813,7 +813,7 @@ def sitemap(key):
                 Domain.title != None,
                 Domain.description != None,
                 Domain.description != ''
-                ).order_by('updated_at desc').all():  # NOQA
+                ).order_by(Domain.updated_at.desc()).all():  # NOQA
             sitemapxml += '  <url>\n'\
                           '    <loc>%s</loc>\n' % domain.url_for(_external=True) + \
                           '    <lastmod>%s</lastmod>\n' % (domain.updated_at.isoformat() + 'Z') + \

@@ -52,6 +52,6 @@ class FiltersetForm(forms.Form):
         if not self.edit_parent:
             self.edit_parent = g.board
         self.types.query = JobType.query.join(board_jobtype_table).filter(
-            board_jobtype_table.c.board_id == self.edit_parent.id).order_by('title')
+            board_jobtype_table.c.board_id == self.edit_parent.id).order_by(JobType.title)
         self.categories.query = JobCategory.query.join(board_jobcategory_table).filter(
-            board_jobcategory_table.c.board_id == self.edit_parent.id).order_by('title')
+            board_jobcategory_table.c.board_id == self.edit_parent.id).order_by(JobType.title)

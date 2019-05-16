@@ -51,12 +51,12 @@ class BoardOptionsForm(forms.Form):
         validators=[forms.validators.AllUrlsValid()])
     types = QuerySelectMultipleField(__("Job types"),
         widget=ListWidget(), option_widget=CheckboxInput(),
-        query_factory=lambda: JobType.query.filter_by(private=False).order_by('seq'), get_label=jobtype_label,
+        query_factory=lambda: JobType.query.filter_by(private=False).order_by(JobType.seq), get_label=jobtype_label,
         validators=[forms.validators.DataRequired(__(u"You need to select at least one job type"))],
         description=__(u"Jobs listed directly on this board can use one of the types enabled here"))
     categories = QuerySelectMultipleField(__("Job categories"),
         widget=ListWidget(), option_widget=CheckboxInput(),
-        query_factory=lambda: JobCategory.query.filter_by(private=False).order_by('seq'), get_label='title',
+        query_factory=lambda: JobCategory.query.filter_by(private=False).order_by(JobCategory.seq), get_label='title',
         validators=[forms.validators.DataRequired(__(u"You need to select at least one category"))],
         description=__(u"Jobs listed directly on this board can use one of the categories enabled here"))
 
@@ -71,10 +71,10 @@ class BoardTaggingForm(forms.Form):
         autocomplete_endpoint='/api/1/tag/autocomplete', results_key='tags',
         description=__("Jobs tagged with these keywords will be automatically added to this board"))
     auto_types = QuerySelectMultipleField(__("Job types"),
-        query_factory=lambda: JobType.query.filter_by(private=False).order_by('seq'), get_label='title',
+        query_factory=lambda: JobType.query.filter_by(private=False).order_by(JobType.seq), get_label='title',
         description=__(u"Jobs of this type will be automatically added to this board"))
     auto_categories = QuerySelectMultipleField(__("Job categories"),
-        query_factory=lambda: JobCategory.query.filter_by(private=False).order_by('seq'), get_label='title',
+        query_factory=lambda: JobCategory.query.filter_by(private=False).order_by(JobCategory.seq), get_label='title',
         description=__(u"Jobs of this category will be automatically added to this board"))
     auto_all = forms.BooleanField(__("All of the above criteria must match"),
         description=__(u"Select this if, for example, you want to match all programming jobs in Bangalore "

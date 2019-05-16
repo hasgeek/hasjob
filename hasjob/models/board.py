@@ -63,7 +63,7 @@ def jobtype_choices(cls, board=None):
     if board:
         return [(ob.id, ob.title) for ob in board.types if not ob.private]
     else:
-        return [(ob.id, ob.title) for ob in cls.query.filter_by(private=False, public=True).order_by('seq')]
+        return [(ob.id, ob.title) for ob in cls.query.filter_by(private=False, public=True).order_by(cls.seq)]
 
 
 JobType.choices = classmethod(jobtype_choices)
@@ -73,7 +73,7 @@ def jobcategory_choices(cls, board=None):
     if board:
         return [(ob.id, ob.title) for ob in board.categories if not ob.private]
     else:
-        return [(ob.id, ob.title) for ob in cls.query.filter_by(private=False, public=True).order_by('seq')]
+        return [(ob.id, ob.title) for ob in cls.query.filter_by(private=False, public=True).order_by(cls.seq)]
 
 
 JobCategory.choices = classmethod(jobcategory_choices)

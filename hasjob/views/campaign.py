@@ -24,7 +24,7 @@ class AdminCampaignList(AdminView):
 
     @property
     def listquery(self):
-        return Campaign.query.order_by(db.text('start_at desc, priority desc')).options(
+        return Campaign.query.order_by(Campaign.start_at.desc(), Campaign.priority.desc()).options(
             db.load_only('title', 'start_at', 'end_at', 'public'))
 
     @route('')
