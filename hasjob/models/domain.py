@@ -77,7 +77,7 @@ class Domain(BaseMixin, db.Model):
                 return None
             post = self.jobposts.filter(
                 JobPost.company_logo != None, JobPost.state.ARCHIVED
-            ).order_by('datetime desc').first()  # NOQA
+            ).order_by(JobPost.datetime.desc()).first()  # NOQA
             return post.url_for('logo', _external=True) if post else None
 
     def editor_is(self, user):

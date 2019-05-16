@@ -830,9 +830,11 @@ def filter_locations(board, filters):
     filtered_geonameids = [jobpost_location.geonameid for jobpost_location in filtered_basequery]
     remote_location_available = filtered_basequery.filter(JobPost.remote_location == True).count() > 0  # NOQA
     data = location_geodata(geonameids)
-    return [{'name': 'anywhere', 'title': _("Anywhere"), 'available': remote_location_available}] + [{'name': data[geonameid]['name'], 'title': data[geonameid]['picker_title'],
-            'available': False if not filtered_geonameids else geonameid in filtered_geonameids}
-            for geonameid in geonameids]
+    return [{'name': 'anywhere', 'title': _("Anywhere"), 'available': remote_location_available}] + [{
+        'name': data.get(geonameid, {}).get('name', ''),
+        'title': data.get(geonameid, {}).get('picker_title', ''),
+        'available': False if not filtered_geonameids else geonameid in filtered_geonameids}
+        for geonameid in geonameids]
 
 
 def filter_types(basequery, board, filters):
