@@ -11,14 +11,13 @@ from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
 from geoip2.errors import AddressNotFoundError
 from flask import Markup, request, g, session
-from flask_rq import job
 from flask_lastuser import signal_user_looked_up
 from coaster.utils import utcnow
 from coaster.sqlalchemy import failsafe_add
 from baseframe import _, cache
 from baseframe.signals import form_validation_error, form_validation_success
 
-from .. import app, redis_store, lastuser
+from .. import app, redis_store, lastuser, rq
 from ..extapi import location_geodata
 from ..models import (db, JobCategory, JobPost, JobType, BoardJobPost, Tag, JobPostTag,
     Campaign, CampaignView, CampaignAnonView, EventSessionBase, EventSession, UserEventBase, UserEvent, JobImpression,
@@ -266,7 +265,7 @@ def record_views_and_events(response):
                 except IntegrityError:  # Race condition from parallel requests
                     db.session.rollback()
             db.session.commit()
-            campaign_view_count_update.delay(campaign_id=campaign.id, user_id=g.user.id)
+            campaign_view_count_update.queue(campaign_id=campaign.id, user_id=g.user.id)
     elif g.anon_user:
         for campaign in g.campaign_views:
             if not CampaignAnonView.exists(campaign, g.anon_user):
@@ -277,7 +276,7 @@ def record_views_and_events(response):
                 except IntegrityError:  # Race condition from parallel requests
                     db.session.rollback()
             db.session.commit()
-            campaign_view_count_update.delay(campaign_id=campaign.id, anon_user_id=g.anon_user.id)
+            campaign_view_count_update.queue(campaign_id=campaign.id, anon_user_id=g.anon_user.id)
 
     if g.esession:  # Will be None for anon static requests
         if g.user or g.anon_user:
@@ -295,10 +294,10 @@ def record_views_and_events(response):
                 db.session.rollback()
 
             if g.impressions:
-                save_impressions.delay(g.esession.id, g.impressions.values(), now)
+                save_impressions.queue(g.esession.id, g.impressions.values(), now)
 
             if g.jobpost_viewed != (None, None):
-                save_jobview.delay(
+                save_jobview.queue(
                     viewed_time=now,
                     event_session_id=g.esession.id,
                     jobpost_id=g.jobpost_viewed[0],
@@ -560,7 +559,7 @@ def make_pay_graph(currency, posts, rmin=None, rmax=None, minposts=5):
     return {'currency': currency, 'data': data, 'xaxis': xaxis}
 
 
-@job('hasjob')
+@rq.job('hasjob')
 def save_jobview(event_session_id, jobpost_id, bgroup, viewed_time):
     """
     Save a jobpost view as a background job to ensure this doesn't fire *before* the
@@ -613,7 +612,7 @@ def update_dirty_impression_counts():
     remove_dirty_impression_counts(jobpost_ids)
 
 
-@job('hasjob')
+@rq.job('hasjob')
 def save_impressions(session_id, impressions, viewed_time):
     """
     Save impressions against each job and session.
@@ -642,7 +641,7 @@ def save_impressions(session_id, impressions, viewed_time):
         mark_dirty_impression_counts([postid for pinned, postid, bgroup in impressions])
 
 
-@job('hasjob')
+@rq.job('hasjob')
 def campaign_view_count_update(campaign_id, user_id=None, anon_user_id=None):
     if not user_id and not anon_user_id:
         return

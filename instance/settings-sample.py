@@ -20,6 +20,11 @@ STATIC_SUBDOMAIN = 'static'
 UPLOADED_LOGOS_DEST = '/tmp/uploads'
 #: Hascore server
 HASCORE_SERVER = 'https://api.hasgeek.com/'
+#: Cache settings
+CACHE_TYPE = 'redis'
+#: RQ settings
+RQ_REDIS_URL = 'redis://localhost:6379/0'
+RQ_SCHEDULER_INTERVAL = 1
 #: GeoIP database file (GeoIP2 or GeoLite2 city mmdb)
 #: On Ubuntu: /usr/share/GeoIP/GeoLite2-City.mmdb
 #: On Homebrew: /usr/local/var/GeoIP/GeoLite2-City.mmdb
