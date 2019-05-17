@@ -6,7 +6,7 @@ from six.moves.urllib.parse import urlsplit, SplitResult
 
 from sqlalchemy.exc import ProgrammingError
 from flask import abort, redirect, render_template, request, Response, url_for, g, flash, jsonify, Markup
-from coaster.utils import getbool, parse_isoformat, for_tsquery, utcnow
+from coaster.utils import getbool, parse_isoformat, for_tsquery, utcnow, ParseError
 from coaster.views import render_with, requestargs, endpoint_for
 from baseframe import _  # , dogpile
 
@@ -273,10 +273,8 @@ def fetch_jobposts(request_args, request_values, filters, is_index, board, board
         if 'startdate' in request_values:
             try:
                 startdate = parse_isoformat(request_values['startdate'], naive=False)
-            except TypeError:
+            except ParseError:
                 abort(400)
-            except ValueError:
-                pass
 
         batchsize = 32
 
