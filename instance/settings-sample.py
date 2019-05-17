@@ -64,6 +64,9 @@ BITLY_KEY = ''
 PERIODIC_KEY = ''
 #: Throttle limit for email domain
 THROTTLE_LIMIT = 5
+#: Don't show year for dates within this many days
+SHORTDATE_THRESHOLD_DAYS = 60
+#: Email address to display when asking users to contact support
 SUPPORT_EMAIL = 'person@example.com'
 #: Sitemap key
 SITEMAP_KEY = None
@@ -74,7 +77,7 @@ DOGPILE_CACHE_URLS = '127.0.0.1:6379'
 # Dogpile cache regions (important, do not remove!)
 DOGPILE_CACHE_REGIONS = [
     ('hasjob_index', 3600)
-]
+    ]
 ASSET_MANIFEST_PATH = 'static/build/manifest.json'
 # no trailing slash
 ASSET_BASE_PATH = '/static/build'

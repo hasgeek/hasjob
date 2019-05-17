@@ -11,7 +11,7 @@ revision = '625415764254'
 down_revision = '859f6f33c02d'
 
 from alembic import op
-import sqlalchemy as sa
+import sqlalchemy as sa  # NOQA
 
 
 def upgrade():
@@ -19,11 +19,11 @@ def upgrade():
         'job_application_response_check',
         'job_application',
         "response IN (0, 1, 2, 3, 4, 5, 6)"
-    )
+        )
 
 
 def downgrade():
     op.drop_constraint(
         'job_application_response_check',
         'job_application'
-    )
+        )

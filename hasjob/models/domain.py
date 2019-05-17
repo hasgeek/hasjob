@@ -37,7 +37,7 @@ class Domain(BaseMixin, db.Model):
     banned_by_id = db.Column(None, db.ForeignKey('user.id', ondelete='SET NULL'), nullable=True)
     banned_by = db.relationship(User)
     #: Banned when?
-    banned_at = db.Column(db.DateTime, nullable=True)
+    banned_at = db.Column(db.TIMESTAMP(timezone=True), nullable=True)
     #: Reason for banning
     banned_reason = db.Column(db.Unicode(250), nullable=True)
     #: Jobposts using this domain
@@ -55,7 +55,7 @@ class Domain(BaseMixin, db.Model):
             return self.title
         if self.is_webmail:
             return self.name
-        post = self.jobposts.filter(JobPost.state.ARCHIVED).order_by('datetime desc').first()
+        post = self.jobposts.filter(JobPost.state.ARCHIVED).order_by(JobPost.datetime.desc()).first()
         if post:
             return post.company_name
         return self.name
@@ -77,7 +77,7 @@ class Domain(BaseMixin, db.Model):
                 return None
             post = self.jobposts.filter(
                 JobPost.company_logo != None, JobPost.state.ARCHIVED
-            ).order_by('datetime desc').first()  # NOQA
+            ).order_by(JobPost.datetime.desc()).first()  # NOQA
             return post.url_for('logo', _external=True) if post else None
 
     def editor_is(self, user):

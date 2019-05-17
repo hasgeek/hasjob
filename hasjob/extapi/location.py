@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from urlparse import urljoin
+from simplejson import JSONDecodeError
 import requests
 from baseframe import cache
 from .. import app
@@ -13,7 +14,10 @@ def location_geodata(location):
             url = urljoin(app.config['HASCORE_SERVER'], '/1/geo/get_by_names')
         else:
             url = urljoin(app.config['HASCORE_SERVER'], '/1/geo/get_by_name')
-        response = requests.get(url, params={'name': location}).json()
+        try:
+            response = requests.get(url, params={'name': location}).json()
+        except JSONDecodeError:
+            return {}
         if response.get('status') == 'ok':
             result = response.get('result', {})
             if isinstance(result, (list, tuple)):

@@ -63,6 +63,9 @@ BITLY_KEY = ''
 PERIODIC_KEY = ''
 #: Throttle limit for email domain
 THROTTLE_LIMIT = 5
+#: Don't show year for dates within this many days
+SHORTDATE_THRESHOLD_DAYS = 60
+#: Email address to display when asking users to contact support
 SUPPORT_EMAIL = 'support@hasgeek.com'
 #: Words banned in the title and their error messages
 BANNED_WORDS = [
@@ -78,7 +81,7 @@ BANNED_WORDS = [
     [['sick'], u'Need an ambulance? Call 102, 108, 112 or 1298. One of those should work.'],
     [['killer'], u'Murder is illegal. Don’t make us call the cops.'],
     [['iit', 'iitian', 'iit-ian', 'iim', 'bits', 'bitsian'], u'Q: How do you know someone is from IIT/IIM/BITS? A: They remind you all the time. Don’t be that person.'],
-]
+    ]
 #: URLs we don't accept, with accompanying error messages
 INVALID_URLS = [
     ([
@@ -91,7 +94,7 @@ INVALID_URLS = [
         re.compile(r'iimjobs\.com/j/'),
         re.compile(r'.*\.workable.com/jobs'),
         ], u"Candidates must apply via Hasjob")
-]
+    ]
 #: LastUser server
 LASTUSER_SERVER = 'https://auth.hasgeek.com/'
 #: LastUser client id
@@ -105,4 +108,4 @@ DOGPILE_CACHE_URLS = '127.0.0.1:6379'
 # Dogpile cache regions (important, do not remove!)
 DOGPILE_CACHE_REGIONS = [
     ('hasjob_index', 3600)
-]
+    ]

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import bleach
-from datetime import datetime, timedelta
+from datetime import timedelta
 from difflib import SequenceMatcher
 from html2text import html2text
 from premailer import transform as email_transform
@@ -12,7 +12,7 @@ from flask import abort, flash, g, redirect, render_template, request, url_for, 
 from flask_mail import Message
 from baseframe import cache  # , dogpile
 from baseframe.forms import Form
-from coaster.utils import getbool, get_email_domain, md5sum, base_domain_matches
+from coaster.utils import getbool, get_email_domain, md5sum, base_domain_matches, utcnow
 from coaster.views import load_model
 from hasjob import app, forms, mail, lastuser
 from hasjob.models import (
@@ -94,7 +94,7 @@ def jobdetail(domain, hashid):
     g.jobpost_viewed = (post.id, getbool(request.args.get('b')))
 
     reportform = forms.ReportForm(obj=report)
-    reportform.report_code.choices = [(ob.id, ob.title) for ob in ReportCode.query.filter_by(public=True).order_by('seq')]
+    reportform.report_code.choices = [(ob.id, ob.title) for ob in ReportCode.query.filter_by(public=True).order_by(ReportCode.seq)]
     rejectform = forms.RejectForm()
     moderateform = forms.ModerateForm()
     if request.method == 'GET':
@@ -171,7 +171,7 @@ def job_viewstats(domain, hashid):
             "unittype": post.viewstats[0],
             "stats": post.viewstats[1],
             "counts": get_post_viewcounts(post.id)
-        })
+            })
     else:
         return abort(403)
 
@@ -473,12 +473,12 @@ def process_application(domain, hashid, application):
                     job_application.reply(
                         message=response_form.response_message.data,
                         user=g.user
-                    )
+                        )
                 else:
                     job_application.reject(
                         message=response_form.response_message.data,
                         user=g.user
-                    )
+                        )
 
                 email_html = email_transform(
                     render_template('respond_email.html.jinja2',
@@ -574,12 +574,12 @@ def rejectjob(domain, hashid):
             'reject': {
                 'subject': "About your job post on Hasjob",
                 'template': "reject_email.html.jinja2"
-            },
+                },
             'ban': {
                 'subject': "About your account and job posts on Hasjob",
                 'template': "reject_domain_email.html.jinja2"
+                }
             }
-        }
         msg = Message(subject=mail_meta[reject_type]['subject'], recipients=[post.email])
         msg.html = email_transform(render_template(mail_meta[reject_type]['template'], post=post, banned_posts=banned_posts), base_url=request.url_root)
         msg.body = html2text(msg.html)
@@ -737,7 +737,7 @@ def confirm_email(domain, hashid, key):
                 post_count = JobPost.query.filter(
                     JobPost.email_domain == post.email_domain
                     ).filter(~JobPost.state.UNPUBLISHED).filter(
-                    JobPost.datetime > datetime.utcnow() - timedelta(days=1)
+                    JobPost.datetime > utcnow() - timedelta(days=1)
                     ).count()
                 if post_count > app.config['THROTTLE_LIMIT']:
                     flash(u"We have received too many posts with %s addresses in the last 24 hours. "

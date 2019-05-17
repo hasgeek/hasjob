@@ -142,12 +142,12 @@
                 </a>
                 <div class="popup-box" id="report">
                   <a class="close-popup" href="#">&#10005;</a>
-                  {%- if g.auth %}
-                    <h2>What’s wrong with it?</h2>
-                    {% include "inc/reportform.html.jinja2" %}
-                  {%- else %}
+                  {%- if current_auth.is_anonymous %}
                     <p>You need to be logged in to report a post</p>
                     <p><a class="btn btn-primary btn-sm" href="{{ url_for('login') }}">Login with Google or GitHub</a></p>
+                  {%- else %}
+                    <h2>What’s wrong with it?</h2>
+                    {% include "inc/reportform.html.jinja2" %}
                   {%- endif %}
                 </div>
               </div>

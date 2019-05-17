@@ -25,3 +25,5 @@ hasjob/static/gen
 *.gz
 *.bz2
 hasjob/assets/node_modules
+hasjob/static/build
+hasjob/static/service-worker.js

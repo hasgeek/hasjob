@@ -14,8 +14,8 @@
     <title type="text">{{ post.headline|e }}</title>
     <id>{{ post.url_for(_external=true) }}</id>
     <link href="{{ post.url_for(_external=true) }}"/>
-    <updated>{{ post.datetime.isoformat() }}Z</updated>
-    <published>{{ post.datetime.isoformat() }}Z</published>
+    <updated>{{ post.datetime.isoformat() }}</updated>
+    <published>{{ post.datetime.isoformat() }}</published>
     <location>{{ post.location }}</location>
     <content type="html">
       &lt;p&gt;

@@ -1,19 +1,20 @@
 # -*- coding: utf-8 -*-
 
 from os import path
-from datetime import datetime, timedelta
+from datetime import timedelta
 from uuid import uuid4
 from urllib import quote, quote_plus
 import hashlib
 import bleach
-from pytz import utc
+from pytz import UTC
 from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
 from geoip2.errors import AddressNotFoundError
 from flask import Markup, request, g, session
 from flask_lastuser import signal_user_looked_up
+from coaster.utils import utcnow
 from coaster.sqlalchemy import failsafe_add
-from baseframe import _, cache, get_timezone
+from baseframe import _, cache
 from baseframe.signals import form_validation_error, form_validation_success
 
 from .. import app, redis_store, lastuser, rq
@@ -35,7 +36,7 @@ def sniffle():
         'Cache-Control': 'no-cache, no-store, must-revalidate',
         'Pragma': 'no-cache',
         'Expires': '0'
-    }
+        }
 
 
 def index_is_paginated():
@@ -84,7 +85,7 @@ def load_user_data(user):
     g.campaign_views = []
     g.jobpost_viewed = None, None
     g.bgroup = None
-    now = datetime.utcnow()
+    now = utcnow()
 
     if request.endpoint not in ('static', 'baseframe.static'):
         # Loading an anon user only if we're not rendering static resources
@@ -163,11 +164,13 @@ def load_user_data(user):
     if app.geoip:
         ipaddr = session.get('ipaddr')
         ipts = session.get('ipts')
-        now = datetime.utcnow()
-        if (not ipts or
-                ipaddr != request.environ['REMOTE_ADDR'] or
-                'geonameids' not in session or
-                (ipts < now - timedelta(days=7))):
+        if ipts is not None and ipts.tzinfo is None:
+            ipts = UTC.localize(ipts)
+        now = utcnow()
+        if (not ipts
+                or ipaddr != request.environ['REMOTE_ADDR']
+                or 'geonameids' not in session
+                or (ipts < now - timedelta(days=7))):
             # IP has changed or timed out or wasn't saved to the user's session. Look up location
             ipaddr = request.environ['REMOTE_ADDR']
             try:
@@ -199,7 +202,7 @@ def record_views_and_events(response):
     # this problem ever since after several days of logging, but this bit of code
     # remains just in case something turns up in future.
     missing_in_context = []
-    now = datetime.utcnow()
+    now = utcnow()
     if not hasattr(g, 'esession'):
         g.esession = None
         missing_in_context.append('esession')
@@ -399,7 +402,7 @@ def set_max_counts():
             'max_views': 0,
             'max_opens': 0,
             'max_applied': 0
-        }
+            }
 
     view_counts = [get_post_viewcounts(postid) for postid in postids]
     values = {
@@ -407,7 +410,7 @@ def set_max_counts():
         'max_views': max([vc['viewed'] for vc in view_counts]),
         'max_opens': max([vc['opened'] for vc in view_counts]),
         'max_applied': max([vc['applied'] for vc in view_counts])
-    }
+        }
     redis_store.hset(MAX_COUNTS_KEY, 'max_impressions', values['max_impressions'])
     redis_store.hset(MAX_COUNTS_KEY, 'max_views', values['max_views'])
     redis_store.hset(MAX_COUNTS_KEY, 'max_opens', values['max_opens'])
@@ -511,16 +514,16 @@ def gettags(alltime=False):
 
 pay_graph_buckets = {
     'INR': (
-        range(0, 200000, 25000) +
-        range(200000, 2000000, 50000) +
-        range(2000000, 10000000, 100000) +
-        range(10000000, 100000000, 1000000) +
-        [100000000]),
+        range(0, 200000, 25000)
+        + range(200000, 2000000, 50000)
+        + range(2000000, 10000000, 100000)
+        + range(10000000, 100000000, 1000000)
+        + [100000000]),
     'USD': (
-        range(0, 200000, 5000) +
-        range(200000, 1000000, 50000) +
-        range(1000000, 10000000, 100000) +
-        [10000000])
+        range(0, 200000, 5000)
+        + range(200000, 1000000, 50000)
+        + range(1000000, 10000000, 100000)
+        + [10000000])
     }
 pay_graph_buckets['EUR'] = pay_graph_buckets['USD']
 pay_graph_buckets['SGD'] = pay_graph_buckets['USD']
@@ -656,14 +659,14 @@ def campaign_view_count_update(campaign_id, user_id=None, anon_user_id=None):
             db.session.add(cv)
     query = db.session.query(db.func.count(campaign_event_session_table.c.event_session_id)).filter(
         campaign_event_session_table.c.campaign_id == campaign_id).join(EventSession).filter(
-        EventSession.active_at >= (cv.reset_at or datetime.utcnow()))
+        EventSession.active_at >= (cv.reset_at or utcnow()))
 
     # FIXME: Run this in a cron job and de-link from post-request processing
     # query = query.filter(
     #    db.or_(
     #        # Is this event session closed? Criteria: it's been half an hour or the session's explicitly closed
     #        EventSession.ended_at != None,
-    #        EventSession.active_at < datetime.utcnow() - timedelta(minutes=30)))  # NOQA
+    #        EventSession.active_at < utcnow() - timedelta(minutes=30)))  # NOQA
 
     if user_id:
         query = query.filter(EventSession.user_id == user_id)
@@ -679,13 +682,13 @@ def reset_campaign_views():  # Periodic job (see manage.py)
     live_campaigns = Campaign.query.filter(Campaign.state.is_live).options(db.load_only(Campaign.id))
 
     CampaignView.query.filter(CampaignView.campaign_id.in_(live_campaigns),
-        CampaignView.last_viewed_at < datetime.utcnow() - timedelta(days=30)
+        CampaignView.last_viewed_at < utcnow() - timedelta(days=30)
         ).update(
             {'dismissed': False, 'session_count': 0, 'reset_at': db.func.utcnow()},
             synchronize_session=False)  # NOQA
 
     CampaignAnonView.query.filter(CampaignAnonView.campaign_id.in_(live_campaigns),
-        CampaignAnonView.last_viewed_at < datetime.utcnow() - timedelta(days=30)
+        CampaignAnonView.last_viewed_at < utcnow() - timedelta(days=30)
         ).update(
             {'dismissed': False, 'session_count': 0, 'reset_at': db.func.utcnow()},
             synchronize_session=False)  # NOQA
@@ -721,21 +724,6 @@ def jobpost_location_hierarchy(self):
 
 
 JobPost.location_hierarchy = property(jobpost_location_hierarchy)
-
-
-@app.template_filter('shortdate')
-def shortdate(date):
-    if date > (datetime.utcnow() - timedelta(days=30)):
-        return utc.localize(date).astimezone(get_timezone()).strftime('%e %b')
-    else:
-        # The string replace hack is to deal with inconsistencies in the underlying
-        # implementation of strftime. See https://bugs.python.org/issue8304
-        return unicode(utc.localize(date).astimezone(get_timezone()).strftime("%e %b '%y")).replace(u"'", u"’")
-
-
-@app.template_filter('longdate')
-def longdate(date):
-    return utc.localize(date).astimezone(get_timezone()).strftime('%e %B %Y')
 
 
 @app.template_filter('cleanurl')
@@ -845,9 +833,11 @@ def filter_locations(board, filters):
     filtered_geonameids = [jobpost_location.geonameid for jobpost_location in filtered_basequery]
     remote_location_available = filtered_basequery.filter(JobPost.remote_location == True).count() > 0  # NOQA
     data = location_geodata(geonameids)
-    return [{'name': 'anywhere', 'title': _("Anywhere"), 'available': remote_location_available}] + [{'name': data[geonameid]['name'], 'title': data[geonameid]['picker_title'],
-            'available': False if not filtered_geonameids else geonameid in filtered_geonameids}
-            for geonameid in geonameids]
+    return [{'name': 'anywhere', 'title': _("Anywhere"), 'available': remote_location_available}] + [{
+        'name': data.get(geonameid, {}).get('name', ''),
+        'title': data.get(geonameid, {}).get('picker_title', ''),
+        'available': False if not filtered_geonameids else geonameid in filtered_geonameids}
+        for geonameid in geonameids]
 
 
 def filter_types(basequery, board, filters):
@@ -862,7 +852,7 @@ def filter_types(basequery, board, filters):
                 for job_type in board.types if not job_type.private]
     else:
         return [format_job_type(job_type)
-                for job_type in JobType.query.filter_by(private=False, public=True).order_by('seq')]
+                for job_type in JobType.query.filter_by(private=False, public=True).order_by(JobType.seq)]
 
 
 def filter_categories(basequery, board, filters):
@@ -877,7 +867,7 @@ def filter_categories(basequery, board, filters):
                 for job_category in board.categories if not job_category.private]
     else:
         return [format_job_category(job_category)
-                for job_category in JobCategory.query.filter_by(private=False, public=True).order_by('seq')]
+                for job_category in JobCategory.query.filter_by(private=False, public=True).order_by(JobCategory.seq)]
 
 
 @app.context_processor

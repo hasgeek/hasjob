@@ -13,28 +13,28 @@ __all__ = ['Filterset']
 filterset_jobtype_table = db.Table('filterset_jobtype', db.Model.metadata,
     db.Column('filterset_id', None, db.ForeignKey('filterset.id'), primary_key=True),
     db.Column('jobtype_id', None, db.ForeignKey('jobtype.id'), primary_key=True, index=True),
-    db.Column('created_at', db.DateTime, nullable=False, default=db.func.utcnow())
-)
+    db.Column('created_at', db.TIMESTAMP(timezone=True), nullable=False, default=db.func.utcnow())
+    )
 
 
 filterset_jobcategory_table = db.Table('filterset_jobcategory', db.Model.metadata,
     db.Column('filterset_id', None, db.ForeignKey('filterset.id'), primary_key=True),
     db.Column('jobcategory_id', None, db.ForeignKey('jobcategory.id'), primary_key=True, index=True),
-    db.Column('created_at', db.DateTime, nullable=False, default=db.func.utcnow())
-)
+    db.Column('created_at', db.TIMESTAMP(timezone=True), nullable=False, default=db.func.utcnow())
+    )
 
 
 filterset_tag_table = db.Table('filterset_tag', db.Model.metadata,
     db.Column('filterset_id', None, db.ForeignKey('filterset.id'), primary_key=True),
     db.Column('tag_id', None, db.ForeignKey('tag.id'), primary_key=True, index=True),
-    db.Column('created_at', db.DateTime, nullable=False, default=db.func.utcnow())
-)
+    db.Column('created_at', db.TIMESTAMP(timezone=True), nullable=False, default=db.func.utcnow())
+    )
 
 filterset_domain_table = db.Table('filterset_domain', db.Model.metadata,
     db.Column('filterset_id', None, db.ForeignKey('filterset.id'), primary_key=True),
     db.Column('domain_id', None, db.ForeignKey('domain.id'), primary_key=True, index=True),
-    db.Column('created_at', db.DateTime, nullable=False, default=db.func.utcnow())
-)
+    db.Column('created_at', db.TIMESTAMP(timezone=True), nullable=False, default=db.func.utcnow())
+    )
 
 
 class Filterset(BaseScopedNameMixin, db.Model):
@@ -99,7 +99,7 @@ class Filterset(BaseScopedNameMixin, db.Model):
             'equity': self.equity,
             'anywhere': self.remote_location,
             'q': self.keywords
-        }
+            }
 
     @classmethod
     def from_filters(cls, board, filters):
@@ -115,9 +115,9 @@ class Filterset(BaseScopedNameMixin, db.Model):
                 ~db.exists(
                     db.select([1]).where(
                         Filterset.id == filterset_jobtype_table.c.filterset_id
+                        )
                     )
                 )
-            )
 
         if filters.get('c'):
             basequery = basequery.join(
@@ -129,9 +129,9 @@ class Filterset(BaseScopedNameMixin, db.Model):
                 ~db.exists(
                     db.select([1]).where(
                         Filterset.id == filterset_jobcategory_table.c.filterset_id
+                        )
                     )
                 )
-            )
 
         if filters.get('k'):
             basequery = basequery.join(
@@ -143,9 +143,9 @@ class Filterset(BaseScopedNameMixin, db.Model):
                 ~db.exists(
                     db.select([1]).where(
                         Filterset.id == filterset_tag_table.c.filterset_id
+                        )
                     )
                 )
-            )
 
         if filters.get('d'):
             basequery = basequery.join(
@@ -157,9 +157,9 @@ class Filterset(BaseScopedNameMixin, db.Model):
                 ~db.exists(
                     db.select([1]).where(
                         Filterset.id == filterset_domain_table.c.filterset_id
+                        )
                     )
                 )
-            )
 
         if filters.get('l'):
             basequery = basequery.filter(cls.geonameids == sorted(filters['l']))
@@ -167,15 +167,15 @@ class Filterset(BaseScopedNameMixin, db.Model):
             basequery = basequery.filter(cls.geonameids == [])
 
         if filters.get('equity'):
-            basequery = basequery.filter(cls.equity == True)
+            basequery = basequery.filter(cls.equity == True)  # NOQA
         else:
-            basequery = basequery.filter(cls.equity == False)
+            basequery = basequery.filter(cls.equity == False)  # NOQA
 
         if filters.get('pay') and filters.get('currency'):
             basequery = basequery.filter(cls.pay_cash == filters['pay'],
                 cls.pay_currency == filters['currency'])
         else:
-            basequery = basequery.filter(cls.pay_cash == None, cls.pay_currency == None)
+            basequery = basequery.filter(cls.pay_cash == None, cls.pay_currency == None)  # NOQA
 
         if filters.get('q'):
             basequery = basequery.filter(cls.keywords == filters['q'])
@@ -183,9 +183,9 @@ class Filterset(BaseScopedNameMixin, db.Model):
             basequery = basequery.filter(cls.keywords == '')
 
         if filters.get('anywhere'):
-            basequery = basequery.filter(cls.remote_location == True)
+            basequery = basequery.filter(cls.remote_location == True)  # NOQA
         else:
-            basequery = basequery.filter(cls.remote_location == False)
+            basequery = basequery.filter(cls.remote_location == False)  # NOQA
 
         return basequery.one_or_none()
 
@@ -200,6 +200,7 @@ def _format_and_validate(mapper, connection, target):
         filterset = Filterset.from_filters(target.board, target.to_filters())
         if filterset and filterset.id != target.id:
             raise ValueError("There already exists a filter set with this filter criteria")
+
 
 create_geonameids_trigger = DDL('''
     CREATE INDEX ix_filterset_geonameids on filterset USING gin (geonameids);
