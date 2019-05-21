@@ -11,7 +11,7 @@ Pillow==6.0.0
 sqlalchemy_utils==0.33.11
 SQLAlchemy>=1.0.0
 pytz==2019.1
-markdown==3.1
+markdown==3.1.1
 tweepy==3.7.0
 bitlyapi==0.1.1
 coverage==4.5.3
