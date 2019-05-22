@@ -29,5 +29,5 @@ geoip2==2.9.0
 git+https://github.com/hasgeek/coaster
 git+https://github.com/hasgeek/flask-lastuser
 git+https://github.com/hasgeek/baseframe
-Flask-Migrate==2.5.0
+Flask-Migrate==2.5.1
 progressbar2==3.39.3
