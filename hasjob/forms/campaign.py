@@ -32,9 +32,10 @@ class CampaignForm(forms.Form):
     title = forms.StringField(__("Title"), description=__("A reference name for looking up this campaign again"),
         validators=[forms.validators.DataRequired(__("A title is required"))],
         filters=[forms.filters.strip()])
-    start_at = forms.DateTimeField(__("Start at"))
+    start_at = forms.DateTimeField(__("Start at"), naive=False)
     end_at = forms.DateTimeField(__("End at"),
-        validators=[forms.validators.GreaterThan('start_at', __(u"The campaign can’t end before it starts"))])
+        validators=[forms.validators.GreaterThan('start_at', __(u"The campaign can’t end before it starts"))],
+        naive=False)
     public = forms.BooleanField(__("This campaign is live"))
     position = forms.RadioField(__("Display position"), choices=CAMPAIGN_POSITION.items(), coerce=int)
     priority = forms.IntegerField(__("Priority"), default=0,
