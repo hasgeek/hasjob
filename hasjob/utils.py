@@ -192,7 +192,7 @@ def scrubemail(data, rot13=False, css_junk=None):
     return data
 
 
-WORDSPLIT_RE = re.compile('\W+')
+WORDSPLIT_RE = re.compile(r'\W+')
 TAGSPLIT_RE = re.compile('<.*?>')
 
 
@@ -248,11 +248,11 @@ def get_word_bag(text):
 
 
 def escape_for_sql_like(query):
-    """
+    r"""
     Escape the '%' and '_' wildcards in SQL LIKE clauses.
     Some SQL dialects respond to '[' and ']', so remove them.
 
     >>> escape_for_sql_like("query%_[]")
     "query\%\_%"
     """
-    return query.replace(u'%', ur'\%').replace(u'_', ur'\_').replace(u'[', u'').replace(u']', u'') + u'%'
+    return query.replace(u'%', r'\%').replace(u'_', r'\_').replace(u'[', u'').replace(u']', u'') + u'%'

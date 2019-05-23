@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from datetime import timedelta
+from coaster.utils import utcnow
 from coaster.manage import init_manager, Manager
 
 import hasjob
@@ -8,7 +10,6 @@ import hasjob.forms as forms
 import hasjob.views as views
 from hasjob.models import db
 from hasjob import app
-from datetime import datetime, timedelta
 
 periodic = Manager(usage="Periodic tasks from cron (with recommended intervals)")
 
@@ -19,7 +20,7 @@ def sessions():
     es = models.EventSession
     # Close all sessions that have been inactive for >= 30 minutes
     es.query.filter(es.ended_at == None,  # NOQA
-        es.active_at < (datetime.utcnow() - timedelta(minutes=30))).update(
+        es.active_at < (utcnow() - timedelta(minutes=30))).update(
         {es.ended_at: es.active_at})
     db.session.commit()
 

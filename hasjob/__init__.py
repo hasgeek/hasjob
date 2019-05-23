@@ -5,7 +5,7 @@ import geoip2.database
 from flask import Flask
 from flask_migrate import Migrate
 from flask_assets import Bundle
-from flask_rq import RQ
+from flask_rq2 import RQ
 from flask_mail import Mail
 from flask_redis import FlaskRedis
 from flask_lastuser import Lastuser
@@ -22,6 +22,7 @@ app.static_folder = 'static'
 mail = Mail()
 lastuser = Lastuser()
 redis_store = FlaskRedis()
+rq = RQ()
 
 # Second, setup assets
 version = Version(__version__)
@@ -43,7 +44,7 @@ if 'GEOIP_PATH' in app.config:
     else:
         app.geoip = geoip2.database.Reader(app.config['GEOIP_PATH'])
 
-RQ(app)
+rq.init_app(app)
 
 baseframe.init_app(app, requires=['baseframe-bs3', 'jquery.autosize', 'jquery.liblink',
     'jquery.wnumb', 'jquery.nouislider', 'baseframe-firasans', 'fontawesome>=4.3.0',

@@ -15,7 +15,7 @@ class JobPostReport(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(None, db.ForeignKey('user.id'), nullable=True)
     user = db.relationship(User)
-    datetime = db.Column(db.DateTime, default=db.func.utcnow(), nullable=False)
+    datetime = db.Column(db.TIMESTAMP(timezone=True), default=db.func.utcnow(), nullable=False)
     post_id = db.Column(db.Integer, db.ForeignKey('jobpost.id'), nullable=False)
     post = db.relation(JobPost, primaryjoin=post_id == JobPost.id,
         backref=db.backref('flags', cascade='all, delete-orphan'))

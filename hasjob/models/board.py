@@ -18,44 +18,44 @@ __all__ = ['Board', 'BoardJobPost', 'BoardAutoDomain', 'BoardAutoLocation', 'boa
 
 
 board_jobtype_table = db.Table('board_jobtype', db.Model.metadata,
-    *(make_timestamp_columns() + (
+    *(make_timestamp_columns(timezone=True) + (
         db.Column('board_id', None, db.ForeignKey('board.id'), primary_key=True),
         db.Column('jobtype_id', None, db.ForeignKey('jobtype.id'), primary_key=True)
-    )))
+        )))
 
 
 board_jobcategory_table = db.Table('board_jobcategory', db.Model.metadata,
-    *(make_timestamp_columns() + (
+    *(make_timestamp_columns(timezone=True) + (
         db.Column('board_id', None, db.ForeignKey('board.id'), primary_key=True),
         db.Column('jobcategory_id', None, db.ForeignKey('jobcategory.id'), primary_key=True)
-    )))
+        )))
 
 
 board_users_table = db.Table('board_user', db.Model.metadata,
-    *(make_timestamp_columns() + (
+    *(make_timestamp_columns(timezone=True) + (
         db.Column('board_id', None, db.ForeignKey('board.id'), primary_key=True),
         db.Column('user_id', None, db.ForeignKey('user.id'), primary_key=True),
-    )))
+        )))
 
 
 board_auto_tag_table = db.Table('board_auto_tag', db.Model.metadata,
     db.Column('tag_id', None, db.ForeignKey('tag.id'), primary_key=True),
     db.Column('board_id', None, db.ForeignKey('board.id'), primary_key=True),
-    db.Column('created_at', db.DateTime, nullable=False, default=db.func.utcnow())
+    db.Column('created_at', db.TIMESTAMP(timezone=True), nullable=False, default=db.func.utcnow())
     )
 
 
 board_auto_jobtype_table = db.Table('board_auto_jobtype', db.Model.metadata,
     db.Column('jobtype_id', None, db.ForeignKey('jobtype.id'), primary_key=True),
     db.Column('board_id', None, db.ForeignKey('board.id'), primary_key=True),
-    db.Column('created_at', db.DateTime, nullable=False, default=db.func.utcnow())
+    db.Column('created_at', db.TIMESTAMP(timezone=True), nullable=False, default=db.func.utcnow())
     )
 
 
 board_auto_jobcategory_table = db.Table('board_auto_jobcategory', db.Model.metadata,
     db.Column('jobcategory_id', None, db.ForeignKey('jobcategory.id'), primary_key=True),
     db.Column('board_id', None, db.ForeignKey('board.id'), primary_key=True),
-    db.Column('created_at', db.DateTime, nullable=False, default=db.func.utcnow())
+    db.Column('created_at', db.TIMESTAMP(timezone=True), nullable=False, default=db.func.utcnow())
     )
 
 
@@ -63,7 +63,8 @@ def jobtype_choices(cls, board=None):
     if board:
         return [(ob.id, ob.title) for ob in board.types if not ob.private]
     else:
-        return [(ob.id, ob.title) for ob in cls.query.filter_by(private=False, public=True).order_by('seq')]
+        return [(ob.id, ob.title) for ob in cls.query.filter_by(private=False, public=True).order_by(cls.seq)]
+
 
 JobType.choices = classmethod(jobtype_choices)
 
@@ -72,7 +73,8 @@ def jobcategory_choices(cls, board=None):
     if board:
         return [(ob.id, ob.title) for ob in board.categories if not ob.private]
     else:
-        return [(ob.id, ob.title) for ob in cls.query.filter_by(private=False, public=True).order_by('seq')]
+        return [(ob.id, ob.title) for ob in cls.query.filter_by(private=False, public=True).order_by(cls.seq)]
+
 
 JobCategory.choices = classmethod(jobcategory_choices)
 
@@ -243,6 +245,7 @@ def _user_boards(self):
         Board.userid.in_(self.user_organizations_owned_ids())).options(
         db.load_only('id', 'name', 'title', 'userid')).all()
 
+
 User.boards = _user_boards
 
 
@@ -269,6 +272,7 @@ class BoardJobPost(TimestampMixin, db.Model):
 def _jobpost_link_to_board(self, board):
     return BoardJobPost.query.get((board.id, self.id))
 
+
 JobPost.link_to_board = _jobpost_link_to_board
 
 
@@ -284,5 +288,6 @@ def _jobpost_add_to(self, board):
             link = BoardJobPost(jobpost=self, board=board)
             db.session.add(link)
         return link
+
 
 JobPost.add_to = _jobpost_add_to

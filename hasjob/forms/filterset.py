@@ -27,8 +27,8 @@ class FiltersetForm(forms.Form):
         validators=[forms.validators.DataRequired()], filters=[forms.filters.strip()])
     description = forms.TinyMce4Field(__("Description"),
         content_css=content_css,
-	    description=__("Description shown to viewers and search engines"),
-	    validators=[forms.validators.DataRequired()])
+        description=__("Description shown to viewers and search engines"),
+        validators=[forms.validators.DataRequired()])
     types = QuerySelectMultipleField(__("Job types"),
         widget=ListWidget(), option_widget=CheckboxInput(), get_label='title',
         validators=[forms.validators.Optional()])
@@ -52,7 +52,6 @@ class FiltersetForm(forms.Form):
         if not self.edit_parent:
             self.edit_parent = g.board
         self.types.query = JobType.query.join(board_jobtype_table).filter(
-            board_jobtype_table.c.board_id == self.edit_parent.id).order_by('title')
+            board_jobtype_table.c.board_id == self.edit_parent.id).order_by(JobType.title)
         self.categories.query = JobCategory.query.join(board_jobcategory_table).filter(
-            board_jobcategory_table.c.board_id == self.edit_parent.id).order_by('title')
-
+            board_jobcategory_table.c.board_id == self.edit_parent.id).order_by(JobType.title)

@@ -305,9 +305,9 @@ class ListingForm(forms.Form):
                         self.job_pay_cash_max.errors.append(
                             _(u"You’ve selected an upper limit of {figure}. That can’t be right").format(figure=figure))
                         success = False
-                    elif (self.job_pay_type.data == PAY_TYPE.RECURRING and
-                            self.job_pay_currency.data == 'INR' and
-                            self.job_pay_cash_min.data < 60000):
+                    elif (self.job_pay_type.data == PAY_TYPE.RECURRING
+                            and self.job_pay_currency.data == 'INR'
+                            and self.job_pay_cash_min.data < 60000):
                         self.job_pay_cash_min.errors.append(
                             _(u"That’s rather low. Did you specify monthly pay instead of annual pay? Multiply by 12"))
                         success = False
@@ -397,7 +397,7 @@ class ApplicationForm(forms.Form):
             if not self.apply_email.choices or not self.apply_email.choices[0][0]:
                 self.apply_email.choices = [
                     ('', Markup(_("<em>You have not verified your email address</em>")))
-                ]
+                    ]
 
     def validate_apply_message(form, field):
         words = get_word_bag(field.data)

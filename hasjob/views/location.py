@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 
 from collections import OrderedDict
-from datetime import datetime
 from flask import g, redirect, abort, url_for
 from baseframe import _
 from baseframe.forms import render_form, render_delete_sqla
-from ..models import db, agelimit, Location, JobLocation, JobPost, POST_STATE
+from ..models import db, Location, JobLocation, JobPost
 from ..forms import NewLocationForm, EditLocationForm
 from .. import app, lastuser
 from ..extapi import location_geodata
@@ -16,10 +15,9 @@ from ..extapi import location_geodata
 def location_new():
     if not (lastuser.has_permission('siteadmin') or (g.board and g.board.owner_is(g.user))):
         abort(403)
-    now = datetime.utcnow()
     geonames = OrderedDict([(r.geonameid, None) for r in
         db.session.query(
-                JobLocation.geonameid, db.func.count(JobLocation.geonameid).label('count')
+            JobLocation.geonameid, db.func.count(JobLocation.geonameid).label('count')
             ).join(JobPost).filter(
                 JobPost.state.LISTED,
                 ~JobLocation.geonameid.in_(db.session.query(Location.id).filter(Location.board == g.board))

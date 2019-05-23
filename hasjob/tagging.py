@@ -3,15 +3,14 @@
 from collections import defaultdict
 from urlparse import urljoin
 import requests
-from flask_rq import job
 from coaster.utils import text_blocks
 from coaster.nlp import extract_named_entities
-from . import app
+from . import app, rq
 from .models import (db, JobPost, JobLocation, Board, BoardAutoDomain, BoardAutoLocation, board_auto_tag_table,
     board_auto_jobtype_table, board_auto_jobcategory_table, Tag, JobPostTag, TAG_TYPE)
 
 
-@job('hasjob')
+@rq.job('hasjob')
 def tag_locations(jobpost_id):
     if app.config.get('HASCORE_SERVER'):
         with app.test_request_context():
@@ -61,7 +60,7 @@ def tag_locations(jobpost_id):
                 db.session.commit()
 
 
-@job('hasjob')
+@rq.job('hasjob')
 def add_to_boards(jobpost_id):
     with app.test_request_context():
         post = JobPost.query.options(db.joinedload('locations'), db.joinedload('taglinks')).get(jobpost_id)
@@ -109,21 +108,21 @@ def add_to_boards(jobpost_id):
 
 
 def tag_named_entities(post):
-        entities = extract_named_entities(text_blocks(post.tag_content()))
-        links = set()
-        for entity in entities:
-            tag = Tag.get(entity, create=True)
-            link = JobPostTag.get(post, tag)
-            if not link:
-                link = JobPostTag(jobpost=post, tag=tag, status=TAG_TYPE.AUTO)
-                post.taglinks.append(link)
-            links.add(link)
-        for link in post.taglinks:
-            if link.status == TAG_TYPE.AUTO and link not in links:
-                link.status = TAG_TYPE.REMOVED
+    entities = extract_named_entities(text_blocks(post.tag_content()))
+    links = set()
+    for entity in entities:
+        tag = Tag.get(entity, create=True)
+        link = JobPostTag.get(post, tag)
+        if not link:
+            link = JobPostTag(jobpost=post, tag=tag, status=TAG_TYPE.AUTO)
+            post.taglinks.append(link)
+        links.add(link)
+    for link in post.taglinks:
+        if link.status == TAG_TYPE.AUTO and link not in links:
+            link.status = TAG_TYPE.REMOVED
 
 
-@job('hasjob')
+@rq.job('hasjob')
 def tag_jobpost(jobpost_id):
     with app.test_request_context():
         post = JobPost.query.get(jobpost_id)

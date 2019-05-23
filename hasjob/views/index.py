@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 
 from uuid import uuid4
-from datetime import datetime
 from collections import OrderedDict
 from six.moves.urllib.parse import urlsplit, SplitResult
 
 from sqlalchemy.exc import ProgrammingError
 from flask import abort, redirect, render_template, request, Response, url_for, g, flash, jsonify, Markup
-from coaster.utils import getbool, parse_isoformat, for_tsquery
+from coaster.utils import getbool, parse_isoformat, for_tsquery, utcnow, ParseError
 from coaster.views import render_with, requestargs, endpoint_for
 from baseframe import _  # , dogpile
 
@@ -29,7 +28,7 @@ def stickie_dict(post, url, pinned=False, show_viewcounts=False, show_pay=False,
         'url': url,
         'pinned': pinned,
         'starred': starred,
-        'date': post.datetime.isoformat() + 'Z',
+        'date': post.datetime.isoformat(),
         'location': post.location,
         'parsed_location': post.parsed_location,
         'company_name': post.company_name,
@@ -41,7 +40,7 @@ def stickie_dict(post, url, pinned=False, show_viewcounts=False, show_pay=False,
             'viewed': post_viewcounts['viewed'],
             'opened': post_viewcounts['opened'],
             'applied': post_viewcounts['applied']
-        }
+            }
     if show_pay:
         result['pay'] = post_viewcounts['pay_label']
     return result
@@ -273,9 +272,9 @@ def fetch_jobposts(request_args, request_values, filters, is_index, board, board
         startdate = None
         if 'startdate' in request_values:
             try:
-                startdate = parse_isoformat(request_values['startdate'])
-            except ValueError:
-                pass
+                startdate = parse_isoformat(request_values['startdate'], naive=False)
+            except ParseError:
+                abort(400)
 
         batchsize = 32
 
@@ -332,7 +331,7 @@ def fetch_jobposts(request_args, request_values, filters, is_index, board, board
 
     query_params = request_args.to_dict(flat=False)
     if loadmore:
-        query_params.update({'startdate': loadmore.isoformat() + 'Z', 'ph': pinned_hashids})
+        query_params.update({'startdate': loadmore.isoformat(), 'ph': pinned_hashids})
     if location:
         data_filters['location_names'].append(location['name'])
         query_params.update({'l': location['name']})
@@ -357,7 +356,7 @@ def fetch_cached_jobposts(request_args, request_values, filters, is_index, board
 @app.route('/', methods=['GET', 'POST'])
 @render_with({'text/html': 'index.html.jinja2', 'application/json': json_index}, json=False)
 def index(basequery=None, filters={}, md5sum=None, tag=None, domain=None, location=None, title=None, showall=True, statusfilter=None, batched=True, ageless=False, cached=False, query_string=None, filterset=None, template_vars={}):
-    now = datetime.utcnow()
+    now = utcnow()
     is_siteadmin = lastuser.has_permission('siteadmin')
     board = g.board
 
@@ -366,7 +365,7 @@ def index(basequery=None, filters={}, md5sum=None, tag=None, domain=None, locati
             BoardJobPost.query.join(BoardJobPost.jobpost).filter(
                 BoardJobPost.board == g.board, JobPost.state.LISTED).options(
                     db.load_only('jobpost_id', 'pinned')).all()
-        }
+            }
 
     else:
         board_jobs = {}
@@ -551,7 +550,7 @@ def browse_by_location(location):
     if loc:
         geodata = {'geonameid': loc.id, 'name': loc.name, 'use_title': loc.title, 'description': Markup(loc.description)}
     else:
-        return redirect(url_for('index', l=location), code=302)
+        return redirect(url_for('index', l=location), code=302)  # NOQA
     if location != geodata['name']:
         return redirect(url_for('browse_by_location', location=geodata['name']))
     return index(location=geodata, title=geodata['use_title'])
@@ -560,7 +559,7 @@ def browse_by_location(location):
 @app.route('/in/anywhere', methods=['GET', 'POST'], subdomain='<subdomain>')
 @app.route('/in/anywhere', methods=['GET', 'POST'])
 def browse_by_anywhere():
-    return redirect(url_for('index', l='anywhere'), code=302)
+    return redirect(url_for('index', l='anywhere'), code=302)  # NOQA
 
 
 @app.route('/tag/<tag>', methods=['GET', 'POST'], subdomain='<subdomain>')
@@ -616,7 +615,7 @@ def feed(basequery=None, type=None, category=None, md5sum=None, domain=None, loc
         if md5sum:
             title = posts[0].company_name
     else:
-        updated = datetime.utcnow().isoformat() + 'Z'
+        updated = utcnow().isoformat() + 'Z'
     return Response(render_template('feed-atom.xml', posts=posts, updated=updated, title=title),
         content_type='application/atom+xml; charset=utf-8')
 
@@ -629,7 +628,7 @@ def feed_indeed():
     if posts:  # Can't do this unless posts is a list
         updated = posts[0].datetime.isoformat() + 'Z'
     else:
-        updated = datetime.utcnow().isoformat() + 'Z'
+        updated = utcnow().isoformat() + 'Z'
     return Response(render_template('feed-indeed.xml', posts=posts, updated=updated, title=title),
         content_type='textxml; charset=utf-8')
 
@@ -786,10 +785,10 @@ def sitemap(key):
     # Add filtered views to sitemap
     for item in Filterset.query.all():
         sitemapxml += '  <url>\n'\
-                    '    <loc>%s</loc>\n' % item.url_for(_external=True) + \
-                    '    <lastmod>%s</lastmod>\n' % (item.updated_at.isoformat() + 'Z') + \
-                    '    <changefreq>daily</changefreq>\n'\
-                    '  </url>\n'
+                      '    <loc>%s</loc>\n' % item.url_for(_external=True) + \
+                      '    <lastmod>%s</lastmod>\n' % (item.updated_at.isoformat() + 'Z') + \
+                      '    <changefreq>daily</changefreq>\n'\
+                      '  </url>\n'
 
     # Add locations to sitemap
     for item in Location.query.filter(Location.board_id.in_(board_ids)).all():
@@ -811,7 +810,7 @@ def sitemap(key):
                 Domain.title != None,
                 Domain.description != None,
                 Domain.description != ''
-                ).order_by('updated_at desc').all():  # NOQA
+                ).order_by(Domain.updated_at.desc()).all():  # NOQA
             sitemapxml += '  <url>\n'\
                           '    <loc>%s</loc>\n' % domain.url_for(_external=True) + \
                           '    <lastmod>%s</lastmod>\n' % (domain.updated_at.isoformat() + 'Z') + \

@@ -27,7 +27,7 @@ ALLOWED_TAGS = [
     'li',
     'br',
     'a',
-]
+    ]
 
 from . import (index, error_handling, helper, listing, location, static, login, board, kiosk, campaign,  # NOQA
     admindash, domain, api, admin_filterset)

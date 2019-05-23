@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import bleach
-from datetime import datetime, timedelta
+from datetime import timedelta
 from difflib import SequenceMatcher
 from html2text import html2text
 from premailer import transform as email_transform
@@ -13,7 +13,7 @@ from flask_mail import Message
 from baseframe import cache  # , dogpile
 from baseframe.forms import Form
 from baseframe.utils import is_public_email_domain
-from coaster.utils import getbool, get_email_domain, md5sum, base_domain_matches
+from coaster.utils import getbool, get_email_domain, md5sum, base_domain_matches, utcnow
 from coaster.views import load_model
 from hasjob import app, forms, mail, lastuser
 from hasjob.models import (
@@ -95,7 +95,7 @@ def jobdetail(domain, hashid):
     g.jobpost_viewed = (post.id, getbool(request.args.get('b')))
 
     reportform = forms.ReportForm(obj=report)
-    reportform.report_code.choices = [(ob.id, ob.title) for ob in ReportCode.query.filter_by(public=True).order_by('seq')]
+    reportform.report_code.choices = [(ob.id, ob.title) for ob in ReportCode.query.filter_by(public=True).order_by(ReportCode.seq)]
     rejectform = forms.RejectForm()
     moderateform = forms.ModerateForm()
     if request.method == 'GET':
@@ -172,7 +172,7 @@ def job_viewstats(domain, hashid):
             "unittype": post.viewstats[0],
             "stats": post.viewstats[1],
             "counts": get_post_viewcounts(post.id)
-        })
+            })
     else:
         return abort(403)
 
@@ -474,12 +474,12 @@ def process_application(domain, hashid, application):
                     job_application.reply(
                         message=response_form.response_message.data,
                         user=g.user
-                    )
+                        )
                 else:
                     job_application.reject(
                         message=response_form.response_message.data,
                         user=g.user
-                    )
+                        )
 
                 email_html = email_transform(
                     render_template('respond_email.html.jinja2',
@@ -575,12 +575,12 @@ def rejectjob(domain, hashid):
             'reject': {
                 'subject': "About your job post on Hasjob",
                 'template': "reject_email.html.jinja2"
-            },
+                },
             'ban': {
                 'subject': "About your account and job posts on Hasjob",
                 'template': "reject_domain_email.html.jinja2"
+                }
             }
-        }
         msg = Message(subject=mail_meta[reject_type]['subject'], recipients=[post.email])
         msg.html = email_transform(render_template(mail_meta[reject_type]['template'], post=post, banned_posts=banned_posts), base_url=request.url_root)
         msg.body = html2text(msg.html)
@@ -738,7 +738,7 @@ def confirm_email(domain, hashid, key):
                 post_count = JobPost.query.filter(
                     JobPost.email_domain == post.email_domain
                     ).filter(~JobPost.state.UNPUBLISHED).filter(
-                    JobPost.datetime > datetime.utcnow() - timedelta(days=1)
+                    JobPost.datetime > utcnow() - timedelta(days=1)
                     ).count()
                 if post_count > app.config['THROTTLE_LIMIT']:
                     flash(u"We have received too many posts with %s addresses in the last 24 hours. "
@@ -750,14 +750,14 @@ def confirm_email(domain, hashid, key):
             db.session.commit()
             if app.config['TWITTER_ENABLED']:
                 if post.headlineb:
-                    tweet.delay(post.headline, post.url_for(b=0, _external=True),
+                    tweet.queue(post.headline, post.url_for(b=0, _external=True),
                         post.location, dict(post.parsed_location or {}), username=post.twitter)
-                    tweet.delay(post.headlineb, post.url_for(b=1, _external=True),
+                    tweet.queue(post.headlineb, post.url_for(b=1, _external=True),
                         post.location, dict(post.parsed_location or {}), username=post.twitter)
                 else:
-                    tweet.delay(post.headline, post.url_for(_external=True),
+                    tweet.queue(post.headline, post.url_for(_external=True),
                         post.location, dict(post.parsed_location or {}), username=post.twitter)
-            add_to_boards.delay(post.id)
+            add_to_boards.queue(post.id)
             flash("Congratulations! Your job post has been published. As a bonus for being an employer on Hasjob, "
                 "you can now see how your post is performing relative to others. Look in the footer of any post.",
                 "interactive")
@@ -942,8 +942,8 @@ def editjob(hashid, key, domain=None, form=None, validated=False, newpost=None):
                     post.company_logo = None
 
             db.session.commit()
-            tag_jobpost.delay(post.id)    # Keywords
-            tag_locations.delay(post.id)  # Locations
+            tag_jobpost.queue(post.id)    # Keywords
+            tag_locations.queue(post.id)  # Locations
             post.uncache_viewcounts('pay_label')
             session.pop('userkeys', None)  # Remove legacy userkeys dict
             session.permanent = True
