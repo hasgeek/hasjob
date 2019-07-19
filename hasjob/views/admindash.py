@@ -2,12 +2,16 @@
 
 from collections import defaultdict
 from cStringIO import StringIO
-import unicodecsv
+
 from flask import g, render_template
+
+import unicodecsv
+
 from baseframe import __
 from coaster.views import route, viewdata
+
 from .. import app, lastuser
-from ..models import db, POST_STATE, EMPLOYER_RESPONSE
+from ..models import EMPLOYER_RESPONSE, POST_STATE, db
 from .admin import AdminView
 
 

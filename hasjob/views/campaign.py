@@ -1,20 +1,39 @@
 # -*- coding: utf-8 -*-
 
 from collections import defaultdict
-from functools import wraps
-from datetime import timedelta
 from cStringIO import StringIO
-from pytz import UTC
+from datetime import timedelta
+from functools import wraps
+
+from flask import Markup, abort, flash, g, redirect, render_template, request, url_for
+
 import unicodecsv
-from flask import g, request, flash, url_for, redirect, render_template, Markup, abort
-from coaster.utils import suuid, make_name, classmethodproperty
-from coaster.views import load_model, load_models, ModelView, InstanceLoader, UrlForView, route, viewdata
+from pytz import UTC
+
 from baseframe import __
-from baseframe.forms import render_form, render_delete_sqla, render_redirect
+from baseframe.forms import render_delete_sqla, render_form, render_redirect
+from coaster.utils import classmethodproperty, make_name, suuid
+from coaster.views import (
+    InstanceLoader,
+    ModelView,
+    UrlForView,
+    load_model,
+    load_models,
+    route,
+    viewdata,
+)
+
 from .. import app, lastuser
-from ..models import (db, Campaign, CampaignView, CampaignAction, CampaignUserAction, CampaignAnonUserAction,
-    CAMPAIGN_ACTION)
-from ..forms import CampaignForm, CampaignActionForm
+from ..forms import CampaignActionForm, CampaignForm
+from ..models import (
+    CAMPAIGN_ACTION,
+    Campaign,
+    CampaignAction,
+    CampaignAnonUserAction,
+    CampaignUserAction,
+    CampaignView,
+    db,
+)
 from .admin import AdminView
 
 
