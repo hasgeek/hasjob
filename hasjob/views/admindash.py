@@ -38,43 +38,43 @@ class AdminDashboard(AdminView):
         stats = defaultdict(dict)
 
         statsq = db.session.query('slot', 'count').from_statement(db.text(
-            '''SELECT DATE_TRUNC(:trunc, user_active_at.active_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS slot, COUNT(DISTINCT(user_active_at.user_id)) AS count FROM user_active_at WHERE user_active_at.active_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone > DATE_TRUNC(:trunc, NOW() AT TIME ZONE :timezone - INTERVAL :interval) GROUP BY slot ORDER BY slot'''
+            '''SELECT DATE_TRUNC(:trunc, user_active_at.active_at AT TIME ZONE :timezone) AS slot, COUNT(DISTINCT(user_active_at.user_id)) AS count FROM user_active_at WHERE user_active_at.active_at AT TIME ZONE :timezone > DATE_TRUNC(:trunc, NOW() AT TIME ZONE :timezone - INTERVAL :interval) GROUP BY slot ORDER BY slot'''
             )).params(trunc=trunc, interval=interval, timezone=g.user.timezone)
         for slot, count in statsq:
             stats[slot]['users'] = count
 
         statsq = db.session.query('slot', 'count').from_statement(db.text(
-            '''SELECT DATE_TRUNC(:trunc, "user".created_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS slot, COUNT(*) AS count FROM "user" WHERE "user".created_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone > DATE_TRUNC(:trunc, NOW() AT TIME ZONE :timezone - INTERVAL :interval) GROUP BY slot ORDER BY slot'''
+            '''SELECT DATE_TRUNC(:trunc, "user".created_at AT TIME ZONE :timezone) AS slot, COUNT(*) AS count FROM "user" WHERE "user".created_at AT TIME ZONE :timezone > DATE_TRUNC(:trunc, NOW() AT TIME ZONE :timezone - INTERVAL :interval) GROUP BY slot ORDER BY slot'''
             )).params(trunc=trunc, interval=interval, timezone=g.user.timezone)
         for slot, count in statsq:
             stats[slot]['newusers'] = count
 
         statsq = db.session.query('slot', 'count').from_statement(db.text(
-            '''SELECT DATE_TRUNC(:trunc, jobpost.datetime AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS slot, COUNT(*) AS count FROM jobpost WHERE jobpost.status IN :listed AND jobpost.datetime AT TIME ZONE 'UTC' AT TIME ZONE :timezone > DATE_TRUNC(:trunc, NOW() AT TIME ZONE :timezone - INTERVAL :interval) GROUP BY slot ORDER BY slot'''
+            '''SELECT DATE_TRUNC(:trunc, jobpost.datetime AT TIME ZONE :timezone) AS slot, COUNT(*) AS count FROM jobpost WHERE jobpost.status IN :listed AND jobpost.datetime AT TIME ZONE :timezone > DATE_TRUNC(:trunc, NOW() AT TIME ZONE :timezone - INTERVAL :interval) GROUP BY slot ORDER BY slot'''
             )).params(trunc=trunc, interval=interval, timezone=g.user.timezone, listed=tuple(POST_STATE.PUBLIC))
         for slot, count in statsq:
             stats[slot]['jobs'] = count
 
         statsq = db.session.query('slot', 'count').from_statement(db.text(
-            '''SELECT DATE_TRUNC(:trunc, event_session.created_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS slot, COUNT(DISTINCT(anon_user_id)) AS count FROM event_session WHERE event_session.anon_user_id IS NOT NULL AND event_session.created_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone > DATE_TRUNC(:trunc, NOW() AT TIME ZONE :timezone - INTERVAL :interval) GROUP BY slot ORDER BY slot'''
+            '''SELECT DATE_TRUNC(:trunc, event_session.created_at AT TIME ZONE :timezone) AS slot, COUNT(DISTINCT(anon_user_id)) AS count FROM event_session WHERE event_session.anon_user_id IS NOT NULL AND event_session.created_at AT TIME ZONE :timezone > DATE_TRUNC(:trunc, NOW() AT TIME ZONE :timezone - INTERVAL :interval) GROUP BY slot ORDER BY slot'''
             )).params(trunc=trunc, interval=interval, timezone=g.user.timezone)
         for slot, count in statsq:
             stats[slot]['anon_users'] = count
 
         statsq = db.session.query('slot', 'count').from_statement(db.text(
-            '''SELECT DATE_TRUNC(:trunc, job_application.created_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS slot, COUNT(*) AS count FROM job_application WHERE job_application.created_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone > DATE_TRUNC(:trunc, NOW() AT TIME ZONE :timezone - INTERVAL :interval) GROUP BY slot ORDER BY slot'''
+            '''SELECT DATE_TRUNC(:trunc, job_application.created_at AT TIME ZONE :timezone) AS slot, COUNT(*) AS count FROM job_application WHERE job_application.created_at AT TIME ZONE :timezone > DATE_TRUNC(:trunc, NOW() AT TIME ZONE :timezone - INTERVAL :interval) GROUP BY slot ORDER BY slot'''
             )).params(trunc=trunc, interval=interval, timezone=g.user.timezone)
         for slot, count in statsq:
             stats[slot]['applications'] = count
 
         statsq = db.session.query('slot', 'count').from_statement(db.text(
-            '''SELECT DATE_TRUNC(:trunc, job_application.replied_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS slot, COUNT(*) AS count FROM job_application WHERE job_application.response = :response AND job_application.replied_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone > DATE_TRUNC(:trunc, NOW() AT TIME ZONE :timezone - INTERVAL :interval) GROUP BY slot ORDER BY slot'''
+            '''SELECT DATE_TRUNC(:trunc, job_application.replied_at AT TIME ZONE :timezone) AS slot, COUNT(*) AS count FROM job_application WHERE job_application.response = :response AND job_application.replied_at AT TIME ZONE :timezone > DATE_TRUNC(:trunc, NOW() AT TIME ZONE :timezone - INTERVAL :interval) GROUP BY slot ORDER BY slot'''
             )).params(trunc=trunc, interval=interval, timezone=g.user.timezone, response=EMPLOYER_RESPONSE.REPLIED)
         for slot, count in statsq:
             stats[slot]['replies'] = count
 
         statsq = db.session.query('slot', 'count').from_statement(db.text(
-            '''SELECT DATE_TRUNC(:trunc, job_application.replied_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone) AS slot, COUNT(*) AS count FROM job_application WHERE job_application.response = :response AND job_application.replied_at AT TIME ZONE 'UTC' AT TIME ZONE :timezone > DATE_TRUNC(:trunc, NOW() AT TIME ZONE :timezone - INTERVAL :interval) GROUP BY slot ORDER BY slot'''
+            '''SELECT DATE_TRUNC(:trunc, job_application.replied_at AT TIME ZONE :timezone) AS slot, COUNT(*) AS count FROM job_application WHERE job_application.response = :response AND job_application.replied_at AT TIME ZONE :timezone > DATE_TRUNC(:trunc, NOW() AT TIME ZONE :timezone - INTERVAL :interval) GROUP BY slot ORDER BY slot'''
             )).params(trunc=trunc, interval=interval, timezone=g.user.timezone, response=EMPLOYER_RESPONSE.REJECTED)
         for slot, count in statsq:
             stats[slot]['rejections'] = count
