@@ -12,7 +12,7 @@ sqlalchemy_utils==0.34.1
 SQLAlchemy>=1.0.0
 pytz==2019.2
 markdown==3.1.1
-tweepy==3.7.0
+tweepy==3.8.0
 bitlyapi==0.1.1
 coverage==4.5.3
 bleach==3.1.0
