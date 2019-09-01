@@ -20,7 +20,7 @@ ordereddict==1.1
 jsmin==2.2.2
 psycopg2==2.8.3
 dnspython==1.16.0
-html2text==2018.1.9
+html2text==2019.8.11
 premailer==3.5.0
 langid>=1.1.4dev
 tldextract==2.2.1
