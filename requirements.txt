@@ -1,5 +1,5 @@
 Flask==1.1.1
-Flask-SQLAlchemy==2.4.0
+Flask-SQLAlchemy==2.4.1
 Flask-WTF==0.14.2
 Flask-Mail==0.9.1
 Flask-Assets==0.12
@@ -8,7 +8,7 @@ Flask-RQ2==18.3
 Flask-Testing==0.7.1
 Flask-Redis>=0.3.0
 Pillow==6.1.0
-sqlalchemy_utils==0.34.1
+sqlalchemy_utils==0.34.2
 SQLAlchemy>=1.0.0
 pytz==2019.2
 markdown==3.1.1
@@ -20,8 +20,8 @@ ordereddict==1.1
 jsmin==2.2.2
 psycopg2==2.8.3
 dnspython==1.16.0
-html2text==2018.1.9
-premailer==3.5.0
+html2text==2019.9.26
+premailer==3.6.1
 langid>=1.1.4dev
 tldextract==2.2.1
 unicodecsv==0.14.1
@@ -30,4 +30,4 @@ git+https://github.com/hasgeek/coaster
 git+https://github.com/hasgeek/flask-lastuser
 git+https://github.com/hasgeek/baseframe
 Flask-Migrate==2.5.2
-progressbar2==3.42.0
+progressbar2==3.47.0
