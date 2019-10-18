@@ -256,3 +256,8 @@ def escape_for_sql_like(query):
     "query\%\_%"
     """
     return query.replace(u'%', r'\%').replace(u'_', r'\_').replace(u'[', u'').replace(u']', u'') + u'%'
+
+
+def strip_null(text):
+    # Removes null byte from given text
+    return text.replace('\x00', '')
