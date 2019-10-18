@@ -115,7 +115,9 @@ def fetch_jobposts(request_args, request_values, filters, is_index, board, board
     f_domains = filters.get('d') or request_args.getlist('d')
     while '' in f_domains:
         f_domains.remove('')
-    f_domains = [make_name(f_domain) for f_domain in f_domains]
+    # Domain's `name` does not come from `BaseNameMixin` like others and so
+    # domains' names can have dot in them which `make_name` will replace.
+    f_domains = [f_domain.replace('\x00', '') for f_domain in f_domains]
     if f_domains:
         basequery = basequery.join(Domain).filter(Domain.name.in_(f_domains))
 
