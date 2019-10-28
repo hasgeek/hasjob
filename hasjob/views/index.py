@@ -6,7 +6,7 @@ from six.moves.urllib.parse import urlsplit, SplitResult
 
 from sqlalchemy.exc import ProgrammingError
 from flask import abort, redirect, render_template, request, Response, url_for, g, flash, jsonify, Markup
-from coaster.utils import getbool, make_name, parse_isoformat, for_tsquery, utcnow, ParseError
+from coaster.utils import getbool, parse_isoformat, for_tsquery, utcnow, ParseError
 from coaster.views import render_with, requestargs, endpoint_for
 from baseframe import _  # , dogpile
 
@@ -16,7 +16,7 @@ from ..models import (db, JobCategory, JobPost, JobType, newlimit, agelimit, Job
 from ..views.helper import (getposts, getallposts, gettags, location_geodata, load_viewcounts, session_jobpost_ab,
     bgroup, make_pay_graph, index_is_paginated, get_post_viewcounts, get_max_counts)
 from ..uploads import uploaded_logos
-from ..utils import string_to_number
+from ..utils import string_to_number, strip_null
 
 
 def stickie_dict(post, url, pinned=False, show_viewcounts=False, show_pay=False,
@@ -100,14 +100,14 @@ def fetch_jobposts(request_args, request_values, filters, is_index, board, board
     f_types = filters.get('t') or request_args.getlist('t')
     while '' in f_types:
         f_types.remove('')
-    f_types = [make_name(f_type) for f_type in f_types]
+    f_types = [strip_null(f_type) for f_type in f_types]
     if f_types:
         data_filters['types'] = f_types
         basequery = basequery.join(JobType).filter(JobType.name.in_(f_types))
     f_categories = filters.get('c') or request_args.getlist('c')
     while '' in f_categories:
         f_categories.remove('')
-    f_categories = [make_name(f_category) for f_category in f_categories]
+    f_categories = [strip_null(f_category) for f_category in f_categories]
     if f_categories:
         data_filters['categories'] = f_categories
         basequery = basequery.join(JobCategory).filter(JobCategory.name.in_(f_categories))
@@ -115,14 +115,14 @@ def fetch_jobposts(request_args, request_values, filters, is_index, board, board
     f_domains = filters.get('d') or request_args.getlist('d')
     while '' in f_domains:
         f_domains.remove('')
-    f_domains = [make_name(f_domain) for f_domain in f_domains]
+    f_domains = [strip_null(f_domain) for f_domain in f_domains]
     if f_domains:
         basequery = basequery.join(Domain).filter(Domain.name.in_(f_domains))
 
     f_tags = filters.get('k') or request_args.getlist('k')
     while '' in f_tags:
         f_tags.remove('')
-    f_tags = [make_name(f_tag) for f_tag in f_tags]
+    f_tags = [strip_null(f_tag) for f_tag in f_tags]
     if f_tags:
         basequery = basequery.join(JobPostTag).join(Tag).filter(Tag.name.in_(f_tags))
 
