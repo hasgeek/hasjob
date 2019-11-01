@@ -18,7 +18,7 @@ coverage==4.5.4
 bleach==3.1.0
 ordereddict==1.1
 jsmin==2.2.2
-psycopg2==2.8.3
+psycopg2==2.8.4
 dnspython==1.16.0
 html2text==2019.9.26
 premailer==3.6.1
