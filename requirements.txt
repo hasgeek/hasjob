@@ -7,10 +7,10 @@ Flask-Uploads==0.2.1
 Flask-RQ2==18.3
 Flask-Testing==0.7.1
 Flask-Redis>=0.3.0
-Pillow==6.2.0
+Pillow==6.2.1
 sqlalchemy_utils==0.34.2
 SQLAlchemy>=1.0.0
-pytz==2019.2
+pytz==2019.3
 markdown==3.1.1
 tweepy==3.8.0
 bitlyapi==0.1.1
@@ -18,12 +18,12 @@ coverage==4.5.4
 bleach==3.1.0
 ordereddict==1.1
 jsmin==2.2.2
-psycopg2==2.8.3
+psycopg2==2.8.4
 dnspython==1.16.0
 html2text==2019.9.26
 premailer==3.6.1
 langid>=1.1.4dev
-tldextract==2.2.1
+tldextract==2.2.2
 unicodecsv==0.14.1
 geoip2==2.9.0
 git+https://github.com/hasgeek/coaster
