@@ -18,7 +18,7 @@ def upgrade():
     op.add_column('location', sa.Column('board_id', sa.Integer(), nullable=False, server_default=sa.text('1')))
     op.alter_column('location', 'board_id', server_default=None)
     op.create_index(op.f('ix_location_board_id'), 'location', ['board_id'], unique=False)
-    op.drop_constraint(u'location_name_key', 'location', type_='unique')
+    op.drop_constraint('location_name_key', 'location', type_='unique')
     op.create_unique_constraint('location_board_id_name_key', 'location', ['board_id', 'name'])
     op.create_foreign_key('location_board_id_fkey', 'location', 'board', ['board_id'], ['id'])
     op.drop_constraint('location_pkey', 'location', type_='primary')

@@ -17,20 +17,20 @@ class ConfirmForm(forms.Form):
 
 class WithdrawForm(forms.Form):
     really_withdraw = forms.BooleanField(__("Yes, I really want to withdraw the job post"),
-        validators=[forms.validators.DataRequired(__(u"You must confirm withdrawal"))])
+        validators=[forms.validators.DataRequired(__("You must confirm withdrawal"))])
 
 
 class ReportForm(forms.Form):
-    report_code = forms.RadioField(__("Code"), coerce=int, validators=[forms.validators.InputRequired(__(u"Pick one"))])
+    report_code = forms.RadioField(__("Code"), coerce=int, validators=[forms.validators.InputRequired(__("Pick one"))])
 
 
 class RejectForm(forms.Form):
-    reason = forms.StringField(__("Reason"), validators=[forms.validators.DataRequired(__(u"Give a reason"))])
+    reason = forms.StringField(__("Reason"), validators=[forms.validators.DataRequired(__("Give a reason"))])
 
 
 class ModerateForm(forms.Form):
     reason = forms.TextAreaField(__("Reason"),
-        validators=[forms.validators.DataRequired(__(u"Give a reason")), forms.validators.Length(max=250)])
+        validators=[forms.validators.DataRequired(__("Give a reason")), forms.validators.Length(max=250)])
 
 
 class PinnedForm(forms.Form):
@@ -43,5 +43,5 @@ class NewLocationForm(forms.Form):
 
 class EditLocationForm(forms.Form):
     title = forms.StringField(__("Page title"),
-        validators=[forms.validators.DataRequired(__(u"This location needs a name"))])
+        validators=[forms.validators.DataRequired(__("This location needs a name"))])
     description = forms.TinyMce4Field(__("Description"), content_css=content_css)

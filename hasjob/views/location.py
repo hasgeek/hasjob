@@ -22,10 +22,10 @@ def location_new():
                 JobPost.state.LISTED,
                 ~JobLocation.geonameid.in_(db.session.query(Location.id).filter(Location.board == g.board))
             ).group_by(JobLocation.geonameid).order_by(db.text('count DESC')).limit(100)])
-    data = location_geodata(geonames.keys())
-    for row in data.values():
+    data = location_geodata(list(geonames.keys()))
+    for row in list(data.values()):
         geonames[row['geonameid']] = row
-    choices = [('%s/%s' % (row['geonameid'], row['name']), row['picker_title']) for row in geonames.values()]
+    choices = [('%s/%s' % (row['geonameid'], row['name']), row['picker_title']) for row in list(geonames.values())]
     form = NewLocationForm()
     form.geoname.choices = choices
 
@@ -72,6 +72,6 @@ def location_delete(name):
         abort(404)
 
     return render_delete_sqla(location, db, title=_("Confirm delete"),
-        message=_(u"Delete location ‘{title}’?").format(title=location.title),
-        success=_(u"You have deleted location ‘{title}’.").format(title=location.title),
+        message=_("Delete location ‘{title}’?").format(title=location.title),
+        success=_("You have deleted location ‘{title}’.").format(title=location.title),
         next=url_for('index'), cancel_url=location.url_for())

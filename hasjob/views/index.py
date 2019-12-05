@@ -58,7 +58,7 @@ def json_index(data):
         'loadmore': loadmore.isoformat() + 'Z' if loadmore else None
         }
     if grouped:
-        for grouping, group in grouped.items():
+        for grouping, group in list(grouped.items()):
             rgroup = {
                 'url': None,
                 'posts': []
@@ -163,7 +163,7 @@ def fetch_jobposts(request_args, request_values, filters, is_index, board, board
         basequery = remote_location_query
 
     currency = filters.get('currency') or request_args.get('currency')
-    if currency in CURRENCY.keys():
+    if currency in list(CURRENCY.keys()):
         data_filters['currency'] = currency
         basequery = basequery.filter(JobPost.pay_currency == currency)
         pay_graph = currency
@@ -226,7 +226,7 @@ def fetch_jobposts(request_args, request_values, filters, is_index, board, board
     if posts:
         employer_name = posts[0].company_name
     else:
-        employer_name = u'a single employer'
+        employer_name = 'a single employer'
 
     jobpost_ab = session_jobpost_ab()
     if is_index and posts and not gkiosk and not embed:
@@ -288,7 +288,7 @@ def fetch_jobposts(request_args, request_values, filters, is_index, board, board
         if grouped:
             if not startdate:
                 startindex = 0
-                for row in grouped.values():
+                for row in list(grouped.values()):
                     # break when a non-pinned post is encountered
                     if (not row[0][0]):
                         break
@@ -302,7 +302,7 @@ def fetch_jobposts(request_args, request_values, filters, is_index, board, board
                     if (row[0][1].hashid not in pinned_hashids and row[0][1].datetime < startdate):
                         break
 
-            batch = grouped.items()[startindex:startindex + batchsize]
+            batch = list(grouped.items())[startindex:startindex + batchsize]
             if startindex + batchsize < len(grouped):
                 # Get the datetime of the last group's first item
                 # batch = [((type, domain), [(pinned, post, bgroup), ...])]
@@ -395,7 +395,7 @@ def index(basequery=None, filters={}, md5sum=None, tag=None, domain=None, locati
             db.session.rollback()
             g.event_data['search_syntax_error'] = (query_string, search_query)
             if not request.is_xhr:
-                flash(_(u"Search terms ignored because this didn’t parse: {query}").format(query=search_query), 'danger')
+                flash(_("Search terms ignored because this didn’t parse: {query}").format(query=search_query), 'danger')
             search_query = None
     else:
         search_query = None
@@ -422,7 +422,7 @@ def index(basequery=None, filters={}, md5sum=None, tag=None, domain=None, locati
 
     if data['grouped']:
         g.impressions = {post.id: (pinflag, post.id, is_bgroup)
-            for group in data['grouped'].itervalues()
+            for group in data['grouped'].values()
             for pinflag, post, is_bgroup in group}
     elif data['pinsandposts']:
         g.impressions = {post.id: (pinflag, post.id, is_bgroup) for pinflag, post, is_bgroup in data['pinsandposts']}
@@ -608,11 +608,11 @@ def feed(basequery=None, type=None, category=None, md5sum=None, domain=None, loc
     elif category:
         title = category.title
     elif md5sum or domain:
-        title = u"Jobs at a single employer"
+        title = "Jobs at a single employer"
     elif location:
-        title = u"Jobs in {location}".format(location=location['use_title'])
+        title = "Jobs in {location}".format(location=location['use_title'])
     elif tag:
-        title = u"Jobs tagged {tag}".format(tag=title)
+        title = "Jobs tagged {tag}".format(tag=title)
     posts = list(getposts(basequery, showall=True, limit=100))
     if posts:  # Can't do this unless posts is a list
         updated = posts[0].datetime.isoformat() + 'Z'
@@ -889,8 +889,8 @@ def oembed(url):
     if endpoint not in embed_index_views:
         return jsonify({})
 
-    board = Board.get(view_args.get('subdomain', u'www'))
-    iframeid = 'hasjob-iframe-' + unicode(uuid4())
+    board = Board.get(view_args.get('subdomain', 'www'))
+    iframeid = 'hasjob-iframe-' + str(uuid4())
 
     parsed_url = urlsplit(url)
     embed_url = SplitResult(

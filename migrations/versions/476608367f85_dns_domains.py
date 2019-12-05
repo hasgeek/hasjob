@@ -54,7 +54,7 @@ def upgrade():
         sa.PrimaryKeyConstraint('id'),
         sa.UniqueConstraint('name')
         )
-    op.add_column(u'jobpost', sa.Column('domain_id', sa.Integer(), nullable=True))
+    op.add_column('jobpost', sa.Column('domain_id', sa.Integer(), nullable=True))
     op.create_foreign_key('jobpost_domain_id_fkey', 'jobpost', 'domain', ['domain_id'], ['id'])
     op.execute(sa.text(
         '''INSERT INTO domain (created_at, updated_at, name, is_webmail, is_banned)
@@ -70,5 +70,5 @@ def upgrade():
 
 def downgrade():
     op.drop_constraint('jobpost_domain_id_fkey', 'jobpost', type_='foreignkey')
-    op.drop_column(u'jobpost', 'domain_id')
+    op.drop_column('jobpost', 'domain_id')
     op.drop_table('domain')

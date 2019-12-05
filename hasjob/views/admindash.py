@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from collections import defaultdict
-from cStringIO import StringIO
+from io import StringIO
 
 from flask import g, render_template
 

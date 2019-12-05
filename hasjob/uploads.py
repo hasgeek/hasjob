@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from PIL import Image
-from StringIO import StringIO
+from io import StringIO
 from os.path import splitext
 from werkzeug import FileStorage
 

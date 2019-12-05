@@ -119,7 +119,7 @@ class JobPost(BaseMixin, db.Model):
     # Company details
     company_name = db.Column(db.Unicode(80), nullable=False)
     company_logo = db.Column(db.Unicode(255), nullable=True)
-    company_url = db.Column(db.Unicode(255), nullable=False, default=u'')
+    company_url = db.Column(db.Unicode(255), nullable=False, default='')
     twitter = db.Column(db.Unicode(15), nullable=True)
     fullname = db.Column(db.Unicode(80), nullable=True)  # Deprecated field, used before user_id was introduced
     email = db.Column(db.Unicode(80), nullable=False)
@@ -294,7 +294,7 @@ class JobPost(BaseMixin, db.Model):
         # A/B test flag for permalinks
         if 'b' in kwargs:
             if kwargs['b'] is not None:
-                kwargs['b'] = unicode(int(kwargs['b']))
+                kwargs['b'] = str(int(kwargs['b']))
             else:
                 kwargs.pop('b')
 
@@ -358,10 +358,10 @@ class JobPost(BaseMixin, db.Model):
     @property
     def company_url_domain_zone(self):
         if not self.company_url:
-            return u''
+            return ''
         else:
             r = tldextract.extract(self.company_url)
-            return u'.'.join([r.domain, r.suffix])
+            return '.'.join([r.domain, r.suffix])
 
     @property
     def pays_cash(self):
@@ -375,7 +375,7 @@ class JobPost(BaseMixin, db.Model):
 
     def pay_label(self):
         if self.pay_type is None:
-            return u"NA"
+            return "NA"
         elif self.pay_type == PAY_TYPE.NOCASH:
             cash = None
             suffix = ""
@@ -388,15 +388,15 @@ class JobPost(BaseMixin, db.Model):
             indian = False
             if self.pay_currency == "INR":
                 indian = True
-                symbol = u"₹"
+                symbol = "₹"
             elif self.pay_currency == "USD":
-                symbol = u"$"
+                symbol = "$"
             elif self.pay_currency == "EUR":
-                symbol = u"€"
+                symbol = "€"
             elif self.pay_currency == "GBP":
-                symbol = u"£"
+                symbol = "£"
             else:
-                symbol = u"¤"
+                symbol = "¤"
 
             if self.pay_cash_min == self.pay_cash_max:
                 cash = symbol + number_abbreviate(self.pay_cash_min, indian)
@@ -519,7 +519,7 @@ class JobPost(BaseMixin, db.Model):
         counts = {}
         for flag in self.flags:
             counts[flag.reportcode] = counts.setdefault(flag.reportcode, 0) + 1
-        return [{'count': i[2], 'title': i[1]} for i in sorted([(k.seq, k.title, v) for k, v in counts.items()])]
+        return [{'count': i[2], 'title': i[1]} for i in sorted([(k.seq, k.title, v) for k, v in list(counts.items())])]
 
 
 def viewstats_helper(jobpost_id, interval, limit, daybatch=False):
@@ -561,7 +561,7 @@ def viewstats_helper(jobpost_id, interval, limit, daybatch=False):
         else:
             from_hour = format_datetime(from_datetime, 'd MMM HH:00')
             to_hour = format_datetime(to_datetime, 'HH:00')
-            cbuckets[batches - delta - 1] = u"{from_hour} — {to_hour}".format(from_hour=from_hour, to_hour=to_hour)
+            cbuckets[batches - delta - 1] = "{from_hour} — {to_hour}".format(from_hour=from_hour, to_hour=to_hour)
             # if current bucket was 18:00-22:00, then
             # previous bucket becomes 14:00-18:00
             to_datetime = from_datetime
@@ -825,7 +825,7 @@ class JobApplication(BaseMixin, db.Model):
                 JobApplication.created_at > date_min, JobApplication.created_at < date_max
                 ).options(db.load_only('id'))
             )
-        counts = {k.label.name: len(v) for k, v in grouped.items()}
+        counts = {k.label.name: len(v) for k, v in list(grouped.items())}
         counts['count'] = sum(counts.values())
         return counts
 

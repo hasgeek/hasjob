@@ -297,7 +297,7 @@ def applyjob(domain, hashid):
     if job_application:
         flashmsg = "You have already applied to this job. You may not apply again"
         if request.is_xhr:
-            return u'<p><strong>{}</strong></p>'.format(flashmsg)
+            return '<p><strong>{}</strong></p>'.format(flashmsg)
         else:
             flash(flashmsg, 'interactive')
             return redirect(post.url_for(), 303)
@@ -337,7 +337,7 @@ def applyjob(domain, hashid):
                 email_text = html2text(email_html)
                 flashmsg = "Your application has been sent to the employer"
 
-                msg = Message(subject=u"Job application: {fullname}".format(fullname=job_application.fullname),
+                msg = Message(subject="Job application: {fullname}".format(fullname=job_application.fullname),
                     recipients=[post.email])
                 if not job_application.user:
                     # Also BCC the candidate (for kiosk mode)
@@ -349,7 +349,7 @@ def applyjob(domain, hashid):
                 mail.send(msg)
 
             if request.is_xhr:
-                return u'<p><strong>{}</strong></p>'.format(flashmsg)
+                return '<p><strong>{}</strong></p>'.format(flashmsg)
             else:
                 flash(flashmsg, 'interactive')
                 return redirect(post.url_for(), 303)
@@ -418,7 +418,7 @@ def view_application(domain, hashid, application):
     # Transition code until we force all employers to login before posting
     if post.user and not (post.admin_is(g.user) or lastuser.has_permission('siteadmin')):
         if not g.user:
-            return redirect(url_for('login', message=u"You need to be logged in to view candidate applications on Hasjob."))
+            return redirect(url_for('login', message="You need to be logged in to view candidate applications on Hasjob."))
         else:
             abort(403)
     job_application = JobApplication.query.filter_by(hashid=application, jobpost=post).first_or_404()
@@ -489,13 +489,13 @@ def process_application(domain, hashid, application):
                 email_text = html2text(email_html)
 
                 sender_name = g.user.fullname if post.admin_is(g.user) else post.fullname or post.company_name
-                sender_formatted = u'{sender} (via {site})'.format(
+                sender_formatted = '{sender} (via {site})'.format(
                     sender=sender_name,
                     site=app.config['SITE_TITLE'])
 
                 if job_application.response.REPLIED:
                     msg = Message(
-                        subject=u"{candidate}: {headline}".format(
+                        subject="{candidate}: {headline}".format(
                             candidate=job_application.user.fullname, headline=post.headline),
                         sender=(sender_formatted, app.config['MAIL_SENDER']),
                         reply_to=(sender_name, post.email),
@@ -503,7 +503,7 @@ def process_application(domain, hashid, application):
                         bcc=[post.email])
                     flashmsg = "We sent your message to the candidate and copied you. Their email and phone number are below"
                 else:
-                    msg = Message(subject=u"Job declined: {headline}".format(headline=post.headline),
+                    msg = Message(subject="Job declined: {headline}".format(headline=post.headline),
                         sender=(sender_formatted, app.config['MAIL_SENDER']),
                         bcc=[job_application.email, post.email])
                     flashmsg = "We sent your message to the candidate and copied you"
@@ -523,7 +523,7 @@ def process_application(domain, hashid, application):
 
     if flashmsg:
         if request.is_xhr:
-            return u'<p><strong>{}</strong></p>'.format(flashmsg)
+            return '<p><strong>{}</strong></p>'.format(flashmsg)
         else:
             flash(flashmsg, 'interactive')
 
@@ -732,7 +732,7 @@ def confirm_email(domain, hashid, key):
         return redirect(post.url_for('confirm'), code=302)
     elif post.state.PENDING:
         if key != post.email_verify_key:
-            return render_template('403.html.jinja2', description=u"This link has expired or is malformed. Check if you have received a newer email from us.")
+            return render_template('403.html.jinja2', description="This link has expired or is malformed. Check if you have received a newer email from us.")
         else:
             if app.config.get('THROTTLE_LIMIT', 0) > 0:
                 post_count = JobPost.query.filter(
@@ -741,9 +741,9 @@ def confirm_email(domain, hashid, key):
                     JobPost.datetime > utcnow() - timedelta(days=1)
                     ).count()
                 if post_count > app.config['THROTTLE_LIMIT']:
-                    flash(u"We have received too many posts with %s addresses in the last 24 hours. "
-                        u"Posts are rate-limited per domain, so yours was not confirmed for now. "
-                        u"Please try confirming again in a few hours."
+                    flash("We have received too many posts with %s addresses in the last 24 hours. "
+                        "Posts are rate-limited per domain, so yours was not confirmed for now. "
+                        "Please try confirming again in a few hours."
                         % post.email_domain, category='info')
                     return redirect(url_for('index'))
             post.confirm()
@@ -805,7 +805,7 @@ def editjob(hashid, key, domain=None, form=None, validated=False, newpost=None):
         form.job_type.choices = JobType.choices(g.board)
         form.job_category.choices = JobCategory.choices(g.board)
         if g.board and not g.board.require_pay:
-            form.job_pay_type.choices = [(-1, u'Confidential')] + PAY_TYPE.items()
+            form.job_pay_type.choices = [(-1, 'Confidential')] + list(PAY_TYPE.items())
 
     post = None
     no_email = False
@@ -841,7 +841,7 @@ def editjob(hashid, key, domain=None, form=None, validated=False, newpost=None):
         form_perks = bleach.linkify(bleach.clean(form.job_perks_description.data, tags=ALLOWED_TAGS)) if form.job_perks.data else ''
         form_how_to_apply = form.job_how_to_apply.data
         form_email_domain = get_email_domain(form.poster_email.data)
-        form_words = get_word_bag(u' '.join((form_description, form_perks, form_how_to_apply)))
+        form_words = get_word_bag(' '.join((form_description, form_perks, form_how_to_apply)))
 
         similar = False
         with db.session.no_autoflush:
@@ -922,10 +922,10 @@ def editjob(hashid, key, domain=None, form=None, validated=False, newpost=None):
             # To protect from gaming, don't allow words to be removed in edited posts once the post
             # has been confirmed. Just add the new words.
             if not post.state.UNPUBLISHED:
-                prev_words = post.words or u''
+                prev_words = post.words or ''
             else:
-                prev_words = u''
-            post.words = get_word_bag(u' '.join((prev_words, form_description, form_perks, form_how_to_apply)))
+                prev_words = ''
+            post.words = get_word_bag(' '.join((prev_words, form_description, form_perks, form_how_to_apply)))
 
             post.language, post.language_confidence = identify_language(post)
 
@@ -964,8 +964,8 @@ def newjob():
     archived_post = None
     if not g.user:
         return redirect(url_for('login', next=url_for('newjob'),
-            message=u"Hasjob now requires you to login before posting a job. Please login as yourself."
-                u" We'll add details about your company later"))
+            message="Hasjob now requires you to login before posting a job. Please login as yourself."
+                " We'll add details about your company later"))
     else:
         if g.user.blocked:
             flash("Your account has been blocked from posting jobs", category='info')
@@ -976,7 +976,7 @@ def newjob():
             abort(403)
 
     if g.board and not g.board.require_pay:
-        form.job_pay_type.choices = [(-1, u'Confidential')] + PAY_TYPE.items()
+        form.job_pay_type.choices = [(-1, 'Confidential')] + list(PAY_TYPE.items())
     form.job_type.choices = JobType.choices(g.board)
     form.job_category.choices = JobCategory.choices(g.board)
 

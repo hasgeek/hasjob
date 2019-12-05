@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from urlparse import urljoin
+from urllib.parse import urljoin
 from simplejson import JSONDecodeError
 import requests
 from baseframe import cache

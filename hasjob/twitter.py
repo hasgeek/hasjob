@@ -2,7 +2,7 @@
 
 from tweepy import OAuthHandler, API
 import bitlyapi
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import json
 import re
 from hasjob import app, rq
@@ -17,25 +17,25 @@ def tweet(title, url, location=None, parsed_location=None, username=None):
     maxlength = 140 - urllength - 1  # == 116
     if username:
         maxlength -= len(username) + 2
-    locationtag = u''
+    locationtag = ''
     if parsed_location:
         locationtags = []
         for token in parsed_location.get('tokens', []):
             if 'geoname' in token and 'token' in token:
                 locname = token['token'].strip()
                 if locname:
-                    locationtags.append(u'#' + locname.title().replace(u' ', ''))
-        locationtag = u' '.join(locationtags)
+                    locationtags.append('#' + locname.title().replace(' ', ''))
+        locationtag = ' '.join(locationtags)
         if locationtag:
             maxlength -= len(locationtag) + 1
     if not locationtag and location:
         # Make a hashtag from the first word in the location. This catches
         # locations like 'Anywhere' which have no geonameid but are still valid
-        locationtag = u'#' + re.split(r'\W+', location)[0]
+        locationtag = '#' + re.split(r'\W+', location)[0]
         maxlength -= len(locationtag) + 1
 
     if len(title) > maxlength:
-        text = title[:maxlength - 1] + u'…'
+        text = title[:maxlength - 1] + '…'
     else:
         text = title[:maxlength]
     text = text + ' ' + url  # Don't shorten URLs, now that there's t.co
@@ -52,10 +52,10 @@ def shorten(url):
         res = b.shorten(longUrl=url)
         return res['url']
     else:
-        req = urllib2.Request("https://www.googleapis.com/urlshortener/v1/url",
+        req = urllib.request.Request("https://www.googleapis.com/urlshortener/v1/url",
             headers={"Content-Type": "application/json"},
             data=json.dumps({'longUrl': url}))
-        request_result = urllib2.urlopen(req)
+        request_result = urllib.request.urlopen(req)
         result = request_result.read()
         result_json = json.loads(result)
         return result_json['id']

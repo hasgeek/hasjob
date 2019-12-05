@@ -3,7 +3,7 @@
 from os import path
 from datetime import timedelta
 from uuid import uuid4
-from urllib import quote, quote_plus
+from urllib.parse import quote, quote_plus
 import hashlib
 import bleach
 from pytz import UTC
@@ -26,7 +26,7 @@ from ..utils import scrubemail, redactemail, cointoss
 
 
 gif1x1 = 'R0lGODlhAQABAJAAAP8AAAAAACH5BAUQAAAALAAAAAABAAEAAAICBAEAOw=='.decode('base64')
-MAX_COUNTS_KEY = u'maxcounts'
+MAX_COUNTS_KEY = 'maxcounts'
 
 
 @app.route('/_sniffle.gif')
@@ -90,14 +90,14 @@ def load_user_data(user):
     if request.endpoint not in ('static', 'baseframe.static'):
         # Loading an anon user only if we're not rendering static resources
         if user:
-            if 'au' in session and session['au'] is not None and not unicode(session['au']).startswith(u'test'):
+            if 'au' in session and session['au'] is not None and not str(session['au']).startswith('test'):
                 anon_user = AnonUser.query.get(session['au'])
                 if anon_user:
                     anon_user.user = user
             session.pop('au', None)
         else:
             if not session.get('au'):
-                session['au'] = u'test-' + unicode(uuid4())
+                session['au'] = 'test-' + str(uuid4())
                 g.esession = EventSessionBase.new_from_request(request)
                 g.event_data['anon_cookie_test'] = session['au']
             # elif session['au'] == 'test':  # Legacy test cookie, original request now lost
@@ -121,7 +121,7 @@ def load_user_data(user):
                 if not anon_user:
                     # XXX: We got a fake value? This shouldn't happen
                     g.event_data['anon_cookie_test'] = session['au']
-                    session['au'] = u'test-' + unicode(uuid4())  # Try again
+                    session['au'] = 'test-' + str(uuid4())  # Try again
                     g.esession = EventSessionBase.new_from_request(request)
                 else:
                     g.anon_user = anon_user
@@ -143,7 +143,7 @@ def load_user_data(user):
         if 'impressions' in session:
             # Run this in the foreground since we need this later in the request for A/B display consistency.
             # This is most likely being called from the UI-non-blocking sniffle.gif anyway.
-            save_impressions(g.esession.id, session.pop('impressions').values(), now)
+            save_impressions(g.esession.id, list(session.pop('impressions').values()), now)
 
     # We have a user, now look up everything else
 
@@ -253,7 +253,7 @@ def record_views_and_events(response):
         g.event_data['user_geonameids'] = g.user_geonameids
 
     if g.impressions:
-        g.event_data['impressions'] = g.impressions.values()
+        g.event_data['impressions'] = list(g.impressions.values())
 
     if g.user:
         for campaign in g.campaign_views:
@@ -294,7 +294,7 @@ def record_views_and_events(response):
                 db.session.rollback()
 
             if g.impressions:
-                save_impressions.queue(g.esession.id, g.impressions.values(), now)
+                save_impressions.queue(g.esession.id, list(g.impressions.values()), now)
 
             if g.jobpost_viewed != (None, None):
                 save_jobview.queue(
@@ -317,7 +317,7 @@ def session_jobpost_ab():
     in the current event session (impressions or views) as a dictionary of {id: bgroup}
     """
     if not g.esession.persistent:
-        return {key: value[2] for key, value in session.get('impressions', {}).items()}
+        return {key: value[2] for key, value in list(session.get('impressions', {}).items())}
     result = {ji.jobpost_id: ji.bgroup for ji in JobImpression.query.filter_by(event_session=g.esession)}
     result.update({jvs.jobpost_id: jvs.bgroup for jvs in JobViewSession.query.filter_by(event_session=g.esession)})
     return result
@@ -383,7 +383,7 @@ def get_post_viewcounts(jobpost_id):
         redis_store.hset(cache_key, 'pay_label', values['pay_label'].encode('utf-8'))
         redis_store.expire(cache_key, 86400)
     elif isinstance(values['pay_label'], str):  # Redis appears to return bytestrings, not Unicode
-        values['pay_label'] = unicode(values['pay_label'], 'utf-8')
+        values['pay_label'] = str(values['pay_label'], 'utf-8')
     return values
 
 
@@ -434,7 +434,7 @@ def load_viewcounts(posts):
     values = redis_pipe.execute()
     viewcounts_values = values[:-1]
     maxcounts_values = values[-1]
-    g.viewcounts = dict(zip(viewcounts_keys, viewcounts_values))
+    g.viewcounts = dict(list(zip(viewcounts_keys, viewcounts_values)))
     g.maxcounts = maxcounts_values
 
 
@@ -514,15 +514,15 @@ def gettags(alltime=False):
 
 pay_graph_buckets = {
     'INR': (
-        range(0, 200000, 25000)
-        + range(200000, 2000000, 50000)
-        + range(2000000, 10000000, 100000)
-        + range(10000000, 100000000, 1000000)
+        list(range(0, 200000, 25000))
+        + list(range(200000, 2000000, 50000))
+        + list(range(2000000, 10000000, 100000))
+        + list(range(10000000, 100000000, 1000000))
         + [100000000]),
     'USD': (
-        range(0, 200000, 5000)
-        + range(200000, 1000000, 50000)
-        + range(1000000, 10000000, 100000)
+        list(range(0, 200000, 5000))
+        + list(range(200000, 1000000, 50000))
+        + list(range(1000000, 10000000, 100000))
         + [10000000])
     }
 pay_graph_buckets['EUR'] = pay_graph_buckets['USD']
@@ -741,7 +741,7 @@ def cleanurl(url):
 
 @app.template_filter('urlquote')
 def urlquote(data):
-    if isinstance(data, unicode):
+    if isinstance(data, str):
         return quote(data.encode('utf-8'))
     else:
         return quote(data)
@@ -749,7 +749,7 @@ def urlquote(data):
 
 @app.template_filter('urlquoteplus')
 def urlquoteplus(data):
-    if isinstance(data, unicode):
+    if isinstance(data, str):
         return quote_plus(data.encode('utf-8'))
     else:
         return quote_plus(data)
@@ -757,7 +757,7 @@ def urlquoteplus(data):
 
 @app.template_filter('scrubemail')
 def scrubemail_filter(data, css_junk=''):
-    return Markup(scrubemail(unicode(bleach.linkify(bleach.clean(data))), rot13=True, css_junk=css_junk))
+    return Markup(scrubemail(str(bleach.linkify(bleach.clean(data))), rot13=True, css_junk=css_junk))
 
 
 @app.template_filter('hideemail')

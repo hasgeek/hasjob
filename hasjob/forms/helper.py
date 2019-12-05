@@ -27,4 +27,4 @@ def optional_url(form, field):
         try:
             return validator(form, field)
         except forms.ValidationError as e:
-            raise forms.StopValidation(unicode(e))
+            raise forms.StopValidation(str(e))

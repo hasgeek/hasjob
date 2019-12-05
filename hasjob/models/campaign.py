@@ -112,9 +112,9 @@ class Campaign(BaseNameMixin, db.Model):
     #: Subject (user-facing, unlike the title)
     subject = db.Column(db.Unicode(250), nullable=True)
     #: Call to action text (for header campaigns)
-    blurb = db.Column(db.UnicodeText, nullable=False, default=u'')
+    blurb = db.Column(db.UnicodeText, nullable=False, default='')
     #: Full text (for read more click throughs)
-    description = db.Column(db.UnicodeText, nullable=False, default=u'')
+    description = db.Column(db.UnicodeText, nullable=False, default='')
     #: Banner image
     banner_image = db.Column(db.Unicode(250), nullable=True)
     #: Banner location
@@ -301,7 +301,7 @@ class Campaign(BaseNameMixin, db.Model):
                 db.or_(CampaignView.dismissed == True, CampaignView.session_count > 2))))  # NOQA
 
             # Filter by user flags
-            for flag, value in user.flags.items():
+            for flag, value in list(user.flags.items()):
                 if flag in cls.supported_flags:
                     col = getattr(cls, 'flag_' + flag)
                     basequery = basequery.filter(db.or_(col == None, col == value))  # NOQA
@@ -325,7 +325,7 @@ Campaign.supported_flags = [key[5:] for key in Campaign.__dict__ if key.startswi
 
 # Provide a sorted list of choices for use in the campaign form
 Campaign.flag_choices = [('flag_' + k, v.title) for k, v in sorted(
-    [(k, v) for k, v in UserFlags.__dict__.items() if isinstance(v, UserFlag) and k in Campaign.supported_flags],
+    [(k, v) for k, v in list(UserFlags.__dict__.items()) if isinstance(v, UserFlag) and k in Campaign.supported_flags],
     key=lambda kv: (kv[1].category, kv[1].title))]
 
 
@@ -372,12 +372,12 @@ class CampaignAction(BaseScopedNameMixin, db.Model):
     #: Is this action live?
     public = db.Column(db.Boolean, nullable=False, default=False)
     #: Action type
-    type = db.Column(db.Enum(*CAMPAIGN_ACTION.keys(), name='campaign_action_type_enum'), nullable=False)
+    type = db.Column(db.Enum(*list(CAMPAIGN_ACTION.keys()), name='campaign_action_type_enum'), nullable=False)
     # type = db.Column(db.Char(1),
     #     db.CheckConstraint('type IN (%s)' % ', '.join(["'%s'" % k for k in CAMPAIGN_ACTION.keys()])),
     #     nullable=False)
     #: Action category (for buttons)
-    category = db.Column(db.Unicode(20), nullable=False, default=u'default')
+    category = db.Column(db.Unicode(20), nullable=False, default='default')
     #: Icon to accompany text
     icon = db.Column(db.Unicode(20), nullable=True)
     #: Group (for RSVP buttons)
@@ -387,7 +387,7 @@ class CampaignAction(BaseScopedNameMixin, db.Model):
     #: Form
     form = deferred(db.Column(JsonDict, nullable=False, server_default='{}'))
     #: Post action message
-    message = db.Column(db.UnicodeText, nullable=False, default=u'')
+    message = db.Column(db.UnicodeText, nullable=False, default='')
 
     __table_args__ = (db.UniqueConstraint('campaign_id', 'name'),)
 

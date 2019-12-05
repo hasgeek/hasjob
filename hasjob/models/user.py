@@ -74,13 +74,13 @@ class EventSessionBase(object):
         instance.uuid = uuid4()
         instance.created_at = utcnow()
         instance.referrer = unicode_http_header(request.referrer)[:2083] if request.referrer else None
-        instance.utm_source = request.args.get('utm_source', u'')[:250] or None
-        instance.utm_medium = request.args.get('utm_medium', u'')[:250] or None
-        instance.utm_term = request.args.get('utm_term', u'')[:250] or None
-        instance.utm_content = request.args.get('utm_content', u'')[:250] or None
-        instance.utm_id = request.args.get('utm_id', u'')[:250] or None
-        instance.utm_campaign = request.args.get('utm_campaign', u'')[:250] or None
-        instance.gclid = request.args.get('gclid', u'')[:250] or None
+        instance.utm_source = request.args.get('utm_source', '')[:250] or None
+        instance.utm_medium = request.args.get('utm_medium', '')[:250] or None
+        instance.utm_term = request.args.get('utm_term', '')[:250] or None
+        instance.utm_content = request.args.get('utm_content', '')[:250] or None
+        instance.utm_id = request.args.get('utm_id', '')[:250] or None
+        instance.utm_campaign = request.args.get('utm_campaign', '')[:250] or None
+        instance.gclid = request.args.get('gclid', '')[:250] or None
         instance.active_at = utcnow()
         instance.events = []
         return instance
@@ -132,14 +132,14 @@ class EventSession(EventSessionBase, UuidMixin, BaseMixin, db.Model):
 
     # Google Analytics parameters. If any of these is present in the
     # current request and different from the current session, a new session is created
-    utm_source = db.Column(db.Unicode(250), nullable=False, default=u'')
-    utm_medium = db.Column(db.Unicode(250), nullable=False, default=u'')
-    utm_term = db.Column(db.Unicode(250), nullable=False, default=u'')
-    utm_content = db.Column(db.Unicode(250), nullable=False, default=u'')
-    utm_id = db.Column(db.Unicode(250), nullable=False, default=u'')
-    utm_campaign = db.Column(db.Unicode(250), nullable=False, default=u'')
+    utm_source = db.Column(db.Unicode(250), nullable=False, default='')
+    utm_medium = db.Column(db.Unicode(250), nullable=False, default='')
+    utm_term = db.Column(db.Unicode(250), nullable=False, default='')
+    utm_content = db.Column(db.Unicode(250), nullable=False, default='')
+    utm_id = db.Column(db.Unicode(250), nullable=False, default='')
+    utm_campaign = db.Column(db.Unicode(250), nullable=False, default='')
     # Google click id (for AdWords)
-    gclid = db.Column(db.Unicode(250), nullable=False, default=u'')
+    gclid = db.Column(db.Unicode(250), nullable=False, default='')
 
     active_at = db.Column(db.TIMESTAMP(timezone=True), nullable=False)
     # This session was closed because the user showed up again under new conditions
@@ -192,11 +192,11 @@ class UserEventBase(object):
     @classmethod
     def new_from_request(cls, request):
         instance = cls()
-        instance.ipaddr = request and unicode(request.environ['REMOTE_ADDR'][:45])
+        instance.ipaddr = request and str(request.environ['REMOTE_ADDR'][:45])
         instance.useragent = request and unicode_http_header(request.user_agent.string)[:250]
         instance.url = request and request.url[:2038]
-        instance.method = request and unicode(request.method[:10])
-        instance.name = request and (u'endpoint/' + (request.endpoint or '')[:80])
+        instance.method = request and str(request.method[:10])
+        instance.name = request and ('endpoint/' + (request.endpoint or '')[:80])
         return instance
 
     def as_dict(self):
