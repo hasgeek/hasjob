@@ -2,7 +2,7 @@
 
 from coaster.sqlalchemy import Query, failsafe_add
 from coaster.utils import make_name, LabeledEnum
-from baseframe import __
+from baseframe import _
 from . import db, TimestampMixin, BaseNameMixin, POST_STATE
 from ..utils import escape_for_sql_like
 from .jobpost import JobPost
@@ -12,18 +12,18 @@ __all__ = ['TAG_TYPE', 'Tag', 'JobPostTag']
 
 class TAG_TYPE(LabeledEnum):
     # The NLP parser added this tag
-    AUTO = (0, 'auto', __("Automatic"))
+    AUTO = (0, 'auto', _("Automatic"))
     # A user confirmed an automatic tag
-    CONFIRMED = (1, 'confirmed', __("Confirmed"))
+    CONFIRMED = (1, 'confirmed', _("Confirmed"))
     # A user manually added this tag
-    MANUAL = (2, 'manual', __("Manual"))
+    MANUAL = (2, 'manual', _("Manual"))
     # A reviewer confirmed this tag
-    REVIEWED = (3, 'reviewed', __("Reviewed"))
+    REVIEWED = (3, 'reviewed', _("Reviewed"))
     # A user or reviewer deleted this automatic tag
-    DELETED = (4, 'deleted', __("Deleted"))
+    DELETED = (4, 'deleted', _("Deleted"))
     # A re-run of the parser found this auto-tag missing
     # in the latest results and so removed it
-    REMOVED = (5, 'removed', __("Removed"))
+    REMOVED = (5, 'removed', _("Removed"))
     # Tag is currently present
     TAG_PRESENT = {AUTO, CONFIRMED, MANUAL, REVIEWED}
 

@@ -8,7 +8,7 @@ from sqlalchemy.ext.orderinglist import ordering_list
 from flask import request, Markup
 from coaster.utils import LabeledEnum, utcnow
 from coaster.sqlalchemy import JsonDict, StateManager, cached
-from baseframe import __
+from baseframe import _
 from baseframe.forms import Form
 from . import db, TimestampMixin, BaseNameMixin, BaseScopedNameMixin, make_timestamp_columns
 from .user import User, AnonUser, EventSession
@@ -37,27 +37,27 @@ campaign_event_session_table = db.Table('campaign_event_session', db.Model.metad
 
 
 class CAMPAIGN_STATE(LabeledEnum):
-    DISABLED = (False, 'disabled', __("Disabled"))
-    ENABLED = (True, 'enabled', __("Enabled"))
+    DISABLED = (False, 'disabled', _("Disabled"))
+    ENABLED = (True, 'enabled', _("Enabled"))
     # LIVE (and others) are conditional states in the model
 
 
 class CAMPAIGN_POSITION(LabeledEnum):
-    HEADER = (0, __("Header"))                    # Shown in the header of all pages
-    SIDEBAR = (1, __("Sidebar"))                  # Shown in the sidebar of jobs
-    BEFOREPOST = (2, __("Before posting a job"))  # Upsell something before the employer posts a job
-    AFTERPOST = (3, __("After posting a job"))    # Shown in the body after the employer posts a job
+    HEADER = (0, _("Header"))                    # Shown in the header of all pages
+    SIDEBAR = (1, _("Sidebar"))                  # Shown in the sidebar of jobs
+    BEFOREPOST = (2, _("Before posting a job"))  # Upsell something before the employer posts a job
+    AFTERPOST = (3, _("After posting a job"))    # Shown in the body after the employer posts a job
 
     __order__ = (HEADER, SIDEBAR, BEFOREPOST, AFTERPOST)
 
 
 class CAMPAIGN_ACTION(LabeledEnum):
-    LINK = ('L', __("Follow link"))
-    RSVP_Y = ('Y', __("RSVP Yes"))
-    RSVP_N = ('N', __("RSVP No"))
-    RSVP_M = ('M', __("RSVP Maybe"))
-    FORM = ('F', __("Show a form"))
-    DISMISS = ('D', __("Dismiss campaign"))
+    LINK = ('L', _("Follow link"))
+    RSVP_Y = ('Y', _("RSVP Yes"))
+    RSVP_N = ('N', _("RSVP No"))
+    RSVP_M = ('M', _("RSVP Maybe"))
+    FORM = ('F', _("Show a form"))
+    DISMISS = ('D', _("Dismiss campaign"))
 
     __order__ = (LINK, RSVP_Y, RSVP_N, RSVP_M, FORM, DISMISS)
 
@@ -66,10 +66,10 @@ class CAMPAIGN_ACTION(LabeledEnum):
 
 
 class BANNER_LOCATION(LabeledEnum):
-    TOP = (0, __("Top"))
-    RIGHT = (1, __("Right"))
-    BOTTOM = (2, __("Bottom"))
-    LEFT = (3, __("Left"))
+    TOP = (0, _("Top"))
+    RIGHT = (1, _("Right"))
+    BOTTOM = (2, _("Bottom"))
+    LEFT = (3, _("Left"))
 
     __order__ = (TOP, RIGHT, BOTTOM, LEFT)
 
@@ -166,22 +166,22 @@ class Campaign(BaseNameMixin, db.Model):
     state.add_conditional_state('LIVE', state.ENABLED,
         lambda obj: obj.start_at <= utcnow() < obj.end_at,
         lambda cls: db.and_(cls.start_at <= db.func.utcnow(), cls.end_at > db.func.utcnow()),
-        label=('live', __("Live")))
+        label=('live', _("Live")))
     state.add_conditional_state('CURRENT', state.ENABLED,
         lambda obj: obj.start_at <= obj.start_at <= utcnow() < obj.end_at <= utcnow() + timedelta(days=30),
         lambda cls: db.and_(
             cls.start_at <= db.func.utcnow(),
             cls.end_at > db.func.utcnow(),
             cls.end_at <= utcnow() + timedelta(days=30)),
-        label=('current', __("Current")))
+        label=('current', _("Current")))
     state.add_conditional_state('LONGTERM', state.ENABLED,
         lambda obj: obj.start_at <= obj.start_at <= utcnow() < utcnow() + timedelta(days=30) < obj.end_at,
         lambda cls: db.and_(cls.start_at <= utcnow(), cls.end_at > utcnow() + timedelta(days=30)),
-        label=('longterm', __("Long term")))
+        label=('longterm', _("Long term")))
     state.add_conditional_state('OFFLINE', state.ENABLED,
         lambda obj: obj.start_at > utcnow() or obj.end_at <= utcnow(),
         lambda cls: db.or_(cls.start_at > db.func.utcnow(), cls.end_at <= db.func.utcnow()),
-        label=('offline', __("Offline")))
+        label=('offline', _("Offline")))
 
     @property
     def content(self):
