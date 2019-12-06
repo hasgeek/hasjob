@@ -4,6 +4,7 @@ from os import path
 from datetime import timedelta
 from uuid import uuid4
 from urllib.parse import quote, quote_plus
+from base64 import b64decode
 import hashlib
 import bleach
 from pytz import UTC
@@ -25,7 +26,7 @@ from ..models import (db, JobCategory, JobPost, JobType, BoardJobPost, Tag, JobP
 from ..utils import scrubemail, redactemail, cointoss
 
 
-gif1x1 = 'R0lGODlhAQABAJAAAP8AAAAAACH5BAUQAAAALAAAAAABAAEAAAICBAEAOw=='.decode('base64')
+gif1x1 = b64decode(b'R0lGODlhAQABAJAAAP8AAAAAACH5BAUQAAAALAAAAAABAAEAAAICBAEAOw==')
 MAX_COUNTS_KEY = 'maxcounts'
 
 
@@ -874,7 +875,7 @@ def filter_categories(basequery, board, filters):
 def inject_filter_options():
     def get_job_filters():
         filters = g.get('event_data', {}).get('filters', {})
-        cache_key = 'jobfilters/' + (g.board.name + '/' if g.board else '') + hashlib.sha1(repr(filters)).hexdigest()
+        cache_key = 'jobfilters/' + (g.board.name + '/' if g.board else '') + hashlib.sha1(repr(filters).encode('utf-8')).hexdigest()
         result = cache.get(cache_key)
         if not result:
             basequery = getposts(showall=True, order=False, limit=False)
