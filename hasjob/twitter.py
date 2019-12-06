@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from tweepy import OAuthHandler, API
-import bitlyapi
 import urllib.request, urllib.error, urllib.parse
 import json
 import re
@@ -44,18 +43,3 @@ def tweet(title, url, location=None, parsed_location=None, username=None):
     if username:
         text = text + ' @' + username
     api.update_status(text)
-
-
-def shorten(url):
-    if app.config['BITLY_KEY']:
-        b = bitlyapi.BitLy(app.config['BITLY_USER'], app.config['BITLY_KEY'])
-        res = b.shorten(longUrl=url)
-        return res['url']
-    else:
-        req = urllib.request.Request("https://www.googleapis.com/urlshortener/v1/url",
-            headers={"Content-Type": "application/json"},
-            data=json.dumps({'longUrl': url}))
-        request_result = urllib.request.urlopen(req)
-        result = request_result.read()
-        result_json = json.loads(result)
-        return result_json['id']
