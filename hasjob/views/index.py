@@ -58,7 +58,7 @@ def json_index(data):
         'loadmore': loadmore.isoformat() + 'Z' if loadmore else None
         }
     if grouped:
-        for grouping, group in list(grouped.items()):
+        for grouping, group in grouped.items():
             rgroup = {
                 'url': None,
                 'posts': []
@@ -163,7 +163,7 @@ def fetch_jobposts(request_args, request_values, filters, is_index, board, board
         basequery = remote_location_query
 
     currency = filters.get('currency') or request_args.get('currency')
-    if currency in list(CURRENCY.keys()):
+    if currency in CURRENCY.keys():
         data_filters['currency'] = currency
         basequery = basequery.filter(JobPost.pay_currency == currency)
         pay_graph = currency
@@ -288,7 +288,7 @@ def fetch_jobposts(request_args, request_values, filters, is_index, board, board
         if grouped:
             if not startdate:
                 startindex = 0
-                for row in list(grouped.values()):
+                for row in grouped.values():
                     # break when a non-pinned post is encountered
                     if (not row[0][0]):
                         break

@@ -301,7 +301,7 @@ class Campaign(BaseNameMixin, db.Model):
                 db.or_(CampaignView.dismissed == True, CampaignView.session_count > 2))))  # NOQA
 
             # Filter by user flags
-            for flag, value in list(user.flags.items()):
+            for flag, value in user.flags.items():
                 if flag in cls.supported_flags:
                     col = getattr(cls, 'flag_' + flag)
                     basequery = basequery.filter(db.or_(col == None, col == value))  # NOQA
@@ -325,7 +325,7 @@ Campaign.supported_flags = [key[5:] for key in Campaign.__dict__ if key.startswi
 
 # Provide a sorted list of choices for use in the campaign form
 Campaign.flag_choices = [('flag_' + k, v.title) for k, v in sorted(
-    [(k, v) for k, v in list(UserFlags.__dict__.items()) if isinstance(v, UserFlag) and k in Campaign.supported_flags],
+    [(k, v) for k, v in UserFlags.__dict__.items() if isinstance(v, UserFlag) and k in Campaign.supported_flags],
     key=lambda kv: (kv[1].category, kv[1].title))]
 
 
@@ -372,7 +372,7 @@ class CampaignAction(BaseScopedNameMixin, db.Model):
     #: Is this action live?
     public = db.Column(db.Boolean, nullable=False, default=False)
     #: Action type
-    type = db.Column(db.Enum(*list(CAMPAIGN_ACTION.keys()), name='campaign_action_type_enum'), nullable=False)
+    type = db.Column(db.Enum(*CAMPAIGN_ACTION.keys(), name='campaign_action_type_enum'), nullable=False)
     # type = db.Column(db.Char(1),
     #     db.CheckConstraint('type IN (%s)' % ', '.join(["'%s'" % k for k in CAMPAIGN_ACTION.keys()])),
     #     nullable=False)

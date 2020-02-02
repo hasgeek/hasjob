@@ -23,9 +23,9 @@ def location_new():
                 ~JobLocation.geonameid.in_(db.session.query(Location.id).filter(Location.board == g.board))
             ).group_by(JobLocation.geonameid).order_by(db.text('count DESC')).limit(100)])
     data = location_geodata(list(geonames.keys()))
-    for row in list(data.values()):
+    for row in data.values():
         geonames[row['geonameid']] = row
-    choices = [('%s/%s' % (row['geonameid'], row['name']), row['picker_title']) for row in list(geonames.values())]
+    choices = [('%s/%s' % (row['geonameid'], row['name']), row['picker_title']) for row in geonames.values()]
     form = NewLocationForm()
     form.geoname.choices = choices
 

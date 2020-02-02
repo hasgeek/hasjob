@@ -805,7 +805,7 @@ def editjob(hashid, key, domain=None, form=None, validated=False, newpost=None):
         form.job_type.choices = JobType.choices(g.board)
         form.job_category.choices = JobCategory.choices(g.board)
         if g.board and not g.board.require_pay:
-            form.job_pay_type.choices = [(-1, 'Confidential')] + list(PAY_TYPE.items())
+            form.job_pay_type.choices = [(-1, 'Confidential')] + PAY_TYPE.items()
 
     post = None
     no_email = False
@@ -976,7 +976,7 @@ def newjob():
             abort(403)
 
     if g.board and not g.board.require_pay:
-        form.job_pay_type.choices = [(-1, 'Confidential')] + list(PAY_TYPE.items())
+        form.job_pay_type.choices = [(-1, 'Confidential')] + PAY_TYPE.items()
     form.job_type.choices = JobType.choices(g.board)
     form.job_category.choices = JobCategory.choices(g.board)
 

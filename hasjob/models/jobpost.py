@@ -519,7 +519,7 @@ class JobPost(BaseMixin, db.Model):
         counts = {}
         for flag in self.flags:
             counts[flag.reportcode] = counts.setdefault(flag.reportcode, 0) + 1
-        return [{'count': i[2], 'title': i[1]} for i in sorted([(k.seq, k.title, v) for k, v in list(counts.items())])]
+        return [{'count': i[2], 'title': i[1]} for i in sorted([(k.seq, k.title, v) for k, v in counts.items()])]
 
 
 def viewstats_helper(jobpost_id, interval, limit, daybatch=False):
@@ -825,7 +825,7 @@ class JobApplication(BaseMixin, db.Model):
                 JobApplication.created_at > date_min, JobApplication.created_at < date_max
                 ).options(db.load_only('id'))
             )
-        counts = {k.label.name: len(v) for k, v in list(grouped.items())}
+        counts = {k.label.name: len(v) for k, v in grouped.items()}
         counts['count'] = sum(counts.values())
         return counts
 

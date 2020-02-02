@@ -419,7 +419,7 @@ def campaign_action(campaign):
                 redirect=url_for('login', next=request.referrer, message="Please login so we can save your preferences"))
 
     if action.is_rsvp_type:
-        for cua in list(campaign.useractions(g.user).values()):
+        for cua in campaign.useractions(g.user).values():
             if cua.action != action and cua.action.group == action.group and cua.action.is_rsvp_type:
                 db.session.delete(cua)  # If user changed their RSVP answer, delete old answer
         db.session.commit()

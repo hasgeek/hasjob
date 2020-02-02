@@ -401,7 +401,7 @@ def _user_flags(self):
     flags = cache.get(cache_key)
     if not flags:
         flags = {}
-        for key, func in list(UserFlags.__dict__.items()):
+        for key, func in UserFlags.__dict__.items():
             if isinstance(func, UserFlag):
                 flags[key] = func.for_user(self)
         cache.set(cache_key, flags, timeout=3600)  # Cache for one hour

@@ -29,7 +29,7 @@ def tag_locations(jobpost_id):
                     if geoname:
                         geonames[geoname['geonameid']]['geonameid'] = geoname['geonameid']
                         geonames[geoname['geonameid']]['primary'] = geonames[geoname['geonameid']].get('primary', True)
-                        for type, related in list(geoname.get('related', {}).items()):
+                        for type, related in geoname.get('related', {}).items():
                             if type in ['admin2', 'admin1', 'country', 'continent']:
                                 geonames[related['geonameid']]['geonameid'] = related['geonameid']
                                 geonames[related['geonameid']]['primary'] = False
@@ -47,7 +47,7 @@ def tag_locations(jobpost_id):
                 post.remote_location = remote_location
                 post.parsed_location = {'tokens': tokens}
 
-                for locdata in list(geonames.values()):
+                for locdata in geonames.values():
                     loc = JobLocation.query.get((jobpost_id, locdata['geonameid']))
                     if loc is None:
                         loc = JobLocation(jobpost=post, geonameid=locdata['geonameid'])
