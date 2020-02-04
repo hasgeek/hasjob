@@ -7,7 +7,7 @@ from functools import wraps
 
 from flask import Markup, abort, flash, g, redirect, render_template, request, url_for
 
-import unicodecsv
+import csv
 from pytz import UTC
 
 from baseframe import __
@@ -279,7 +279,7 @@ class AdminCampaignView(UrlForView, InstanceLoader, ModelView):
             row[0] = row[0].isoformat()
 
         outfile = StringIO()
-        out = unicodecsv.writer(outfile, 'excel')
+        out = csv.writer(outfile, 'excel')
         out.writerow(['_hour', '_site', '_views', '_combined'] + action_names)
         out.writerows(viewlist)
 
@@ -330,7 +330,7 @@ class AdminCampaignActionView(UrlForView, InstanceLoader, ModelView):
         if self.obj.type not in ('Y', 'N', 'M', 'F'):
             abort(403)
         outfile = StringIO()
-        out = unicodecsv.writer(outfile, 'excel')
+        out = csv.writer(outfile, 'excel')
         out.writerow(['fullname', 'username', 'email', 'phone'])
         for ua in self.obj.useractions:
             out.writerow([ua.user.fullname, ua.user.username, ua.user.email, ua.user.phone])
