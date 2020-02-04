@@ -25,6 +25,7 @@ premailer==3.6.1
 langid>=1.1.4dev
 tldextract==2.2.2
 geoip2==2.9.0
+git+https://github.com/hasgeek/flask-babel2.git
 git+https://github.com/hasgeek/coaster.git
 git+https://github.com/hasgeek/flask-lastuser.git
 git+https://github.com/hasgeek/baseframe.git
