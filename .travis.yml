@@ -5,8 +5,8 @@ before_script:
   - psql -c 'create database hasjob_testing;' -U postgres
 install:
   - pip install -U pip wheel
-  - pip install -r test_requirements.txt
-  - pip install -r requirements.txt
+  - pip install --no-cache-dir -r test_requirements.txt
+  - pip install --no-cache-dir -r requirements.txt
   - npm install casperjs
 script: ./runtests.sh
 after_success:
