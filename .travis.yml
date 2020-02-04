@@ -1,9 +1,6 @@
 language: python
 python:
   - 3.7
-cache:
-  directories:
-    - $HOME/.cache/pip
 before_script:
   - psql -c 'create database hasjob_testing;' -U postgres
 install:
