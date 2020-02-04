@@ -8,6 +8,7 @@ install:
   - pip install --no-cache-dir -r test_requirements.txt
   - pip install --no-cache-dir -r requirements.txt
   - npm install casperjs
+  - make
 script: ./runtests.sh
 after_success:
   - coveralls
@@ -17,6 +18,3 @@ services:
   - redis-server
 notifications:
   email: false
-  slack:
-    - hasgeek:HDCoMDj3T4ICB59qFFVorCG8
-    - friendsofhasgeek:3bLViYSzhfaThJovFYCVD3fX
