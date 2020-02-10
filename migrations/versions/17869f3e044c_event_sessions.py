@@ -41,7 +41,7 @@ def upgrade():
         sa.Column('gclid', sa.Unicode(length=250), nullable=False),
         sa.Column('active_at', sa.DateTime(), nullable=False),
         sa.Column('ended_at', sa.DateTime(), nullable=True),
-        sa.CheckConstraint(u'CASE WHEN (event_session.user_id IS NOT NULL) THEN 1 ELSE 0 END + CASE WHEN (event_session.anon_user_id IS NOT NULL) THEN 1 ELSE 0 END = 1', name='user_event_session_user_id_or_anon_user_id'),
+        sa.CheckConstraint('CASE WHEN (event_session.user_id IS NOT NULL) THEN 1 ELSE 0 END + CASE WHEN (event_session.anon_user_id IS NOT NULL) THEN 1 ELSE 0 END = 1', name='user_event_session_user_id_or_anon_user_id'),
         sa.ForeignKeyConstraint(['anon_user_id'], ['anon_user.id'], ),
         sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
         sa.PrimaryKeyConstraint('id')

@@ -9,7 +9,7 @@ from . import content_css, invalid_urls
 
 
 class DomainForm(forms.Form):
-    title = forms.StringField(__(u"Common name"),
+    title = forms.StringField(__("Common name"),
         validators=[forms.validators.DataRequired(),
             forms.validators.Length(min=1, max=250, message=__("%(max)d characters maximum"))],
         filters=[forms.filters.strip()],
@@ -18,7 +18,7 @@ class DomainForm(forms.Form):
         validators=[forms.validators.Optional(),
             forms.validators.Length(min=1, max=250, message=__("%%(max)d characters maximum"))],
         filters=[forms.filters.none_if_empty()],
-        description=__(u"Optional — The full legal name of your organization"))
+        description=__("Optional — The full legal name of your organization"))
     # logo_url = forms.URLField(__("Logo URL"),  # TODO: Use ImgeeField
     #     validators=[forms.validators.Optional(),
     #         forms.validators.Length(min=0, max=250, message=__("%%(max)d characters maximum"))],

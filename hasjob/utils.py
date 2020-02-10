@@ -82,7 +82,7 @@ def base36encode(number, alphabet='0123456789abcdefghijklmnopqrstuvwxyz'):
     >>> base36encode(60466176)
     '100000'
     """
-    if not isinstance(number, (int, long)):
+    if not isinstance(number, int):
         raise TypeError('number must be an integer')
     # Special case for zero
     if number == 0:
@@ -137,7 +137,7 @@ URL_RE = re.compile(r'\(?\bhttps?://[-A-Za-z0-9+&@#/%?=~_()|!:,.;]*[-A-Za-z0-9+&
 PHONE_DETECT_RE = re.compile('(^|[^0-9])([0-9][ .()_-]*){10}($|[^0-9])')
 
 
-def redactemail(data, message=u'[redacted]'):
+def redactemail(data, message='[redacted]'):
     """
     Remove email addresses from the given text, replacing with a redacted message.
 
@@ -255,7 +255,7 @@ def escape_for_sql_like(query):
     >>> escape_for_sql_like("query%_[]")
     "query\%\_%"
     """
-    return query.replace(u'%', r'\%').replace(u'_', r'\_').replace(u'[', u'').replace(u']', u'') + u'%'
+    return query.replace('%', r'\%').replace('_', r'\_').replace('[', '').replace(']', '') + '%'
 
 
 def strip_null(text):

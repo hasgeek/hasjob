@@ -17,7 +17,7 @@ from sqlalchemy.dialects import postgresql
 
 def upgrade():
     op.drop_index('ix_jobpost_org_id', table_name='jobpost')
-    op.drop_constraint(u'jobpost_org_id_fkey', 'jobpost', type_='foreignkey')
+    op.drop_constraint('jobpost_org_id_fkey', 'jobpost', type_='foreignkey')
     op.drop_column('jobpost', 'org_id')
     op.drop_table('users_teams')
     op.drop_table('org_location')
@@ -27,7 +27,7 @@ def upgrade():
 
 def downgrade():
     op.create_table('team',
-        sa.Column('id', sa.INTEGER(), server_default=sa.text(u"nextval('team_id_seq'::regclass)"), nullable=False),
+        sa.Column('id', sa.INTEGER(), server_default=sa.text("nextval('team_id_seq'::regclass)"), nullable=False),
         sa.Column('created_at', postgresql.TIMESTAMP(), autoincrement=False, nullable=False),
         sa.Column('updated_at', postgresql.TIMESTAMP(), autoincrement=False, nullable=False),
         sa.Column('title', sa.VARCHAR(length=250), autoincrement=False, nullable=False),
@@ -35,11 +35,11 @@ def downgrade():
         sa.Column('owners', sa.BOOLEAN(), autoincrement=False, nullable=False),
         sa.Column('orgid', sa.VARCHAR(length=22), autoincrement=False, nullable=False),
         sa.Column('members', sa.BOOLEAN(), autoincrement=False, nullable=False),
-        sa.PrimaryKeyConstraint('id', name=u'team_pkey'),
+        sa.PrimaryKeyConstraint('id', name='team_pkey'),
         postgresql_ignore_search_path=False
         )
     op.create_table('organization',
-        sa.Column('id', sa.INTEGER(), server_default=sa.text(u"nextval('organization_id_seq'::regclass)"), nullable=False),
+        sa.Column('id', sa.INTEGER(), server_default=sa.text("nextval('organization_id_seq'::regclass)"), nullable=False),
         sa.Column('created_at', postgresql.TIMESTAMP(), autoincrement=False, nullable=False),
         sa.Column('updated_at', postgresql.TIMESTAMP(), autoincrement=False, nullable=False),
         sa.Column('domain', sa.VARCHAR(length=253), autoincrement=False, nullable=True),
@@ -52,9 +52,9 @@ def downgrade():
         sa.Column('title', sa.VARCHAR(length=250), autoincrement=False, nullable=False),
         sa.Column('admin_team_id', sa.INTEGER(), autoincrement=False, nullable=True),
         sa.Column('hiring_team_id', sa.INTEGER(), autoincrement=False, nullable=True),
-        sa.ForeignKeyConstraint(['admin_team_id'], [u'team.id'], name=u'organization_admin_team_id_fkey', ondelete=u'SET NULL'),
-        sa.ForeignKeyConstraint(['hiring_team_id'], [u'team.id'], name=u'organization_hiring_team_id_fkey', ondelete=u'SET NULL'),
-        sa.PrimaryKeyConstraint('id', name=u'organization_pkey'),
+        sa.ForeignKeyConstraint(['admin_team_id'], ['team.id'], name='organization_admin_team_id_fkey', ondelete='SET NULL'),
+        sa.ForeignKeyConstraint(['hiring_team_id'], ['team.id'], name='organization_hiring_team_id_fkey', ondelete='SET NULL'),
+        sa.PrimaryKeyConstraint('id', name='organization_pkey'),
         postgresql_ignore_search_path=False
         )
     op.create_table('org_location',
@@ -73,18 +73,18 @@ def downgrade():
         sa.Column('country', sa.VARCHAR(length=80), autoincrement=False, nullable=True),
         sa.Column('geonameid', sa.INTEGER(), autoincrement=False, nullable=True),
         sa.Column('url_id', sa.INTEGER(), autoincrement=False, nullable=False),
-        sa.ForeignKeyConstraint(['org_id'], [u'organization.id'], name=u'org_location_org_id_fkey'),
-        sa.PrimaryKeyConstraint('id', name=u'org_location_pkey')
+        sa.ForeignKeyConstraint(['org_id'], ['organization.id'], name='org_location_org_id_fkey'),
+        sa.PrimaryKeyConstraint('id', name='org_location_pkey')
         )
     op.create_table('users_teams',
         sa.Column('created_at', postgresql.TIMESTAMP(), autoincrement=False, nullable=False),
         sa.Column('updated_at', postgresql.TIMESTAMP(), autoincrement=False, nullable=False),
         sa.Column('user_id', sa.INTEGER(), autoincrement=False, nullable=False),
         sa.Column('team_id', sa.INTEGER(), autoincrement=False, nullable=False),
-        sa.ForeignKeyConstraint(['team_id'], [u'team.id'], name=u'users_teams_team_id_fkey'),
-        sa.ForeignKeyConstraint(['user_id'], [u'user.id'], name=u'users_teams_user_id_fkey'),
-        sa.PrimaryKeyConstraint('user_id', 'team_id', name=u'users_teams_pkey')
+        sa.ForeignKeyConstraint(['team_id'], ['team.id'], name='users_teams_team_id_fkey'),
+        sa.ForeignKeyConstraint(['user_id'], ['user.id'], name='users_teams_user_id_fkey'),
+        sa.PrimaryKeyConstraint('user_id', 'team_id', name='users_teams_pkey')
         )
     op.add_column('jobpost', sa.Column('org_id', sa.INTEGER(), autoincrement=False, nullable=True))
-    op.create_foreign_key(u'jobpost_org_id_fkey', 'jobpost', 'organization', ['org_id'], ['id'])
+    op.create_foreign_key('jobpost_org_id_fkey', 'jobpost', 'organization', ['org_id'], ['id'])
     op.create_index('ix_jobpost_org_id', 'jobpost', ['org_id'], unique=False)
