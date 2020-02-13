@@ -3,7 +3,7 @@
 from datetime import timedelta
 from werkzeug import cached_property
 from flask import url_for, escape, Markup
-from flask_babel2 import format_datetime
+from flask_babelhg import format_datetime
 from sqlalchemy import event, DDL
 from sqlalchemy.orm import defer, deferred, load_only
 from sqlalchemy.ext.associationproxy import association_proxy
