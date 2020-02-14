@@ -3,7 +3,6 @@ Flask-SQLAlchemy==2.4.1
 Flask-WTF==0.14.2
 Flask-Mail==0.9.1
 Flask-Assets==2.0
-Flask-Uploads==0.2.1
 Flask-RQ2==18.3
 Flask-Testing==0.7.1
 Flask-Redis>=0.3.0
