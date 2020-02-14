@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from werkzeug import cached_property
+from werkzeug.utils import cached_property
 from sqlalchemy import event, DDL
 from sqlalchemy.orm import deferred
 from sqlalchemy.dialects.postgresql import TSVECTOR

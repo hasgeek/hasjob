@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from datetime import timedelta
-from werkzeug import cached_property
+from werkzeug.utils import cached_property
 from flask import url_for, escape, Markup
 from flask_babelhg import format_datetime
 from sqlalchemy import event, DDL

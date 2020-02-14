@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from pytz import timezone
-from werkzeug import cached_property
+from werkzeug.utils import cached_property
 from flask import url_for, Markup
 from sqlalchemy.ext.associationproxy import association_proxy
 from coaster.sqlalchemy import make_timestamp_columns
