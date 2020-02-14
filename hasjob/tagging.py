@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from collections import defaultdict
-from urlparse import urljoin
+from urllib.parse import urljoin
 import requests
 from coaster.utils import text_blocks
 from coaster.nlp import extract_named_entities

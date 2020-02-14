@@ -26,12 +26,12 @@ def upgrade():
         sa.PrimaryKeyConstraint('event_session_id', 'jobpost_id')
         )
     op.create_index(op.f('ix_job_view_session_jobpost_id'), 'job_view_session', ['jobpost_id'], unique=False)
-    op.add_column(u'job_impression', sa.Column('bgroup', sa.Boolean(), nullable=True))
-    op.add_column(u'jobpost', sa.Column('headlineb', sa.Unicode(length=100), nullable=True))
+    op.add_column('job_impression', sa.Column('bgroup', sa.Boolean(), nullable=True))
+    op.add_column('jobpost', sa.Column('headlineb', sa.Unicode(length=100), nullable=True))
 
 
 def downgrade():
-    op.drop_column(u'jobpost', 'headlineb')
-    op.drop_column(u'job_impression', 'bgroup')
+    op.drop_column('jobpost', 'headlineb')
+    op.drop_column('job_impression', 'bgroup')
     op.drop_index(op.f('ix_job_view_session_event_session_id'), table_name='job_view_session')
     op.drop_table('job_view_session')

@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
 from collections import defaultdict
-from cStringIO import StringIO
+from io import StringIO
 
 from flask import g, render_template
 
-import unicodecsv
+import csv
 
 from baseframe import __
 from coaster.views import route, viewdata
@@ -84,7 +84,7 @@ class AdminDashboard(AdminView):
             stats[slot]['rejections'] = count
 
         outfile = StringIO()
-        out = unicodecsv.writer(outfile, 'excel')
+        out = csv.writer(outfile, 'excel')
         out.writerow(['slot', 'newusers', 'users', 'anon_users', 'jobs', 'applications', 'replies', 'rejections'])
 
         for slot, c in sorted(stats.items()):
@@ -116,7 +116,7 @@ class AdminDashboard(AdminView):
                 response=EMPLOYER_RESPONSE.REPLIED)
 
         outfile = StringIO()
-        out = unicodecsv.writer(outfile, 'excel')
+        out = csv.writer(outfile, 'excel')
         out.writerow(['month', '50%', '60%', '70%', '80%', '90%',
             '91%', '92%', '93%', '94%', '95%', '96%', '97%', '98%', '99%', '100%', 'users'])
 

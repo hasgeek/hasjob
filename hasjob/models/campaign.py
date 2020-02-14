@@ -112,9 +112,9 @@ class Campaign(BaseNameMixin, db.Model):
     #: Subject (user-facing, unlike the title)
     subject = db.Column(db.Unicode(250), nullable=True)
     #: Call to action text (for header campaigns)
-    blurb = db.Column(db.UnicodeText, nullable=False, default=u'')
+    blurb = db.Column(db.UnicodeText, nullable=False, default='')
     #: Full text (for read more click throughs)
-    description = db.Column(db.UnicodeText, nullable=False, default=u'')
+    description = db.Column(db.UnicodeText, nullable=False, default='')
     #: Banner image
     banner_image = db.Column(db.Unicode(250), nullable=True)
     #: Banner location
@@ -377,7 +377,7 @@ class CampaignAction(BaseScopedNameMixin, db.Model):
     #     db.CheckConstraint('type IN (%s)' % ', '.join(["'%s'" % k for k in CAMPAIGN_ACTION.keys()])),
     #     nullable=False)
     #: Action category (for buttons)
-    category = db.Column(db.Unicode(20), nullable=False, default=u'default')
+    category = db.Column(db.Unicode(20), nullable=False, default='default')
     #: Icon to accompany text
     icon = db.Column(db.Unicode(20), nullable=True)
     #: Group (for RSVP buttons)
@@ -387,7 +387,7 @@ class CampaignAction(BaseScopedNameMixin, db.Model):
     #: Form
     form = deferred(db.Column(JsonDict, nullable=False, server_default='{}'))
     #: Post action message
-    message = db.Column(db.UnicodeText, nullable=False, default=u'')
+    message = db.Column(db.UnicodeText, nullable=False, default='')
 
     __table_args__ = (db.UniqueConstraint('campaign_id', 'name'),)
 

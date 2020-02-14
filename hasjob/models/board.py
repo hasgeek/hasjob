@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from pytz import timezone
-from werkzeug import cached_property
+from werkzeug.utils import cached_property
 from flask import url_for, Markup
 from sqlalchemy.ext.associationproxy import association_proxy
 from coaster.sqlalchemy import make_timestamp_columns
@@ -119,7 +119,7 @@ class Board(BaseNameMixin, db.Model):
     #: Lastuser organization userid that owns this
     userid = db.Column(db.Unicode(22), nullable=False, index=True)
     #: Welcome text
-    description = db.Column(db.UnicodeText, nullable=False, default=u'')
+    description = db.Column(db.UnicodeText, nullable=False, default='')
     #: Restrict displayed posts to 24 hours if not logged in?
     require_login = db.Column(db.Boolean, nullable=False, default=True)
     #: Restrict ability to list via this board?
@@ -161,11 +161,11 @@ class Board(BaseNameMixin, db.Model):
 
     @property
     def is_root(self):
-        return self.name == u'www'
+        return self.name == 'www'
 
     @property
     def not_root(self):
-        return self.name != u'www'
+        return self.name != 'www'
 
     @property
     def options(self):
@@ -183,7 +183,7 @@ class Board(BaseNameMixin, db.Model):
 
     @property
     def title_and_name(self):
-        return Markup(u'{title} (<a href="{url}" target="_blank">{name}</a>)'.format(
+        return Markup('{title} (<a href="{url}" target="_blank">{name}</a>)'.format(
             title=self.title, name=self.name, url=self.url_for()))
 
     def owner_is(self, user):
@@ -278,7 +278,7 @@ JobPost.link_to_board = _jobpost_link_to_board
 
 def _jobpost_add_to(self, board):
     with db.session.no_autoflush:
-        if isinstance(board, basestring):
+        if isinstance(board, str):
             board = Board.get(board)
         if not board:
             return

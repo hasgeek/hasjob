@@ -37,8 +37,8 @@ def upgrade():
         sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
         sa.PrimaryKeyConstraint('user_id', 'team_id')
         )
-    op.add_column(u'organization', sa.Column('admin_team_id', sa.Integer(), nullable=True))
-    op.add_column(u'organization', sa.Column('hiring_team_id', sa.Integer(), nullable=True))
+    op.add_column('organization', sa.Column('admin_team_id', sa.Integer(), nullable=True))
+    op.add_column('organization', sa.Column('hiring_team_id', sa.Integer(), nullable=True))
     op.create_foreign_key('organization_admin_team_id_fkey', 'organization', 'team', ['admin_team_id'], ['id'],
         ondelete='SET NULL')
     op.create_foreign_key('organization_hiring_team_id_fkey', 'organization', 'team', ['hiring_team_id'], ['id'],
@@ -48,8 +48,8 @@ def upgrade():
 def downgrade():
     op.drop_constraint('organization_hiring_team_id_fkey', 'organization', type_='foreignkey')
     op.drop_constraint('organization_admin_team_id_fkey', 'organization', type_='foreignkey')
-    op.drop_column(u'organization', 'hiring_team_id')
-    op.drop_column(u'organization', 'admin_team_id')
+    op.drop_column('organization', 'hiring_team_id')
+    op.drop_column('organization', 'admin_team_id')
     op.drop_table('users_teams')
     op.drop_index(op.f('ix_team_orgid'), table_name='team')
     op.drop_table('team')

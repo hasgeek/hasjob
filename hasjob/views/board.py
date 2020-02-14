@@ -24,7 +24,7 @@ def remove_subdomain_parameter(endpoint, values):
         g.board = None
         return  # Don't bother processing for static endpoints either (only applies in dev)
 
-    g.board = Board.query.filter_by(name=subdomain or u'www').first()
+    g.board = Board.query.filter_by(name=subdomain or 'www').first()
     if subdomain and g.board is None:
         abort(404)
 
@@ -55,10 +55,10 @@ def board_new():
             if post:
                 board.add(post)
         db.session.commit()
-        flash(u"Created a job board named %s" % board.title, 'success')
+        flash("Created a job board named %s" % board.title, 'success')
         return render_redirect(url_for('board_view', board=board.name), code=303)
-    return render_form(form=form, title=u"Create a job board…", submit="Next",
-        message=u"Make your own job board with just the jobs you want to showcase. "
+    return render_form(form=form, title="Create a job board…", submit="Next",
+        message="Make your own job board with just the jobs you want to showcase. "
             "Your board will appear as a subdomain",
         formid="board_new", cancel_url=url_for('index'), ajax=False)
 
@@ -79,16 +79,16 @@ def board_edit(board):
     form.userid.choices = g.user.allowner_choices()
     if board.userid not in g.user.allowner_ids():
         # We could get here if we are a siteadmin editing someone's board
-        form.userid.choices.insert(0, (board.userid, u"(Preserve existing owner)"))
+        form.userid.choices.insert(0, (board.userid, "(Preserve existing owner)"))
     if form.validate_on_submit():
         form.populate_obj(board)
         if not board.name:
             board.make_name()
         db.session.commit()
-        flash(u"Edited board settings.", 'success')
+        flash("Edited board settings.", 'success')
         return render_redirect(url_for('index', subdomain=board.name), code=303)
 
-    return render_form(form=form, title=u"Edit board settings", submit="Save",
+    return render_form(form=form, title="Edit board settings", submit="Save",
         formid="board_edit", cancel_url=url_for('index', subdomain=board.name), ajax=False)
 
 
@@ -96,9 +96,9 @@ def board_edit(board):
 @lastuser.requires_login
 @load_model(Board, {'name': 'board'}, 'board', permission='delete')
 def board_delete(board):
-    return render_delete_sqla(board, db, title=u"Confirm delete",
-        message=u"Delete board '%s'?" % board.title,
-        success=u"You have deleted board '%s'." % board.title,
+    return render_delete_sqla(board, db, title="Confirm delete",
+        message="Delete board '%s'?" % board.title,
+        success="You have deleted board '%s'." % board.title,
         next=url_for('index'))
 
 
@@ -119,5 +119,5 @@ def board_add(board, jobpost):
     db.session.commit()
     # cache bust
     # dogpile.invalidate_region('hasjob_index')
-    flash(u"You’ve added this job to %s" % board.title, 'interactive')
+    flash("You’ve added this job to %s" % board.title, 'interactive')
     return redirect(jobpost.url_for(subdomain=board.name))

@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 
 from collections import defaultdict
-from cStringIO import StringIO
+from io import StringIO
 from datetime import timedelta
 from functools import wraps
 
 from flask import Markup, abort, flash, g, redirect, render_template, request, url_for
 
-import unicodecsv
+import csv
 from pytz import UTC
 
 from baseframe import __
@@ -77,7 +77,7 @@ class AdminCampaignList(AdminView):
     @route('new', methods=['GET', 'POST'])
     @viewdata(tab=True, index=4, title=__("New"))
     def new(self):
-        self.message = u"Campaigns appear around the job board and provide a call to action for users"
+        self.message = "Campaigns appear around the job board and provide a call to action for users"
         form = CampaignForm()
         if request.method == 'GET' and g.board:
             form.boards.data = [g.board]
@@ -87,10 +87,10 @@ class AdminCampaignList(AdminView):
             campaign.name = suuid()  # Use a random name since it's also used in user action submit forms
             db.session.add(campaign)
             db.session.commit()
-            flash(u"Created a campaign", 'success')
+            flash("Created a campaign", 'success')
             return render_redirect(campaign.url_for(), code=303)
 
-        return render_form(form=form, title=u"Create a campaign…", submit="Next",
+        return render_form(form=form, title="Create a campaign…", submit="Next",
             formid="campaign_new", cancel_url=url_for(self.list_current.endpoint), ajax=False)
 
 
@@ -164,17 +164,17 @@ class AdminCampaignView(UrlForView, InstanceLoader, ModelView):
         if form.validate_on_submit():
             form.populate_obj(self.obj)
             db.session.commit()
-            flash(u"Edited campaign settings", 'success')
+            flash("Edited campaign settings", 'success')
             return render_redirect(self.obj.url_for(), code=303)
 
-        return render_form(form=form, title=u"Edit campaign settings", submit="Save",
+        return render_form(form=form, title="Edit campaign settings", submit="Save",
             formid="campaign_edit", cancel_url=self.obj.url_for(), ajax=False)
 
     @route('delete', methods=['GET', 'POST'])
     def delete(self):
-        return render_delete_sqla(self.obj, db, title=u"Confirm delete",
-            message=u"Delete campaign '%s'?" % self.obj.title,
-            success=u"You have deleted campaign '%s'." % self.obj.title,
+        return render_delete_sqla(self.obj, db, title="Confirm delete",
+            message="Delete campaign '%s'?" % self.obj.title,
+            success="You have deleted campaign '%s'." % self.obj.title,
             next=url_for(getattr(self, self.current_tab).endpoint),
             cancel_url=self.obj.url_for())
 
@@ -190,10 +190,10 @@ class AdminCampaignView(UrlForView, InstanceLoader, ModelView):
             form.populate_obj(action)
             action.name = suuid()  # Use a random name since it needs to be permanent
             db.session.commit()
-            flash(u"Added campaign action ‘%s’" % action.title, 'interactive')
+            flash("Added campaign action ‘%s’" % action.title, 'interactive')
             return redirect(self.obj.url_for(), code=303)
 
-        return render_form(form=form, title=u"Add a new campaign action…", submit="Save",
+        return render_form(form=form, title="Add a new campaign action…", submit="Save",
             formid="campaign_action_new", cancel_url=self.obj.url_for(), ajax=False)
 
     @route('views.csv')
@@ -279,7 +279,7 @@ class AdminCampaignView(UrlForView, InstanceLoader, ModelView):
             row[0] = row[0].isoformat()
 
         outfile = StringIO()
-        out = unicodecsv.writer(outfile, 'excel')
+        out = csv.writer(outfile, 'excel')
         out.writerow(['_hour', '_site', '_views', '_combined'] + action_names)
         out.writerows(viewlist)
 
@@ -312,17 +312,17 @@ class AdminCampaignActionView(UrlForView, InstanceLoader, ModelView):
         if form.validate_on_submit():
             form.populate_obj(self.obj)
             db.session.commit()
-            flash(u"Edited campaign action ‘%s’" % self.obj.title, 'interactive')
+            flash("Edited campaign action ‘%s’" % self.obj.title, 'interactive')
             return redirect(self.obj.parent.url_for(), code=303)
 
-        return render_form(form=form, title=u"Edit campaign action", submit="Save",
+        return render_form(form=form, title="Edit campaign action", submit="Save",
             formid="campaign_action_edit", cancel_url=self.obj.parent.url_for(), ajax=False)
 
     @route('delete', methods=['GET', 'POST'])
     def delete(self):
-        return render_delete_sqla(self.obj, db, title=u"Confirm delete",
-            message=u"Delete campaign action '%s'?" % self.obj.title,
-            success=u"You have deleted campaign action '%s'." % self.obj.title,
+        return render_delete_sqla(self.obj, db, title="Confirm delete",
+            message="Delete campaign action '%s'?" % self.obj.title,
+            success="You have deleted campaign action '%s'." % self.obj.title,
             next=self.obj.parent.url_for())
 
     @route('csv', methods=['GET', 'POST'])
@@ -330,7 +330,7 @@ class AdminCampaignActionView(UrlForView, InstanceLoader, ModelView):
         if self.obj.type not in ('Y', 'N', 'M', 'F'):
             abort(403)
         outfile = StringIO()
-        out = unicodecsv.writer(outfile, 'excel')
+        out = csv.writer(outfile, 'excel')
         out.writerow(['fullname', 'username', 'email', 'phone'])
         for ua in self.obj.useractions:
             out.writerow([ua.user.fullname, ua.user.username, ua.user.email, ua.user.phone])
@@ -416,7 +416,7 @@ def campaign_action(campaign):
                 db.session.add(cua)
         else:  # All of the other types require a user (not an anon user; will change when forms are introduced)
             return render_template('campaign_action_response.html.jinja2', campaign=campaign,
-                redirect=url_for('login', next=request.referrer, message=u"Please login so we can save your preferences"))
+                redirect=url_for('login', next=request.referrer, message="Please login so we can save your preferences"))
 
     if action.is_rsvp_type:
         for cua in campaign.useractions(g.user).values():

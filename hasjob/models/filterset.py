@@ -51,7 +51,7 @@ class Filterset(BaseScopedNameMixin, db.Model):
     parent = db.synonym('board')
 
     #: Welcome text
-    description = db.Column(db.UnicodeText, nullable=False, default=u'')
+    description = db.Column(db.UnicodeText, nullable=False, default='')
 
     #: Associated job types
     types = db.relationship(JobType, secondary=filterset_jobtype_table)
@@ -66,7 +66,7 @@ class Filterset(BaseScopedNameMixin, db.Model):
     pay_currency = db.Column(db.CHAR(3), nullable=True, index=True)
     pay_cash = db.Column(db.Integer, nullable=True, index=True)
     equity = db.Column(db.Boolean, nullable=False, default=False, index=True)
-    keywords = db.Column(db.Unicode(250), nullable=False, default=u'', index=True)
+    keywords = db.Column(db.Unicode(250), nullable=False, default='', index=True)
 
     def __repr__(self):
         return '<Filterset %s "%s">' % (self.board.title, self.title)

@@ -18,7 +18,7 @@ def format_geonameids(geonameids):
 
 def get_currency_choices():
     choices = [('', __('None'))]
-    choices.extend(CURRENCY.items())
+    choices.extend(list(CURRENCY.items()))
     return choices
 
 

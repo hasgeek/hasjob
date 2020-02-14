@@ -65,7 +65,7 @@ def kiosk_manifest():
         lines.append('NETWORK:')
         lines.append('*')
 
-        return Response(u'\r\n'.join(lines),
+        return Response('\r\n'.join(lines),
             content_type='text/cache-manifest')
     else:
         abort(410)

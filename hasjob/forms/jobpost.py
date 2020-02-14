@@ -19,7 +19,7 @@ from ..utils import simplify_text, EMAIL_RE, URL_RE, PHONE_DETECT_RE, get_word_b
 
 from . import content_css, invalid_urls, optional_url
 
-QUOTES_RE = re.compile(ur'[\'"`‘’“”′″‴«»]+')
+QUOTES_RE = re.compile(r'[\'"`‘’“”′″‴«»]+')
 
 CAPS_RE = re.compile('[A-Z]')
 SMALL_RE = re.compile('[a-z]')
@@ -47,104 +47,104 @@ class ListingForm(forms.Form):
             """<a id="abtest" class="no-jshidden" href="#">A/B test it?</a>""")),
         validators=[forms.validators.DataRequired(__("A headline is required")),
             forms.validators.Length(min=1, max=100, message=__("%%(max)d characters maximum")),
-            forms.validators.NoObfuscatedEmail(__(u"Do not include contact information in the post"))],
+            forms.validators.NoObfuscatedEmail(__("Do not include contact information in the post"))],
         filters=[forms.filters.strip()])
     job_headlineb = forms.StringField(__("Headline B"),
-        description=__(u"An alternate headline that will be shown to 50%% of users. "
-            u"You’ll get a count of views per headline"),
+        description=__("An alternate headline that will be shown to 50%% of users. "
+            "You’ll get a count of views per headline"),
         validators=[forms.validators.Optional(),
             forms.validators.Length(min=1, max=100, message=__("%%(max)d characters maximum")),
-            forms.validators.NoObfuscatedEmail(__(u"Do not include contact information in the post"))],
+            forms.validators.NoObfuscatedEmail(__("Do not include contact information in the post"))],
         filters=[forms.filters.strip(), forms.filters.none_if_empty()])
     job_type = forms.RadioField(__("Type"), coerce=int,
         validators=[forms.validators.InputRequired(__("The job type must be specified"))])
     job_category = forms.RadioField(__("Category"), coerce=int,
         validators=[forms.validators.InputRequired(__("Select a category"))])
     job_location = forms.StringField(__("Location"),
-        description=__(u'“Bangalore”, “Chennai”, “Pune”, etc or “Anywhere” (without quotes)'),
-        validators=[forms.validators.DataRequired(__(u"If this job doesn’t have a fixed location, use “Anywhere”")),
+        description=__('“Bangalore”, “Chennai”, “Pune”, etc or “Anywhere” (without quotes)'),
+        validators=[forms.validators.DataRequired(__("If this job doesn’t have a fixed location, use “Anywhere”")),
             forms.validators.Length(min=3, max=80, message=__("%%(max)d characters maximum"))],
         filters=[forms.filters.strip()])
     job_relocation_assist = forms.BooleanField(__("Relocation assistance available"))
     job_description = forms.TinyMce4Field(__("Description"),
         content_css=content_css,
-        description=__(u"Don’t just describe the job, tell a compelling story for why someone should work for you"),
+        description=__("Don’t just describe the job, tell a compelling story for why someone should work for you"),
         validators=[forms.validators.DataRequired(__("A description of the job is required")),
             forms.validators.AllUrlsValid(invalid_urls=invalid_urls),
-            forms.validators.NoObfuscatedEmail(__(u"Do not include contact information in the post"))],
+            forms.validators.NoObfuscatedEmail(__("Do not include contact information in the post"))],
         tinymce_options={'convert_urls': True})
     job_perks = forms.BooleanField(__("Job perks are available"))
     job_perks_description = forms.TinyMce4Field(__("Describe job perks"),
         content_css=content_css,
-        description=__(u"Stock options, free lunch, free conference passes, etc"),
+        description=__("Stock options, free lunch, free conference passes, etc"),
         validators=[forms.validators.AllUrlsValid(invalid_urls=invalid_urls),
-            forms.validators.NoObfuscatedEmail(__(u"Do not include contact information in the post"))])
+            forms.validators.NoObfuscatedEmail(__("Do not include contact information in the post"))])
     job_pay_type = forms.RadioField(__("What does this job pay?"), coerce=int,
         validators=[forms.validators.InputRequired(__("You need to specify what this job pays"))],
-        choices=PAY_TYPE.items())
-    job_pay_currency = ListingPayCurrencyField(__("Currency"), choices=CURRENCY.items(), default=CURRENCY.INR)
+        choices=list(PAY_TYPE.items()))
+    job_pay_currency = ListingPayCurrencyField(__("Currency"), choices=list(CURRENCY.items()), default=CURRENCY.INR)
     job_pay_cash_min = forms.StringField(__("Minimum"))
     job_pay_cash_max = forms.StringField(__("Maximum"))
     job_pay_equity = forms.BooleanField(__("Equity compensation is available"))
     job_pay_equity_min = forms.StringField(__("Minimum"))
     job_pay_equity_max = forms.StringField(__("Maximum"))
     job_how_to_apply = forms.TextAreaField(__("What should a candidate submit when applying for this job?"),
-        description=__(u"Example: “Include your LinkedIn and GitHub profiles.” "
-                       u"We now require candidates to apply through the job board only. "
-                       u"Do not include any contact information here. Candidates CANNOT "
-                       u"attach resumes or other documents, so do not ask for that"),
+        description=__("Example: “Include your LinkedIn and GitHub profiles.” "
+                       "We now require candidates to apply through the job board only. "
+                       "Do not include any contact information here. Candidates CANNOT "
+                       "attach resumes or other documents, so do not ask for that"),
         validators=[
-            forms.validators.DataRequired(__(u"We do not offer screening services. Please specify what candidates should submit")),
-            forms.validators.NoObfuscatedEmail(__(u"Do not include contact information in the post"))])
+            forms.validators.DataRequired(__("We do not offer screening services. Please specify what candidates should submit")),
+            forms.validators.NoObfuscatedEmail(__("Do not include contact information in the post"))])
     company_name = forms.StringField(__("Employer name"),
-        description=__(u"The name of the organization where the position is. "
-                       u"If your stealth startup doesn't have a name yet, use your own. "
-                       u"We do not accept posts from third parties such as recruitment consultants. "
-                       u"Such posts may be removed without notice"),
-        validators=[forms.validators.DataRequired(__(u"This is required. Posting any name other than that of the actual organization is a violation of the ToS")),
+        description=__("The name of the organization where the position is. "
+                       "If your stealth startup doesn't have a name yet, use your own. "
+                       "We do not accept posts from third parties such as recruitment consultants. "
+                       "Such posts may be removed without notice"),
+        validators=[forms.validators.DataRequired(__("This is required. Posting any name other than that of the actual organization is a violation of the ToS")),
             forms.validators.Length(min=4, max=80, message=__("The name must be within %%(min)d to %%(max)d characters"))],
         filters=[forms.filters.strip()])
     company_logo = forms.FileField(__("Logo"),
-        description=__(u"Optional — Your organization’s logo will appear at the top of your post."),
+        description=__("Optional — Your organization’s logo will appear at the top of your post."),
         )  # validators=[file_allowed(uploaded_logos, "That image type is not supported")])
     company_logo_remove = forms.BooleanField(__("Remove existing logo"))
     company_url = forms.URLField(__("URL"),
-        description=__(u"Your organization’s website"),
+        description=__("Your organization’s website"),
         validators=[forms.validators.DataRequired(), optional_url,
             forms.validators.Length(max=255, message=__("%%(max)d characters maximum")), forms.validators.ValidUrl()],
         filters=[forms.filters.strip()])
-    hr_contact = forms.RadioField(__(u"Is it okay for recruiters and other "
-        u"intermediaries to contact you about this post?"), coerce=getbool,
-        description=__(u"We’ll display a notice to this effect on the post"),
+    hr_contact = forms.RadioField(__("Is it okay for recruiters and other "
+        "intermediaries to contact you about this post?"), coerce=getbool,
+        description=__("We’ll display a notice to this effect on the post"),
         default=0,
-        choices=[(0, __(u"No, it is NOT OK")), (1, __(u"Yes, recruiters may contact me"))])
+        choices=[(0, __("No, it is NOT OK")), (1, __("Yes, recruiters may contact me"))])
     # Deprecated 2013-11-20
     # poster_name = forms.StringField(__("Name"),
     #     description=__(u"This is your name, for our records. Will not be revealed to applicants"),
     #     validators=[forms.validators.DataRequired(__("We need your name"))])
     poster_email = forms.EmailField(__("Email"),
-        description=Markup(__(u"This is where we’ll send your confirmation email and all job applications. "
-                    u"We recommend using a shared email address such as jobs@your-organization.com. "
-                    u"<strong>Listings are classified by your email domain,</strong> "
-                    u"so use a work email address. "
-                    u"Your email address will not be revealed to applicants until you respond")),
+        description=Markup(__("This is where we’ll send your confirmation email and all job applications. "
+                    "We recommend using a shared email address such as jobs@your-organization.com. "
+                    "<strong>Listings are classified by your email domain,</strong> "
+                    "so use a work email address. "
+                    "Your email address will not be revealed to applicants until you respond")),
         validators=[
             forms.validators.DataRequired(__("We need to confirm your email address before the job can be listed")),
             forms.validators.Length(min=5, max=80, message=__("%%(max)d characters maximum")),
             forms.validators.ValidEmail(__("This does not appear to be a valid email address"))],
         filters=[forms.filters.strip()])
     twitter = forms.AnnotatedTextField(__("Twitter"),
-        description=__(u"Optional — your organization’s Twitter account. "
-            u"We’ll tweet mentioning you so you get included on replies"),
+        description=__("Optional — your organization’s Twitter account. "
+            "We’ll tweet mentioning you so you get included on replies"),
         prefix='@', validators=[
             forms.validators.Optional(),
-            forms.validators.Length(min=0, max=15, message=__(u"Twitter accounts can’t be over %%(max)d characters long"))],
+            forms.validators.Length(min=0, max=15, message=__("Twitter accounts can’t be over %%(max)d characters long"))],
         filters=[forms.filters.strip(), forms.filters.none_if_empty()])
-    collaborators = forms.UserSelectMultiField(__(u"Collaborators"),
-        description=__(u"If someone is helping you evaluate candidates, type their names here. "
-                       u"They must have a HasGeek account. They will not receive email notifications "
-                       u"— use a shared email address above for that — but they will be able to respond "
-                       u"to candidates who apply"),
+    collaborators = forms.UserSelectMultiField(__("Collaborators"),
+        description=__("If someone is helping you evaluate candidates, type their names here. "
+                       "They must have a HasGeek account. They will not receive email notifications "
+                       "— use a shared email address above for that — but they will be able to respond "
+                       "to candidates who apply"),
         usermodel=User, lastuser=lastuser)
 
     def validate_twitter(self, field):
@@ -171,16 +171,16 @@ class ListingForm(forms.Form):
 
             # For now, only 6 capital letters are allowed in company name
             if caps > 6:
-                raise forms.ValidationError(_(u"Surely your organization isn’t named in uppercase?"))
+                raise forms.ValidationError(_("Surely your organization isn’t named in uppercase?"))
 
     def validate_company_logo(form, field):
         if not ('company_logo' in request.files and request.files['company_logo']):
             return
         try:
             g.company_logo = process_image(request.files['company_logo'])
-        except IOError, e:
+        except IOError as e:
             raise forms.ValidationError(e.message)
-        except KeyError, e:
+        except KeyError as e:
             raise forms.ValidationError(_("Unknown file format"))
         except UploadNotAllowed:
             raise forms.ValidationError(_("Unsupported file format. We accept JPEG, PNG and GIF"))
@@ -191,7 +191,7 @@ class ListingForm(forms.Form):
                 'pragmatic programmer wanted at outstanding organisation',
                 'pragmatic programmer wanted at outstanding organization') or (
                 g.board and g.board.newjob_headline and simplify_text(field.data) == simplify_text(g.board.newjob_headline)):
-            raise forms.ValidationError(_(u"Come on, write your own headline. You aren’t just another run-of-the-mill employer, right?"))
+            raise forms.ValidationError(_("Come on, write your own headline. You aren’t just another run-of-the-mill employer, right?"))
         caps = len(CAPS_RE.findall(field.data))
         small = len(SMALL_RE.findall(field.data))
         if small == 0 or caps / float(small) > 1.0:
@@ -206,7 +206,7 @@ class ListingForm(forms.Form):
 
     def validate_job_location(form, field):
         if QUOTES_RE.search(field.data) is not None:
-            raise forms.ValidationError(_(u"Don’t use quotes in the location name"))
+            raise forms.ValidationError(_("Don’t use quotes in the location name"))
 
         caps = len(CAPS_RE.findall(field.data))
         small = len(SMALL_RE.findall(field.data))
@@ -274,50 +274,50 @@ class ListingForm(forms.Form):
         success = super(ListingForm, self).validate(send_signals=False)
         if success:
             if (not self.job_type_ob.nopay_allowed) and self.job_pay_type.data == PAY_TYPE.NOCASH:
-                self.job_pay_type.errors.append(_(u"“%%s” cannot pay nothing") % self.job_type_ob.title)
+                self.job_pay_type.errors.append(_("“%%s” cannot pay nothing") % self.job_type_ob.title)
                 success = False
 
             domain_name = get_email_domain(self.poster_email.data)
             domain = Domain.get(domain_name)
             if domain and domain.is_banned:
-                self.poster_email.errors.append(_(u"%%s is banned from posting jobs on Hasjob") % domain_name)
+                self.poster_email.errors.append(_("%%s is banned from posting jobs on Hasjob") % domain_name)
                 success = False
             elif (not self.job_type_ob.webmail_allowed) and is_public_email_domain(domain_name, default=False):
                 self.poster_email.errors.append(
-                    _(u"Public webmail accounts like Gmail are not accepted. Please use your corporate email address"))
+                    _("Public webmail accounts like Gmail are not accepted. Please use your corporate email address"))
                 success = False
 
             # Check for cash pay range
             if self.job_pay_type.data in (PAY_TYPE.ONETIME, PAY_TYPE.RECURRING):
                 if self.job_pay_cash_min.data == 0:
                     if self.job_pay_cash_max.data == 10000000:
-                        self.job_pay_cash_max.errors.append(_(u"Please select a range"))
+                        self.job_pay_cash_max.errors.append(_("Please select a range"))
                         success = False
                     else:
-                        self.job_pay_cash_min.errors.append(_(u"Please specify a minimum non-zero pay"))
+                        self.job_pay_cash_min.errors.append(_("Please specify a minimum non-zero pay"))
                         success = False
                 else:
                     if self.job_pay_cash_max.data == 10000000:
                         if self.job_pay_currency.data == 'INR':
-                            figure = _(u"1 crore")
+                            figure = _("1 crore")
                         else:
-                            figure = _(u"10 million")
+                            figure = _("10 million")
                         self.job_pay_cash_max.errors.append(
-                            _(u"You’ve selected an upper limit of {figure}. That can’t be right").format(figure=figure))
+                            _("You’ve selected an upper limit of {figure}. That can’t be right").format(figure=figure))
                         success = False
                     elif (self.job_pay_type.data == PAY_TYPE.RECURRING
                             and self.job_pay_currency.data == 'INR'
                             and self.job_pay_cash_min.data < 60000):
                         self.job_pay_cash_min.errors.append(
-                            _(u"That’s rather low. Did you specify monthly pay instead of annual pay? Multiply by 12"))
+                            _("That’s rather low. Did you specify monthly pay instead of annual pay? Multiply by 12"))
                         success = False
                     elif self.job_pay_cash_max.data > self.job_pay_cash_min.data * 4:
-                        self.job_pay_cash_max.errors.append(_(u"Please select a narrower range, with maximum within 4× minimum"))
+                        self.job_pay_cash_max.errors.append(_("Please select a narrower range, with maximum within 4× minimum"))
                         success = False
             if self.job_pay_equity.data:
                 if self.job_pay_equity_min.data == 0:
                     if self.job_pay_equity_max.data == 100:
-                        self.job_pay_equity_max.errors.append(_(u"Please select a range"))
+                        self.job_pay_equity_max.errors.append(_("Please select a range"))
                         success = False
                 else:
                     if self.job_pay_equity_min.data <= Decimal('1.0'):
@@ -331,7 +331,7 @@ class ListingForm(forms.Form):
 
                     if self.job_pay_equity_max.data > self.job_pay_equity_min.data * multiplier:
                         self.job_pay_equity_max.errors.append(
-                            _(u"Please select a narrower range, with maximum within %%d× minimum") % multiplier)
+                            _("Please select a narrower range, with maximum within %%d× minimum") % multiplier)
                         success = False
         self.send_signals()
         return success
@@ -377,17 +377,17 @@ class ApplicationForm(forms.Form):
         content_css=content_css,
         validators=[forms.validators.DataRequired(__("You need to say something about yourself")),
             forms.validators.AllUrlsValid()],
-        description=__(u"Please provide all details the employer has requested. To add a resume, "
-        u"post it on LinkedIn or host the file on Dropbox and insert the link here"))
+        description=__("Please provide all details the employer has requested. To add a resume, "
+        "post it on LinkedIn or host the file on Dropbox and insert the link here"))
     apply_optin = forms.BooleanField(__("Optional: sign me up for a better Hasjob experience"),
-        description=__(u"Hasjob’s maintainers may contact you about new features and can see this application for reference"))
+        description=__("Hasjob’s maintainers may contact you about new features and can see this application for reference"))
 
     def __init__(self, *args, **kwargs):
         super(ApplicationForm, self).__init__(*args, **kwargs)
         self.apply_email.choices = []
         if g.user:
             self.apply_email.description = Markup(
-                _(u'Add new email addresses from <a href="{}" target="_blank">your profile</a>').format(
+                _('Add new email addresses from <a href="{}" target="_blank">your profile</a>').format(
                     g.user.profile_url))
             try:
                 self.apply_email.choices = [(e, e) for e in lastuser.user_emails(g.user)]
@@ -417,7 +417,7 @@ class ApplicationForm(forms.Form):
 
         # Prepare text by replacing non-breaking spaces with spaces (for phone numbers) and removing URLs.
         # URLs may contain numbers that are not phone numbers.
-        phone_search_text = URL_RE.sub('', field.data.replace('&nbsp;', ' ').replace('&#160;', ' ').replace(u'\xa0', ' '))
+        phone_search_text = URL_RE.sub('', field.data.replace('&nbsp;', ' ').replace('&#160;', ' ').replace('\xa0', ' '))
         if EMAIL_RE.search(field.data) is not None or PHONE_DETECT_RE.search(phone_search_text) is not None:
             raise forms.ValidationError(_("Do not include your email address or phone number in the application"))
 
@@ -436,8 +436,8 @@ class KioskApplicationForm(forms.Form):
         content_css=content_css,
         validators=[forms.validators.DataRequired(__("You need to say something about yourself")),
             forms.validators.AllUrlsValid()],
-        description=__(u"Please provide all details the employer has requested. To add a resume, "
-        u"post it on LinkedIn or host the file on Dropbox and insert the link here"))
+        description=__("Please provide all details the employer has requested. To add a resume, "
+        "post it on LinkedIn or host the file on Dropbox and insert the link here"))
 
     def validate_email(form, field):
         oldapp = JobApplication.query.filter_by(jobpost=form.post, user=None, email=field.data).count()
