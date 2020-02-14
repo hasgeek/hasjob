@@ -3,7 +3,6 @@ Flask-SQLAlchemy==2.4.1
 Flask-WTF==0.14.2
 Flask-Mail==0.9.1
 Flask-Assets==0.12
-Flask-Uploads==0.2.1
 Flask-RQ2==18.3
 Flask-Testing==0.7.1
 Flask-Redis>=0.3.0
@@ -25,6 +24,7 @@ premailer==3.6.1
 langid>=1.1.4dev
 tldextract==2.2.2
 geoip2==2.9.0
+git+https://github.com/maxcountryman/flask-uploads.git
 git+https://github.com/hasgeek/flask-babelhg.git
 git+https://github.com/hasgeek/coaster.git
 git+https://github.com/hasgeek/flask-lastuser.git
