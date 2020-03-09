@@ -10,7 +10,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import StaleDataError
 from flask import abort, flash, g, redirect, render_template, request, url_for, session, Markup, jsonify
 from flask_mail import Message
-from baseframe import cache  # , dogpile
+from baseframe import cache, request_is_xhr  # , dogpile
 from baseframe.forms import Form
 from baseframe.utils import is_public_email_domain
 from coaster.utils import getbool, get_email_domain, md5sum, base_domain_matches, utcnow
@@ -114,16 +114,16 @@ def jobdetail(domain, hashid):
             report.useragent = request.user_agent.string
             db.session.add(report)
             db.session.commit()
-            if request.is_xhr:
+            if request_is_xhr():
                 return "<p>Thanks! This post has been flagged for review</p>"  # FIXME: Ugh!
             else:
                 flash("Thanks! This post has been flagged for review", "interactive")
         else:
-            if request.is_xhr:
+            if request_is_xhr():
                 return "<p>You need to be logged in to report a post</p>"  # FIXME: Ugh!
             else:
                 flash("You need to be logged in to report a post", "interactive")
-    elif request.method == 'POST' and request.is_xhr:
+    elif request.method == 'POST' and request_is_xhr():
         return render_template('inc/reportform.html.jinja2', reportform=reportform)
 
     if post.company_url and not post.state.ANNOUNCEMENT:
@@ -296,7 +296,7 @@ def applyjob(domain, hashid):
         job_application = None
     if job_application:
         flashmsg = "You have already applied to this job. You may not apply again"
-        if request.is_xhr:
+        if request_is_xhr():
             return '<p><strong>{}</strong></p>'.format(flashmsg)
         else:
             flash(flashmsg, 'interactive')
@@ -348,13 +348,13 @@ def applyjob(domain, hashid):
                 msg.html = email_html
                 mail.send(msg)
 
-            if request.is_xhr:
+            if request_is_xhr():
                 return '<p><strong>{}</strong></p>'.format(flashmsg)
             else:
                 flash(flashmsg, 'interactive')
                 return redirect(post.url_for(), 303)
 
-        if request.is_xhr:
+        if request_is_xhr():
             return render_template('inc/applyform.html.jinja2', post=post, applyform=applyform)
         else:
             return redirect(post.url_for(), 303)
@@ -522,7 +522,7 @@ def process_application(domain, hashid, application):
             db.session.commit()
 
     if flashmsg:
-        if request.is_xhr:
+        if request_is_xhr():
             return '<p><strong>{}</strong></p>'.format(flashmsg)
         else:
             flash(flashmsg, 'interactive')
@@ -555,7 +555,7 @@ def pinnedjob(domain, hashid):
         # dogpile.invalidate_region('hasjob_index')
     else:
         msg = "Invalid submission"
-    if request.is_xhr:
+    if request_is_xhr():
         return Markup('<p>' + msg + '</p>')
     else:
         flash(msg)
@@ -629,11 +629,11 @@ def rejectjob(domain, hashid):
         send_reject_mail(request.form.get('submit'), post, banned_posts)
         # cache bust
         # dogpile.invalidate_region('hasjob_index')
-        if request.is_xhr:
+        if request_is_xhr():
             return "<p>%s</p>" % flashmsg
         else:
             flash(flashmsg, "interactive")
-    elif request.method == 'POST' and request.is_xhr:
+    elif request.method == 'POST' and request_is_xhr():
         return render_template('inc/rejectform.html.jinja2', post=post, rejectform=rejectform)
     return redirect(post.url_for(), code=303)
 
@@ -661,9 +661,9 @@ def moderatejob(domain, hashid):
         db.session.commit()
         # cache bust
         # dogpile.invalidate_region('hasjob_index')
-        if request.is_xhr:
+        if request_is_xhr():
             return "<p>%s</p>" % flashmsg
-    elif request.method == 'POST' and request.is_xhr:
+    elif request.method == 'POST' and request_is_xhr():
         return render_template('inc/moderateform.html.jinja2', post=post, moderateform=moderateform)
     return redirect(post.url_for(), code=303)
 

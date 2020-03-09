@@ -5,6 +5,6 @@
   {{ renderfield(moderateform.reason, rows=6, style="wide", nolabel=true) }}
   <button type="submit" name="submit" class="btn btn-primary btn-sm" value="moderate">Moderate</button>
 </form>
-{%- if request.is_xhr %}
+{%- if request_is_xhr() %}
   {{ ajaxform("moderateform", request) }}
 {%- endif %}

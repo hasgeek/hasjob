@@ -25,7 +25,7 @@
     and your status with them, but not which jobs you are applying to.
   </p>
 </form>
-{%- if request.is_xhr %}
+{%- if request_is_xhr() %}
   {{ ajaxform("applyform", request) }}
   <script type="text/javascript">
     if (typeof tinymce.editors[0] !== 'undefined') {

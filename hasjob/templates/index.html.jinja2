@@ -4,7 +4,7 @@
 
 {%- if embed -%}
   {% extends "embedlayout.html.jinja2" %}
-{%- elif not request.is_xhr -%}
+{%- elif not request_is_xhr() -%}
   {% extends "layout.html.jinja2" %}
   {% block titletags -%}
     <title>{% block title %}{{ pagetitle() }}{% endblock %}</title>
@@ -169,14 +169,14 @@
       } else {
         window.Hasjob.StickieList.loadmore({enable: false});
       }
-      {%- if not paginated and not request.is_xhr -%}
+      {%- if not paginated and not request_is_xhr() -%}
         window.Hasjob.StickieList.init();
       {%- endif %}
     });
   </script>
   {%- if not paginated -%}
     {% from "macros.html.jinja2" import filters_setup_script %}
-    {%- if request.is_xhr -%}
+    {%- if request_is_xhr() -%}
       {{ filters_setup_script(job_filters, data_filters) }}
       <script type="text/javascript">
         // This is a temporary fix that is needed until browsers start recognizing the 'title'

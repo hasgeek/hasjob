@@ -8,7 +8,7 @@ from sqlalchemy.exc import ProgrammingError
 from flask import abort, redirect, render_template, request, Response, url_for, g, flash, jsonify, Markup
 from coaster.utils import getbool, parse_isoformat, for_tsquery, utcnow, ParseError
 from coaster.views import render_with, requestargs, endpoint_for
-from baseframe import _  # , dogpile
+from baseframe import _, request_is_xhr  # , dogpile
 
 from .. import app, lastuser
 from ..models import (db, JobCategory, JobPost, JobType, newlimit, agelimit, JobLocation, Board, Filterset,
@@ -394,7 +394,7 @@ def index(basequery=None, filters={}, md5sum=None, tag=None, domain=None, locati
         except ProgrammingError:
             db.session.rollback()
             g.event_data['search_syntax_error'] = (query_string, search_query)
-            if not request.is_xhr:
+            if not request_is_xhr():
                 flash(_("Search terms ignored because this didn’t parse: {query}").format(query=search_query), 'danger')
             search_query = None
     else:
@@ -757,7 +757,7 @@ def archive():
         limit = 100
     count, posts = getallposts(order_by=order_by, desc=reverse, start=start, limit=limit)
 
-    if request.is_xhr:
+    if request_is_xhr():
         tmpl = 'archive_inner.html.jinja2'
     else:
         tmpl = 'archive.html.jinja2'
