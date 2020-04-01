@@ -6,7 +6,7 @@ Flask-Assets==2.0
 Flask-RQ2==18.3
 Flask-Testing==0.8.0
 Flask-Redis>=0.3.0
-Pillow==7.0.0
+Pillow==7.1.0
 sqlalchemy_utils==0.36.1
 SQLAlchemy>=1.0.0
 pytz==2019.3
