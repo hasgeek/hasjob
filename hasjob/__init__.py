@@ -21,7 +21,7 @@ app = Flask(__name__, instance_relative_config=True, subdomain_matching=True)
 app.static_folder = 'static'
 mail = Mail()
 lastuser = Lastuser()
-redis_store = FlaskRedis()
+redis_store = FlaskRedis(decode_responses=True)
 rq = RQ()
 
 # Second, setup assets

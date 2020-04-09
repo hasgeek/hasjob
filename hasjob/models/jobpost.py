@@ -219,7 +219,7 @@ class JobPost(BaseMixin, db.Model):
         return cls.query.filter(JobPost.state.LISTED).options(db.load_only('id', 'hashid'))
 
     def __repr__(self):
-        return '<JobPost {hashid} "{headline}">'.format(hashid=self.hashid, headline=self.headline.encode('utf-8'))
+        return '<JobPost {hashid} "{headline}">'.format(hashid=self.hashid, headline=self.headline)
 
     def admin_is(self, user):
         if user is None:

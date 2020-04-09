@@ -381,10 +381,8 @@ def get_post_viewcounts(jobpost_id):
     if 'pay_label' not in values:
         jobpost = jobpost or JobPost.query.get(jobpost_id)
         values['pay_label'] = jobpost.pay_label()
-        redis_store.hset(cache_key, 'pay_label', values['pay_label'].encode('utf-8'))
+        redis_store.hset(cache_key, 'pay_label', values['pay_label'])
         redis_store.expire(cache_key, 86400)
-    elif isinstance(values['pay_label'], str):  # Redis appears to return bytestrings, not Unicode
-        values['pay_label'] = str(values['pay_label'], 'utf-8')
     return values
 
 
@@ -742,18 +740,12 @@ def cleanurl(url):
 
 @app.template_filter('urlquote')
 def urlquote(data):
-    if isinstance(data, str):
-        return quote(data.encode('utf-8'))
-    else:
-        return quote(data)
+    return quote(data)
 
 
 @app.template_filter('urlquoteplus')
 def urlquoteplus(data):
-    if isinstance(data, str):
-        return quote_plus(data.encode('utf-8'))
-    else:
-        return quote_plus(data)
+    return quote_plus(data)
 
 
 @app.template_filter('scrubemail')
