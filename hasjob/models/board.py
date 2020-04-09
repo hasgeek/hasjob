@@ -89,7 +89,7 @@ class BoardAutoDomain(TimestampMixin, db.Model):
     #: Domain for this board
     domain = db.Column(db.Unicode(80), primary_key=True, nullable=False, index=True)
 
-    def __repr__(self):
+    def __str__(self):
         return '<BoardAutoDomain %s for board %s>' % (self.domain, self.board.name)
 
 
@@ -103,7 +103,7 @@ class BoardAutoLocation(TimestampMixin, db.Model):
     #: Geonameid for this board
     geonameid = db.Column(db.Integer, primary_key=True, nullable=False, index=True)
 
-    def __repr__(self):
+    def __str__(self):
         return '<BoardAutoLocation %d for board %s>' % (self.geonameid, self.board.name)
 
 
@@ -156,7 +156,7 @@ class Board(BaseNameMixin, db.Model):
     #: Users active on this board
     users_active_at = db.relationship(UserActiveAt, lazy='dynamic', backref='board')
 
-    def __repr__(self):
+    def __str__(self):
         return '<Board %s "%s">' % (self.name, self.title)
 
     @property
@@ -265,7 +265,7 @@ class BoardJobPost(TimestampMixin, db.Model):
     #: Is this post pinned on this board?
     pinned = db.Column(db.Boolean, default=False, nullable=False)
 
-    def __repr__(self):
+    def __str__(self):
         return '<BoardJobPost {board_id}: {jobpost_id}>'.format(board_id=self.board_id, jobpost_id=self.jobpost_id)
 
 

@@ -218,7 +218,7 @@ class JobPost(BaseMixin, db.Model):
         """Returns a SQLAlchemy query for listed jobposts"""
         return cls.query.filter(JobPost.state.LISTED).options(db.load_only('id', 'hashid'))
 
-    def __repr__(self):
+    def __str__(self):
         return '<JobPost {hashid} "{headline}">'.format(hashid=self.hashid, headline=self.headline)
 
     def admin_is(self, user):
@@ -635,7 +635,7 @@ class JobLocation(TimestampMixin, db.Model):
     geonameid = db.Column(db.Integer, primary_key=True, nullable=False, index=True)
     primary = db.Column(db.Boolean, default=True, nullable=False)
 
-    def __repr__(self):
+    def __str__(self):
         return '<JobLocation %d %s for job %s>' % (
             self.geonameid,
             'primary' if self.primary else 'secondary',

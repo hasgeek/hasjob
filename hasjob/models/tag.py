@@ -36,7 +36,7 @@ class Tag(BaseNameMixin, db.Model):
     __name_length__ = __title_length__ = 80
     public = db.Column(db.Boolean, default=True, nullable=False)
 
-    def __repr__(self):
+    def __str__(self):
         return "<Tag %r>" % self.title
 
     def __unicode__(self):
@@ -70,7 +70,7 @@ class JobPostTag(TimestampMixin, db.Model):
     tag = db.relationship(Tag, lazy='joined', backref=db.backref('taglinks', cascade='all, delete-orphan'))
     status = db.Column(db.SmallInteger, nullable=False)
 
-    def __repr__(self):
+    def __str__(self):
         return "<JobPostTag %r for %s>" % (self.tag.title, self.jobpost.hashid)
 
     @property

@@ -15,5 +15,5 @@ class JobCategory(BaseNameMixin, db.Model):
     #: This job category is private and not available as an option in boards
     private = db.Column(db.Boolean, nullable=False, default=False)
 
-    def __repr__(self):
+    def __str__(self):
         return '<JobCategory %d %s%s>' % (self.seq, self.title, ' (private)' if self.private else '')

@@ -45,9 +45,9 @@ class AnonUser(BaseMixin, db.Model):
     user_id = db.Column(None, db.ForeignKey('user.id'), nullable=True, index=True)
     user = db.relationship(User, backref=db.backref('anonusers', lazy='dynamic', order_by='AnonUser.id.desc()'))
 
-    def __repr__(self):
+    def __str__(self):
         if self.user:
-            return '<AnonUser %d: %s>' % (self.id, repr(self.user)[1:-1])
+            return '<AnonUser %d: %s>' % (self.id, str(self.user)[1:-1])
         else:
             return '<AnonUser %d>' % self.id
 

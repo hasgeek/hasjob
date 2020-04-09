@@ -19,5 +19,5 @@ class JobType(BaseNameMixin, db.Model):
     #: Jobs with this type may be listed from a webmail domain
     webmail_allowed = db.Column(db.Boolean, nullable=False, default=True)
 
-    def __repr__(self):
+    def __str__(self):
         return '<JobType %d %s%s>' % (self.seq, self.title, ' (private)' if self.private else '')

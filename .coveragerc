@@ -8,7 +8,7 @@ exclude_lines =
     pragma: no cover
 
     # Don't complain about missing debug-only code
-    def __repr__
+    def __str__
     if self\.debug
 
     # Don't complain about importerror handlers
