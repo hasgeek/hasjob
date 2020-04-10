@@ -501,7 +501,7 @@ class JobPost(BaseMixin, db.Model):
         age = utcnow() - self.datetime
         hours = age.days * 24 + age.seconds // 3600
 
-        return ((applied * 3) + (opened - applied)) // pow((hours + 2), 1.8)
+        return ((applied * 3) + (opened - applied)) / pow((hours + 2), 1.8)
 
     @cached_property  # For multiple accesses in a single request
     def viewstats(self):
