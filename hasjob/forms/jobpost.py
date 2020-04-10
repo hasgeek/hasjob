@@ -194,7 +194,7 @@ class ListingForm(forms.Form):
             raise forms.ValidationError(_("Come on, write your own headline. You aren’t just another run-of-the-mill employer, right?"))
         caps = len(CAPS_RE.findall(field.data))
         small = len(SMALL_RE.findall(field.data))
-        if small == 0 or caps / float(small) > 1.0:
+        if small == 0 or caps / float(small) > 1.0:  # float division should be fine?
             raise forms.ValidationError(_("No shouting, please. Reduce the number of capital letters in your headline"))
         for word_list, message in app.config.get('BANNED_WORDS', []):
             for word in word_list:
@@ -210,7 +210,7 @@ class ListingForm(forms.Form):
 
         caps = len(CAPS_RE.findall(field.data))
         small = len(SMALL_RE.findall(field.data))
-        if small == 0 or caps / float(small) > 1.0:
+        if small == 0 or caps / float(small) > 1.0:  # float division should be fine?
             raise forms.ValidationError(_("Surely this location isn't named in uppercase?"))
 
     def validate_job_pay_cash_min(form, field):

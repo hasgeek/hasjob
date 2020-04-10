@@ -31,18 +31,18 @@ def number_format(number, suffix):
 def number_abbreviate(number, indian=False):
     if indian:
         if number < 100000:  # < 1 lakh
-            return number_format(number / 1000.0, 'k')
+            return number_format(number // 1000.0, 'k')
         elif number < 10000000:  # < 1 crore
-            return number_format(number / 100000.0, 'L')
+            return number_format(number // 100000.0, 'L')
         else:  # >= 1 crore
-            return number_format(number / 10000000.0, 'C')
+            return number_format(number // 10000000.0, 'C')
     else:
         if number < 1000000:  # < 1 million
-            return number_format(number / 1000.0, 'k')
+            return number_format(number // 1000.0, 'k')
         elif number < 100000000:  # < 1 billion
-            return number_format(number / 1000000.0, 'm')
+            return number_format(number // 1000000.0, 'm')
         else:  # >= 1 billion
-            return number_format(number / 100000000.0, 'b')
+            return number_format(number // 100000000.0, 'b')
 
 
 starred_job_table = db.Table('starred_job', db.Model.metadata,
@@ -499,9 +499,9 @@ class JobPost(BaseMixin, db.Model):
         opened = int(viewcounts['opened'])
         applied = int(viewcounts['applied'])
         age = utcnow() - self.datetime
-        hours = age.days * 24 + age.seconds / 3600
+        hours = age.days * 24 + age.seconds // 3600
 
-        return ((applied * 3) + (opened - applied)) / pow((hours + 2), 1.8)
+        return ((applied * 3) + (opened - applied)) // pow((hours + 2), 1.8)
 
     @cached_property  # For multiple accesses in a single request
     def viewstats(self):
@@ -548,7 +548,7 @@ def viewstats_helper(jobpost_id, interval, limit, daybatch=False):
     capplied = batches * [0]
     cbuckets = batches * ['']
 
-    interval_hour = interval / 3600
+    interval_hour = interval // 3600
     # these are used as initial values for hourly stats
     # buckets are like "HH:00 - HH:00"
     to_datetime = (now + timedelta(hours=1))  # if now is 09:45, bucket ending hour will be 10:00
