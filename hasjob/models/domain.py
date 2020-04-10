@@ -45,7 +45,7 @@ class Domain(BaseMixin, db.Model):
     #: Search vector
     search_vector = deferred(db.Column(TSVECTOR, nullable=True))
 
-    def __str__(self):
+    def __repr__(self):
         flags = [' webmail' if self.is_webmail else '', ' banned' if self.is_banned else '']
         return '<Domain %s%s>' % (self.name, ''.join(flags))
 

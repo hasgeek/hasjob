@@ -68,7 +68,7 @@ class Filterset(BaseScopedNameMixin, db.Model):
     equity = db.Column(db.Boolean, nullable=False, default=False, index=True)
     keywords = db.Column(db.Unicode(250), nullable=False, default='', index=True)
 
-    def __str__(self):
+    def __repr__(self):
         return '<Filterset %s "%s">' % (self.board.title, self.title)
 
     @classmethod

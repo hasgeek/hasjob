@@ -193,7 +193,7 @@ class Campaign(BaseNameMixin, db.Model):
         """Form helper method"""
         return self
 
-    def __str__(self):
+    def __repr__(self):
         return '<Campaign %s "%s" %s:%s>' % (
             self.name, self.title, self.start_at.strftime('%Y-%m-%d'), self.end_at.strftime('%Y-%m-%d'))
 
@@ -350,7 +350,7 @@ class CampaignLocation(TimestampMixin, db.Model):
     #: Geonameid for this campaign
     geonameid = db.Column(db.Integer, primary_key=True, nullable=False, index=True)
 
-    def __str__(self):
+    def __repr__(self):
         return '<CampaignLocation %d for campaign %s>' % (self.geonameid, self.campaign.name)
 
 
