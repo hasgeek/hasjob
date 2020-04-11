@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from PIL import Image
-from io import StringIO
+from io import BytesIO
 from os.path import splitext
 from werkzeug.datastructures import FileStorage
 
@@ -26,7 +26,7 @@ def process_image(requestfile, maxsize=(170, 130)):
         img.thumbnail(maxsize, Image.ANTIALIAS)
     boximg = Image.new('RGBA', maxsize, (255, 255, 255, 0))
     boximg.paste(img, ((boximg.size[0] - img.size[0]) // 2, (boximg.size[1] - img.size[1]) // 2))
-    savefile = StringIO()
+    savefile = BytesIO()
     savefile.name = requestfile.filename
     boximg.save(savefile)
     savefile.seek(0)
