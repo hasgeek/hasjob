@@ -983,7 +983,7 @@ def newjob():
     if request.method == 'GET':
         header_campaign = Campaign.for_context(CAMPAIGN_POSITION.BEFOREPOST, board=g.board, user=g.user,
                 anon_user=g.anon_user, geonameids=g.user_geonameids)
-        if g.user and not is_public_email_domain(g.user.email, default=False):
+        if g.user and g.user.email and not is_public_email_domain(g.user.email, default=False):
             # form.poster_name.data = g.user.fullname  # Deprecated 2013-11-20
             form.poster_email.data = g.user.email
     else:

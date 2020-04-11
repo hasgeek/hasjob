@@ -171,7 +171,7 @@ def scrubemail(data, rot13=False, css_junk=None):
         if rot13:
             link = link.decode('rot13')
         if css_junk and len(email) > 3:
-            third = int(len(email) / 3)
+            third = int(len(email) // 3)
             parts = (email[:third], email[third:third * 2], email[third * 2:])
             if isinstance(css_junk, (tuple, list)):
                 css_dirty, css_clean = css_junk
