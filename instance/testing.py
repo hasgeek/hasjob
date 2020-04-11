@@ -7,7 +7,7 @@ SITE_TITLE = 'Job Board'
 SQLALCHEMY_DATABASE_URI = 'postgres:///hasjob_testing'
 SERVER_NAME = 'hasjob.travis.local:5000'
 #: LastUser server
-LASTUSER_SERVER = 'https://auth.hasgeek.com/'
+LASTUSER_SERVER = 'https://hasgeek.com/'
 #: LastUser client id
 LASTUSER_CLIENT_ID = os.environ.get('LASTUSER_CLIENT_ID', '')
 #: LastUser client secret
