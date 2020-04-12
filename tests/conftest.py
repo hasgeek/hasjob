@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 
 
-import pytest
-
 from hasjob import app
 from hasjob.models import db
+import pytest
 
 
 @pytest.fixture(scope='session')

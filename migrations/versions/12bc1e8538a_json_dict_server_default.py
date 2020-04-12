@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """JSON Dict server default
 
 Revision ID: 12bc1e8538a

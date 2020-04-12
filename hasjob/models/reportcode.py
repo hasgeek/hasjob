@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from . import db, BaseNameMixin
+from . import BaseNameMixin, db
 
 __all__ = ['ReportCode']
 

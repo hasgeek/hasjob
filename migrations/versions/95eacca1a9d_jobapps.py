@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """jobapps
 
 Revision ID: 95eacca1a9d
@@ -15,7 +16,8 @@ import sqlalchemy as sa
 
 
 def upgrade():
-    op.create_table('job_application',
+    op.create_table(
+        'job_application',
         sa.Column('id', sa.Integer(), nullable=False),
         sa.Column('created_at', sa.DateTime(), nullable=False),
         sa.Column('updated_at', sa.DateTime(), nullable=False),
@@ -26,10 +28,10 @@ def upgrade():
         sa.Column('message_text', sa.UnicodeText(), nullable=True),
         sa.Column('message_html', sa.UnicodeText(), nullable=True),
         sa.Column('response', sa.Integer(), nullable=False),
-        sa.ForeignKeyConstraint(['jobpost_id'], ['jobpost.id'], ),
-        sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
-        sa.PrimaryKeyConstraint('id')
-        )
+        sa.ForeignKeyConstraint(['jobpost_id'], ['jobpost.id']),
+        sa.ForeignKeyConstraint(['user_id'], ['user.id']),
+        sa.PrimaryKeyConstraint('id'),
+    )
 
 
 def downgrade():

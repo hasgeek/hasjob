@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Board options
 
 Revision ID: 1016f365bfa7
@@ -15,37 +16,46 @@ import sqlalchemy as sa
 
 
 def upgrade():
-    op.create_table('board_jobtype',
+    op.create_table(
+        'board_jobtype',
         sa.Column('created_at', sa.DateTime(), nullable=False),
         sa.Column('updated_at', sa.DateTime(), nullable=False),
         sa.Column('board_id', sa.Integer(), nullable=False),
         sa.Column('jobtype_id', sa.Integer(), nullable=False),
-        sa.ForeignKeyConstraint(['board_id'], ['board.id'], ),
-        sa.ForeignKeyConstraint(['jobtype_id'], ['jobtype.id'], ),
-        sa.PrimaryKeyConstraint('board_id', 'jobtype_id')
-        )
-    op.create_table('board_user',
+        sa.ForeignKeyConstraint(['board_id'], ['board.id']),
+        sa.ForeignKeyConstraint(['jobtype_id'], ['jobtype.id']),
+        sa.PrimaryKeyConstraint('board_id', 'jobtype_id'),
+    )
+    op.create_table(
+        'board_user',
         sa.Column('created_at', sa.DateTime(), nullable=False),
         sa.Column('updated_at', sa.DateTime(), nullable=False),
         sa.Column('board_id', sa.Integer(), nullable=False),
         sa.Column('user_id', sa.Integer(), nullable=False),
-        sa.ForeignKeyConstraint(['board_id'], ['board.id'], ),
-        sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
-        sa.PrimaryKeyConstraint('board_id', 'user_id')
-        )
-    op.create_table('board_jobcategory',
+        sa.ForeignKeyConstraint(['board_id'], ['board.id']),
+        sa.ForeignKeyConstraint(['user_id'], ['user.id']),
+        sa.PrimaryKeyConstraint('board_id', 'user_id'),
+    )
+    op.create_table(
+        'board_jobcategory',
         sa.Column('created_at', sa.DateTime(), nullable=False),
         sa.Column('updated_at', sa.DateTime(), nullable=False),
         sa.Column('board_id', sa.Integer(), nullable=False),
         sa.Column('jobcategory_id', sa.Integer(), nullable=False),
-        sa.ForeignKeyConstraint(['board_id'], ['board.id'], ),
-        sa.ForeignKeyConstraint(['jobcategory_id'], ['jobcategory.id'], ),
-        sa.PrimaryKeyConstraint('board_id', 'jobcategory_id')
-        )
+        sa.ForeignKeyConstraint(['board_id'], ['board.id']),
+        sa.ForeignKeyConstraint(['jobcategory_id'], ['jobcategory.id']),
+        sa.PrimaryKeyConstraint('board_id', 'jobcategory_id'),
+    )
     op.add_column('board', sa.Column('caption', sa.Unicode(length=250), nullable=True))
-    op.add_column('board', sa.Column('require_pay', sa.Boolean(), nullable=False, server_default='1'))
+    op.add_column(
+        'board',
+        sa.Column('require_pay', sa.Boolean(), nullable=False, server_default='1'),
+    )
     op.alter_column('board', 'require_pay', server_default=None)
-    op.add_column('board', sa.Column('restrict_listing', sa.Boolean(), nullable=False, server_default='1'))
+    op.add_column(
+        'board',
+        sa.Column('restrict_listing', sa.Boolean(), nullable=False, server_default='1'),
+    )
     op.alter_column('board', 'restrict_listing', server_default=None)
 
 

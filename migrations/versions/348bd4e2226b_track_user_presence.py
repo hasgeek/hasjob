@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Track user presence
 
 Revision ID: 348bd4e2226b
@@ -15,13 +16,16 @@ import sqlalchemy as sa
 
 
 def upgrade():
-    op.create_table('user_active_at',
+    op.create_table(
+        'user_active_at',
         sa.Column('active_at', sa.DateTime(), nullable=False),
         sa.Column('user_id', sa.Integer(), nullable=False),
-        sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
-        sa.PrimaryKeyConstraint('active_at', 'user_id')
-        )
-    op.create_index(op.f('ix_user_active_at_user_id'), 'user_active_at', ['user_id'], unique=False)
+        sa.ForeignKeyConstraint(['user_id'], ['user.id']),
+        sa.PrimaryKeyConstraint('active_at', 'user_id'),
+    )
+    op.create_index(
+        op.f('ix_user_active_at_user_id'), 'user_active_at', ['user_id'], unique=False
+    )
 
 
 def downgrade():

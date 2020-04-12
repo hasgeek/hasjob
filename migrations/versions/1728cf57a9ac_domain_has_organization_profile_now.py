@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Domain has organization profile now
 
 Revision ID: 1728cf57a9ac
@@ -11,18 +12,25 @@ revision = '1728cf57a9ac'
 down_revision = '1710bfac281a'
 
 from alembic import op
-import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
+import sqlalchemy as sa
 
 
 def upgrade():
     op.add_column('domain', sa.Column('title', sa.Unicode(length=250), nullable=True))
-    op.add_column('domain', sa.Column('legal_title', sa.Unicode(length=250), nullable=True))
+    op.add_column(
+        'domain', sa.Column('legal_title', sa.Unicode(length=250), nullable=True)
+    )
     op.add_column('domain', sa.Column('description', sa.UnicodeText(), nullable=True))
-    op.add_column('domain', sa.Column('logo_url', sa.Unicode(length=250), nullable=True))
-    op.add_column('domain', sa.Column('search_vector', postgresql.TSVECTOR(), nullable=True))
-    op.execute(sa.DDL(
-        '''
+    op.add_column(
+        'domain', sa.Column('logo_url', sa.Unicode(length=250), nullable=True)
+    )
+    op.add_column(
+        'domain', sa.Column('search_vector', postgresql.TSVECTOR(), nullable=True)
+    )
+    op.execute(
+        sa.DDL(
+            '''
         CREATE FUNCTION domain_search_vector_update() RETURNS TRIGGER AS $$
         BEGIN
             NEW.search_vector = to_tsvector('english', COALESCE(NEW.name, '') || ' ' || COALESCE(NEW.title, '') || ' ' || COALESCE(NEW.legal_title, '') || ' ' || COALESCE(NEW.description, ''));
@@ -36,7 +44,9 @@ def upgrade():
         CREATE INDEX ix_domain_search_vector ON domain USING gin(search_vector);
 
         UPDATE domain SET search_vector = to_tsvector('english', COALESCE(name, '') || ' ' || COALESCE(title, '') || ' ' || COALESCE(legal_title, '') || ' ' || COALESCE(description, ''));
-        '''))
+        '''
+        )
+    )
 
 
 def downgrade():

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Organization
 
 Revision ID: c55612fb52a
@@ -15,7 +16,8 @@ import sqlalchemy as sa
 
 
 def upgrade():
-    op.create_table('organization',
+    op.create_table(
+        'organization',
         sa.Column('id', sa.Integer(), nullable=False),
         sa.Column('created_at', sa.DateTime(), nullable=False),
         sa.Column('updated_at', sa.DateTime(), nullable=False),
@@ -29,10 +31,13 @@ def upgrade():
         sa.Column('title', sa.Unicode(length=250), nullable=False),
         sa.PrimaryKeyConstraint('id'),
         sa.UniqueConstraint('name'),
-        sa.UniqueConstraint('userid')
-        )
-    op.create_index(op.f('ix_organization_domain'), 'organization', ['domain'], unique=False)
-    op.create_table('org_location',
+        sa.UniqueConstraint('userid'),
+    )
+    op.create_index(
+        op.f('ix_organization_domain'), 'organization', ['domain'], unique=False
+    )
+    op.create_table(
+        'org_location',
         sa.Column('id', sa.Integer(), nullable=False),
         sa.Column('created_at', sa.DateTime(), nullable=False),
         sa.Column('updated_at', sa.DateTime(), nullable=False),
@@ -48,13 +53,22 @@ def upgrade():
         sa.Column('country', sa.Unicode(length=80), nullable=True),
         sa.Column('geonameid', sa.Integer(), nullable=True),
         sa.Column('url_id', sa.Integer(), nullable=False),
-        sa.ForeignKeyConstraint(['org_id'], ['organization.id'], ),
+        sa.ForeignKeyConstraint(['org_id'], ['organization.id']),
         sa.PrimaryKeyConstraint('id'),
-        sa.UniqueConstraint('org_id', 'url_id')
-        )
-    op.create_index(op.f('ix_org_location_geonameid'), 'org_location', ['geonameid'], unique=False)
+        sa.UniqueConstraint('org_id', 'url_id'),
+    )
+    op.create_index(
+        op.f('ix_org_location_geonameid'), 'org_location', ['geonameid'], unique=False
+    )
     op.add_column('jobpost', sa.Column('org_id', sa.Integer(), nullable=True))
-    op.create_foreign_key('jobpost_org_id_fkey', 'jobpost', 'organization', ['org_id'], ['id'], ondelete='SET NULL')
+    op.create_foreign_key(
+        'jobpost_org_id_fkey',
+        'jobpost',
+        'organization',
+        ['org_id'],
+        ['id'],
+        ondelete='SET NULL',
+    )
 
 
 def downgrade():

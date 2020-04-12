@@ -15,7 +15,7 @@ script: ./runtests.sh
 after_success:
   - coveralls
 addons:
-  postgresql: "9.4"
+  postgresql: '9.4'
 services:
   - redis-server
 notifications:

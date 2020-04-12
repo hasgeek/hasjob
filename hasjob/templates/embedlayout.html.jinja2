@@ -47,7 +47,7 @@
   <script type="text/javascript">
     window.Hasjob.sendIframeSize = function() {
       window.parent.postMessage(JSON.stringify({
-        context: "iframe.resize", 
+        context: "iframe.resize",
         height: document.body.scrollHeight,
         width: document.body.scrollWidth,
         id: {{ request.args.get('iframeid') | tojson }}

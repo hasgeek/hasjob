@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Switch to timestamptz, part two
 
 Revision ID: a8f1e1c55a57
@@ -12,6 +13,7 @@ revision = 'a8f1e1c55a57'
 down_revision = '05e807853572'
 
 from datetime import datetime
+
 from alembic import op
 import sqlalchemy as sa
 
@@ -21,26 +23,30 @@ migrate_table_columns = [
     ('job_impression', 'updated_at'),
     ('user_event', 'created_at'),
     ('user_event', 'updated_at'),
-    ]
+]
 
 
 def upgrade():
     for table, column in migrate_table_columns:
         now = datetime.now()  # Local time
-        print("%s: %s.%s" % (now.strftime('%Y-%m-%d %T'), table, column))
-        op.execute(sa.DDL(
-            'ALTER TABLE "%(table)s" ALTER COLUMN "%(column)s" TYPE TIMESTAMP WITH TIME ZONE USING "%(column)s" AT TIME ZONE \'UTC\'',
-            context={'table': table, 'column': column}
-            ))
-        print('...%s' % str(datetime.now() - now))
+        print("%s: %s.%s" % (now.strftime('%Y-%m-%d %T'), table, column))  # NOQA: T001
+        op.execute(
+            sa.DDL(
+                'ALTER TABLE "%(table)s" ALTER COLUMN "%(column)s" TYPE TIMESTAMP WITH TIME ZONE USING "%(column)s" AT TIME ZONE \'UTC\'',
+                context={'table': table, 'column': column},
+            )
+        )
+        print('...%s' % str(datetime.now() - now))  # NOQA: T001
 
 
 def downgrade():
     for table, column in reversed(migrate_table_columns):
         now = datetime.now()  # Local time
-        print("%s: %s.%s" % (now.strftime('%Y-%m-%d %T'), table, column))
-        op.execute(sa.DDL(
-            'ALTER TABLE "%(table)s" ALTER COLUMN "%(column)s" TYPE TIMESTAMP WITHOUT TIME ZONE',
-            context={'table': table, 'column': column}
-            ))
-        print('...%s' % str(datetime.now() - now))
+        print("%s: %s.%s" % (now.strftime('%Y-%m-%d %T'), table, column))  # NOQA: T001
+        op.execute(
+            sa.DDL(
+                'ALTER TABLE "%(table)s" ALTER COLUMN "%(column)s" TYPE TIMESTAMP WITHOUT TIME ZONE',
+                context={'table': table, 'column': column},
+            )
+        )
+        print('...%s' % str(datetime.now() - now))  # NOQA: T001

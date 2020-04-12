@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Job applications always have a jobpost
 
 Revision ID: 4365dd513103
@@ -15,12 +16,12 @@ import sqlalchemy as sa
 
 
 def upgrade():
-    op.alter_column('job_application', 'jobpost_id',
-               existing_type=sa.INTEGER(),
-               nullable=False)
+    op.alter_column(
+        'job_application', 'jobpost_id', existing_type=sa.INTEGER(), nullable=False
+    )
 
 
 def downgrade():
-    op.alter_column('job_application', 'jobpost_id',
-               existing_type=sa.INTEGER(),
-               nullable=True)
+    op.alter_column(
+        'job_application', 'jobpost_id', existing_type=sa.INTEGER(), nullable=True
+    )

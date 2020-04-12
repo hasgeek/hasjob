@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Private types and categories
 
 Revision ID: 2cd06f7444f8
@@ -15,9 +16,15 @@ import sqlalchemy as sa
 
 
 def upgrade():
-    op.add_column('jobcategory', sa.Column('private', sa.Boolean(), nullable=False, server_default='0'))
+    op.add_column(
+        'jobcategory',
+        sa.Column('private', sa.Boolean(), nullable=False, server_default='0'),
+    )
     op.alter_column('jobcategory', 'private', server_default=None)
-    op.add_column('jobtype', sa.Column('private', sa.Boolean(), nullable=False, server_default='0'))
+    op.add_column(
+        'jobtype',
+        sa.Column('private', sa.Boolean(), nullable=False, server_default='0'),
+    )
     op.alter_column('jobtype', 'private', server_default=None)
 
 

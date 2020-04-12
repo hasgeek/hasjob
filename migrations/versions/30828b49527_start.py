@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """start
 
 Revision ID: 30828b49527

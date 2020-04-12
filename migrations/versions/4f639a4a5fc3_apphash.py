@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """apphash
 
 Revision ID: 4f639a4a5fc3
@@ -15,15 +16,19 @@ import sqlalchemy as sa
 
 
 def upgrade():
-    op.add_column('job_application', sa.Column('hashid', sa.String(length=40), nullable=False))
-    op.create_unique_constraint('uq_job_application_hashid', 'job_application', ['hashid'])
-    op.alter_column('job_application', 'message',
-               existing_type=sa.TEXT(),
-               nullable=False)
+    op.add_column(
+        'job_application', sa.Column('hashid', sa.String(length=40), nullable=False)
+    )
+    op.create_unique_constraint(
+        'uq_job_application_hashid', 'job_application', ['hashid']
+    )
+    op.alter_column(
+        'job_application', 'message', existing_type=sa.TEXT(), nullable=False
+    )
 
 
 def downgrade():
-    op.alter_column('job_application', 'message',
-               existing_type=sa.TEXT(),
-               nullable=True)
+    op.alter_column(
+        'job_application', 'message', existing_type=sa.TEXT(), nullable=True
+    )
     op.drop_column('job_application', 'hashid')

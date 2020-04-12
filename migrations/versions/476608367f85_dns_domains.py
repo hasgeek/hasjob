@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """DNS Domains
 
 Revision ID: 476608367f85
@@ -37,11 +38,12 @@ public_domains = {
     'yandex.ru',
     'ymail.com',
     'zoho.com',
-    }
+}
 
 
 def upgrade():
-    op.create_table('domain',
+    op.create_table(
+        'domain',
         sa.Column('id', sa.Integer(), nullable=False),
         sa.Column('created_at', sa.DateTime(), nullable=False),
         sa.Column('updated_at', sa.DateTime(), nullable=False),
@@ -52,19 +54,31 @@ def upgrade():
         sa.Column('banned_reason', sa.Unicode(length=250), nullable=True),
         sa.ForeignKeyConstraint(['banned_by_id'], ['user.id'], ondelete='SET NULL'),
         sa.PrimaryKeyConstraint('id'),
-        sa.UniqueConstraint('name')
-        )
+        sa.UniqueConstraint('name'),
+    )
     op.add_column('jobpost', sa.Column('domain_id', sa.Integer(), nullable=True))
-    op.create_foreign_key('jobpost_domain_id_fkey', 'jobpost', 'domain', ['domain_id'], ['id'])
-    op.execute(sa.text(
-        '''INSERT INTO domain (created_at, updated_at, name, is_webmail, is_banned)
+    op.create_foreign_key(
+        'jobpost_domain_id_fkey', 'jobpost', 'domain', ['domain_id'], ['id']
+    )
+    op.execute(
+        sa.text(
+            '''INSERT INTO domain (created_at, updated_at, name, is_webmail, is_banned)
             SELECT MIN(created_at), now() AT TIME ZONE 'UTC', LOWER(email_domain), false, false
-            FROM jobpost GROUP BY LOWER(email_domain)'''))
+            FROM jobpost GROUP BY LOWER(email_domain)'''
+        )
+    )
     # This is a risky cast from a Python set to a SQL list. Only guaranteed to work with Python 2.x
-    op.execute(sa.text('''UPDATE domain SET is_webmail=true WHERE name IN %r''' %
-        (tuple([str(d.lower()) for d in public_domains]),)))
-    op.execute(sa.text(
-        '''UPDATE jobpost SET domain_id = domain.id FROM domain WHERE domain.name = LOWER(jobpost.email_domain)'''))
+    op.execute(
+        sa.text(
+            '''UPDATE domain SET is_webmail=true WHERE name IN %r'''
+            % (tuple(str(d.lower()) for d in public_domains),)
+        )
+    )
+    op.execute(
+        sa.text(
+            '''UPDATE jobpost SET domain_id = domain.id FROM domain WHERE domain.name = LOWER(jobpost.email_domain)'''
+        )
+    )
     op.alter_column('jobpost', 'domain_id', nullable=False)
 
 
