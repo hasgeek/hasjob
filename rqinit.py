@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from urllib.parse import urlparse
 
 from hasjob import app

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Locations
 
 Revision ID: 48f145e9d55f
@@ -15,7 +16,8 @@ import sqlalchemy as sa
 
 
 def upgrade():
-    op.create_table('location',
+    op.create_table(
+        'location',
         sa.Column('id', sa.Integer(), autoincrement=False, nullable=False),
         sa.Column('name', sa.Unicode(length=250), nullable=False),
         sa.Column('title', sa.Unicode(length=250), nullable=False),
@@ -23,8 +25,8 @@ def upgrade():
         sa.Column('updated_at', sa.DateTime(), nullable=False),
         sa.Column('description', sa.UnicodeText(), nullable=True),
         sa.PrimaryKeyConstraint('id'),
-        sa.UniqueConstraint('name')
-        )
+        sa.UniqueConstraint('name'),
+    )
 
 
 def downgrade():

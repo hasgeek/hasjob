@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """created_updated_serverdefaults
 
 Revision ID: d286e09aee1

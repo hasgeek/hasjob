@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 
-from flask import g, session, request, redirect, url_for, flash, Response, abort
+from flask import Response, abort, flash, g, redirect, request, session, url_for
+
 from coaster.utils import getbool
+
 from .. import app
-from ..models import JobType, JobCategory
+from ..models import JobCategory, JobType
 from .helper import getposts
 
 
@@ -57,7 +59,9 @@ def kiosk_manifest():
         lines.extend(app.assets['css_all'].urls())
 
         # External resources
-        lines.append('//fonts.googleapis.com/css?family=McLaren|Source+Sans+Pro:400,600')
+        lines.append(
+            '//fonts.googleapis.com/css?family=McLaren|Source+Sans+Pro:400,600'
+        )
         if app.config.get('TYPEKIT_CODE'):
             lines.append('//use.typekit.com/' + app.config['TYPEKIT_CODE'] + '.js')
 
@@ -65,7 +69,6 @@ def kiosk_manifest():
         lines.append('NETWORK:')
         lines.append('*')
 
-        return Response('\r\n'.join(lines),
-            content_type='text/cache-manifest')
+        return Response('\r\n'.join(lines), content_type='text/cache-manifest')
     else:
         abort(410)

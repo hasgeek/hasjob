@@ -1,40 +1,83 @@
 # -*- coding: utf-8 -*-
 
+from sqlalchemy import DDL, event
 from sqlalchemy.dialects import postgresql
-from sqlalchemy import event, DDL
 from sqlalchemy.ext.associationproxy import association_proxy
-from . import db, BaseScopedNameMixin, JobType, JobCategory, Tag, Domain, Board
-from ..extapi import location_geodata
 
+from ..extapi import location_geodata
+from . import BaseScopedNameMixin, db
+from .board import Board
+from .domain import Domain
+from .jobcategory import JobCategory
+from .jobtype import JobType
+from .tag import Tag
 
 __all__ = ['Filterset']
 
 
-filterset_jobtype_table = db.Table('filterset_jobtype', db.Model.metadata,
+filterset_jobtype_table = db.Table(
+    'filterset_jobtype',
+    db.Model.metadata,
     db.Column('filterset_id', None, db.ForeignKey('filterset.id'), primary_key=True),
-    db.Column('jobtype_id', None, db.ForeignKey('jobtype.id'), primary_key=True, index=True),
-    db.Column('created_at', db.TIMESTAMP(timezone=True), nullable=False, default=db.func.utcnow())
-    )
+    db.Column(
+        'jobtype_id', None, db.ForeignKey('jobtype.id'), primary_key=True, index=True
+    ),
+    db.Column(
+        'created_at',
+        db.TIMESTAMP(timezone=True),
+        nullable=False,
+        default=db.func.utcnow(),
+    ),
+)
 
 
-filterset_jobcategory_table = db.Table('filterset_jobcategory', db.Model.metadata,
+filterset_jobcategory_table = db.Table(
+    'filterset_jobcategory',
+    db.Model.metadata,
     db.Column('filterset_id', None, db.ForeignKey('filterset.id'), primary_key=True),
-    db.Column('jobcategory_id', None, db.ForeignKey('jobcategory.id'), primary_key=True, index=True),
-    db.Column('created_at', db.TIMESTAMP(timezone=True), nullable=False, default=db.func.utcnow())
-    )
+    db.Column(
+        'jobcategory_id',
+        None,
+        db.ForeignKey('jobcategory.id'),
+        primary_key=True,
+        index=True,
+    ),
+    db.Column(
+        'created_at',
+        db.TIMESTAMP(timezone=True),
+        nullable=False,
+        default=db.func.utcnow(),
+    ),
+)
 
 
-filterset_tag_table = db.Table('filterset_tag', db.Model.metadata,
+filterset_tag_table = db.Table(
+    'filterset_tag',
+    db.Model.metadata,
     db.Column('filterset_id', None, db.ForeignKey('filterset.id'), primary_key=True),
     db.Column('tag_id', None, db.ForeignKey('tag.id'), primary_key=True, index=True),
-    db.Column('created_at', db.TIMESTAMP(timezone=True), nullable=False, default=db.func.utcnow())
-    )
+    db.Column(
+        'created_at',
+        db.TIMESTAMP(timezone=True),
+        nullable=False,
+        default=db.func.utcnow(),
+    ),
+)
 
-filterset_domain_table = db.Table('filterset_domain', db.Model.metadata,
+filterset_domain_table = db.Table(
+    'filterset_domain',
+    db.Model.metadata,
     db.Column('filterset_id', None, db.ForeignKey('filterset.id'), primary_key=True),
-    db.Column('domain_id', None, db.ForeignKey('domain.id'), primary_key=True, index=True),
-    db.Column('created_at', db.TIMESTAMP(timezone=True), nullable=False, default=db.func.utcnow())
-    )
+    db.Column(
+        'domain_id', None, db.ForeignKey('domain.id'), primary_key=True, index=True
+    ),
+    db.Column(
+        'created_at',
+        db.TIMESTAMP(timezone=True),
+        nullable=False,
+        default=db.func.utcnow(),
+    ),
+)
 
 
 class Filterset(BaseScopedNameMixin, db.Model):
@@ -58,10 +101,14 @@ class Filterset(BaseScopedNameMixin, db.Model):
     #: Associated job categories
     categories = db.relationship(JobCategory, secondary=filterset_jobcategory_table)
     tags = db.relationship(Tag, secondary=filterset_tag_table)
-    auto_tags = association_proxy('tags', 'title', creator=lambda t: Tag.get(t, create=True))
+    auto_tags = association_proxy(
+        'tags', 'title', creator=lambda t: Tag.get(t, create=True)
+    )
     domains = db.relationship(Domain, secondary=filterset_domain_table)
     auto_domains = association_proxy('domains', 'name', creator=lambda d: Domain.get(d))
-    geonameids = db.Column(postgresql.ARRAY(db.Integer(), dimensions=1), default=[], nullable=False)
+    geonameids = db.Column(
+        postgresql.ARRAY(db.Integer(), dimensions=1), default=[], nullable=False
+    )
     remote_location = db.Column(db.Boolean, default=False, nullable=False, index=True)
     pay_currency = db.Column(db.CHAR(3), nullable=True, index=True)
     pay_cash = db.Column(db.Integer, nullable=True, index=True)
@@ -77,7 +124,9 @@ class Filterset(BaseScopedNameMixin, db.Model):
 
     def url_for(self, action='view', _external=True, **kwargs):
         kwargs.setdefault('subdomain', self.board.name if self.board.not_root else None)
-        return super(Filterset, self).url_for(action, name=self.name, _external=_external, **kwargs)
+        return super(Filterset, self).url_for(
+            action, name=self.name, _external=_external, **kwargs
+        )
 
     def to_filters(self, translate_geonameids=False):
         location_names = []
@@ -98,68 +147,100 @@ class Filterset(BaseScopedNameMixin, db.Model):
             'pay': self.pay_cash,
             'equity': self.equity,
             'anywhere': self.remote_location,
-            'q': self.keywords
-            }
+            'q': self.keywords,
+        }
 
     @classmethod
     def from_filters(cls, board, filters):
         basequery = cls.query.filter(cls.board == board)
 
         if filters.get('t'):
-            basequery = basequery.join(
-                filterset_jobtype_table).join(
-                JobType).filter(JobType.name.in_(filters['t'])).group_by(Filterset.id).having(
-                db.func.count(filterset_jobtype_table.c.filterset_id) == len(filters['t']))
+            basequery = (
+                basequery.join(filterset_jobtype_table)
+                .join(JobType)
+                .filter(JobType.name.in_(filters['t']))
+                .group_by(Filterset.id)
+                .having(
+                    db.func.count(filterset_jobtype_table.c.filterset_id)
+                    == len(filters['t'])
+                )
+            )
         else:
             basequery = basequery.filter(
-                ~db.exists(
-                    db.select([1]).where(
-                        Filterset.id == filterset_jobtype_table.c.filterset_id
+                ~(
+                    db.exists(
+                        db.select([1]).where(
+                            Filterset.id == filterset_jobtype_table.c.filterset_id
                         )
                     )
                 )
+            )
 
         if filters.get('c'):
-            basequery = basequery.join(
-                filterset_jobcategory_table).join(
-                JobCategory).filter(JobCategory.name.in_(filters['c'])).group_by(Filterset.id).having(
-                db.func.count(filterset_jobcategory_table.c.filterset_id) == len(filters['c']))
+            basequery = (
+                basequery.join(filterset_jobcategory_table)
+                .join(JobCategory)
+                .filter(JobCategory.name.in_(filters['c']))
+                .group_by(Filterset.id)
+                .having(
+                    db.func.count(filterset_jobcategory_table.c.filterset_id)
+                    == len(filters['c'])
+                )
+            )
         else:
             basequery = basequery.filter(
-                ~db.exists(
-                    db.select([1]).where(
-                        Filterset.id == filterset_jobcategory_table.c.filterset_id
+                ~(
+                    db.exists(
+                        db.select([1]).where(
+                            Filterset.id == filterset_jobcategory_table.c.filterset_id
                         )
                     )
                 )
+            )
 
         if filters.get('k'):
-            basequery = basequery.join(
-                filterset_tag_table).join(
-                Tag).filter(Tag.name.in_(filters['k'])).group_by(Filterset.id).having(
-                db.func.count(filterset_tag_table.c.filterset_id) == len(filters['k']))
+            basequery = (
+                basequery.join(filterset_tag_table)
+                .join(Tag)
+                .filter(Tag.name.in_(filters['k']))
+                .group_by(Filterset.id)
+                .having(
+                    db.func.count(filterset_tag_table.c.filterset_id)
+                    == len(filters['k'])
+                )
+            )
         else:
             basequery = basequery.filter(
-                ~db.exists(
-                    db.select([1]).where(
-                        Filterset.id == filterset_tag_table.c.filterset_id
+                ~(
+                    db.exists(
+                        db.select([1]).where(
+                            Filterset.id == filterset_tag_table.c.filterset_id
                         )
                     )
                 )
+            )
 
         if filters.get('d'):
-            basequery = basequery.join(
-                filterset_domain_table).join(
-                Domain).filter(Domain.name.in_(filters['d'])).group_by(Filterset.id).having(
-                db.func.count(filterset_domain_table.c.filterset_id) == len(filters['d']))
+            basequery = (
+                basequery.join(filterset_domain_table)
+                .join(Domain)
+                .filter(Domain.name.in_(filters['d']))
+                .group_by(Filterset.id)
+                .having(
+                    db.func.count(filterset_domain_table.c.filterset_id)
+                    == len(filters['d'])
+                )
+            )
         else:
             basequery = basequery.filter(
-                ~db.exists(
-                    db.select([1]).where(
-                        Filterset.id == filterset_domain_table.c.filterset_id
+                ~(
+                    db.exists(
+                        db.select([1]).where(
+                            Filterset.id == filterset_domain_table.c.filterset_id
                         )
                     )
                 )
+            )
 
         if filters.get('l'):
             basequery = basequery.filter(cls.geonameids == sorted(filters['l']))
@@ -167,15 +248,18 @@ class Filterset(BaseScopedNameMixin, db.Model):
             basequery = basequery.filter(cls.geonameids == [])
 
         if filters.get('equity'):
-            basequery = basequery.filter(cls.equity == True)  # NOQA
+            basequery = basequery.filter(cls.equity.is_(True))
         else:
-            basequery = basequery.filter(cls.equity == False)  # NOQA
+            basequery = basequery.filter(cls.equity.is_(False))
 
         if filters.get('pay') and filters.get('currency'):
-            basequery = basequery.filter(cls.pay_cash == filters['pay'],
-                cls.pay_currency == filters['currency'])
+            basequery = basequery.filter(
+                cls.pay_cash == filters['pay'], cls.pay_currency == filters['currency']
+            )
         else:
-            basequery = basequery.filter(cls.pay_cash == None, cls.pay_currency == None)  # NOQA
+            basequery = basequery.filter(
+                cls.pay_cash.is_(None), cls.pay_currency.is_(None)
+            )
 
         if filters.get('q'):
             basequery = basequery.filter(cls.keywords == filters['q'])
@@ -183,9 +267,9 @@ class Filterset(BaseScopedNameMixin, db.Model):
             basequery = basequery.filter(cls.keywords == '')
 
         if filters.get('anywhere'):
-            basequery = basequery.filter(cls.remote_location == True)  # NOQA
+            basequery = basequery.filter(cls.remote_location.is_(True))
         else:
-            basequery = basequery.filter(cls.remote_location == False)  # NOQA
+            basequery = basequery.filter(cls.remote_location.is_(False))
 
         return basequery.one_or_none()
 
@@ -199,12 +283,19 @@ def _format_and_validate(mapper, connection, target):
 
         filterset = Filterset.from_filters(target.board, target.to_filters())
         if filterset and filterset.id != target.id:
-            raise ValueError("There already exists a filter set with this filter criteria")
+            raise ValueError(
+                "There already exists a filter set with this filter criteria"
+            )
 
 
-create_geonameids_trigger = DDL('''
+create_geonameids_trigger = DDL(
+    '''
     CREATE INDEX ix_filterset_geonameids on filterset USING gin (geonameids);
-''')
+'''
+)
 
-event.listen(Filterset.__table__, 'after_create',
-    create_geonameids_trigger.execute_if(dialect='postgresql'))
+event.listen(
+    Filterset.__table__,
+    'after_create',
+    create_geonameids_trigger.execute_if(dialect='postgresql'),
+)

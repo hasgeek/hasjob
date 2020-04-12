@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Anon job view
 
 Revision ID: e49788bea4a
@@ -15,16 +16,27 @@ import sqlalchemy as sa
 
 
 def upgrade():
-    op.create_table('anon_job_view',
+    op.create_table(
+        'anon_job_view',
         sa.Column('jobpost_id', sa.Integer(), nullable=False),
         sa.Column('anon_user_id', sa.Integer(), nullable=False),
         sa.Column('created_at', sa.DateTime(), nullable=False),
-        sa.ForeignKeyConstraint(['anon_user_id'], ['anon_user.id'], ),
-        sa.ForeignKeyConstraint(['jobpost_id'], ['jobpost.id'], ),
-        sa.PrimaryKeyConstraint('jobpost_id', 'anon_user_id')
-        )
-    op.create_index(op.f('ix_anon_job_view_anon_user_id'), 'anon_job_view', ['anon_user_id'], unique=False)
-    op.create_index(op.f('ix_anon_job_view_created_at'), 'anon_job_view', ['created_at'], unique=False)
+        sa.ForeignKeyConstraint(['anon_user_id'], ['anon_user.id']),
+        sa.ForeignKeyConstraint(['jobpost_id'], ['jobpost.id']),
+        sa.PrimaryKeyConstraint('jobpost_id', 'anon_user_id'),
+    )
+    op.create_index(
+        op.f('ix_anon_job_view_anon_user_id'),
+        'anon_job_view',
+        ['anon_user_id'],
+        unique=False,
+    )
+    op.create_index(
+        op.f('ix_anon_job_view_created_at'),
+        'anon_job_view',
+        ['created_at'],
+        unique=False,
+    )
 
 
 def downgrade():

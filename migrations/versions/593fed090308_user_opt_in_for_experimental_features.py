@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """User opt-in for experimental features
 
 Revision ID: 593fed090308
@@ -15,7 +16,10 @@ import sqlalchemy as sa
 
 
 def upgrade():
-    op.add_column('job_application', sa.Column('optin', sa.Boolean(), nullable=False, server_default='0'))
+    op.add_column(
+        'job_application',
+        sa.Column('optin', sa.Boolean(), nullable=False, server_default='0'),
+    )
     op.alter_column('job_application', 'optin', server_default=None)
 
 

@@ -1,7 +1,24 @@
 # -*- coding: utf-8 -*-
 
 from flask import redirect, url_for
-from hasjob import app
+
+from .. import app
+from . import (  # NOQA: F401
+    admin_filterset,
+    admindash,
+    api,
+    board,
+    campaign,
+    domain,
+    error_handling,
+    helper,
+    index,
+    kiosk,
+    listing,
+    location,
+    login,
+    static,
+)
 
 
 @app.route('/type/')
@@ -16,18 +33,3 @@ from hasjob import app
 @app.route('/index.php')
 def root_paths():
     return redirect(url_for('index'), code=302)
-
-
-ALLOWED_TAGS = [
-    'strong',
-    'em',
-    'p',
-    'ol',
-    'ul',
-    'li',
-    'br',
-    'a',
-    ]
-
-from . import (index, error_handling, helper, listing, location, static, login, board, kiosk, campaign,  # NOQA
-    admindash, domain, api, admin_filterset)

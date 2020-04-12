@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Jobpost search
 
 Revision ID: 2aab4c974a75
@@ -11,14 +12,17 @@ revision = '2aab4c974a75'
 down_revision = '48f145e9d55f'
 
 from alembic import op
-import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
+import sqlalchemy as sa
 
 
 def upgrade():
-    op.add_column('jobpost', sa.Column('search_vector', postgresql.TSVECTOR(), nullable=True))
-    op.execute(sa.DDL(
-        '''
+    op.add_column(
+        'jobpost', sa.Column('search_vector', postgresql.TSVECTOR(), nullable=True)
+    )
+    op.execute(
+        sa.DDL(
+            '''
         CREATE FUNCTION jobpost_search_vector_update() RETURNS TRIGGER AS $$
         BEGIN
             IF TG_OP = 'INSERT' THEN
@@ -39,7 +43,9 @@ def upgrade():
         CREATE INDEX ix_jobpost_search_vector ON jobpost USING gin(search_vector);
 
         UPDATE jobpost SET search_vector = to_tsvector('english', COALESCE(company_name, '') || ' ' || COALESCE(headline, '') || ' ' || COALESCE(headlineb, '') || ' ' || COALESCE(description, '') || ' ' || COALESCE(perks, ''));
-        '''))
+        '''
+        )
+    )
 
 
 def downgrade():

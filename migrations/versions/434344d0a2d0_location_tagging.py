@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Location tagging
 
 Revision ID: 434344d0a2d0
@@ -12,19 +13,21 @@ down_revision = '441fd49059e3'
 
 from alembic import op
 import sqlalchemy as sa
+
 from coaster.sqlalchemy import JsonDict
 
 
 def upgrade():
-    op.create_table('job_location',
+    op.create_table(
+        'job_location',
         sa.Column('created_at', sa.DateTime(), nullable=False),
         sa.Column('updated_at', sa.DateTime(), nullable=False),
         sa.Column('jobpost_id', sa.Integer(), nullable=False),
         sa.Column('geonameid', sa.Integer(), nullable=False),
         sa.Column('primary', sa.Boolean(), nullable=False),
-        sa.ForeignKeyConstraint(['jobpost_id'], ['jobpost.id'], ),
-        sa.PrimaryKeyConstraint('jobpost_id', 'geonameid')
-        )
+        sa.ForeignKeyConstraint(['jobpost_id'], ['jobpost.id']),
+        sa.PrimaryKeyConstraint('jobpost_id', 'geonameid'),
+    )
     op.add_column('jobpost', sa.Column('parsed_location', JsonDict(), nullable=True))
 
 

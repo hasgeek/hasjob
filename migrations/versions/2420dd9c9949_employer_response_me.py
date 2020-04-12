@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Employer response message
 
 Revision ID: 2420dd9c9949
@@ -15,7 +16,10 @@ import sqlalchemy as sa
 
 
 def upgrade():
-    op.add_column('job_application', sa.Column('response_message', sa.UnicodeText(), nullable=True))
+    op.add_column(
+        'job_application',
+        sa.Column('response_message', sa.UnicodeText(), nullable=True),
+    )
 
 
 def downgrade():

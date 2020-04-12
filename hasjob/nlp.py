@@ -4,9 +4,11 @@
 Natural language processing helpers.
 """
 
-import langid
 import bleach
+import langid
 
 
 def identify_language(post):
-    return langid.classify('\n'.join([post.headline, bleach.clean(post.description, tags=[], strip=True)]))
+    return langid.classify(
+        '\n'.join([post.headline, bleach.clean(post.description, tags=[], strip=True)])
+    )

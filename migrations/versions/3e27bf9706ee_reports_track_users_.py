@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Reports track users now
 
 Revision ID: 3e27bf9706ee
@@ -16,7 +17,9 @@ import sqlalchemy as sa
 
 def upgrade():
     op.add_column('jobpostreport', sa.Column('user_id', sa.Integer(), nullable=True))
-    op.create_foreign_key('jobpostreport_user_id_fkey', 'jobpostreport', 'user', ['user_id'], ['id'])
+    op.create_foreign_key(
+        'jobpostreport_user_id_fkey', 'jobpostreport', 'user', ['user_id'], ['id']
+    )
 
 
 def downgrade():

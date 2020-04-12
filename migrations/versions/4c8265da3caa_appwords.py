@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """appwords
 
 Revision ID: 4c8265da3caa
@@ -15,7 +16,9 @@ import sqlalchemy as sa
 
 
 def upgrade():
-    op.add_column('job_application', sa.Column('words', sa.UnicodeText(), nullable=True))
+    op.add_column(
+        'job_application', sa.Column('words', sa.UnicodeText(), nullable=True)
+    )
 
 
 def downgrade():

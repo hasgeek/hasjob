@@ -1,31 +1,51 @@
 # -*- coding: utf-8 -*-
 
 from collections import OrderedDict
-from flask import g, redirect, abort, url_for
+
+from flask import abort, g, redirect, url_for
+
 from baseframe import _
-from baseframe.forms import render_form, render_delete_sqla
-from ..models import db, Location, JobLocation, JobPost
-from ..forms import NewLocationForm, EditLocationForm
+from baseframe.forms import render_delete_sqla, render_form
+
 from .. import app, lastuser
 from ..extapi import location_geodata
+from ..forms import EditLocationForm, NewLocationForm
+from ..models import JobLocation, JobPost, Location, db
 
 
 @app.route('/in/new', methods=['GET', 'POST'], subdomain='<subdomain>')
 @app.route('/in/new', methods=['GET', 'POST'])
 def location_new():
-    if not (lastuser.has_permission('siteadmin') or (g.board and g.board.owner_is(g.user))):
+    if not (
+        lastuser.has_permission('siteadmin') or (g.board and g.board.owner_is(g.user))
+    ):
         abort(403)
-    geonames = OrderedDict([(r.geonameid, None) for r in
-        db.session.query(
-            JobLocation.geonameid, db.func.count(JobLocation.geonameid).label('count')
-            ).join(JobPost).filter(
+    geonames = OrderedDict(
+        [
+            (r.geonameid, None)
+            for r in db.session.query(
+                JobLocation.geonameid,
+                db.func.count(JobLocation.geonameid).label('count'),
+            )
+            .join(JobPost)
+            .filter(
                 JobPost.state.LISTED,
-                ~JobLocation.geonameid.in_(db.session.query(Location.id).filter(Location.board == g.board))
-            ).group_by(JobLocation.geonameid).order_by(db.text('count DESC')).limit(100)])
+                ~JobLocation.geonameid.in_(
+                    db.session.query(Location.id).filter(Location.board == g.board)
+                ),
+            )
+            .group_by(JobLocation.geonameid)
+            .order_by(db.text('count DESC'))
+            .limit(100)
+        ]
+    )
     data = location_geodata(list(geonames.keys()))
     for row in data.values():
         geonames[row['geonameid']] = row
-    choices = [('%s/%s' % (row['geonameid'], row['name']), row['picker_title']) for row in geonames.values()]
+    choices = [
+        ('%s/%s' % (row['geonameid'], row['name']), row['picker_title'])
+        for row in geonames.values()
+    ]
     form = NewLocationForm()
     form.geoname.choices = choices
 
@@ -46,7 +66,9 @@ def location_new():
 @app.route('/in/<name>/edit', methods=['GET', 'POST'], subdomain='<subdomain>')
 @app.route('/in/<name>/edit', methods=['GET', 'POST'])
 def location_edit(name):
-    if not (lastuser.has_permission('siteadmin') or (g.board and g.board.owner_is(g.user))):
+    if not (
+        lastuser.has_permission('siteadmin') or (g.board and g.board.owner_is(g.user))
+    ):
         abort(403)
     location = Location.get(name, g.board)
     if not location:
@@ -65,13 +87,20 @@ def location_edit(name):
 @app.route('/in/<name>/delete', methods=['GET', 'POST'], subdomain='<subdomain>')
 @app.route('/in/<name>/delete', methods=['GET', 'POST'])
 def location_delete(name):
-    if not (lastuser.has_permission('siteadmin') or (g.board and g.board.owner_is(g.user))):
+    if not (
+        lastuser.has_permission('siteadmin') or (g.board and g.board.owner_is(g.user))
+    ):
         abort(403)
     location = Location.get(name, g.board)
     if not location:
         abort(404)
 
-    return render_delete_sqla(location, db, title=_("Confirm delete"),
+    return render_delete_sqla(
+        location,
+        db,
+        title=_("Confirm delete"),
         message=_("Delete location ‘{title}’?").format(title=location.title),
         success=_("You have deleted location ‘{title}’.").format(title=location.title),
-        next=url_for('index'), cancel_url=location.url_for())
+        next=url_for('index'),
+        cancel_url=location.url_for(),
+    )

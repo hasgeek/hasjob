@@ -1,5 +1,4 @@
-Hasjob
-======
+# Hasjob
 
 Code for Hasjob, HasGeek’s job board at https://hasjob.co/
 
@@ -7,8 +6,8 @@ Copyright © 2010-2018 by HasGeek
 
 Hasjob’s code is open source under the AGPL v3 license (see LICENSE.txt). We welcome your examination of our code to:
 
-* Establish trust and transparency on how it works, and
-* Allow contributions to Hasjob.
+- Establish trust and transparency on how it works, and
+- Allow contributions to Hasjob.
 
 Our workflow assumes this code is for use on a single production website. Using this to operate your own job board is not recommended. The name ‘Hasjob’ and the distinctive appearance of the job board are not part of the open source code.
 
@@ -22,8 +21,8 @@ Hasjob can be used with Docker (recommended for quick start) or the harder way w
 
 Hasjob requires a `FLASK_ENV` environment variable set to one of the following values, depending on whether the deployment is in development or production:
 
-* `DEVELOPMENT` or `development` or `dev` (default)
-* `PRODUCTION` or `production` or `prod`
+- `DEVELOPMENT` or `development` or `dev` (default)
+- `PRODUCTION` or `production` or `prod`
 
 In a production environment, you must set `FLASK_ENV` globally for it to be available across processes. On Ubuntu/Debian systems, add it to `/etc/environment` and reboot.
 
@@ -31,31 +30,31 @@ In a production environment, you must set `FLASK_ENV` globally for it to be avai
 
 #### Install and run with Docker
 
-* Install [Docker](https://docs.docker.com/installation/) and [Compose](https://docs.docker.com/compose/install/)
+- Install [Docker](https://docs.docker.com/installation/) and [Compose](https://docs.docker.com/compose/install/)
 
-* Next, rename the `instance/development.docker.py` to `instance/development.py`
+- Next, rename the `instance/development.docker.py` to `instance/development.py`
 
-* Build the images
+- Build the images
 
-    ```
-    $ docker-compose build
-    ```
+  ```
+  $ docker-compose build
+  ```
 
-* Initialize the database
+- Initialize the database
 
-    ```
-    $ docker-compose run web sh
-        web$ python manage.py db create
-        web$ exit
-    ```
+  ```
+  $ docker-compose run web sh
+      web$ python manage.py db create
+      web$ exit
+  ```
 
-* Start the server
+- Start the server
 
-    ```
-    $ docker-compose up
-    ```
+  ```
+  $ docker-compose up
+  ```
 
-* You can edit the server name and Lastuser settings in `docker-compose.yml`
+- You can edit the server name and Lastuser settings in `docker-compose.yml`
 
 ### Without Docker
 
@@ -86,15 +85,15 @@ Redis does not require special configuration, but must listen on localhost and p
 
 Hasjob makes use of subdomains to serve different sub-boards for jobs. To set it up:
 
-* Edit `/etc/hosts` and add these entries (substituting `your-machine` with whatever you call your computer):
+- Edit `/etc/hosts` and add these entries (substituting `your-machine` with whatever you call your computer):
 
-    ```
-    127.0.0.1    hasjob.your-machine.local
-    127.0.0.1    static.hasjob.your-machine.local
-    127.0.0.1    subboard.hasjob.your-machine.local
-    ```
+  ```
+  127.0.0.1    hasjob.your-machine.local
+  127.0.0.1    static.hasjob.your-machine.local
+  127.0.0.1    subboard.hasjob.your-machine.local
+  ```
 
-* Edit `instance/development.py` and change `SERVER_NAME` to `'hasjob.your-machine.local:5000'`
+- Edit `instance/development.py` and change `SERVER_NAME` to `'hasjob.your-machine.local:5000'`
 
 #### Install dependencies
 
@@ -123,7 +122,7 @@ Finish configuration with:
     $ python manage.py db create
 
 You will need to install all dependencies listed in `package.json`
-     
+
     $ cd hasjob/assets
     $ npm install
 

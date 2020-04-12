@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Boards de-linked from organizations
 
 Revision ID: ec6faeb2eec

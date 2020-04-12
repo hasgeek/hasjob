@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Save language detection confidence
 
 Revision ID: 4b4924b0449b
@@ -15,7 +16,9 @@ import sqlalchemy as sa
 
 
 def upgrade():
-    op.add_column('jobpost', sa.Column('language_confidence', sa.Float(), nullable=True))
+    op.add_column(
+        'jobpost', sa.Column('language_confidence', sa.Float(), nullable=True)
+    )
 
 
 def downgrade():

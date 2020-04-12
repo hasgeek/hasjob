@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
 
 from urllib.parse import urljoin
+
 from simplejson import JSONDecodeError
 import requests
+
 from baseframe import cache
+
 from .. import app
 
 
