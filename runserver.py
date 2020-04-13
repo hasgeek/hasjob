@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import sys
+
 from hasjob import app
 
 try:

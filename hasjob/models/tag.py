@@ -1,16 +1,17 @@
 # -*- coding: utf-8 -*-
 
-from coaster.sqlalchemy import Query, failsafe_add
-from coaster.utils import make_name, LabeledEnum
 from baseframe import __
-from . import db, TimestampMixin, BaseNameMixin, POST_STATE
+from coaster.sqlalchemy import Query, failsafe_add
+from coaster.utils import LabeledEnum, make_name
+
 from ..utils import escape_for_sql_like
+from . import POST_STATE, BaseNameMixin, TimestampMixin, db
 from .jobpost import JobPost
 
 __all__ = ['TAG_TYPE', 'Tag', 'JobPostTag']
 
 
-class TAG_TYPE(LabeledEnum):
+class TAG_TYPE(LabeledEnum):  # NOQA: N801
     # The NLP parser added this tag
     AUTO = (0, 'auto', __("Automatic"))
     # A user confirmed an automatic tag
@@ -32,6 +33,7 @@ class Tag(BaseNameMixin, db.Model):
     """
     A tag extracted from text.
     """
+
     __tablename__ = 'tag'
     __name_length__ = __title_length__ = 80
     public = db.Column(db.Boolean, default=True, nullable=False)
@@ -44,7 +46,7 @@ class Tag(BaseNameMixin, db.Model):
 
     @classmethod
     def get(cls, tag, create=False):
-        title = tag[:cls.__name_length__]
+        title = tag[: cls.__name_length__]
         name = make_name(title)
         ob = cls.query.filter_by(name=name).one_or_none()
         if create and not ob:
@@ -55,19 +57,28 @@ class Tag(BaseNameMixin, db.Model):
     @classmethod
     def autocomplete(cls, prefix):
         search = escape_for_sql_like(make_name(prefix))
-        return cls.query.filter(cls.name.like(search), cls.public == True).all()  # NOQA
+        return cls.query.filter(cls.name.like(search), cls.public.is_(True)).all()
 
 
 class JobPostTag(TimestampMixin, db.Model):
     """
     A tag in a tag set.
     """
+
     __tablename__ = 'jobpost_tag'
     query_class = Query
-    jobpost_id = db.Column(None, db.ForeignKey('jobpost.id'), nullable=False, primary_key=True)
-    jobpost = db.relationship(JobPost, backref=db.backref('taglinks', cascade='all, delete-orphan'))
-    tag_id = db.Column(None, db.ForeignKey('tag.id'), nullable=False, primary_key=True, index=True)
-    tag = db.relationship(Tag, lazy='joined', backref=db.backref('taglinks', cascade='all, delete-orphan'))
+    jobpost_id = db.Column(
+        None, db.ForeignKey('jobpost.id'), nullable=False, primary_key=True
+    )
+    jobpost = db.relationship(
+        JobPost, backref=db.backref('taglinks', cascade='all, delete-orphan')
+    )
+    tag_id = db.Column(
+        None, db.ForeignKey('tag.id'), nullable=False, primary_key=True, index=True
+    )
+    tag = db.relationship(
+        Tag, lazy='joined', backref=db.backref('taglinks', cascade='all, delete-orphan')
+    )
     status = db.Column(db.SmallInteger, nullable=False)
 
     def __repr__(self):
@@ -84,8 +95,12 @@ class JobPostTag(TimestampMixin, db.Model):
 
 def related_posts(self, limit=12):
     # TODO: One JobPostTag moves to statemanager, use sqlalchemy to get rid of this raw query
-    return db.session.query(JobPost).options(*JobPost._defercols).from_statement(db.text(
-        '''SELECT jobpost.id, jobpost.hashid, jobpost.datetime, jobpost.headline, jobpost.headlineb,
+    return (
+        db.session.query(JobPost)
+        .options(*JobPost._defercols)
+        .from_statement(
+            db.text(
+                '''SELECT jobpost.id, jobpost.hashid, jobpost.datetime, jobpost.headline, jobpost.headlineb,
             jobpost.location, jobpost.company_name, jobpost.type_id, jobpost.category_id, jobpost.status,
             jobpost.pay_type, jobpost.pay_currency, jobpost.pay_cash_min, jobpost.pay_cash_max,
             jobpost.pay_equity_min, jobpost.pay_equity_max, jobpost.email_domain
@@ -98,7 +113,15 @@ def related_posts(self, limit=12):
                 AND jobpost_tag.status IN :tag_present
                 GROUP BY jobpost_tag.jobpost_id ORDER BY count DESC LIMIT :limit) AS matches, jobpost
             WHERE jobpost.id = matches.jobpost_id;'''
-        )).params(id=self.id, listed=tuple(POST_STATE.PUBLIC), limit=limit, tag_present=tuple(TAG_TYPE.TAG_PRESENT))
+            )
+        )
+        .params(
+            id=self.id,
+            listed=tuple(POST_STATE.PUBLIC),
+            limit=limit,
+            tag_present=tuple(TAG_TYPE.TAG_PRESENT),
+        )
+    )
 
 
 JobPost.related_posts = related_posts

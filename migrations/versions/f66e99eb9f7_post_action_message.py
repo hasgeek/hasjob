@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Post action message
 
 Revision ID: f66e99eb9f7
@@ -15,7 +16,9 @@ import sqlalchemy as sa
 
 
 def upgrade():
-    op.add_column('campaign_action', sa.Column('message', sa.UnicodeText(), nullable=False))
+    op.add_column(
+        'campaign_action', sa.Column('message', sa.UnicodeText(), nullable=False)
+    )
 
 
 def downgrade():

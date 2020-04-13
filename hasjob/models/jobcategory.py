@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from hasjob.models import BaseNameMixin, db
+from . import BaseNameMixin, db
 
 __all__ = ['JobCategory']
 
@@ -16,4 +16,8 @@ class JobCategory(BaseNameMixin, db.Model):
     private = db.Column(db.Boolean, nullable=False, default=False)
 
     def __repr__(self):
-        return '<JobCategory %d %s%s>' % (self.seq, self.title, ' (private)' if self.private else '')
+        return '<JobCategory %d %s%s>' % (
+            self.seq,
+            self.title,
+            ' (private)' if self.private else '',
+        )

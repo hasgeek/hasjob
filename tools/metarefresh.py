@@ -1,7 +1,9 @@
-import magic
+# -*- coding: utf-8 -*-
 import mimetypes
-import requests
+
 from lxml import html
+import magic
+import requests
 
 
 def test_for_meta_redirections(r):
@@ -10,7 +12,9 @@ def test_for_meta_redirections(r):
     if extension == '.html':
         html_tree = html.fromstring(r.text)
         try:
-            attr = html_tree.xpath("//meta[translate(@http-equiv, 'REFSH', 'refsh') = 'refresh']/@content")[0]
+            attr = html_tree.xpath(
+                "//meta[translate(@http-equiv, 'REFSH', 'refsh') = 'refresh']/@content"
+            )[0]
             wait, text = attr.split(";")
             if text.lower().startswith("url="):
                 url = text[4:].strip()
@@ -41,4 +45,4 @@ def final_url(url):
 
 
 if __name__ == '__main__':
-    print(final_url('http://localhost:8000/'))
+    print(final_url('http://localhost:8000/'))  # NOQA: T001

@@ -8,9 +8,13 @@ class AdminView(ClassView):
     """Base class for all tabbed admin views"""
 
     @classmethodproperty
-    def tabs(cls):
+    def tabs(cls):  # NOQA: N805
         views = ((name, getattr(cls, name)) for name in cls.__views__)
-        tabviews = sorted((view.data.get('index', 0), name, view) for name, view, in views if view.data.get('tab'))
+        tabviews = sorted(
+            (view.data.get('index', 0), name, view)
+            for name, view, in views
+            if view.data.get('tab')
+        )
         return ((name, view.data['title'], view) for index, name, view in tabviews)
 
     @property

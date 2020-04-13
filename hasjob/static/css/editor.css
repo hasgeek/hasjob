@@ -1,13 +1,16 @@
-@import url("//fonts.googleapis.com/css?family=Fira+Sans:400,700,400italic,700italic&subset=latin,latin-ext");
+@import url('//fonts.googleapis.com/css?family=Fira+Sans:400,700,400italic,700italic&subset=latin,latin-ext');
 body {
   margin: 5px;
   font-size: 16px;
   line-height: 24px;
   color: #444;
-  font-family: "Fira Sans", "Arial", sans-serif;
+  font-family: 'Fira Sans', 'Arial', sans-serif;
 }
 
-p, ul, ol, blockquote {
+p,
+ul,
+ol,
+blockquote {
   margin-top: 0;
   margin-bottom: 12px;
 }

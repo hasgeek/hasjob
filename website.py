@@ -1,5 +1,9 @@
-import sys
+# -*- coding: utf-8 -*-
 import os.path
-sys.path.insert(0, os.path.dirname(__file__))
+import sys
 
-from hasjob import app as application  # NOQA
+from hasjob import app as application
+
+__all__ = ['application']
+
+sys.path.insert(0, os.path.dirname(__file__))

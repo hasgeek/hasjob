@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Track user activity in boards
 
 Revision ID: 326e0a8e6137
@@ -16,8 +17,12 @@ import sqlalchemy as sa
 
 def upgrade():
     op.add_column('user_active_at', sa.Column('board_id', sa.Integer(), nullable=True))
-    op.create_index(op.f('ix_user_active_at_board_id'), 'user_active_at', ['board_id'], unique=False)
-    op.create_foreign_key('user_active_at_board_id', 'user_active_at', 'board', ['board_id'], ['id'])
+    op.create_index(
+        op.f('ix_user_active_at_board_id'), 'user_active_at', ['board_id'], unique=False
+    )
+    op.create_foreign_key(
+        'user_active_at_board_id', 'user_active_at', 'board', ['board_id'], ['id']
+    )
 
 
 def downgrade():

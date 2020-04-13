@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """RSVP group
 
 Revision ID: 2c594a115c39
@@ -15,7 +16,9 @@ import sqlalchemy as sa
 
 
 def upgrade():
-    op.add_column('campaign_action', sa.Column('group', sa.Unicode(length=20), nullable=True))
+    op.add_column(
+        'campaign_action', sa.Column('group', sa.Unicode(length=20), nullable=True)
+    )
 
 
 def downgrade():

@@ -1,45 +1,86 @@
 # -*- coding: utf-8 -*-
 
-import bleach
 from datetime import timedelta
 from difflib import SequenceMatcher
-from html2text import html2text
-from premailer import transform as email_transform
 
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import StaleDataError
-from flask import abort, flash, g, redirect, render_template, request, url_for, session, Markup, jsonify
+
+from flask import (
+    Markup,
+    abort,
+    flash,
+    g,
+    jsonify,
+    redirect,
+    render_template,
+    request,
+    session,
+    url_for,
+)
 from flask_mail import Message
+
+from html2text import html2text
+from premailer import transform as email_transform
+import bleach
+
 from baseframe import cache, request_is_xhr  # , dogpile
 from baseframe.forms import Form
 from baseframe.utils import is_public_email_domain
-from coaster.utils import getbool, get_email_domain, md5sum, base_domain_matches, utcnow
+from coaster.utils import base_domain_matches, get_email_domain, getbool, md5sum, utcnow
 from coaster.views import load_model
-from hasjob import app, forms, mail, lastuser
-from hasjob.models import (
-    agelimit, db, Domain, JobCategory, JobType, JobPost, JobPostReport,
-    PAY_TYPE, ReportCode, UserJobView,
-    AnonJobView, JobApplication, Campaign, CAMPAIGN_POSITION, unique_hash,
-    viewstats_by_id_hour, viewstats_by_id_day)
-from hasjob.twitter import tweet
-from hasjob.tagging import tag_locations, add_to_boards, tag_jobpost
-from hasjob.uploads import uploaded_logos
-from hasjob.utils import get_word_bag, redactemail, random_long_key, common_legal_names
-from hasjob.views import ALLOWED_TAGS
-from hasjob.nlp import identify_language
-from hasjob.views.helper import (
-    gif1x1, load_viewcounts, session_jobpost_ab, bgroup, has_post_stats,
-    get_post_viewcounts, get_max_counts)
+
+from .. import app, forms, lastuser, mail
+from ..models import (
+    CAMPAIGN_POSITION,
+    PAY_TYPE,
+    AnonJobView,
+    Campaign,
+    Domain,
+    JobApplication,
+    JobCategory,
+    JobPost,
+    JobPostReport,
+    JobType,
+    ReportCode,
+    UserJobView,
+    agelimit,
+    db,
+    unique_hash,
+    viewstats_by_id_day,
+    viewstats_by_id_hour,
+)
+from ..nlp import identify_language
+from ..tagging import add_to_boards, tag_jobpost, tag_locations
+from ..twitter import tweet
+from ..uploads import uploaded_logos
+from ..utils import common_legal_names, get_word_bag, random_long_key, redactemail
+from .helper import (
+    ALLOWED_TAGS,
+    bgroup,
+    get_max_counts,
+    get_post_viewcounts,
+    gif1x1,
+    has_post_stats,
+    load_viewcounts,
+    session_jobpost_ab,
+)
 
 
 @app.route('/<domain>/<hashid>', methods=('GET', 'POST'), subdomain='<subdomain>')
 @app.route('/<domain>/<hashid>', methods=('GET', 'POST'))
-@app.route('/view/<hashid>', defaults={'domain': None}, methods=('GET', 'POST'), subdomain='<subdomain>')
+@app.route(
+    '/view/<hashid>',
+    defaults={'domain': None},
+    methods=('GET', 'POST'),
+    subdomain='<subdomain>',
+)
 @app.route('/view/<hashid>', defaults={'domain': None}, methods=('GET', 'POST'))
 def jobdetail(domain, hashid):
     is_siteadmin = lastuser.has_permission('siteadmin')
     query = JobPost.fetch(hashid).options(
-        db.subqueryload('locations'), db.subqueryload('taglinks'))
+        db.subqueryload('locations'), db.subqueryload('taglinks')
+    )
     post = query.first_or_404()
 
     # If we're on a board (that's not 'www') and this post isn't on this board,
@@ -95,7 +136,10 @@ def jobdetail(domain, hashid):
     g.jobpost_viewed = (post.id, getbool(request.args.get('b')))
 
     reportform = forms.ReportForm(obj=report)
-    reportform.report_code.choices = [(ob.id, ob.title) for ob in ReportCode.query.filter_by(public=True).order_by(ReportCode.seq)]
+    reportform.report_code.choices = [
+        (ob.id, ob.title)
+        for ob in ReportCode.query.filter_by(public=True).order_by(ReportCode.seq)
+    ]
     rejectform = forms.RejectForm()
     moderateform = forms.ModerateForm()
     if request.method == 'GET':
@@ -115,7 +159,8 @@ def jobdetail(domain, hashid):
             db.session.add(report)
             db.session.commit()
             if request_is_xhr():
-                return "<p>Thanks! This post has been flagged for review</p>"  # FIXME: Ugh!
+                # FIXME: Ugh!
+                return "<p>Thanks! This post has been flagged for review</p>"
             else:
                 flash("Thanks! This post has been flagged for review", "interactive")
         else:
@@ -127,7 +172,9 @@ def jobdetail(domain, hashid):
         return render_template('inc/reportform.html.jinja2', reportform=reportform)
 
     if post.company_url and not post.state.ANNOUNCEMENT:
-        domain_mismatch = not base_domain_matches(post.company_url.lower(), post.email_domain.lower())
+        domain_mismatch = not base_domain_matches(
+            post.company_url.lower(), post.email_domain.lower()
+        )
     else:
         domain_mismatch = False
 
@@ -135,8 +182,13 @@ def jobdetail(domain, hashid):
         if g.preview_campaign:
             header_campaign = g.preview_campaign
         else:
-            header_campaign = Campaign.for_context(CAMPAIGN_POSITION.HEADER, board=g.board, user=g.user,
-                anon_user=g.anon_user, geonameids=g.user_geonameids + post.geonameids)
+            header_campaign = Campaign.for_context(
+                CAMPAIGN_POSITION.HEADER,
+                board=g.board,
+                user=g.user,
+                anon_user=g.anon_user,
+                geonameids=g.user_geonameids + post.geonameids,
+            )
     else:
         header_campaign = None
 
@@ -147,32 +199,59 @@ def jobdetail(domain, hashid):
 
     is_bgroup = getbool(request.args.get('b'))
     headline = post.headlineb if is_bgroup and post.headlineb else post.headline
-    if is_siteadmin or post.admin_is(g.user) or (g.user and g.user.flags.get('is_employer_month')):
+    if (
+        is_siteadmin
+        or post.admin_is(g.user)
+        or (g.user and g.user.flags.get('is_employer_month'))
+    ):
         post_viewcounts = get_post_viewcounts(post.id)
     else:
         post_viewcounts = None
 
-    return render_template('detail.html.jinja2', post=post, headline=headline,
-        reportform=reportform, rejectform=rejectform, pinnedform=pinnedform,
-        jobview=jobview, report=report, moderateform=moderateform,
-        domain_mismatch=domain_mismatch, header_campaign=header_campaign,
-        is_bgroup=is_bgroup, is_siteadmin=is_siteadmin,
-        can_see_post_stats=has_post_stats(post), post_viewcounts=post_viewcounts)
+    return render_template(
+        'detail.html.jinja2',
+        post=post,
+        headline=headline,
+        reportform=reportform,
+        rejectform=rejectform,
+        pinnedform=pinnedform,
+        jobview=jobview,
+        report=report,
+        moderateform=moderateform,
+        domain_mismatch=domain_mismatch,
+        header_campaign=header_campaign,
+        is_bgroup=is_bgroup,
+        is_siteadmin=is_siteadmin,
+        can_see_post_stats=has_post_stats(post),
+        post_viewcounts=post_viewcounts,
+    )
 
 
 @app.route('/<domain>/<hashid>/viewstats', subdomain='<subdomain>')
 @app.route('/<domain>/<hashid>/viewstats')
-@app.route('/view/<hashid>/viewstats', defaults={'domain': None}, subdomain='<subdomain>')
+@app.route(
+    '/view/<hashid>/viewstats', defaults={'domain': None}, subdomain='<subdomain>'
+)
 @app.route('/view/<hashid>/viewstats', defaults={'domain': None})
 def job_viewstats(domain, hashid):
     is_siteadmin = lastuser.has_permission('siteadmin')
-    post = JobPost.query.filter_by(hashid=hashid).options(db.load_only('id', 'datetime')).first_or_404()
-    if is_siteadmin or post.admin_is(g.user) or (g.user and g.user.flags.get('is_employer_month')):
-        return jsonify({
-            "unittype": post.viewstats[0],
-            "stats": post.viewstats[1],
-            "counts": get_post_viewcounts(post.id)
-            })
+    post = (
+        JobPost.query.filter_by(hashid=hashid)
+        .options(db.load_only('id', 'datetime'))
+        .first_or_404()
+    )
+    if (
+        is_siteadmin
+        or post.admin_is(g.user)
+        or (g.user and g.user.flags.get('is_employer_month'))
+    ):
+        return jsonify(
+            {
+                "unittype": post.viewstats[0],
+                "stats": post.viewstats[1],
+                "counts": get_post_viewcounts(post.id),
+            }
+        )
     else:
         return abort(403)
 
@@ -183,27 +262,46 @@ def job_viewstats(domain, hashid):
 @app.route('/view/<hashid>/related', defaults={'domain': None})
 def job_related_posts(domain, hashid):
     is_siteadmin = lastuser.has_permission('siteadmin')
-    post = JobPost.query.filter_by(hashid=hashid).options(*JobPost._defercols).first_or_404()
+    post = (
+        JobPost.query.filter_by(hashid=hashid)
+        .options(*JobPost._defercols)
+        .first_or_404()
+    )
     jobpost_ab = session_jobpost_ab()
     related_posts = post.related_posts().all()
     if is_siteadmin or (g.user and g.user.flags.get('is_employer_month')):
         load_viewcounts(related_posts)
-    g.impressions = {rp.id: (False, rp.id, bgroup(jobpost_ab, rp)) for rp in related_posts}
+    g.impressions = {
+        rp.id: (False, rp.id, bgroup(jobpost_ab, rp)) for rp in related_posts
+    }
     max_counts = get_max_counts()
-    return jsonify(template=render_template('related_posts.html.jinja2', post=post,
+    return jsonify(
+        template=render_template(
+            'related_posts.html.jinja2',
+            post=post,
             related_posts=related_posts,
-            is_siteadmin=is_siteadmin
-            ),
+            is_siteadmin=is_siteadmin,
+        ),
         max_impressions=max_counts['max_impressions'],
         max_views=max_counts['max_views'],
         max_opens=max_counts['max_opens'],
-        max_applied=max_counts['max_applied']
-        )
+        max_applied=max_counts['max_applied'],
+    )
 
 
-@app.route('/<domain>/<hashid>/star', defaults={'domain': None}, methods=['POST'], subdomain='<subdomain>')
+@app.route(
+    '/<domain>/<hashid>/star',
+    defaults={'domain': None},
+    methods=['POST'],
+    subdomain='<subdomain>',
+)
 @app.route('/<domain>/<hashid>/star', defaults={'domain': None}, methods=['POST'])
-@app.route('/star/<hashid>', defaults={'domain': None}, methods=['POST'], subdomain='<subdomain>')
+@app.route(
+    '/star/<hashid>',
+    defaults={'domain': None},
+    methods=['POST'],
+    subdomain='<subdomain>',
+)
 @app.route('/star/<hashid>', defaults={'domain': None}, methods=['POST'])
 @lastuser.requires_login
 def starjob(domain, hashid):
@@ -235,14 +333,23 @@ def starjob(domain, hashid):
 
 @app.route('/<domain>/<hashid>/reveal', methods=['POST'], subdomain='<subdomain>')
 @app.route('/<domain>/<hashid>/reveal', methods=['POST'])
-@app.route('/reveal/<hashid>', methods=['POST'], defaults={'domain': None}, subdomain='<subdomain>')
+@app.route(
+    '/reveal/<hashid>',
+    methods=['POST'],
+    defaults={'domain': None},
+    subdomain='<subdomain>',
+)
 @app.route('/reveal/<hashid>', methods=['POST'], defaults={'domain': None})
 @lastuser.requires_login
 def revealjob(domain, hashid):
     """
     Reveal job application form
     """
-    post = JobPost.query.filter_by(hashid=hashid).options(db.load_only('id', '_state', 'how_to_apply')).first_or_404()
+    post = (
+        JobPost.query.filter_by(hashid=hashid)
+        .options(db.load_only('id', '_state', 'how_to_apply'))
+        .first_or_404()
+    )
     if post.state.GONE:
         abort(410)
     jobview = UserJobView.query.get((post.id, g.user.id))
@@ -270,28 +377,41 @@ def revealjob(domain, hashid):
         applyform = forms.ApplicationForm()
         applyform.apply_phone.data = g.user.phone
 
-    return render_template('jobpost_reveal.html.jinja2',
+    return render_template(
+        'jobpost_reveal.html.jinja2',
         post=post,
         instructions=redactemail(post.how_to_apply),
         applyform=applyform,
-        job_application=job_application)
+        job_application=job_application,
+    )
 
 
 @app.route('/<domain>/<hashid>/apply', methods=['POST'], subdomain='<subdomain>')
 @app.route('/<domain>/<hashid>/apply', methods=['POST'])
-@app.route('/apply/<hashid>', defaults={'domain': None}, methods=['POST'], subdomain='<subdomain>')
+@app.route(
+    '/apply/<hashid>',
+    defaults={'domain': None},
+    methods=['POST'],
+    subdomain='<subdomain>',
+)
 @app.route('/apply/<hashid>', defaults={'domain': None}, methods=['POST'])
 def applyjob(domain, hashid):
     """
     Apply to a job (including in kiosk mode)
     """
-    post = JobPost.query.filter_by(hashid=hashid).options(db.load_only('id', 'email', 'email_domain')).first_or_404()
+    post = (
+        JobPost.query.filter_by(hashid=hashid)
+        .options(db.load_only('id', 'email', 'email_domain'))
+        .first_or_404()
+    )
     # If the domain doesn't match, redirect to correct URL
     if post.email_domain != domain:
         return redirect(post.url_for('apply'), code=301)
 
     if g.user:
-        job_application = JobApplication.query.filter_by(user=g.user, jobpost=post).first()
+        job_application = JobApplication.query.filter_by(
+            user=g.user, jobpost=post
+        ).first()
     else:
         job_application = None
     if job_application:
@@ -312,33 +432,47 @@ def applyjob(domain, hashid):
                 flashmsg = "Your account has been blocked from applying to jobs"
             else:
                 if g.kiosk:
-                    job_application = JobApplication(user=None, jobpost=post,
+                    job_application = JobApplication(
+                        user=None,
+                        jobpost=post,
                         fullname=applyform.apply_fullname.data,
                         email=applyform.apply_email.data,
                         phone=applyform.apply_phone.data,
                         message=applyform.apply_message.data,
-                        words=None)
+                        words=None,
+                    )
                 else:
-                    job_application = JobApplication(user=g.user, jobpost=post,
+                    job_application = JobApplication(
+                        user=g.user,
+                        jobpost=post,
                         fullname=g.user.fullname,
                         email=applyform.apply_email.data,
                         phone=applyform.apply_phone.data,
                         message=applyform.apply_message.data,
                         optin=applyform.apply_optin.data,
-                        words=applyform.words)
+                        words=applyform.words,
+                    )
                 db.session.add(job_application)
                 db.session.commit()
                 post.uncache_viewcounts('applied')
                 email_html = email_transform(
-                    render_template('apply_email.html.jinja2',
-                        post=post, job_application=job_application,
-                        archive_url=job_application.url_for(_external=True)),
-                    base_url=request.url_root)
+                    render_template(
+                        'apply_email.html.jinja2',
+                        post=post,
+                        job_application=job_application,
+                        archive_url=job_application.url_for(_external=True),
+                    ),
+                    base_url=request.url_root,
+                )
                 email_text = html2text(email_html)
                 flashmsg = "Your application has been sent to the employer"
 
-                msg = Message(subject="Job application: {fullname}".format(fullname=job_application.fullname),
-                    recipients=[post.email])
+                msg = Message(
+                    subject="Job application: {fullname}".format(
+                        fullname=job_application.fullname
+                    ),
+                    recipients=[post.email],
+                )
                 if not job_application.user:
                     # Also BCC the candidate (for kiosk mode)
                     # FIXME: This should be a separate copy of the email as the tracking gif is now shared
@@ -355,17 +489,37 @@ def applyjob(domain, hashid):
                 return redirect(post.url_for(), 303)
 
         if request_is_xhr():
-            return render_template('inc/applyform.html.jinja2', post=post, applyform=applyform)
+            return render_template(
+                'inc/applyform.html.jinja2', post=post, applyform=applyform
+            )
         else:
             return redirect(post.url_for(), 303)
 
 
-@app.route('/<domain>/<hashid>/manage', methods=('GET', 'POST'), defaults={'key': None}, subdomain='<subdomain>')
+@app.route(
+    '/<domain>/<hashid>/manage',
+    methods=('GET', 'POST'),
+    defaults={'key': None},
+    subdomain='<subdomain>',
+)
 @app.route('/<domain>/<hashid>/manage', methods=('GET', 'POST'), defaults={'key': None})
-@app.route('/manage/<hashid>', methods=('GET', 'POST'), defaults={'key': None, 'domain': None}, subdomain='<subdomain>')
-@app.route('/manage/<hashid>', methods=('GET', 'POST'), defaults={'key': None, 'domain': None})
-@load_model(JobPost, {'hashid': 'hashid'}, 'post', permission=('manage', 'siteadmin'), addlperms=lastuser.permissions,
-    kwargs=True)
+@app.route(
+    '/manage/<hashid>',
+    methods=('GET', 'POST'),
+    defaults={'key': None, 'domain': None},
+    subdomain='<subdomain>',
+)
+@app.route(
+    '/manage/<hashid>', methods=('GET', 'POST'), defaults={'key': None, 'domain': None}
+)
+@load_model(
+    JobPost,
+    {'hashid': 'hashid'},
+    'post',
+    permission=('manage', 'siteadmin'),
+    addlperms=lastuser.permissions,
+    kwargs=True,
+)
 def managejob(post, kwargs):
     # If the domain doesn't match, redirect to correct URL
     if post.email_domain != kwargs.get('domain'):
@@ -380,13 +534,19 @@ def managejob(post, kwargs):
 
 @app.route('/<domain>/<hashid>/appl/<application>/track.gif', subdomain='<subdomain>')
 @app.route('/<domain>/<hashid>/appl/<application>/track.gif')
-@app.route('/view/<hashid>/<application>/track.gif', defaults={'domain': None}, subdomain='<subdomain>')
+@app.route(
+    '/view/<hashid>/<application>/track.gif',
+    defaults={'domain': None},
+    subdomain='<subdomain>',
+)
 @app.route('/view/<hashid>/<application>/track.gif', defaults={'domain': None})
 def view_application_email_gif(domain, hashid, application):
     post = JobPost.query.filter_by(hashid=hashid).one_or_none()
     if post:
         # FIXME: Can't use one_or_none() until we ensure jobpost_id+user_id is unique
-        job_application = JobApplication.query.filter_by(hashid=application, jobpost=post).first()
+        job_application = JobApplication.query.filter_by(
+            hashid=application, jobpost=post
+        ).first()
     else:
         job_application = None
 
@@ -394,34 +554,53 @@ def view_application_email_gif(domain, hashid, application):
         if job_application.mark_read.is_available:
             job_application.mark_read()
             db.session.commit()
-        return gif1x1, 200, {
-            'Content-Type': 'image/gif',
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache',
-            'Expires': '0'
-            }
+        return (
+            gif1x1,
+            200,
+            {
+                'Content-Type': 'image/gif',
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache',
+                'Expires': '0',
+            },
+        )
     else:
-        return gif1x1, 404, {
-            'Content-Type': 'image/gif',
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache',
-            'Expires': '0'
-            }
+        return (
+            gif1x1,
+            404,
+            {
+                'Content-Type': 'image/gif',
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache',
+                'Expires': '0',
+            },
+        )
 
 
 @app.route('/<domain>/<hashid>/appl/<application>', subdomain='<subdomain>')
 @app.route('/<domain>/<hashid>/appl/<application>')
-@app.route('/view/<hashid>/<application>', defaults={'domain': None}, subdomain='<subdomain>')
+@app.route(
+    '/view/<hashid>/<application>', defaults={'domain': None}, subdomain='<subdomain>'
+)
 @app.route('/view/<hashid>/<application>', defaults={'domain': None})
 def view_application(domain, hashid, application):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
     # Transition code until we force all employers to login before posting
-    if post.user and not (post.admin_is(g.user) or lastuser.has_permission('siteadmin')):
+    if post.user and not (
+        post.admin_is(g.user) or lastuser.has_permission('siteadmin')
+    ):
         if not g.user:
-            return redirect(url_for('login', message="You need to be logged in to view candidate applications on Hasjob."))
+            return redirect(
+                url_for(
+                    'login',
+                    message="You need to be logged in to view candidate applications on Hasjob.",
+                )
+            )
         else:
             abort(403)
-    job_application = JobApplication.query.filter_by(hashid=application, jobpost=post).first_or_404()
+    job_application = JobApplication.query.filter_by(
+        hashid=application, jobpost=post
+    ).first_or_404()
 
     # If this domain doesn't match, redirect to correct URL
     if post.email_domain != domain:
@@ -439,19 +618,38 @@ def view_application(domain, hashid, application):
         if g.preview_campaign:
             header_campaign = g.preview_campaign
         else:
-            header_campaign = Campaign.for_context(CAMPAIGN_POSITION.HEADER, board=g.board, user=g.user,
-                anon_user=g.anon_user, geonameids=g.user_geonameids + post.geonameids)
+            header_campaign = Campaign.for_context(
+                CAMPAIGN_POSITION.HEADER,
+                board=g.board,
+                user=g.user,
+                anon_user=g.anon_user,
+                geonameids=g.user_geonameids + post.geonameids,
+            )
     else:
         header_campaign = None
 
-    return render_template('application.html.jinja2', post=post, job_application=job_application,
+    return render_template(
+        'application.html.jinja2',
+        post=post,
+        job_application=job_application,
         header_campaign=header_campaign,
-        response_form=response_form, is_siteadmin=lastuser.has_permission('siteadmin'))
+        response_form=response_form,
+        is_siteadmin=lastuser.has_permission('siteadmin'),
+    )
 
 
-@app.route('/<domain>/<hashid>/appl/<application>/process', methods=['POST'], subdomain='<subdomain>')
+@app.route(
+    '/<domain>/<hashid>/appl/<application>/process',
+    methods=['POST'],
+    subdomain='<subdomain>',
+)
 @app.route('/<domain>/<hashid>/appl/<application>/process', methods=['POST'])
-@app.route('/apply/<hashid>/<application>', defaults={'domain': None}, methods=['POST'], subdomain='<subdomain>')
+@app.route(
+    '/apply/<hashid>/<application>',
+    defaults={'domain': None},
+    methods=['POST'],
+    subdomain='<subdomain>',
+)
 @app.route('/apply/<hashid>/<application>', defaults={'domain': None}, methods=['POST'])
 def process_application(domain, hashid, application):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
@@ -460,64 +658,90 @@ def process_application(domain, hashid, application):
             return redirect(url_for('login'))
         else:
             abort(403)
-    job_application = JobApplication.query.filter_by(hashid=application, jobpost=post).first_or_404()
+    job_application = JobApplication.query.filter_by(
+        hashid=application, jobpost=post
+    ).first_or_404()
     response_form = forms.ApplicationResponseForm()
     flashmsg = ''
 
     if response_form.validate_on_submit():
-        if (request.form.get('action') == 'reply' and job_application.response.CAN_REPLY) or (
-                request.form.get('action') == 'reject' and job_application.response.CAN_REJECT):
+        if (
+            request.form.get('action') == 'reply' and job_application.response.CAN_REPLY
+        ) or (
+            request.form.get('action') == 'reject'
+            and job_application.response.CAN_REJECT
+        ):
             if not response_form.response_message.data:
                 flashmsg = "You need to write a message to the candidate."
             else:
                 if request.form.get('action') == 'reply':
                     job_application.reply(
-                        message=response_form.response_message.data,
-                        user=g.user
-                        )
+                        message=response_form.response_message.data, user=g.user
+                    )
                 else:
                     job_application.reject(
-                        message=response_form.response_message.data,
-                        user=g.user
-                        )
+                        message=response_form.response_message.data, user=g.user
+                    )
 
                 email_html = email_transform(
-                    render_template('respond_email.html.jinja2',
-                        post=post, job_application=job_application,
-                        archive_url=job_application.url_for(_external=True)),
-                    base_url=request.url_root)
+                    render_template(
+                        'respond_email.html.jinja2',
+                        post=post,
+                        job_application=job_application,
+                        archive_url=job_application.url_for(_external=True),
+                    ),
+                    base_url=request.url_root,
+                )
                 email_text = html2text(email_html)
 
-                sender_name = g.user.fullname if post.admin_is(g.user) else post.fullname or post.company_name
+                sender_name = (
+                    g.user.fullname
+                    if post.admin_is(g.user)
+                    else post.fullname or post.company_name
+                )
                 sender_formatted = '{sender} (via {site})'.format(
-                    sender=sender_name,
-                    site=app.config['SITE_TITLE'])
+                    sender=sender_name, site=app.config['SITE_TITLE']
+                )
 
                 if job_application.response.REPLIED:
                     msg = Message(
                         subject="{candidate}: {headline}".format(
-                            candidate=job_application.user.fullname, headline=post.headline),
+                            candidate=job_application.user.fullname,
+                            headline=post.headline,
+                        ),
                         sender=(sender_formatted, app.config['MAIL_SENDER']),
                         reply_to=(sender_name, post.email),
                         recipients=[job_application.email],
-                        bcc=[post.email])
+                        bcc=[post.email],
+                    )
                     flashmsg = "We sent your message to the candidate and copied you. Their email and phone number are below"
                 else:
-                    msg = Message(subject="Job declined: {headline}".format(headline=post.headline),
+                    msg = Message(
+                        subject="Job declined: {headline}".format(
+                            headline=post.headline
+                        ),
                         sender=(sender_formatted, app.config['MAIL_SENDER']),
-                        bcc=[job_application.email, post.email])
+                        bcc=[job_application.email, post.email],
+                    )
                     flashmsg = "We sent your message to the candidate and copied you"
                 msg.body = email_text
                 msg.html = email_html
                 mail.send(msg)
                 db.session.commit()
-        elif request.form.get('action') == 'ignore' and job_application.response.CAN_IGNORE:
+        elif (
+            request.form.get('action') == 'ignore'
+            and job_application.response.CAN_IGNORE
+        ):
             job_application.ignore()
             db.session.commit()
-        elif request.form.get('action') == 'flag' and job_application.response.CAN_REPORT:
+        elif (
+            request.form.get('action') == 'flag' and job_application.response.CAN_REPORT
+        ):
             job_application.flag()
             db.session.commit()
-        elif request.form.get('action') == 'unflag' and job_application.response.FLAGGED:
+        elif (
+            request.form.get('action') == 'unflag' and job_application.response.FLAGGED
+        ):
             job_application.unflag()
             db.session.commit()
 
@@ -532,7 +756,12 @@ def process_application(domain, hashid, application):
 
 @app.route('/<domain>/<hashid>/pin', methods=['POST'], subdomain='<subdomain>')
 @app.route('/<domain>/<hashid>/pin', methods=['POST'])
-@app.route('/pinned/<hashid>', defaults={'domain': None}, methods=['POST'], subdomain='<subdomain>')
+@app.route(
+    '/pinned/<hashid>',
+    defaults={'domain': None},
+    methods=['POST'],
+    subdomain='<subdomain>',
+)
 @app.route('/pinned/<hashid>', defaults={'domain': None}, methods=['POST'])
 @lastuser.requires_permission('siteadmin')
 def pinnedjob(domain, hashid):
@@ -562,9 +791,16 @@ def pinnedjob(domain, hashid):
         return redirect(post.url_for(), 303)
 
 
-@app.route('/<domain>/<hashid>/reject', methods=('GET', 'POST'), subdomain='<subdomain>')
+@app.route(
+    '/<domain>/<hashid>/reject', methods=('GET', 'POST'), subdomain='<subdomain>'
+)
 @app.route('/<domain>/<hashid>/reject', methods=('GET', 'POST'))
-@app.route('/reject/<hashid>', defaults={'domain': None}, methods=('GET', 'POST'), subdomain='<subdomain>')
+@app.route(
+    '/reject/<hashid>',
+    defaults={'domain': None},
+    methods=('GET', 'POST'),
+    subdomain='<subdomain>',
+)
 @app.route('/reject/<hashid>', defaults={'domain': None}, methods=('GET', 'POST'))
 @lastuser.requires_permission('siteadmin')
 def rejectjob(domain, hashid):
@@ -574,15 +810,22 @@ def rejectjob(domain, hashid):
         mail_meta = {
             'reject': {
                 'subject': "About your job post on Hasjob",
-                'template': "reject_email.html.jinja2"
-                },
+                'template': "reject_email.html.jinja2",
+            },
             'ban': {
                 'subject': "About your account and job posts on Hasjob",
-                'template': "reject_domain_email.html.jinja2"
-                }
-            }
-        msg = Message(subject=mail_meta[reject_type]['subject'], recipients=[post.email])
-        msg.html = email_transform(render_template(mail_meta[reject_type]['template'], post=post, banned_posts=banned_posts), base_url=request.url_root)
+                'template': "reject_domain_email.html.jinja2",
+            },
+        }
+        msg = Message(
+            subject=mail_meta[reject_type]['subject'], recipients=[post.email]
+        )
+        msg.html = email_transform(
+            render_template(
+                mail_meta[reject_type]['template'], post=post, banned_posts=banned_posts
+            ),
+            base_url=request.url_root,
+        )
         msg.body = html2text(msg.html)
         mail.send(msg)
 
@@ -611,7 +854,9 @@ def rejectjob(domain, hashid):
                 post.reject(rejectform.reason.data, g.user)
                 banned_posts = [post]
             else:
-                flashmsg = "This job post has been rejected and the user and domain banned"
+                flashmsg = (
+                    "This job post has been rejected and the user and domain banned"
+                )
                 post.domain.is_banned = True
                 post.domain.banned_by = g.user
                 post.domain.banned_at = db.func.utcnow()
@@ -634,13 +879,22 @@ def rejectjob(domain, hashid):
         else:
             flash(flashmsg, "interactive")
     elif request.method == 'POST' and request_is_xhr():
-        return render_template('inc/rejectform.html.jinja2', post=post, rejectform=rejectform)
+        return render_template(
+            'inc/rejectform.html.jinja2', post=post, rejectform=rejectform
+        )
     return redirect(post.url_for(), code=303)
 
 
-@app.route('/<domain>/<hashid>/moderate', methods=('GET', 'POST'), subdomain='<subdomain>')
+@app.route(
+    '/<domain>/<hashid>/moderate', methods=('GET', 'POST'), subdomain='<subdomain>'
+)
 @app.route('/<domain>/<hashid>/moderate', methods=('GET', 'POST'))
-@app.route('/moderate/<hashid>', defaults={'domain': None}, methods=('GET', 'POST'), subdomain='<subdomain>')
+@app.route(
+    '/moderate/<hashid>',
+    defaults={'domain': None},
+    methods=('GET', 'POST'),
+    subdomain='<subdomain>',
+)
 @app.route('/moderate/<hashid>', defaults={'domain': None}, methods=('GET', 'POST'))
 @lastuser.requires_permission('siteadmin')
 def moderatejob(domain, hashid):
@@ -653,9 +907,11 @@ def moderatejob(domain, hashid):
     if moderateform.validate_on_submit():
         post.moderate(moderateform.reason.data, g.user)
         flashmsg = post.moderate.data['message']
-        msg = Message(subject="About your job post on Hasjob",
-            recipients=[post.email])
-        msg.html = email_transform(render_template('moderate_email.html.jinja2', post=post), base_url=request.url_root)
+        msg = Message(subject="About your job post on Hasjob", recipients=[post.email])
+        msg.html = email_transform(
+            render_template('moderate_email.html.jinja2', post=post),
+            base_url=request.url_root,
+        )
         msg.body = html2text(msg.html)
         mail.send(msg)
         db.session.commit()
@@ -664,13 +920,22 @@ def moderatejob(domain, hashid):
         if request_is_xhr():
             return "<p>%s</p>" % flashmsg
     elif request.method == 'POST' and request_is_xhr():
-        return render_template('inc/moderateform.html.jinja2', post=post, moderateform=moderateform)
+        return render_template(
+            'inc/moderateform.html.jinja2', post=post, moderateform=moderateform
+        )
     return redirect(post.url_for(), code=303)
 
 
-@app.route('/<domain>/<hashid>/confirm', methods=('GET', 'POST'), subdomain='<subdomain>')
+@app.route(
+    '/<domain>/<hashid>/confirm', methods=('GET', 'POST'), subdomain='<subdomain>'
+)
 @app.route('/<domain>/<hashid>/confirm', methods=('GET', 'POST'))
-@app.route('/confirm/<hashid>', defaults={'domain': None}, methods=('GET', 'POST'), subdomain='<subdomain>')
+@app.route(
+    '/confirm/<hashid>',
+    defaults={'domain': None},
+    methods=('GET', 'POST'),
+    subdomain='<subdomain>',
+)
 @app.route('/confirm/<hashid>', defaults={'domain': None}, methods=('GET', 'POST'))
 def confirm(domain, hashid):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
@@ -686,9 +951,14 @@ def confirm(domain, hashid):
     # We get here if it's (a) POST_STATE.UNPUBLISHED and (b) the user is confirmed authorised
     if 'form.id' in request.form and form.validate_on_submit():
         # User has accepted terms of service. Now send email and/or wait for payment
-        msg = Message(subject="Confirm your job post: {headline}".format(headline=post.headline),
-            recipients=[post.email])
-        msg.html = email_transform(render_template('confirm_email.html.jinja2', post=post), base_url=request.url_root)
+        msg = Message(
+            subject="Confirm your job post: {headline}".format(headline=post.headline),
+            recipients=[post.email],
+        )
+        msg.html = email_transform(
+            render_template('confirm_email.html.jinja2', post=post),
+            base_url=request.url_root,
+        )
         msg.body = html2text(msg.html)
         mail.send(msg)
         post.email_sent = True
@@ -696,25 +966,42 @@ def confirm(domain, hashid):
             post.mark_pending()
             db.session.commit()
 
-        footer_campaign = Campaign.for_context(CAMPAIGN_POSITION.AFTERPOST, board=g.board, user=g.user,
-                    anon_user=g.anon_user, geonameids=g.user_geonameids)
+        footer_campaign = Campaign.for_context(
+            CAMPAIGN_POSITION.AFTERPOST,
+            board=g.board,
+            user=g.user,
+            anon_user=g.anon_user,
+            geonameids=g.user_geonameids,
+        )
 
         return render_template('mailsent.html.jinja2', footer_campaign=footer_campaign)
     return render_template('confirm.html.jinja2', post=post, form=form)
 
 
-@app.route('/confirm/demo', defaults={'domain': None}, methods=('GET', 'POST'), subdomain='<subdomain>')
+@app.route(
+    '/confirm/demo',
+    defaults={'domain': None},
+    methods=('GET', 'POST'),
+    subdomain='<subdomain>',
+)
 @app.route('/confirm/demo', defaults={'domain': None}, methods=('GET', 'POST'))
 def confirm_demo(domain):
-    footer_campaign = Campaign.for_context(CAMPAIGN_POSITION.AFTERPOST, board=g.board, user=g.user,
-                anon_user=g.anon_user, geonameids=g.user_geonameids)
+    footer_campaign = Campaign.for_context(
+        CAMPAIGN_POSITION.AFTERPOST,
+        board=g.board,
+        user=g.user,
+        anon_user=g.anon_user,
+        geonameids=g.user_geonameids,
+    )
 
     return render_template('mailsent.html.jinja2', footer_campaign=footer_campaign)
 
 
 @app.route('/<domain>/<hashid>/confirm/<key>', subdomain='<subdomain>')
 @app.route('/<domain>/<hashid>/confirm/<key>')
-@app.route('/confirm/<hashid>/<key>', defaults={'domain': None}, subdomain='<subdomain>')
+@app.route(
+    '/confirm/<hashid>/<key>', defaults={'domain': None}, subdomain='<subdomain>'
+)
 @app.route('/confirm/<hashid>/<key>', defaults={'domain': None})
 def confirm_email(domain, hashid, key):
     # If post is in pending state and email key is correct, convert to published
@@ -732,50 +1019,100 @@ def confirm_email(domain, hashid, key):
         return redirect(post.url_for('confirm'), code=302)
     elif post.state.PENDING:
         if key != post.email_verify_key:
-            return render_template('403.html.jinja2', description="This link has expired or is malformed. Check if you have received a newer email from us.")
+            return render_template(
+                '403.html.jinja2',
+                description="This link has expired or is malformed. Check if you have received a newer email from us.",
+            )
         else:
             if app.config.get('THROTTLE_LIMIT', 0) > 0:
-                post_count = JobPost.query.filter(
-                    JobPost.email_domain == post.email_domain
-                    ).filter(~JobPost.state.UNPUBLISHED).filter(
-                    JobPost.datetime > utcnow() - timedelta(days=1)
-                    ).count()
+                post_count = (
+                    JobPost.query.filter(JobPost.email_domain == post.email_domain)
+                    .filter(~(JobPost.state.UNPUBLISHED))
+                    .filter(JobPost.datetime > utcnow() - timedelta(days=1))
+                    .count()
+                )
                 if post_count > app.config['THROTTLE_LIMIT']:
-                    flash("We have received too many posts with %s addresses in the last 24 hours. "
+                    flash(
+                        "We have received too many posts with %s addresses in the last 24 hours. "
                         "Posts are rate-limited per domain, so yours was not confirmed for now. "
                         "Please try confirming again in a few hours."
-                        % post.email_domain, category='info')
+                        % post.email_domain,
+                        category='info',
+                    )
                     return redirect(url_for('index'))
             post.confirm()
             db.session.commit()
             if app.config['TWITTER_ENABLED']:
                 if post.headlineb:
-                    tweet.queue(post.headline, post.url_for(b=0, _external=True),
-                        post.location, dict(post.parsed_location or {}), username=post.twitter)
-                    tweet.queue(post.headlineb, post.url_for(b=1, _external=True),
-                        post.location, dict(post.parsed_location or {}), username=post.twitter)
+                    tweet.queue(
+                        post.headline,
+                        post.url_for(b=0, _external=True),
+                        post.location,
+                        dict(post.parsed_location or {}),
+                        username=post.twitter,
+                    )
+                    tweet.queue(
+                        post.headlineb,
+                        post.url_for(b=1, _external=True),
+                        post.location,
+                        dict(post.parsed_location or {}),
+                        username=post.twitter,
+                    )
                 else:
-                    tweet.queue(post.headline, post.url_for(_external=True),
-                        post.location, dict(post.parsed_location or {}), username=post.twitter)
+                    tweet.queue(
+                        post.headline,
+                        post.url_for(_external=True),
+                        post.location,
+                        dict(post.parsed_location or {}),
+                        username=post.twitter,
+                    )
             add_to_boards.queue(post.id)
-            flash("Congratulations! Your job post has been published. As a bonus for being an employer on Hasjob, "
+            flash(
+                "Congratulations! Your job post has been published. As a bonus for being an employer on Hasjob, "
                 "you can now see how your post is performing relative to others. Look in the footer of any post.",
-                "interactive")
+                "interactive",
+            )
     # cache bust
     # dogpile.invalidate_region('hasjob_index')
     return redirect(post.url_for(), code=302)
 
 
-@app.route('/<domain>/<hashid>/withdraw', methods=('GET', 'POST'), defaults={'key': None}, subdomain='<subdomain>')
-@app.route('/<domain>/<hashid>/withdraw', methods=('GET', 'POST'), defaults={'key': None})
-@app.route('/withdraw/<hashid>', methods=('GET', 'POST'), defaults={'key': None, 'domain': None}, subdomain='<subdomain>')
-@app.route('/withdraw/<hashid>/<key>', defaults={'domain': None}, methods=('GET', 'POST'), subdomain='<subdomain>')
-@app.route('/withdraw/<hashid>', methods=('GET', 'POST'), defaults={'key': None, 'domain': None})
-@app.route('/withdraw/<hashid>/<key>', defaults={'domain': None}, methods=('GET', 'POST'))
+@app.route(
+    '/<domain>/<hashid>/withdraw',
+    methods=('GET', 'POST'),
+    defaults={'key': None},
+    subdomain='<subdomain>',
+)
+@app.route(
+    '/<domain>/<hashid>/withdraw', methods=('GET', 'POST'), defaults={'key': None}
+)
+@app.route(
+    '/withdraw/<hashid>',
+    methods=('GET', 'POST'),
+    defaults={'key': None, 'domain': None},
+    subdomain='<subdomain>',
+)
+@app.route(
+    '/withdraw/<hashid>/<key>',
+    defaults={'domain': None},
+    methods=('GET', 'POST'),
+    subdomain='<subdomain>',
+)
+@app.route(
+    '/withdraw/<hashid>',
+    methods=('GET', 'POST'),
+    defaults={'key': None, 'domain': None},
+)
+@app.route(
+    '/withdraw/<hashid>/<key>', defaults={'domain': None}, methods=('GET', 'POST')
+)
 def withdraw(domain, hashid, key):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()
     form = forms.WithdrawForm()
-    if not ((key is None and g.user is not None and post.admin_is(g.user)) or (key == post.edit_key)):
+    if not (
+        (key is None and g.user is not None and post.admin_is(g.user))
+        or (key == post.edit_key)
+    ):
         abort(403)
     if post.state.WITHDRAWN:
         flash("Your job post has already been withdrawn", "info")
@@ -793,11 +1130,28 @@ def withdraw(domain, hashid, key):
     return render_template("withdraw.html.jinja2", post=post, form=form)
 
 
-@app.route('/<domain>/<hashid>/edit', methods=('GET', 'POST'), defaults={'key': None}, subdomain='<subdomain>')
+@app.route(
+    '/<domain>/<hashid>/edit',
+    methods=('GET', 'POST'),
+    defaults={'key': None},
+    subdomain='<subdomain>',
+)
 @app.route('/<domain>/<hashid>/edit', methods=('GET', 'POST'), defaults={'key': None})
-@app.route('/edit/<hashid>', methods=('GET', 'POST'), defaults={'key': None, 'domain': None}, subdomain='<subdomain>')
-@app.route('/edit/<hashid>/<key>', defaults={'domain': None}, methods=('GET', 'POST'), subdomain='<subdomain>')
-@app.route('/edit/<hashid>', methods=('GET', 'POST'), defaults={'key': None, 'domain': None})
+@app.route(
+    '/edit/<hashid>',
+    methods=('GET', 'POST'),
+    defaults={'key': None, 'domain': None},
+    subdomain='<subdomain>',
+)
+@app.route(
+    '/edit/<hashid>/<key>',
+    defaults={'domain': None},
+    methods=('GET', 'POST'),
+    subdomain='<subdomain>',
+)
+@app.route(
+    '/edit/<hashid>', methods=('GET', 'POST'), defaults={'key': None, 'domain': None}
+)
 @app.route('/edit/<hashid>/<key>', defaults={'domain': None}, methods=('GET', 'POST'))
 def editjob(hashid, key, domain=None, form=None, validated=False, newpost=None):
     if form is None:
@@ -812,7 +1166,10 @@ def editjob(hashid, key, domain=None, form=None, validated=False, newpost=None):
 
     if not newpost:
         post = JobPost.query.filter_by(hashid=hashid).first_or_404()
-        if not ((key is None and g.user is not None and post.admin_is(g.user)) or (key == post.edit_key)):
+        if not (
+            (key is None and g.user is not None and post.admin_is(g.user))
+            or (key == post.edit_key)
+        ):
             abort(403)
 
         # Once this post is published, require editing at /domain/<hashid>/edit
@@ -822,12 +1179,21 @@ def editjob(hashid, key, domain=None, form=None, validated=False, newpost=None):
         # Don't allow editing jobs that aren't on this board as that may be a loophole when
         # the board allows no pay (except in the 'www' root board, where editing is always allowed)
         with db.session.no_autoflush:
-            if g.board and g.board.not_root and post.link_to_board(g.board) is None and request.method == 'GET':
+            if (
+                g.board
+                and g.board.not_root
+                and post.link_to_board(g.board) is None
+                and request.method == 'GET'
+            ):
                 blink = post.postboards.first()
                 if blink:
-                    return redirect(post.url_for('edit', subdomain=blink.board.name, _external=True))
+                    return redirect(
+                        post.url_for('edit', subdomain=blink.board.name, _external=True)
+                    )
                 else:
-                    return redirect(post.url_for('edit', subdomain=None, _external=True))
+                    return redirect(
+                        post.url_for('edit', subdomain=None, _external=True)
+                    )
 
         # Don't allow email address to be changed once it's confirmed
         if not post.state.UNPUBLISHED:
@@ -837,19 +1203,37 @@ def editjob(hashid, key, domain=None, form=None, validated=False, newpost=None):
         # del form.poster_name  # Deprecated 2013-11-20
         form.poster_email.data = post.email
     if request.method == 'POST' and (validated or form.validate()):
-        form_description = bleach.linkify(bleach.clean(form.job_description.data, tags=ALLOWED_TAGS))
-        form_perks = bleach.linkify(bleach.clean(form.job_perks_description.data, tags=ALLOWED_TAGS)) if form.job_perks.data else ''
+        form_description = bleach.linkify(
+            bleach.clean(form.job_description.data, tags=ALLOWED_TAGS)
+        )
+        form_perks = (
+            bleach.linkify(
+                bleach.clean(form.job_perks_description.data, tags=ALLOWED_TAGS)
+            )
+            if form.job_perks.data
+            else ''
+        )
         form_how_to_apply = form.job_how_to_apply.data
         form_email_domain = get_email_domain(form.poster_email.data)
-        form_words = get_word_bag(' '.join((form_description, form_perks, form_how_to_apply)))
+        form_words = get_word_bag(
+            ' '.join((form_description, form_perks, form_how_to_apply))
+        )
 
         similar = False
         with db.session.no_autoflush:
-            for oldpost in JobPost.query.filter(
-                db.or_(
-                    db.and_(JobPost.email_domain == form_email_domain, ~JobPost.state.UNPUBLISHED),
-                    JobPost.state.SPAM)
-                    ).filter(JobPost.state.LISTED).all():
+            for oldpost in (
+                JobPost.query.filter(
+                    db.or_(
+                        db.and_(
+                            JobPost.email_domain == form_email_domain,
+                            ~(JobPost.state.UNPUBLISHED),
+                        ),
+                        JobPost.state.SPAM,
+                    )
+                )
+                .filter(JobPost.state.LISTED)
+                .all()
+            ):
                 if not post or (oldpost.id != post.id):
                     if oldpost.words:
                         s = SequenceMatcher(None, form_words, oldpost.words)
@@ -858,8 +1242,11 @@ def editjob(hashid, key, domain=None, form=None, validated=False, newpost=None):
                             break
 
         if similar:
-            flash("This post is very similar to an earlier post. You may not repost the same job "
-                "in less than %d days." % agelimit.days, category='interactive')
+            flash(
+                "This post is very similar to an earlier post. You may not repost the same job "
+                "in less than %d days." % agelimit.days,
+                category='interactive',
+            )
         else:
             if newpost:
                 post = JobPost(**newpost)
@@ -918,14 +1305,18 @@ def editjob(hashid, key, domain=None, form=None, validated=False, newpost=None):
                     # by the form's email validator
                     post.domain = Domain.get(post.email_domain, create=True)
                     if not post.domain.is_webmail and not post.domain.title:
-                        post.domain.title, post.domain.legal_title = common_legal_names(post.company_name)
+                        post.domain.title, post.domain.legal_title = common_legal_names(
+                            post.company_name
+                        )
             # To protect from gaming, don't allow words to be removed in edited posts once the post
             # has been confirmed. Just add the new words.
             if not post.state.UNPUBLISHED:
                 prev_words = post.words or ''
             else:
                 prev_words = ''
-            post.words = get_word_bag(' '.join((prev_words, form_description, form_perks, form_how_to_apply)))
+            post.words = get_word_bag(
+                ' '.join((prev_words, form_description, form_perks, form_how_to_apply))
+            )
 
             post.language, post.language_confidence = identify_language(post)
 
@@ -942,7 +1333,7 @@ def editjob(hashid, key, domain=None, form=None, validated=False, newpost=None):
                     post.company_logo = None
 
             db.session.commit()
-            tag_jobpost.queue(post.id)    # Keywords
+            tag_jobpost.queue(post.id)  # Keywords
             tag_locations.queue(post.id)  # Locations
             post.uncache_viewcounts('pay_label')
             session.pop('userkeys', None)  # Remove legacy userkeys dict
@@ -963,9 +1354,14 @@ def newjob():
     form = forms.ListingForm()
     archived_post = None
     if not g.user:
-        return redirect(url_for('login', next=url_for('newjob'),
-            message="Hasjob now requires you to login before posting a job. Please login as yourself."
-                " We'll add details about your company later"))
+        return redirect(
+            url_for(
+                'login',
+                next=url_for('newjob'),
+                message="Hasjob now requires you to login before posting a job. Please login as yourself."
+                " We'll add details about your company later",
+            )
+        )
     else:
         if g.user.blocked:
             flash("Your account has been blocked from posting jobs", category='info')
@@ -981,9 +1377,18 @@ def newjob():
     form.job_category.choices = JobCategory.choices(g.board)
 
     if request.method == 'GET':
-        header_campaign = Campaign.for_context(CAMPAIGN_POSITION.BEFOREPOST, board=g.board, user=g.user,
-                anon_user=g.anon_user, geonameids=g.user_geonameids)
-        if g.user and g.user.email and not is_public_email_domain(g.user.email, default=False):
+        header_campaign = Campaign.for_context(
+            CAMPAIGN_POSITION.BEFOREPOST,
+            board=g.board,
+            user=g.user,
+            anon_user=g.anon_user,
+            geonameids=g.user_geonameids,
+        )
+        if (
+            g.user
+            and g.user.email
+            and not is_public_email_domain(g.user.email, default=False)
+        ):
             # form.poster_name.data = g.user.fullname  # Deprecated 2013-11-20
             form.poster_email.data = g.user.email
     else:
@@ -1009,9 +1414,11 @@ def newjob():
             'hashid': unique_hash(JobPost),
             'ipaddr': request.environ['REMOTE_ADDR'],
             'useragent': request.user_agent.string,
-            'user': g.user
-            }
-        return editjob(hashid=None, key=None, form=form, validated=True, newpost=newpost)
+            'user': g.user,
+        }
+        return editjob(
+            hashid=None, key=None, form=form, validated=True, newpost=newpost
+        )
     elif form.errors:
         # POST request from new job page, with errors
         flash("Please review the indicated issues", category='interactive')
@@ -1019,11 +1426,21 @@ def newjob():
     # Render page. Execution reaches here under three conditions:
     # 1. GET request, page loaded for the first time
     # 2. POST request from this page, with errors
-    return render_template('postjob.html.jinja2', form=form, no_removelogo=True, archived_post=archived_post,
-        header_campaign=header_campaign)
+    return render_template(
+        'postjob.html.jinja2',
+        form=form,
+        no_removelogo=True,
+        archived_post=archived_post,
+        header_campaign=header_campaign,
+    )
 
 
-@app.route('/<domain>/<hashid>/close', methods=('GET', 'POST'), defaults={'key': None}, subdomain='<subdomain>')
+@app.route(
+    '/<domain>/<hashid>/close',
+    methods=('GET', 'POST'),
+    defaults={'key': None},
+    subdomain='<subdomain>',
+)
 @app.route('/<domain>/<hashid>/close', methods=('GET', 'POST'), defaults={'key': None})
 def close(domain, hashid, key):
     post = JobPost.get(hashid)
@@ -1047,7 +1464,12 @@ def close(domain, hashid, key):
     return render_template("close.html.jinja2", post=post, form=form)
 
 
-@app.route('/<domain>/<hashid>/reopen', methods=('GET', 'POST'), defaults={'key': None}, subdomain='<subdomain>')
+@app.route(
+    '/<domain>/<hashid>/reopen',
+    methods=('GET', 'POST'),
+    defaults={'key': None},
+    subdomain='<subdomain>',
+)
 @app.route('/<domain>/<hashid>/reopen', methods=('GET', 'POST'), defaults={'key': None})
 def reopen(domain, hashid, key):
     post = JobPost.query.filter_by(hashid=hashid).first_or_404()

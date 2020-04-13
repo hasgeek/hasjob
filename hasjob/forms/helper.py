@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from baseframe import forms
+
 from .. import app
 
 __all__ = ['content_css', 'invalid_urls', 'optional_url']
@@ -23,7 +24,9 @@ def optional_url(form, field):
     else:
         if '://' not in field.data:
             field.data = 'http://' + field.data
-        validator = forms.validators.URL(message="This does not appear to be a valid URL.")
+        validator = forms.validators.URL(
+            message="This does not appear to be a valid URL."
+        )
         try:
             return validator(form, field)
         except forms.ValidationError as e:

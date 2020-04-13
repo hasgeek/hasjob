@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Dismissed campaign
 
 Revision ID: 241feed6748b
@@ -15,7 +16,10 @@ import sqlalchemy as sa
 
 
 def upgrade():
-    op.add_column('campaign_view', sa.Column('dismissed', sa.Boolean(), nullable=False, server_default='0'))
+    op.add_column(
+        'campaign_view',
+        sa.Column('dismissed', sa.Boolean(), nullable=False, server_default='0'),
+    )
     op.alter_column('campaign_view', 'dismissed', server_default=None)
 
 

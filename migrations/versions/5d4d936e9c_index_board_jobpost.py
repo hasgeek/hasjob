@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Index board jobpost
 
 Revision ID: 5d4d936e9c
@@ -14,7 +15,12 @@ from alembic import op
 
 
 def upgrade():
-    op.create_index(op.f('ix_board_jobpost_jobpost_id'), 'board_jobpost', ['jobpost_id'], unique=False)
+    op.create_index(
+        op.f('ix_board_jobpost_jobpost_id'),
+        'board_jobpost',
+        ['jobpost_id'],
+        unique=False,
+    )
 
 
 def downgrade():

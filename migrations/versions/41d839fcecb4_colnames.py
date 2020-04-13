@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """jobapps
 
 Revision ID: 41d839fcecb4
@@ -15,21 +16,59 @@ import sqlalchemy as sa
 
 
 def upgrade():
-    op.add_column('jobcategory', sa.Column('created_at', sa.DateTime(), nullable=False, server_default=sa.func.now()))
-    op.add_column('jobcategory', sa.Column('updated_at', sa.DateTime(), nullable=False, server_default=sa.func.now()))
+    op.add_column(
+        'jobcategory',
+        sa.Column(
+            'created_at', sa.DateTime(), nullable=False, server_default=sa.func.now()
+        ),
+    )
+    op.add_column(
+        'jobcategory',
+        sa.Column(
+            'updated_at', sa.DateTime(), nullable=False, server_default=sa.func.now()
+        ),
+    )
     op.alter_column('jobcategory', 'slug', new_column_name='name')
 
-    op.add_column('jobtype', sa.Column('created_at', sa.DateTime(), nullable=False, server_default=sa.func.now()))
-    op.add_column('jobtype', sa.Column('updated_at', sa.DateTime(), nullable=False, server_default=sa.func.now()))
+    op.add_column(
+        'jobtype',
+        sa.Column(
+            'created_at', sa.DateTime(), nullable=False, server_default=sa.func.now()
+        ),
+    )
+    op.add_column(
+        'jobtype',
+        sa.Column(
+            'updated_at', sa.DateTime(), nullable=False, server_default=sa.func.now()
+        ),
+    )
     op.alter_column('jobtype', 'slug', new_column_name='name')
 
-    op.add_column('reportcode', sa.Column('created_at', sa.DateTime(), nullable=False, server_default=sa.func.now()))
-    op.add_column('reportcode', sa.Column('updated_at', sa.DateTime(), nullable=False, server_default=sa.func.now()))
+    op.add_column(
+        'reportcode',
+        sa.Column(
+            'created_at', sa.DateTime(), nullable=False, server_default=sa.func.now()
+        ),
+    )
+    op.add_column(
+        'reportcode',
+        sa.Column(
+            'updated_at', sa.DateTime(), nullable=False, server_default=sa.func.now()
+        ),
+    )
     op.alter_column('reportcode', 'slug', new_column_name='name')
 
     op.alter_column('jobpost', 'created_datetime', new_column_name='created_at')
-    op.add_column('jobpost', sa.Column('updated_at', sa.DateTime(), nullable=False, server_default=sa.func.now()))
-    op.add_column('jobpost', sa.Column('user_id', sa.Integer(), sa.ForeignKey('user.id'), nullable=True))
+    op.add_column(
+        'jobpost',
+        sa.Column(
+            'updated_at', sa.DateTime(), nullable=False, server_default=sa.func.now()
+        ),
+    )
+    op.add_column(
+        'jobpost',
+        sa.Column('user_id', sa.Integer(), sa.ForeignKey('user.id'), nullable=True),
+    )
     op.drop_column('jobpost', 'reviewer')
 
 

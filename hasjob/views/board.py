@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
-from flask import g, abort, flash, url_for, redirect, request
-from coaster.views import load_model, load_models
+from flask import abort, flash, g, redirect, request, url_for
+
 # from baseframe import dogpile
-from baseframe.forms import render_form, render_delete_sqla, render_redirect
+from baseframe.forms import render_delete_sqla, render_form, render_redirect
+from coaster.views import load_model, load_models
+
 from .. import app, lastuser
-from ..models import db, Board, JobPost
 from ..forms import BoardForm
+from ..models import Board, JobPost, db
 
 
 @app.url_value_preprocessor
@@ -57,10 +59,16 @@ def board_new():
         db.session.commit()
         flash("Created a job board named %s" % board.title, 'success')
         return render_redirect(url_for('board_view', board=board.name), code=303)
-    return render_form(form=form, title="Create a job board…", submit="Next",
+    return render_form(
+        form=form,
+        title="Create a job board…",
+        submit="Next",
         message="Make your own job board with just the jobs you want to showcase. "
-            "Your board will appear as a subdomain",
-        formid="board_new", cancel_url=url_for('index'), ajax=False)
+        "Your board will appear as a subdomain",
+        formid="board_new",
+        cancel_url=url_for('index'),
+        ajax=False,
+    )
 
 
 @app.route('/edit', subdomain='<subdomain>')
@@ -70,7 +78,13 @@ def board_edit_subdomain():
 
 @app.route('/board/<board>/edit', methods=['GET', 'POST'])
 @lastuser.requires_login
-@load_model(Board, {'name': 'board'}, 'board', permission=('edit', 'siteadmin'), addlperms=lastuser.permissions)
+@load_model(
+    Board,
+    {'name': 'board'},
+    'board',
+    permission=('edit', 'siteadmin'),
+    addlperms=lastuser.permissions,
+)
 def board_edit(board):
     form = BoardForm(obj=board)
     if 'siteadmin' not in lastuser.permissions():
@@ -88,18 +102,28 @@ def board_edit(board):
         flash("Edited board settings.", 'success')
         return render_redirect(url_for('index', subdomain=board.name), code=303)
 
-    return render_form(form=form, title="Edit board settings", submit="Save",
-        formid="board_edit", cancel_url=url_for('index', subdomain=board.name), ajax=False)
+    return render_form(
+        form=form,
+        title="Edit board settings",
+        submit="Save",
+        formid="board_edit",
+        cancel_url=url_for('index', subdomain=board.name),
+        ajax=False,
+    )
 
 
 @app.route('/board/<board>/delete', methods=['GET', 'POST'])
 @lastuser.requires_login
 @load_model(Board, {'name': 'board'}, 'board', permission='delete')
 def board_delete(board):
-    return render_delete_sqla(board, db, title="Confirm delete",
+    return render_delete_sqla(
+        board,
+        db,
+        title="Confirm delete",
         message="Delete board '%s'?" % board.title,
         success="You have deleted board '%s'." % board.title,
-        next=url_for('index'))
+        next=url_for('index'),
+    )
 
 
 @app.route('/board/<board>')
@@ -112,7 +136,8 @@ def board_view(board):
 @load_models(
     (Board, {'name': 'board'}, 'board'),
     (JobPost, {'hashid': 'hashid'}, 'jobpost'),
-    permission='add')
+    permission='add',
+)
 # FIXME: Should be a POST request
 def board_add(board, jobpost):
     board.add(jobpost)

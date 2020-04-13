@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """JobApplication.replied_by
 
 Revision ID: 470c8feb73cc
@@ -15,7 +16,9 @@ import sqlalchemy as sa
 
 
 def upgrade():
-    op.add_column('job_application', sa.Column('replied_by_id', sa.Integer(), nullable=True))
+    op.add_column(
+        'job_application', sa.Column('replied_by_id', sa.Integer(), nullable=True)
+    )
 
 
 def downgrade():

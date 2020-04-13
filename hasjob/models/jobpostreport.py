@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 from . import db
-from .user import User
 from .jobpost import JobPost
 from .reportcode import ReportCode
+from .user import User
 
 __all__ = ['JobPostReport']
 
@@ -12,14 +12,21 @@ __all__ = ['JobPostReport']
 class JobPostReport(db.Model):
     __tablename__ = 'jobpostreport'
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)  # NOQA: A003
     user_id = db.Column(None, db.ForeignKey('user.id'), nullable=True)
     user = db.relationship(User)
-    datetime = db.Column(db.TIMESTAMP(timezone=True), default=db.func.utcnow(), nullable=False)
+    datetime = db.Column(
+        db.TIMESTAMP(timezone=True), default=db.func.utcnow(), nullable=False
+    )
     post_id = db.Column(db.Integer, db.ForeignKey('jobpost.id'), nullable=False)
-    post = db.relation(JobPost, primaryjoin=post_id == JobPost.id,
-        backref=db.backref('flags', cascade='all, delete-orphan'))
-    reportcode_id = db.Column(db.Integer, db.ForeignKey('reportcode.id'), nullable=False)
+    post = db.relation(
+        JobPost,
+        primaryjoin=post_id == JobPost.id,
+        backref=db.backref('flags', cascade='all, delete-orphan'),
+    )
+    reportcode_id = db.Column(
+        db.Integer, db.ForeignKey('reportcode.id'), nullable=False
+    )
     reportcode = db.relation(ReportCode, primaryjoin=reportcode_id == ReportCode.id)
     report_code = db.synonym('reportcode_id')
 

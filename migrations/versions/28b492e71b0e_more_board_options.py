@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """More board options
 
 Revision ID: 28b492e71b0e
@@ -16,8 +17,13 @@ import sqlalchemy as sa
 
 def upgrade():
     op.add_column('board', sa.Column('newjob_blurb', sa.UnicodeText(), nullable=True))
-    op.add_column('board', sa.Column('newjob_headline', sa.Unicode(length=100), nullable=True))
-    op.add_column('board', sa.Column('require_login', sa.Boolean(), nullable=False, server_default='1'))
+    op.add_column(
+        'board', sa.Column('newjob_headline', sa.Unicode(length=100), nullable=True)
+    )
+    op.add_column(
+        'board',
+        sa.Column('require_login', sa.Boolean(), nullable=False, server_default='1'),
+    )
     op.alter_column('board', 'require_login', server_default=None)
 
 

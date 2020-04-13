@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Campaign action sorting sequence and icon
 
 Revision ID: 49b48df19d82
@@ -15,7 +16,9 @@ import sqlalchemy as sa
 
 
 def upgrade():
-    op.add_column('campaign_action', sa.Column('icon', sa.Unicode(length=20), nullable=True))
+    op.add_column(
+        'campaign_action', sa.Column('icon', sa.Unicode(length=20), nullable=True)
+    )
     op.add_column('campaign_action', sa.Column('seq', sa.Integer(), nullable=False))
 
 

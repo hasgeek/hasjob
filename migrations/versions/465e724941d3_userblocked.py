@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """userblocked
 
 Revision ID: 465e724941d3
@@ -15,7 +16,12 @@ import sqlalchemy as sa
 
 
 def upgrade():
-    op.add_column('user', sa.Column('blocked', sa.Boolean(), nullable=False, server_default=sa.sql.false()))
+    op.add_column(
+        'user',
+        sa.Column(
+            'blocked', sa.Boolean(), nullable=False, server_default=sa.sql.false()
+        ),
+    )
     op.alter_column('user', 'blocked', server_default=None)
 
 

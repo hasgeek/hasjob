@@ -1,5 +1,7 @@
+# -*- coding: utf-8 -*-
 from flask import render_template
-from hasjob import app
+
+from .. import app
 
 
 @app.errorhandler(403)

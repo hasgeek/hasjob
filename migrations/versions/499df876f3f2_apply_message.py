@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """apply_message
 
 Revision ID: 499df876f3f2
@@ -17,20 +18,22 @@ import sqlalchemy as sa
 def upgrade():
     op.alter_column('job_application', 'message_html', new_column_name='message')
     op.drop_column('job_application', 'message_text')
-    op.alter_column('job_application', 'email',
-               existing_type=sa.VARCHAR(length=80),
-               nullable=False)
-    op.alter_column('job_application', 'phone',
-               existing_type=sa.VARCHAR(length=80),
-               nullable=False)
+    op.alter_column(
+        'job_application', 'email', existing_type=sa.VARCHAR(length=80), nullable=False
+    )
+    op.alter_column(
+        'job_application', 'phone', existing_type=sa.VARCHAR(length=80), nullable=False
+    )
 
 
 def downgrade():
-    op.alter_column('job_application', 'phone',
-               existing_type=sa.VARCHAR(length=80),
-               nullable=True)
-    op.alter_column('job_application', 'email',
-               existing_type=sa.VARCHAR(length=80),
-               nullable=True)
+    op.alter_column(
+        'job_application', 'phone', existing_type=sa.VARCHAR(length=80), nullable=True
+    )
+    op.alter_column(
+        'job_application', 'email', existing_type=sa.VARCHAR(length=80), nullable=True
+    )
     op.alter_column('job_application', 'message', new_column_name='message_html')
-    op.add_column('job_application', sa.Column('message_text', sa.TEXT(), nullable=True))
+    op.add_column(
+        'job_application', sa.Column('message_text', sa.TEXT(), nullable=True)
+    )

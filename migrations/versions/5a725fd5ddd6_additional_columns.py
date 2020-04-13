@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Additional columns
 
 Revision ID: 5a725fd5ddd6
@@ -15,8 +16,12 @@ import sqlalchemy as sa
 
 
 def upgrade():
-    op.add_column('user_event', sa.Column('ipaddr', sa.Unicode(length=45), nullable=True))
-    op.add_column('user_event', sa.Column('useragent', sa.Unicode(length=250), nullable=True))
+    op.add_column(
+        'user_event', sa.Column('ipaddr', sa.Unicode(length=45), nullable=True)
+    )
+    op.add_column(
+        'user_event', sa.Column('useragent', sa.Unicode(length=250), nullable=True)
+    )
 
 
 def downgrade():
