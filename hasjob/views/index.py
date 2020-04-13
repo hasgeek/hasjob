@@ -1,26 +1,77 @@
 # -*- coding: utf-8 -*-
 
-from uuid import uuid4
+from six.moves.urllib.parse import SplitResult, urlsplit
+
 from collections import OrderedDict
-from six.moves.urllib.parse import urlsplit, SplitResult
+from uuid import uuid4
 
 from sqlalchemy.exc import ProgrammingError
-from flask import abort, redirect, render_template, request, Response, url_for, g, flash, jsonify, Markup
-from coaster.utils import getbool, parse_isoformat, for_tsquery, utcnow, ParseError
-from coaster.views import render_with, requestargs, endpoint_for
+
+from flask import (
+    Markup,
+    Response,
+    abort,
+    flash,
+    g,
+    jsonify,
+    redirect,
+    render_template,
+    request,
+    url_for,
+)
+
 from baseframe import _, request_is_xhr  # , dogpile
+from coaster.utils import ParseError, for_tsquery, getbool, parse_isoformat, utcnow
+from coaster.views import endpoint_for, render_with, requestargs
 
 from .. import app, lastuser
-from ..models import (db, JobCategory, JobPost, JobType, newlimit, agelimit, JobLocation, Board, Filterset,
-    Domain, Location, Tag, JobPostTag, Campaign, CAMPAIGN_POSITION, CURRENCY, JobApplication, starred_job_table, BoardJobPost)
-from ..views.helper import (getposts, getallposts, gettags, location_geodata, load_viewcounts, session_jobpost_ab,
-    bgroup, make_pay_graph, index_is_paginated, get_post_viewcounts, get_max_counts)
+from ..models import (
+    CAMPAIGN_POSITION,
+    CURRENCY,
+    Board,
+    BoardJobPost,
+    Campaign,
+    Domain,
+    Filterset,
+    JobApplication,
+    JobCategory,
+    JobLocation,
+    JobPost,
+    JobPostTag,
+    JobType,
+    Location,
+    Tag,
+    agelimit,
+    db,
+    newlimit,
+    starred_job_table,
+)
 from ..uploads import uploaded_logos
 from ..utils import string_to_number, strip_null
+from ..views.helper import (
+    bgroup,
+    get_max_counts,
+    get_post_viewcounts,
+    getallposts,
+    getposts,
+    gettags,
+    index_is_paginated,
+    load_viewcounts,
+    location_geodata,
+    make_pay_graph,
+    session_jobpost_ab,
+)
 
 
-def stickie_dict(post, url, pinned=False, show_viewcounts=False, show_pay=False,
-        starred=False, is_bgroup=None):
+def stickie_dict(
+    post,
+    url,
+    pinned=False,
+    show_viewcounts=False,
+    show_pay=False,
+    starred=False,
+    is_bgroup=None,
+):
     if show_viewcounts or show_pay:
         post_viewcounts = get_post_viewcounts(post.id)
     result = {
@@ -33,14 +84,14 @@ def stickie_dict(post, url, pinned=False, show_viewcounts=False, show_pay=False,
         'parsed_location': post.parsed_location,
         'company_name': post.company_name,
         'company_logo': post.url_for('logo'),
-        }
+    }
     if show_viewcounts:
         result['viewcounts'] = {
             'listed': post_viewcounts['impressions'],
             'viewed': post_viewcounts['viewed'],
             'opened': post_viewcounts['opened'],
-            'applied': post_viewcounts['applied']
-            }
+            'applied': post_viewcounts['applied'],
+        }
     if show_pay:
         result['pay'] = post_viewcounts['pay_label']
     return result
@@ -55,14 +106,11 @@ def json_index(data):
     result = {
         'grouped': [],
         'posts': [],
-        'loadmore': loadmore.isoformat() + 'Z' if loadmore else None
-        }
+        'loadmore': loadmore.isoformat() + 'Z' if loadmore else None,
+    }
     if grouped:
         for grouping, group in grouped.items():
-            rgroup = {
-                'url': None,
-                'posts': []
-                }
+            rgroup = {'url': None, 'posts': []}
 
             # First, process the first item to get a URL for the entire group
             pinned, post, is_bgroup = group[0]
@@ -74,24 +122,60 @@ def json_index(data):
                 rgroup['url'] = url_for('browse_by_email', md5sum=grouping[1])
 
             for pinned, post, is_bgroup in group:
-                rgroup['posts'].append(stickie_dict(
-                    post=post, url=post.url_for(b=is_bgroup), pinned=pinned, is_bgroup=is_bgroup,
-                    show_viewcounts=is_siteadmin or g.user and g.user.flags.get('is_employer_month'),
-                    show_pay=is_siteadmin, starred=g.user and post.id in g.starred_ids
-                    ))
+                rgroup['posts'].append(
+                    stickie_dict(
+                        post=post,
+                        url=post.url_for(b=is_bgroup),
+                        pinned=pinned,
+                        is_bgroup=is_bgroup,
+                        show_viewcounts=is_siteadmin
+                        or g.user
+                        and g.user.flags.get('is_employer_month'),
+                        show_pay=is_siteadmin,
+                        starred=g.user and post.id in g.starred_ids,
+                    )
+                )
             result['grouped'].append(rgroup)
     if pinsandposts:
         for pinned, post, is_bgroup in pinsandposts:
-            result['posts'].append(stickie_dict(
-                post=post, url=post.url_for(b=is_bgroup), pinned=pinned, is_bgroup=is_bgroup,
-                show_viewcounts=is_siteadmin or g.user and g.user.flags.get('is_employer_month'),
-                show_pay=is_siteadmin, starred=g.user and post.id in g.starred_ids
-                ))
+            result['posts'].append(
+                stickie_dict(
+                    post=post,
+                    url=post.url_for(b=is_bgroup),
+                    pinned=pinned,
+                    is_bgroup=is_bgroup,
+                    show_viewcounts=is_siteadmin
+                    or g.user
+                    and g.user.flags.get('is_employer_month'),
+                    show_pay=is_siteadmin,
+                    starred=g.user and post.id in g.starred_ids,
+                )
+            )
 
     return jsonify(result)
 
 
-def fetch_jobposts(request_args, request_values, filters, is_index, board, board_jobs, gkiosk, basequery, md5sum, domain, location, title, showall, statusfilter, batched, ageless, template_vars, search_query=None, query_string=None):
+def fetch_jobposts(
+    request_args,
+    request_values,
+    filters,
+    is_index,
+    board,
+    board_jobs,
+    gkiosk,
+    basequery,
+    md5sum,
+    domain,
+    location,
+    title,
+    showall,
+    statusfilter,
+    batched,
+    ageless,
+    template_vars,
+    search_query=None,
+    query_string=None,
+):
     if basequery is None:
         basequery = JobPost.query
 
@@ -110,7 +194,9 @@ def fetch_jobposts(request_args, request_values, filters, is_index, board, board
     f_categories = [strip_null(f_category) for f_category in f_categories]
     if f_categories:
         data_filters['categories'] = f_categories
-        basequery = basequery.join(JobCategory).filter(JobCategory.name.in_(f_categories))
+        basequery = basequery.join(JobCategory).filter(
+            JobCategory.name.in_(f_categories)
+        )
 
     f_domains = filters.get('d') or request_args.getlist('d')
     while '' in f_domains:
@@ -126,11 +212,15 @@ def fetch_jobposts(request_args, request_values, filters, is_index, board, board
     if f_tags:
         basequery = basequery.join(JobPostTag).join(Tag).filter(Tag.name.in_(f_tags))
 
-    data_filters['location_names'] = r_locations = filters.get('l') or request_args.getlist('l')
+    data_filters['location_names'] = r_locations = filters.get(
+        'l'
+    ) or request_args.getlist('l')
     if location:
         r_locations.append(location['geonameid'])
     f_locations = []
-    remote_location = getbool(filters.get('anywhere') or request_args.get('anywhere')) or False
+    remote_location = (
+        getbool(filters.get('anywhere') or request_args.get('anywhere')) or False
+    )
     if remote_location:
         data_filters['location_names'].append('anywhere')
     for rl in r_locations:
@@ -144,16 +234,20 @@ def fetch_jobposts(request_args, request_values, filters, is_index, board, board
             ld = location_geodata(rl)
             if ld:
                 f_locations.append(ld['geonameid'])
-    remote_location_query = basequery.filter(JobPost.remote_location == True)  # NOQA
+    remote_location_query = basequery.filter(JobPost.remote_location.is_(True))
     if f_locations:
-        locations_query = basequery.join(JobLocation).filter(JobLocation.geonameid.in_(f_locations))
+        locations_query = basequery.join(JobLocation).filter(
+            JobLocation.geonameid.in_(f_locations)
+        )
     else:
         locations_query = basequery.join(JobLocation)
     if f_locations and remote_location:
         data_filters['locations'] = f_locations
         data_filters['anywhere'] = True
         recency = JobPost.state.LISTED
-        basequery = locations_query.filter(recency).union(remote_location_query.filter(recency))
+        basequery = locations_query.filter(recency).union(
+            remote_location_query.filter(recency)
+        )
     elif f_locations:
         data_filters['locations'] = f_locations
         basequery = locations_query
@@ -172,11 +266,19 @@ def fetch_jobposts(request_args, request_values, filters, is_index, board, board
     if getbool(filters.get('equity') or request_args.get('equity')):
         # Only works as a positive filter: you can't search for jobs that DON'T pay in equity
         data_filters['equity'] = True
-        basequery = basequery.filter(JobPost.pay_equity_min != None)  # NOQA
+        basequery = basequery.filter(JobPost.pay_equity_min.isnot(None))
 
-    if filters.get('pay') or 'pay' in request_args or ('pmin' in request_args and 'pmax' in request_args):
+    if (
+        filters.get('pay')
+        or 'pay' in request_args
+        or ('pmin' in request_args and 'pmax' in request_args)
+    ):
         if 'pay' in request_args or filters.get('pay'):
-            f_pay = filters['pay'] if filters.get('pay') else string_to_number(request_args['pay'])
+            f_pay = (
+                filters['pay']
+                if filters.get('pay')
+                else string_to_number(request_args['pay'])
+            )
             if f_pay is not None:
                 f_min = int(f_pay * 0.90)
                 f_max = int(f_pay * 1.30)
@@ -190,7 +292,9 @@ def fetch_jobposts(request_args, request_values, filters, is_index, board, board
             f_pay = f_min  # Use min for pay now
         if f_pay is not None and f_min is not None and f_max is not None:
             data_filters['pay'] = f_pay
-            basequery = basequery.filter(JobPost.pay_cash_min < f_max, JobPost.pay_cash_max >= f_min)
+            basequery = basequery.filter(
+                JobPost.pay_cash_min < f_max, JobPost.pay_cash_max >= f_min
+            )
     else:
         f_pay = None
         f_min = None
@@ -204,13 +308,21 @@ def fetch_jobposts(request_args, request_values, filters, is_index, board, board
     if query_string:
         data_filters['query'] = search_query
         data_filters['query_string'] = query_string
-        basequery = basequery.filter(JobPost.search_vector.match(search_query, postgresql_regconfig='english'))
+        basequery = basequery.filter(
+            JobPost.search_vector.match(search_query, postgresql_regconfig='english')
+        )
 
     if data_filters:
         showall = True
         batched = True
 
-    posts = getposts(basequery, pinned=True, showall=showall, statusfilter=statusfilter, ageless=ageless).all()
+    posts = getposts(
+        basequery,
+        pinned=True,
+        showall=showall,
+        statusfilter=statusfilter,
+        ageless=ageless,
+    ).all()
 
     if getbool(request_args.get('embed')):
         embed = True
@@ -235,23 +347,28 @@ def fetch_jobposts(request_args, request_values, filters, is_index, board, board
         for post in posts:
             pinned = post.pinned
             if board is not None:
-                blink = board_jobs.get(post.id)  # board_jobs only contains the last 30 days, no archive
+                # board_jobs only contains the last 30 days, no archive
+                blink = board_jobs.get(post.id)
                 if blink is not None:
                     pinned = blink.pinned
             if pinned:
                 # Make pinned posts appear in a group of one
                 grouped.setdefault(('s', post.hashid), []).append(
-                    (pinned, post, bgroup(jobpost_ab, post)))
+                    (pinned, post, bgroup(jobpost_ab, post))
+                )
             elif post.state.ANNOUNCEMENT:
                 # Make announcements also appear in a group of one
                 grouped.setdefault(('a', post.hashid), []).append(
-                    (pinned, post, bgroup(jobpost_ab, post)))
+                    (pinned, post, bgroup(jobpost_ab, post))
+                )
             elif post.domain.is_webmail:
                 grouped.setdefault(('ne', post.md5sum), []).append(
-                    (pinned, post, bgroup(jobpost_ab, post)))
+                    (pinned, post, bgroup(jobpost_ab, post))
+                )
             else:
                 grouped.setdefault(('nd', post.email_domain), []).append(
-                    (pinned, post, bgroup(jobpost_ab, post)))
+                    (pinned, post, bgroup(jobpost_ab, post))
+                )
         pinsandposts = None
     else:
         grouped = None
@@ -260,12 +377,15 @@ def fetch_jobposts(request_args, request_values, filters, is_index, board, board
             for post in posts:
                 pinned = post.pinned
                 if board is not None:
-                    blink = board_jobs.get(post.id)  # board_jobs only contains the last 30 days, no archive
+                    # board_jobs only contains the last 30 days, no archive
+                    blink = board_jobs.get(post.id)
                     if blink is not None:
                         pinned = blink.pinned
                 pinsandposts.append((pinned, post, bgroup(jobpost_ab, post)))
         else:
-            pinsandposts = [(post.pinned, post, bgroup(jobpost_ab, post)) for post in posts]
+            pinsandposts = [
+                (post.pinned, post, bgroup(jobpost_ab, post)) for post in posts
+            ]
 
     # Pick a header campaign (only if not kiosk or an XHR reload)
     pay_graph_data = None
@@ -276,7 +396,7 @@ def fetch_jobposts(request_args, request_values, filters, is_index, board, board
         startdate = None
         if 'startdate' in request_values:
             try:
-                startdate = parse_isoformat(request_values['startdate'], naive=False)
+                startdate = parse_isoformat(request_values['startdate'].upper(), naive=False)
             except ParseError:
                 abort(400)
 
@@ -290,7 +410,7 @@ def fetch_jobposts(request_args, request_values, filters, is_index, board, board
                 startindex = 0
                 for row in grouped.values():
                     # break when a non-pinned post is encountered
-                    if (not row[0][0]):
+                    if not row[0][0]:
                         break
                     else:
                         pinned_hashids.append(row[0][1].hashid)
@@ -299,10 +419,13 @@ def fetch_jobposts(request_args, request_values, filters, is_index, board, board
                 # nesting structure of 'grouped'
                 for startindex, row in enumerate(grouped.values()):
                     # Skip pinned posts when looking for starting index
-                    if (row[0][1].hashid not in pinned_hashids and row[0][1].datetime < startdate):
+                    if (
+                        row[0][1].hashid not in pinned_hashids
+                        and row[0][1].datetime < startdate
+                    ):
                         break
 
-            batch = list(grouped.items())[startindex:startindex + batchsize]
+            batch = list(grouped.items())[startindex : startindex + batchsize]
             if startindex + batchsize < len(grouped):
                 # Get the datetime of the last group's first item
                 # batch = [((type, domain), [(pinned, post, bgroup), ...])]
@@ -324,10 +447,13 @@ def fetch_jobposts(request_args, request_values, filters, is_index, board, board
             else:
                 for startindex, row in enumerate(pinsandposts):
                     # Skip pinned posts when looking for starting index
-                    if (row[1].hashid not in pinned_hashids and row[1].datetime < startdate):
+                    if (
+                        row[1].hashid not in pinned_hashids
+                        and row[1].datetime < startdate
+                    ):
                         break
 
-            batch = pinsandposts[startindex:startindex + batchsize]
+            batch = pinsandposts[startindex : startindex + batchsize]
             if startindex + batchsize < len(pinsandposts):
                 # batch = [(pinned, post), ...]
                 loadmore = batch[-1][1].datetime
@@ -343,33 +469,107 @@ def fetch_jobposts(request_args, request_values, filters, is_index, board, board
     if pay_graph:
         pay_graph_data = make_pay_graph(pay_graph, posts, rmin=f_min, rmax=f_max)
 
-    return dict(posts=posts, pinsandposts=pinsandposts, grouped=grouped, newlimit=newlimit, title=title,
-        md5sum=md5sum, domain=domain, location=location, employer_name=employer_name,
-        showall=showall, f_locations=f_locations, loadmore=loadmore,
-        query_params=query_params, data_filters=data_filters,
-        pay_graph_data=pay_graph_data, paginated=index_is_paginated(),
-        template_vars=template_vars, embed=embed)
+    return {
+        'posts': posts,
+        'pinsandposts': pinsandposts,
+        'grouped': grouped,
+        'newlimit': newlimit,
+        'title': title,
+        'md5sum': md5sum,
+        'domain': domain,
+        'location': location,
+        'employer_name': employer_name,
+        'showall': showall,
+        'f_locations': f_locations,
+        'loadmore': loadmore,
+        'query_params': query_params,
+        'data_filters': data_filters,
+        'pay_graph_data': pay_graph_data,
+        'paginated': index_is_paginated(),
+        'template_vars': template_vars,
+        'embed': embed,
+    }
 
 
 # @dogpile.region('hasjob_index')
-def fetch_cached_jobposts(request_args, request_values, filters, is_index, board, board_jobs, gkiosk, basequery, md5sum, domain, location, title, showall, statusfilter, batched, ageless, template_vars, search_query=None, query_string=None):
-    return fetch_jobposts(request_args, request_values, filters, is_index, board, board_jobs, gkiosk, basequery, md5sum, domain, location, title, showall, statusfilter, batched, ageless, template_vars, search_query, query_string)
+def fetch_cached_jobposts(
+    request_args,
+    request_values,
+    filters,
+    is_index,
+    board,
+    board_jobs,
+    gkiosk,
+    basequery,
+    md5sum,
+    domain,
+    location,
+    title,
+    showall,
+    statusfilter,
+    batched,
+    ageless,
+    template_vars,
+    search_query=None,
+    query_string=None,
+):
+    return fetch_jobposts(
+        request_args,
+        request_values,
+        filters,
+        is_index,
+        board,
+        board_jobs,
+        gkiosk,
+        basequery,
+        md5sum,
+        domain,
+        location,
+        title,
+        showall,
+        statusfilter,
+        batched,
+        ageless,
+        template_vars,
+        search_query,
+        query_string,
+    )
 
 
 @app.route('/', methods=['GET', 'POST'], subdomain='<subdomain>')
 @app.route('/', methods=['GET', 'POST'])
-@render_with({'text/html': 'index.html.jinja2', 'application/json': json_index}, json=False)
-def index(basequery=None, filters={}, md5sum=None, tag=None, domain=None, location=None, title=None, showall=True, statusfilter=None, batched=True, ageless=False, cached=False, query_string=None, filterset=None, template_vars={}):
+@render_with(
+    {'text/html': 'index.html.jinja2', 'application/json': json_index}, json=False
+)
+def index(
+    basequery=None,
+    filters={},
+    md5sum=None,
+    tag=None,
+    domain=None,
+    location=None,
+    title=None,
+    showall=True,
+    statusfilter=None,
+    batched=True,
+    ageless=False,
+    cached=False,
+    query_string=None,
+    filterset=None,
+    template_vars={},
+):
     now = utcnow()
     is_siteadmin = lastuser.has_permission('siteadmin')
     board = g.board
 
     if board:
-        board_jobs = {r.jobpost_id: r for r in
-            BoardJobPost.query.join(BoardJobPost.jobpost).filter(
-                BoardJobPost.board == g.board, JobPost.state.LISTED).options(
-                    db.load_only('jobpost_id', 'pinned')).all()
-            }
+        board_jobs = {
+            r.jobpost_id: r
+            for r in BoardJobPost.query.join(BoardJobPost.jobpost)
+            .filter(BoardJobPost.board == g.board, JobPost.state.LISTED)
+            .options(db.load_only('jobpost_id', 'pinned'))
+            .all()
+        }
 
     else:
         board_jobs = {}
@@ -378,7 +578,9 @@ def index(basequery=None, filters={}, md5sum=None, tag=None, domain=None, locati
         is_index = True
     else:
         is_index = False
-    if basequery is None and not (g.user or g.kiosk or (board and not board.require_login)):
+    if basequery is None and not (
+        g.user or g.kiosk or (board and not board.require_login)
+    ):
         showall = False
         batched = False
 
@@ -395,15 +597,60 @@ def index(basequery=None, filters={}, md5sum=None, tag=None, domain=None, locati
             db.session.rollback()
             g.event_data['search_syntax_error'] = (query_string, search_query)
             if not request_is_xhr():
-                flash(_("Search terms ignored because this didn’t parse: {query}").format(query=search_query), 'danger')
+                flash(
+                    _("Search terms ignored because this didn’t parse: {query}").format(
+                        query=search_query
+                    ),
+                    'danger',
+                )
             search_query = None
     else:
         search_query = None
 
     if cached:
-        data = fetch_cached_jobposts(request.args, request.values, filters, is_index, board, board_jobs, g.kiosk, basequery, md5sum, domain, location, title, showall, statusfilter, batched, ageless, template_vars, search_query, query_string)
+        data = fetch_cached_jobposts(
+            request.args,
+            request.values,
+            filters,
+            is_index,
+            board,
+            board_jobs,
+            g.kiosk,
+            basequery,
+            md5sum,
+            domain,
+            location,
+            title,
+            showall,
+            statusfilter,
+            batched,
+            ageless,
+            template_vars,
+            search_query,
+            query_string,
+        )
     else:
-        data = fetch_jobposts(request.args, request.values, filters, is_index, board, board_jobs, g.kiosk, basequery, md5sum, domain, location, title, showall, statusfilter, batched, ageless, template_vars, search_query, query_string)
+        data = fetch_jobposts(
+            request.args,
+            request.values,
+            filters,
+            is_index,
+            board,
+            board_jobs,
+            g.kiosk,
+            basequery,
+            md5sum,
+            domain,
+            location,
+            title,
+            showall,
+            statusfilter,
+            batched,
+            ageless,
+            template_vars,
+            search_query,
+            query_string,
+        )
 
     if data['data_filters']:
         # For logging
@@ -421,30 +668,47 @@ def index(basequery=None, filters={}, md5sum=None, tag=None, domain=None, locati
         show_viewcounts = False
 
     if data['grouped']:
-        g.impressions = {post.id: (pinflag, post.id, is_bgroup)
+        g.impressions = {
+            post.id: (pinflag, post.id, is_bgroup)
             for group in data['grouped'].values()
-            for pinflag, post, is_bgroup in group}
+            for pinflag, post, is_bgroup in group
+        }
     elif data['pinsandposts']:
-        g.impressions = {post.id: (pinflag, post.id, is_bgroup) for pinflag, post, is_bgroup in data['pinsandposts']}
+        g.impressions = {
+            post.id: (pinflag, post.id, is_bgroup)
+            for pinflag, post, is_bgroup in data['pinsandposts']
+        }
 
     if not g.kiosk:
         if g.preview_campaign:
             header_campaign = g.preview_campaign
         else:
             geonameids = g.user_geonameids + data['f_locations']
-            header_campaign = Campaign.for_context(CAMPAIGN_POSITION.HEADER, board=g.board, user=g.user,
-                anon_user=g.anon_user, geonameids=geonameids)
+            header_campaign = Campaign.for_context(
+                CAMPAIGN_POSITION.HEADER,
+                board=g.board,
+                user=g.user,
+                anon_user=g.anon_user,
+                geonameids=geonameids,
+            )
     else:
         header_campaign = None
 
     # Test values for development:
     # if not g.user_geonameids:
     #     g.user_geonameids = [1277333, 1277331, 1269750]
-    if not location and 'l' not in request.args and g.user_geonameids and (g.user or g.anon_user) and (
-            (not g.board.auto_locations) if g.board else True):
+    if (
+        not location
+        and 'l' not in request.args
+        and g.user_geonameids
+        and (g.user or g.anon_user)
+        and ((not g.board.auto_locations) if g.board else True)
+    ):
         # No location filters? Prompt the user
         ldata = location_geodata(g.user_geonameids)
-        location_prompts = [ldata[geonameid] for geonameid in g.user_geonameids if geonameid in ldata]
+        location_prompts = [
+            ldata[geonameid] for geonameid in g.user_geonameids if geonameid in ldata
+        ]
     else:
         location_prompts = []
 
@@ -473,7 +737,12 @@ def index(basequery=None, filters={}, md5sum=None, tag=None, domain=None, locati
 @lastuser.requires_login
 def browse_drafts():
     basequery = JobPost.query.filter_by(user=g.user)
-    return index(basequery=basequery, ageless=True, statusfilter=JobPost.state.UNPUBLISHED, cached=False)
+    return index(
+        basequery=basequery,
+        ageless=True,
+        statusfilter=JobPost.state.UNPUBLISHED,
+        cached=False,
+    )
 
 
 @app.route('/my', methods=['GET', 'POST'], subdomain='<subdomain>')
@@ -481,15 +750,24 @@ def browse_drafts():
 @lastuser.requires_login
 def my_posts():
     basequery = JobPost.query.filter_by(user=g.user)
-    return index(basequery=basequery, ageless=True, statusfilter=JobPost.state.MY, cached=False)
+    return index(
+        basequery=basequery, ageless=True, statusfilter=JobPost.state.MY, cached=False
+    )
 
 
 @app.route('/bookmarks', subdomain='<subdomain>')
 @app.route('/bookmarks')
 @lastuser.requires_login
 def bookmarks():
-    basequery = JobPost.query.join(starred_job_table).filter(starred_job_table.c.user_id == g.user.id)
-    return index(basequery=basequery, ageless=True, statusfilter=JobPost.state.ARCHIVED, cached=False)
+    basequery = JobPost.query.join(starred_job_table).filter(
+        starred_job_table.c.user_id == g.user.id
+    )
+    return index(
+        basequery=basequery,
+        ageless=True,
+        statusfilter=JobPost.state.ARCHIVED,
+        cached=False,
+    )
 
 
 @app.route('/applied', subdomain='<subdomain>')
@@ -497,7 +775,12 @@ def bookmarks():
 @lastuser.requires_login
 def applied():
     basequery = JobPost.query.join(JobApplication).filter(JobApplication.user == g.user)
-    return index(basequery=basequery, ageless=True, statusfilter=JobPost.state.ARCHIVED, cached=False)
+    return index(
+        basequery=basequery,
+        ageless=True,
+        statusfilter=JobPost.state.ARCHIVED,
+        cached=False,
+    )
 
 
 @app.route('/type/<name>', methods=['GET', 'POST'], subdomain='<subdomain>')
@@ -544,7 +827,13 @@ def browse_by_email(md5sum):
     basequery = JobPost.query.filter_by(md5sum=md5sum)
     jobpost = basequery.first_or_404()
     jobpost_user = jobpost.user
-    return index(basequery=basequery, md5sum=md5sum, showall=True, cached=False, template_vars={'jobpost_user': jobpost_user})
+    return index(
+        basequery=basequery,
+        md5sum=md5sum,
+        showall=True,
+        cached=False,
+        template_vars={'jobpost_user': jobpost_user},
+    )
 
 
 @app.route('/in/<location>', methods=['GET', 'POST'], subdomain='<subdomain>')
@@ -552,9 +841,14 @@ def browse_by_email(md5sum):
 def browse_by_location(location):
     loc = Location.get(location, g.board)
     if loc:
-        geodata = {'geonameid': loc.id, 'name': loc.name, 'use_title': loc.title, 'description': Markup(loc.description)}
+        geodata = {
+            'geonameid': loc.id,
+            'name': loc.name,
+            'use_title': loc.title,
+            'description': Markup(loc.description),
+        }
     else:
-        return redirect(url_for('index', l=location), code=302)  # NOQA
+        return redirect(url_for('index', l=location), code=302)  # NOQA: E741
     if location != geodata['name']:
         return redirect(url_for('browse_by_location', location=geodata['name']))
     return index(location=geodata, title=geodata['use_title'])
@@ -563,22 +857,25 @@ def browse_by_location(location):
 @app.route('/in/anywhere', methods=['GET', 'POST'], subdomain='<subdomain>')
 @app.route('/in/anywhere', methods=['GET', 'POST'])
 def browse_by_anywhere():
-    return redirect(url_for('index', l='anywhere'), code=302)  # NOQA
+    return redirect(url_for('index', l='anywhere'), code=302)  # NOQA: E741
 
 
 @app.route('/tag/<tag>', methods=['GET', 'POST'], subdomain='<subdomain>')
 @app.route('/tag/<tag>', methods=['GET', 'POST'])
 def browse_by_tag(tag):
     tag = Tag.query.filter_by(name=tag).first_or_404()
-    basequery = JobPost.query.filter(db.and_(
-        JobPostTag.jobpost_id == JobPost.id, JobPostTag.tag == tag))
+    basequery = JobPost.query.filter(
+        db.and_(JobPostTag.jobpost_id == JobPost.id, JobPostTag.tag == tag)
+    )
     return index(basequery=basequery, tag=tag, title=tag.title)
 
 
 @app.route('/tag', subdomain='<subdomain>')
 @app.route('/tag')
 def browse_tags():
-    return render_template('tags.html.jinja2', tags=gettags(alltime=getbool(request.args.get('all'))))
+    return render_template(
+        'tags.html.jinja2', tags=gettags(alltime=getbool(request.args.get('all')))
+    )
 
 
 # POST is required for pagination
@@ -589,8 +886,12 @@ def filterset_view(name):
     filterset = Filterset.get(g.board, name)
     if not filterset:
         abort(404)
-    return index(filters=filterset.to_filters(translate_geonameids=True),
-        query_string=filterset.keywords, filterset=filterset, title=filterset.title)
+    return index(
+        filters=filterset.to_filters(translate_geonameids=True),
+        query_string=filterset.keywords,
+        filterset=filterset,
+        title=filterset.title,
+    )
 
 
 @app.route('/opensearch.xml', subdomain='<subdomain>')
@@ -601,7 +902,16 @@ def opensearch():
 
 @app.route('/feed', subdomain='<subdomain>')
 @app.route('/feed')
-def feed(basequery=None, type=None, category=None, md5sum=None, domain=None, location=None, tag=None, title=None):
+def feed(
+    basequery=None,
+    type=None,  # NOQA: A002
+    category=None,
+    md5sum=None,
+    domain=None,
+    location=None,
+    tag=None,
+    title=None,
+):
     title = "All jobs"
     if type:
         title = type.title
@@ -620,8 +930,10 @@ def feed(basequery=None, type=None, category=None, md5sum=None, domain=None, loc
             title = posts[0].company_name
     else:
         updated = utcnow().isoformat() + 'Z'
-    return Response(render_template('feed-atom.xml', posts=posts, updated=updated, title=title),
-        content_type='application/atom+xml; charset=utf-8')
+    return Response(
+        render_template('feed-atom.xml', posts=posts, updated=updated, title=title),
+        content_type='application/atom+xml; charset=utf-8',
+    )
 
 
 @app.route('/feed/indeed', subdomain='<subdomain>')
@@ -633,8 +945,10 @@ def feed_indeed():
         updated = posts[0].datetime.isoformat() + 'Z'
     else:
         updated = utcnow().isoformat() + 'Z'
-    return Response(render_template('feed-indeed.xml', posts=posts, updated=updated, title=title),
-        content_type='textxml; charset=utf-8')
+    return Response(
+        render_template('feed-indeed.xml', posts=posts, updated=updated, title=title),
+        content_type='textxml; charset=utf-8',
+    )
 
 
 @app.route('/type/<name>/feed', subdomain='<subdomain>')
@@ -689,15 +1003,19 @@ def feed_by_location(location):
     geodata = location_geodata(location)
     if not geodata:
         abort(404)
-    basequery = JobPost.query.filter(db.and_(
-        JobLocation.jobpost_id == JobPost.id, JobLocation.geonameid == geodata['geonameid']))
+    basequery = JobPost.query.filter(
+        db.and_(
+            JobLocation.jobpost_id == JobPost.id,
+            JobLocation.geonameid == geodata['geonameid'],
+        )
+    )
     return feed(basequery=basequery, location=geodata)
 
 
 @app.route('/in/anywhere/feed', subdomain='<subdomain>')
 @app.route('/in/anywhere/feed')
 def feed_by_anywhere():
-    basequery = JobPost.query.filter(JobPost.remote_location == True)  # NOQA
+    basequery = JobPost.query.filter(JobPost.remote_location.is_(True))
     return feed(basequery=basequery)
 
 
@@ -705,8 +1023,9 @@ def feed_by_anywhere():
 @app.route('/tag/<tag>/feed')
 def feed_by_tag(tag):
     tag = Tag.query.filter_by(name=tag).first_or_404()
-    basequery = JobPost.query.filter(db.and_(
-        JobPostTag.jobpost_id == JobPost.id, JobPostTag.tag == tag))
+    basequery = JobPost.query.filter(
+        db.and_(JobPostTag.jobpost_id == JobPost.id, JobPostTag.tag == tag)
+    )
     return feed(basequery=basequery, tag=tag, title=tag.title)
 
 
@@ -723,17 +1042,20 @@ def archive():
             except ValueError:
                 reverse = False
             reverse = int(not reverse)
-        return url_for('archive', order_by=order_by,
+        return url_for(
+            'archive',
+            order_by=order_by,
             reverse=reverse,
             start=request.args.get('start'),
-            limit=request.args.get('limit'))
+            limit=request.args.get('limit'),
+        )
 
     order_by = {
         'date': JobPost.datetime,
         'headline': JobPost.headline,
         'company': JobPost.company_name,
         'location': JobPost.location,
-        }.get(request.args.get('order_by'))
+    }.get(request.args.get('order_by'))
     reverse = request.args.get('reverse')
     start = request.args.get('start', 0)
     limit = request.args.get('limit', 100)
@@ -755,16 +1077,26 @@ def archive():
             limit = int(limit)
     except ValueError:
         limit = 100
-    count, posts = getallposts(order_by=order_by, desc=reverse, start=start, limit=limit)
+    count, posts = getallposts(
+        order_by=order_by, desc=reverse, start=start, limit=limit
+    )
 
     if request_is_xhr():
         tmpl = 'archive_inner.html.jinja2'
     else:
         tmpl = 'archive.html.jinja2'
-    return render_template(tmpl, order_by=request.args.get('order_by'),
-        posts=posts, start=start, limit=limit, count=count,
+    return render_template(
+        tmpl,
+        order_by=request.args.get('order_by'),
+        posts=posts,
+        start=start,
+        limit=limit,
+        count=count,
         # Pass some functions
-        min=min, max=max, sortarchive=sortarchive)
+        min=min,
+        max=max,
+        sortarchive=sortarchive,
+    )
 
 
 @app.route('/sitemap.xml', defaults={'key': None}, subdomain='<subdomain>')
@@ -774,52 +1106,80 @@ def archive():
 def sitemap(key):
     authorized_sitemap = key == app.config.get('SITEMAP_KEY')
 
-    sitemapxml = '<?xml version="1.0" encoding="UTF-8"?>\n'\
-                 '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+    sitemapxml = (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+    )
     # Add featured boards to sitemap
     board_ids = []
     for board in Board.query.filter_by(featured=True).all():
         board_ids.append(board.id)
-        sitemapxml += '  <url>\n'\
-                      '    <loc>%s</loc>\n' % board.url_for(_external=True) + \
-                      '    <lastmod>%s</lastmod>\n' % (board.updated_at.isoformat() + 'Z') + \
-                      '    <changefreq>monthly</changefreq>\n'\
-                      '  </url>\n'
+        sitemapxml += (
+            '  <url>\n'
+            '    <loc>{url}</loc>\n'
+            '    <lastmod>{updated_at}</lastmod>\n'
+            '    <changefreq>monthly</changefreq>\n'
+            '  </url>\n'.format(
+                url=board.url_for(_external=True),
+                updated_at=board.updated_at.isoformat(),
+            )
+        )
 
     # Add filtered views to sitemap
     for item in Filterset.query.all():
-        sitemapxml += '  <url>\n'\
-                      '    <loc>%s</loc>\n' % item.url_for(_external=True) + \
-                      '    <lastmod>%s</lastmod>\n' % (item.updated_at.isoformat() + 'Z') + \
-                      '    <changefreq>daily</changefreq>\n'\
-                      '  </url>\n'
+        sitemapxml += (
+            '  <url>\n'
+            '    <loc>{url}</loc>\n'
+            '    <lastmod>{updated_at}</lastmod>\n'
+            '    <changefreq>daily</changefreq>\n'
+            '  </url>\n'.format(
+                url=item.url_for(_external=True), updated_at=item.updated_at.isoformat()
+            )
+        )
 
     # Add locations to sitemap
     for item in Location.query.filter(Location.board_id.in_(board_ids)).all():
-        sitemapxml += '  <url>\n'\
-                      '    <loc>%s</loc>\n' % item.url_for(_external=True) + \
-                      '    <lastmod>%s</lastmod>\n' % (item.updated_at.isoformat() + 'Z') + \
-                      '    <changefreq>monthly</changefreq>\n'\
-                      '  </url>\n'
+        sitemapxml += (
+            '  <url>\n'
+            '    <loc>{url}</loc>\n'
+            '    <lastmod>{updated_at}</lastmod>\n'
+            '    <changefreq>monthly</changefreq>\n'
+            '  </url>\n'.format(
+                url=item.url_for(_external=True), updated_at=item.updated_at.isoformat()
+            )
+        )
     # Add live posts to sitemap
     for post in getposts(showall=True):
-        sitemapxml += '  <url>\n'\
-                      '    <loc>%s</loc>\n' % post.url_for(_external=True) + \
-                      '    <lastmod>%s</lastmod>\n' % (post.datetime.isoformat() + 'Z') + \
-                      '    <changefreq>monthly</changefreq>\n'\
-                      '  </url>\n'
+        sitemapxml += (
+            '  <url>\n'
+            '    <loc>{url}</loc>\n'
+            '    <lastmod>{updated_at}</lastmod>\n'
+            '    <changefreq>monthly</changefreq>\n'
+            '  </url>\n'.format(
+                url=post.url_for(_external=True), updated_at=post.datetime.isoformat()
+            )
+        )
     if authorized_sitemap:
         # Add domains to sitemap
-        for domain in Domain.query.filter(
-                Domain.title != None,
-                Domain.description != None,
-                Domain.description != ''
-                ).order_by(Domain.updated_at.desc()).all():  # NOQA
-            sitemapxml += '  <url>\n'\
-                          '    <loc>%s</loc>\n' % domain.url_for(_external=True) + \
-                          '    <lastmod>%s</lastmod>\n' % (domain.updated_at.isoformat() + 'Z') + \
-                          '    <changefreq>monthly</changefreq>\n'\
-                          '  </url>\n'
+        for domain in (
+            Domain.query.filter(
+                Domain.title.isnot(None),
+                Domain.description.isnot(None),
+                Domain.description != '',
+            )
+            .order_by(Domain.updated_at.desc())
+            .all()
+        ):
+            sitemapxml += (
+                '  <url>\n'
+                '    <loc>{url}</loc>\n'
+                '    <lastmod>{updated_at}</lastmod>\n'
+                '    <changefreq>monthly</changefreq>\n'
+                '  </url>\n'.format(
+                    url=domain.url_for(_external=True),
+                    updated_at=domain.updated_at.isoformat(),
+                )
+            )
     sitemapxml += '</urlset>'
     return Response(sitemapxml, content_type='text/xml; charset=utf-8')
 
@@ -860,7 +1220,9 @@ def sw():
 @app.route('/manifest.json', methods=['GET'], subdomain='<subdomain>')
 @app.route('/manifest.json', methods=['GET'])
 def manifest():
-    return Response(render_template('manifest.json.jinja2'), mimetype='application/json')
+    return Response(
+        render_template('manifest.json.jinja2'), mimetype='application/json'
+    )
 
 
 @app.route('/api/1/embed.js', methods=['GET'], subdomain='<subdomain>')
@@ -870,8 +1232,17 @@ def embed():
 
 
 # For oEmbed. Needs to be moved somewhere better maintained than this.
-embed_index_views = ['index', 'browse_drafts', 'browse_by_anywhere', 'browse_by_category',
-    'browse_by_domain', 'browse_by_email', 'browse_by_location', 'browse_by_tag', 'browse_by_type']
+embed_index_views = [
+    'index',
+    'browse_drafts',
+    'browse_by_anywhere',
+    'browse_by_category',
+    'browse_by_domain',
+    'browse_by_email',
+    'browse_by_location',
+    'browse_by_tag',
+    'browse_by_type',
+]
 
 
 @app.route('/api/1/oembed', methods=['GET'])
@@ -897,24 +1268,38 @@ def oembed(url):
         parsed_url.scheme,
         parsed_url.netloc,
         parsed_url.path,
-        parsed_url.query + ('&' if parsed_url.query else '') + 'embed=1&iframeid=' + iframeid,
-        parsed_url.fragment
-        ).geturl()
+        parsed_url.query
+        + ('&' if parsed_url.query else '')
+        + 'embed=1&iframeid='
+        + iframeid,
+        parsed_url.fragment,
+    ).geturl()
 
-    return jsonify({
-        'provider_url': url_for('index', subdomain=None, _external=True),
-        'provider_name': app.config['SITE_TITLE'],
-        'thumbnail_width': 200,
-        'thumbnail_height': 200,
-        'thumbnail_url': url_for('static', filename='img/hasjob-logo-200x200.png', _external=True),
-        'author_name': board.title if board else app.config['SITE_TITLE'],
-        'author_url': board.url_for(_external=True) if board else url_for('index', subdomain=None, _external=True),
-        'title': ' | '.join([board.title, board.caption]) if board else app.config['SITE_TITLE'],
-        'html': ('<iframe id="{iframeid}" src="{url}" '
-            'width="100%" height="724" frameborder="0" scrolling="no">'.format(
-                url=embed_url, iframeid=iframeid)),
-        'version': '1.0',
-        'type': 'rich'
-        })
+    return jsonify(
+        {
+            'provider_url': url_for('index', subdomain=None, _external=True),
+            'provider_name': app.config['SITE_TITLE'],
+            'thumbnail_width': 200,
+            'thumbnail_height': 200,
+            'thumbnail_url': url_for(
+                'static', filename='img/hasjob-logo-200x200.png', _external=True
+            ),
+            'author_name': board.title if board else app.config['SITE_TITLE'],
+            'author_url': board.url_for(_external=True)
+            if board
+            else url_for('index', subdomain=None, _external=True),
+            'title': ' | '.join([board.title, board.caption])
+            if board
+            else app.config['SITE_TITLE'],
+            'html': (
+                '<iframe id="{iframeid}" src="{url}" '
+                'width="100%" height="724" frameborder="0" scrolling="no">'.format(
+                    url=embed_url, iframeid=iframeid
+                )
+            ),
+            'version': '1.0',
+            'type': 'rich',
+        }
+    )
 
     return jsonify({})

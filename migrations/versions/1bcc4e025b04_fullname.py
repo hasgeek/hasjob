@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """fullname
 
 Revision ID: 1bcc4e025b04
@@ -15,7 +16,9 @@ import sqlalchemy as sa
 
 
 def upgrade():
-    op.add_column('jobpost', sa.Column('fullname', sa.Unicode(length=80), nullable=True))
+    op.add_column(
+        'jobpost', sa.Column('fullname', sa.Unicode(length=80), nullable=True)
+    )
 
 
 def downgrade():

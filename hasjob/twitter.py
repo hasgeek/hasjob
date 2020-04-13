@@ -1,16 +1,20 @@
 # -*- coding: utf-8 -*-
 
-from tweepy import OAuthHandler, API
-import urllib.request, urllib.error, urllib.parse
-import json
 import re
-from hasjob import app, rq
+
+from tweepy import API, OAuthHandler
+
+from . import app, rq
 
 
 @rq.job('hasjob')
 def tweet(title, url, location=None, parsed_location=None, username=None):
-    auth = OAuthHandler(app.config['TWITTER_CONSUMER_KEY'], app.config['TWITTER_CONSUMER_SECRET'])
-    auth.set_access_token(app.config['TWITTER_ACCESS_KEY'], app.config['TWITTER_ACCESS_SECRET'])
+    auth = OAuthHandler(
+        app.config['TWITTER_CONSUMER_KEY'], app.config['TWITTER_CONSUMER_SECRET']
+    )
+    auth.set_access_token(
+        app.config['TWITTER_ACCESS_KEY'], app.config['TWITTER_ACCESS_SECRET']
+    )
     api = API(auth)
     urllength = 23  # Current Twitter standard for HTTPS (as of Oct 2014)
     maxlength = 140 - urllength - 1  # == 116
@@ -34,7 +38,7 @@ def tweet(title, url, location=None, parsed_location=None, username=None):
         maxlength -= len(locationtag) + 1
 
     if len(title) > maxlength:
-        text = title[:maxlength - 1] + '…'
+        text = title[: maxlength - 1] + '…'
     else:
         text = title[:maxlength]
     text = text + ' ' + url  # Don't shorten URLs, now that there's t.co
@@ -43,19 +47,3 @@ def tweet(title, url, location=None, parsed_location=None, username=None):
     if username:
         text = text + ' @' + username
     api.update_status(text)
-
-
-# TODO: Delete this function
-def shorten(url):
-    if app.config['BITLY_KEY']:
-        b = bitlyapi.BitLy(app.config['BITLY_USER'], app.config['BITLY_KEY'])
-        res = b.shorten(longUrl=url)
-        return res['url']
-    else:
-        req = urllib2.Request("https://www.googleapis.com/urlshortener/v1/url",
-            headers={"Content-Type": "application/json"},
-            data=json.dumps({'longUrl': url}))
-        request_result = urllib2.urlopen(req)
-        result = request_result.read()
-        result_json = json.loads(result)
-        return result_json['id']

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Save job application reply date
 
 Revision ID: 5269eb17ff82
@@ -15,9 +16,15 @@ import sqlalchemy as sa
 
 
 def upgrade():
-    op.add_column('job_application', sa.Column('replied_at', sa.DateTime(), nullable=True))
+    op.add_column(
+        'job_application', sa.Column('replied_at', sa.DateTime(), nullable=True)
+    )
     # Response status 3 = replied, 6 = rejected
-    op.execute(sa.text("UPDATE job_application SET replied_at = updated_at WHERE response IN (3, 6);"))
+    op.execute(
+        sa.text(
+            "UPDATE job_application SET replied_at = updated_at WHERE response IN (3, 6);"
+        )
+    )
 
 
 def downgrade():

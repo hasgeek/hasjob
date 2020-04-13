@@ -5,15 +5,17 @@ before_script:
   - psql -c 'create database hasjob_testing;' -U postgres
 install:
   - pip install -U pip wheel
+  - pip install git+https://github.com/hasgeek/flask-babelhg/
   - pip install --no-cache-dir -r test_requirements.txt
   - pip install --no-cache-dir -r requirements.txt
   - npm install casperjs
   - make
+  - pip install six --upgrade --ignore-installed
 script: ./runtests.sh
 after_success:
   - coveralls
 addons:
-  postgresql: "9.4"
+  postgresql: '9.4'
 services:
   - redis-server
 notifications:

@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
-from flask import flash, g, abort
-from coaster.views import route, viewdata, UrlForView, ModelView
+from flask import abort, flash, g
+
 from baseframe import __
 from baseframe.forms import render_form, render_redirect
+from coaster.views import ModelView, UrlForView, route, viewdata
+
 from .. import app
-from ..models import db, Filterset
 from ..forms import FiltersetForm
+from ..models import Filterset, db
 
 
 @route('/f')
@@ -34,9 +36,17 @@ class AdminFiltersetView(UrlForView, ModelView):
                 return render_redirect(filterset.url_for(), code=303)
             except ValueError:
                 db.session.rollback()
-                flash("There already exists a filterset with the selected criteria", 'interactive')
-        return render_form(form=form, title="Create a filterset…", submit="Create",
-            formid="filterset_new", ajax=False)
+                flash(
+                    "There already exists a filterset with the selected criteria",
+                    'interactive',
+                )
+        return render_form(
+            form=form,
+            title="Create a filterset…",
+            submit="Create",
+            formid="filterset_new",
+            ajax=False,
+        )
 
     @route('<name>/edit', methods=['GET', 'POST'])
     @viewdata(title=__("Edit"))
@@ -53,9 +63,17 @@ class AdminFiltersetView(UrlForView, ModelView):
                 return render_redirect(self.obj.url_for(), code=303)
             except ValueError:
                 db.session.rollback()
-                flash("There already exists a filterset with the selected criteria", 'interactive')
-        return render_form(form=form, title="Edit filterset…", submit="Update",
-            formid="filterset_edit", ajax=False)
+                flash(
+                    "There already exists a filterset with the selected criteria",
+                    'interactive',
+                )
+        return render_form(
+            form=form,
+            title="Edit filterset…",
+            submit="Update",
+            formid="filterset_edit",
+            ajax=False,
+        )
 
 
 AdminFiltersetView.init_app(app)

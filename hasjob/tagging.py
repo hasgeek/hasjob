@@ -2,12 +2,27 @@
 
 from collections import defaultdict
 from urllib.parse import urljoin
+
 import requests
-from coaster.utils import text_blocks
+
 from coaster.nlp import extract_named_entities
+from coaster.utils import text_blocks
+
 from . import app, rq
-from .models import (db, JobPost, JobLocation, Board, BoardAutoDomain, BoardAutoLocation, board_auto_tag_table,
-    board_auto_jobtype_table, board_auto_jobcategory_table, Tag, JobPostTag, TAG_TYPE)
+from .models import (
+    TAG_TYPE,
+    Board,
+    BoardAutoDomain,
+    BoardAutoLocation,
+    JobLocation,
+    JobPost,
+    JobPostTag,
+    Tag,
+    board_auto_jobcategory_table,
+    board_auto_jobtype_table,
+    board_auto_tag_table,
+    db,
+)
 
 
 @rq.job('hasjob')
@@ -16,7 +31,14 @@ def tag_locations(jobpost_id):
         with app.test_request_context():
             post = JobPost.query.get(jobpost_id)
             url = urljoin(app.config['HASCORE_SERVER'], '/1/geo/parse_locations')
-            response = requests.get(url, params={'q': post.location, 'bias': ['IN', 'US'], 'special': ['Anywhere', 'Remote', 'Home']}).json()
+            response = requests.get(
+                url,
+                params={
+                    'q': post.location,
+                    'bias': ['IN', 'US'],
+                    'special': ['Anywhere', 'Remote', 'Home'],
+                },
+            ).json()
             if response.get('status') == 'ok':
                 remote_location = False
                 results = response.get('result', [])
@@ -27,17 +49,28 @@ def tag_locations(jobpost_id):
                         remote_location = True
                     geoname = item.get('geoname', {})
                     if geoname:
-                        geonames[geoname['geonameid']]['geonameid'] = geoname['geonameid']
-                        geonames[geoname['geonameid']]['primary'] = geonames[geoname['geonameid']].get('primary', True)
-                        for type, related in geoname.get('related', {}).items():
-                            if type in ['admin2', 'admin1', 'country', 'continent']:
-                                geonames[related['geonameid']]['geonameid'] = related['geonameid']
+                        geonames[geoname['geonameid']]['geonameid'] = geoname[
+                            'geonameid'
+                        ]
+                        geonames[geoname['geonameid']]['primary'] = geonames[
+                            geoname['geonameid']
+                        ].get('primary', True)
+                        for gtype, related in geoname.get('related', {}).items():
+                            if gtype in ['admin2', 'admin1', 'country', 'continent']:
+                                geonames[related['geonameid']]['geonameid'] = related[
+                                    'geonameid'
+                                ]
                                 geonames[related['geonameid']]['primary'] = False
 
-                        tokens.append({'token': item.get('token', ''), 'geoname': {
-                            'name': geoname['name'],
-                            'geonameid': geoname['geonameid'],
-                            }})
+                        tokens.append(
+                            {
+                                'token': item.get('token', ''),
+                                'geoname': {
+                                    'name': geoname['name'],
+                                    'geonameid': geoname['geonameid'],
+                                },
+                            }
+                        )
                     else:
                         tokens.append({'token': item.get('token', '')})
 
@@ -63,20 +96,41 @@ def tag_locations(jobpost_id):
 @rq.job('hasjob')
 def add_to_boards(jobpost_id):
     with app.test_request_context():
-        post = JobPost.query.options(db.joinedload('locations'), db.joinedload('taglinks')).get(jobpost_id)
+        post = JobPost.query.options(
+            db.joinedload('locations'), db.joinedload('taglinks')
+        ).get(jobpost_id)
         # Find all boards that match and that don't have an all-match criteria
-        query = Board.query.join(BoardAutoDomain).filter(BoardAutoDomain.domain == post.email_domain)
-        query = query.union(Board.query.join(board_auto_jobtype_table).filter(
-            board_auto_jobtype_table.c.jobtype_id == post.type_id))
-        query = query.union(Board.query.join(board_auto_jobcategory_table).filter(
-            board_auto_jobcategory_table.c.jobcategory_id == post.category_id))
+        query = Board.query.join(BoardAutoDomain).filter(
+            BoardAutoDomain.domain == post.email_domain
+        )
+        query = query.union(
+            Board.query.join(board_auto_jobtype_table).filter(
+                board_auto_jobtype_table.c.jobtype_id == post.type_id
+            )
+        )
+        query = query.union(
+            Board.query.join(board_auto_jobcategory_table).filter(
+                board_auto_jobcategory_table.c.jobcategory_id == post.category_id
+            )
+        )
         if post.geonameids:
-            query = query.union(Board.query.join(BoardAutoLocation).filter(
-                BoardAutoLocation.geonameid.in_(post.geonameids)))
+            query = query.union(
+                Board.query.join(BoardAutoLocation).filter(
+                    BoardAutoLocation.geonameid.in_(post.geonameids)
+                )
+            )
         if post.taglinks:
-            query = query.union(Board.query.join(board_auto_tag_table).filter(
-                board_auto_tag_table.c.tag_id.in_(
-                    [tl.tag_id for tl in post.taglinks if tl.status in TAG_TYPE.TAG_PRESENT])))
+            query = query.union(
+                Board.query.join(board_auto_tag_table).filter(
+                    board_auto_tag_table.c.tag_id.in_(
+                        [
+                            tl.tag_id
+                            for tl in post.taglinks
+                            if tl.status in TAG_TYPE.TAG_PRESENT
+                        ]
+                    )
+                )
+            )
         for board in query:
             # Some criteria match. Does this board require all to match?
             if not board.auto_all:
@@ -88,12 +142,19 @@ def add_to_boards(jobpost_id):
                     # This board requires specific domains and none match. Skip.
                     continue
                 if board.auto_locations:
-                    if not set(board.auto_geonameids).intersection(set(post.geonameids)):
+                    if not set(board.auto_geonameids).intersection(
+                        set(post.geonameids)
+                    ):
                         # This board requires specific locations and none match. Skip.
                         continue
                 if board.auto_tags:
                     if not set(board.auto_keywords).intersection(
-                            {tl.tag for tl in post.taglinks if tl.status in TAG_TYPE.TAG_PRESENT}):
+                        {
+                            tl.tag
+                            for tl in post.taglinks
+                            if tl.status in TAG_TYPE.TAG_PRESENT
+                        }
+                    ):
                         # This board requires specific keywords and none match. Skip.
                         continue
                 if board.auto_types and post.type not in board.auto_types:

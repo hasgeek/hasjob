@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Candidate feedback
 
 Revision ID: c2a626c5618
@@ -15,7 +16,10 @@ import sqlalchemy as sa
 
 
 def upgrade():
-    op.add_column('job_application', sa.Column('candidate_feedback', sa.SmallInteger(), nullable=True))
+    op.add_column(
+        'job_application',
+        sa.Column('candidate_feedback', sa.SmallInteger(), nullable=True),
+    )
 
 
 def downgrade():

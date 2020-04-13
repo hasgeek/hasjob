@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #: The title of this site
 SITE_TITLE = 'Job Board'
 #: TypeKit code for fonts
@@ -75,9 +76,7 @@ DOGPILE_CACHE_BACKEND = 'dogpile.cache.redis'
 # Dogpile cache backend URL
 DOGPILE_CACHE_URLS = '127.0.0.1:6379'
 # Dogpile cache regions (important, do not remove!)
-DOGPILE_CACHE_REGIONS = [
-    ('hasjob_index', 3600)
-    ]
+DOGPILE_CACHE_REGIONS = [('hasjob_index', 3600)]
 ASSET_MANIFEST_PATH = 'static/build/manifest.json'
 # no trailing slash
 ASSET_BASE_PATH = '/static/build'

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Index JobPost.datetime
 
 Revision ID: 80a7e6c31df

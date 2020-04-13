@@ -1,31 +1,60 @@
 # -*- coding: utf-8 -*-
 
 from datetime import timedelta
-from werkzeug.utils import cached_property
-from flask import url_for, escape, Markup
-from flask_babelhg import format_datetime
-from sqlalchemy import event, DDL
-from sqlalchemy.orm import defer, deferred, load_only
-from sqlalchemy.ext.associationproxy import association_proxy
-from sqlalchemy.dialects.postgresql import TSVECTOR
-import tldextract
-from coaster.utils import classmethodproperty, utcnow
-from coaster.sqlalchemy import make_timestamp_columns, Query, JsonDict, StateManager
-from baseframe import cache, __
-from baseframe.utils import is_public_email_domain
-from .. import redis_store
-from . import newlimit, agelimit, db, POST_STATE, EMPLOYER_RESPONSE, PAY_TYPE, BaseMixin, TimestampMixin
-from .jobtype import JobType
-from .jobcategory import JobCategory
-from .user import User, AnonUser, EventSession
-from ..utils import random_long_key, random_hash_key
 
-__all__ = ['JobPost', 'JobLocation', 'UserJobView', 'AnonJobView', 'JobImpression', 'JobApplication',
-    'JobViewSession', 'unique_hash', 'viewstats_by_id_hour', 'viewstats_by_id_day', 'starred_job_table']
+from sqlalchemy import DDL, event
+from sqlalchemy.dialects.postgresql import TSVECTOR
+from sqlalchemy.ext.associationproxy import association_proxy
+from sqlalchemy.orm import defer, deferred, load_only
+
+from flask import Markup, escape, url_for
+from werkzeug.utils import cached_property
+
+from flask_babelhg import format_datetime
+import tldextract
+
+from baseframe import __, cache
+from baseframe.utils import is_public_email_domain
+from coaster.sqlalchemy import JsonDict, Query, StateManager, make_timestamp_columns
+from coaster.utils import classmethodproperty, utcnow
+
+from .. import redis_store
+from ..utils import random_hash_key, random_long_key
+from . import (
+    EMPLOYER_RESPONSE,
+    PAY_TYPE,
+    POST_STATE,
+    BaseMixin,
+    TimestampMixin,
+    agelimit,
+    db,
+    newlimit,
+)
+from .jobcategory import JobCategory
+from .jobtype import JobType
+from .user import AnonUser, EventSession, User
+
+__all__ = [
+    'JobPost',
+    'JobLocation',
+    'UserJobView',
+    'AnonJobView',
+    'JobImpression',
+    'JobApplication',
+    'JobViewSession',
+    'unique_hash',
+    'viewstats_by_id_hour',
+    'viewstats_by_id_day',
+    'starred_job_table',
+]
 
 
 def number_format(number, suffix):
-    return str(int(number)) + suffix if int(number) == number else str(round(number, 2)) + suffix
+    return (
+        str(int(number)) + suffix
+        if int(number) == number
+        else str(round(number, 2)) + suffix
+    )
 
 
 def number_abbreviate(number, indian=False):
@@ -45,21 +74,36 @@ def number_abbreviate(number, indian=False):
             return number_format(number / 100000000.0, 'b')
 
 
-starred_job_table = db.Table('starred_job', db.Model.metadata,
+starred_job_table = db.Table(
+    'starred_job',
+    db.Model.metadata,
     db.Column('user_id', None, db.ForeignKey('user.id'), primary_key=True),
     db.Column('jobpost_id', None, db.ForeignKey('jobpost.id'), primary_key=True),
-    db.Column('created_at', db.TIMESTAMP(timezone=True), default=db.func.utcnow(), nullable=False),
-    )
+    db.Column(
+        'created_at',
+        db.TIMESTAMP(timezone=True),
+        default=db.func.utcnow(),
+        nullable=False,
+    ),
+)
 
 
 def starred_job_ids(user, agelimit=None):
     if agelimit:
-        return [r[0] for r in db.session.query(starred_job_table.c.jobpost_id).filter(
-            starred_job_table.c.user_id == user.id,
-            starred_job_table.c.created_at > utcnow() - agelimit)]
+        return [
+            r[0]
+            for r in db.session.query(starred_job_table.c.jobpost_id).filter(
+                starred_job_table.c.user_id == user.id,
+                starred_job_table.c.created_at > utcnow() - agelimit,
+            )
+        ]
     else:
-        return [r[0] for r in db.session.query(starred_job_table.c.jobpost_id).filter(
-            starred_job_table.c.user_id == user.id)]
+        return [
+            r[0]
+            for r in db.session.query(starred_job_table.c.jobpost_id).filter(
+                starred_job_table.c.user_id == user.id
+            )
+        ]
 
 
 User.starred_job_ids = starred_job_ids
@@ -69,7 +113,11 @@ def has_starred_post(user, post):
     """Checks if user has starred a particular post"""
     if not post:
         return False
-    query = starred_job_table.count().where(starred_job_table.c.user_id == user.id).where(starred_job_table.c.jobpost_id == post.id)
+    query = (
+        starred_job_table.count()
+        .where(starred_job_table.c.user_id == user.id)
+        .where(starred_job_table.c.jobpost_id == post.id)
+    )
     res = db.session.execute(query)
     return bool(res.first()[0]) if res else False
 
@@ -80,22 +128,33 @@ User.has_starred_post = has_starred_post
 class JobPost(BaseMixin, db.Model):
     __tablename__ = 'jobpost'
 
-    # Metadata
+    # --- Metadata
     user_id = db.Column(None, db.ForeignKey('user.id'), nullable=True, index=True)
-    user = db.relationship(User, primaryjoin=user_id == User.id, backref=db.backref('jobposts', lazy='dynamic'))
+    user = db.relationship(
+        User,
+        primaryjoin=user_id == User.id,
+        backref=db.backref('jobposts', lazy='dynamic'),
+    )
 
     hashid = db.Column(db.String(5), nullable=False, unique=True)
-    datetime = db.Column(db.TIMESTAMP(timezone=True), default=db.func.utcnow(), nullable=False, index=True)  # Published
-    closed_datetime = db.Column(db.TIMESTAMP(timezone=True), nullable=True)  # If withdrawn or rejected
+    #: Published time (but created time until it is published)
+    datetime = db.Column(
+        db.TIMESTAMP(timezone=True),
+        default=db.func.utcnow(),
+        nullable=False,
+        index=True,
+    )
+    #: If withdrawn or rejected
+    closed_datetime = db.Column(db.TIMESTAMP(timezone=True), nullable=True)
     # Pinned on the home page. Boards use the BoardJobPost.pinned column
     sticky = db.Column(db.Boolean, nullable=False, default=False)
     pinned = db.synonym('sticky')
 
-    # Job description
+    # --- Job description
     headline = db.Column(db.Unicode(100), nullable=False)
     headlineb = db.Column(db.Unicode(100), nullable=True)
     type_id = db.Column(None, db.ForeignKey('jobtype.id'), nullable=False)
-    type = db.relation(JobType, primaryjoin=type_id == JobType.id)
+    type = db.relation(JobType, primaryjoin=type_id == JobType.id)  # NOQA: A003
     category_id = db.Column(None, db.ForeignKey('jobcategory.id'), nullable=False)
     category = db.relation(JobCategory, primaryjoin=category_id == JobCategory.id)
     location = db.Column(db.Unicode(80), nullable=False)
@@ -108,7 +167,7 @@ class JobPost(BaseMixin, db.Model):
     how_to_apply = db.Column(db.UnicodeText, nullable=False)
     hr_contact = db.Column(db.Boolean, nullable=True)
 
-    # Compensation details
+    # --- Compensation details
     pay_type = db.Column(db.SmallInteger, nullable=True)  # Value in models.PAY_TYPE
     pay_currency = db.Column(db.CHAR(3), nullable=True)
     pay_cash_min = db.Column(db.Integer, nullable=True)
@@ -116,19 +175,21 @@ class JobPost(BaseMixin, db.Model):
     pay_equity_min = db.Column(db.Numeric, nullable=True)
     pay_equity_max = db.Column(db.Numeric, nullable=True)
 
-    # Company details
+    # --- Company details
     company_name = db.Column(db.Unicode(80), nullable=False)
     company_logo = db.Column(db.Unicode(255), nullable=True)
     company_url = db.Column(db.Unicode(255), nullable=False, default='')
     twitter = db.Column(db.Unicode(15), nullable=True)
-    fullname = db.Column(db.Unicode(80), nullable=True)  # Deprecated field, used before user_id was introduced
+    #: XXX: Deprecated field, used before user_id was introduced
+    fullname = db.Column(db.Unicode(80), nullable=True)
     email = db.Column(db.Unicode(80), nullable=False)
     email_domain = db.Column(db.Unicode(80), nullable=False, index=True)
     domain_id = db.Column(None, db.ForeignKey('domain.id'), nullable=False)
     md5sum = db.Column(db.String(32), nullable=False, index=True)
 
-    # Payment, audit and workflow fields
-    words = db.Column(db.UnicodeText, nullable=True)  # All words in description, perks and how_to_apply
+    # --- Payment, audit and workflow fields
+    #: All words in description, perks and how_to_apply
+    words = db.Column(db.UnicodeText, nullable=True)
     promocode = db.Column(db.String(40), nullable=True)
     ipaddr = db.Column(db.String(45), nullable=False)
     useragent = db.Column(db.Unicode(250), nullable=True)
@@ -139,26 +200,43 @@ class JobPost(BaseMixin, db.Model):
     payment_value = db.Column(db.Integer, nullable=False, default=0)
     payment_received = db.Column(db.Boolean, nullable=False, default=False)
     reviewer_id = db.Column(None, db.ForeignKey('user.id'), nullable=True, index=True)
-    reviewer = db.relationship(User, primaryjoin=reviewer_id == User.id, backref="reviewed_posts")
+    reviewer = db.relationship(
+        User, primaryjoin=reviewer_id == User.id, backref="reviewed_posts"
+    )
     review_datetime = db.Column(db.TIMESTAMP(timezone=True), nullable=True)
     review_comments = db.Column(db.Unicode(250), nullable=True)
 
     search_vector = deferred(db.Column(TSVECTOR, nullable=True))
 
-    _state = db.Column('status', db.Integer, StateManager.check_constraint('status', POST_STATE),
-                       default=POST_STATE.DRAFT, nullable=False)
+    _state = db.Column(
+        'status',
+        db.Integer,
+        StateManager.check_constraint('status', POST_STATE),
+        default=POST_STATE.DRAFT,
+        nullable=False,
+    )
     state = StateManager('_state', POST_STATE, doc="Current state of the job post")
 
-    # Metadata for classification
+    # --- Metadata for classification
     language = db.Column(db.CHAR(2), nullable=True)
     language_confidence = db.Column(db.Float, nullable=True)
 
-    admins = db.relationship(User, lazy='dynamic', secondary=lambda: jobpost_admin_table,
-        backref=db.backref('admin_of', lazy='dynamic'))
-    starred_by = db.relationship(User, lazy='dynamic', secondary=starred_job_table,
-        backref=db.backref('starred_jobs', lazy='dynamic'))
+    admins = db.relationship(
+        User,
+        lazy='dynamic',
+        secondary=lambda: jobpost_admin_table,
+        backref=db.backref('admin_of', lazy='dynamic'),
+    )
+    starred_by = db.relationship(
+        User,
+        lazy='dynamic',
+        secondary=starred_job_table,
+        backref=db.backref('starred_jobs', lazy='dynamic'),
+    )
     #: Quick lookup locations this post is referring to
-    geonameids = association_proxy('locations', 'geonameid', creator=lambda l: JobLocation(geonameid=l))
+    geonameids = association_proxy(
+        'locations', 'geonameid', creator=lambda l: JobLocation(geonameid=l)
+    )
 
     _defercols = [
         defer('user_id'),
@@ -188,21 +266,19 @@ class JobPost(BaseMixin, db.Model):
         defer('review_comments'),
         defer('language'),
         defer('language_confidence'),
-
         # These are defined below JobApplication
         defer('new_applications'),
         defer('replied_applications'),
         defer('viewcounts_viewed'),
         defer('viewcounts_opened'),
         defer('viewcounts_applied'),
-
         # defer('pay_type'),
         # defer('pay_currency'),
         # defer('pay_cash_min'),
         # defer('pay_cash_max'),
         # defer('pay_equity_min'),
         # defer('pay_equity_max'),
-        ]
+    ]
 
     @classmethod
     def get(cls, hashid):
@@ -211,20 +287,38 @@ class JobPost(BaseMixin, db.Model):
     @classmethod
     def fetch(cls, hashid):
         """Returns a SQLAlchemy query object for JobPost"""
-        return cls.query.filter_by(hashid=hashid).options(load_only('id', 'headline', 'headlineb', 'hashid', 'datetime', '_state', 'email_domain', 'review_comments', 'company_url'))
+        return cls.query.filter_by(hashid=hashid).options(
+            load_only(
+                'id',
+                'headline',
+                'headlineb',
+                'hashid',
+                'datetime',
+                '_state',
+                'email_domain',
+                'review_comments',
+                'company_url',
+            )
+        )
 
     @classmethodproperty
-    def query_listed(cls):
+    def query_listed(cls):  # NOQA: N805
         """Returns a SQLAlchemy query for listed jobposts"""
-        return cls.query.filter(JobPost.state.LISTED).options(db.load_only('id', 'hashid'))
+        return cls.query.filter(JobPost.state.LISTED).options(
+            db.load_only('id', 'hashid')
+        )
 
     def __repr__(self):
-        return '<JobPost {hashid} "{headline}">'.format(hashid=self.hashid, headline=self.headline.encode('utf-8'))
+        return '<JobPost {hashid} "{headline}">'.format(
+            hashid=self.hashid, headline=self.headline
+        )
 
     def admin_is(self, user):
         if user is None:
             return False
-        return user == self.user or bool(self.admins.options(db.load_only('id')).filter_by(id=user.id).count())
+        return user == self.user or bool(
+            self.admins.options(db.load_only('id')).filter_by(id=user.id).count()
+        )
 
     @property
     def expiry_date(self):
@@ -235,50 +329,118 @@ class JobPost(BaseMixin, db.Model):
         return self.expiry_date + timedelta(days=1)
 
     # NEW = Posted within last 24 hours
-    state.add_conditional_state('NEW', state.PUBLIC, lambda jobpost: jobpost.datetime >= utcnow() - newlimit, label=('new', __("New!")))
+    state.add_conditional_state(
+        'NEW',
+        state.PUBLIC,
+        lambda jobpost: jobpost.datetime >= utcnow() - newlimit,
+        label=('new', __("New!")),
+    )
     # LISTED = Posted within last 30 days
-    state.add_conditional_state('LISTED', state.PUBLIC, lambda jobpost: jobpost.datetime >= utcnow() - agelimit, label=('listed', __("Listed")))
+    state.add_conditional_state(
+        'LISTED',
+        state.PUBLIC,
+        lambda jobpost: jobpost.datetime >= utcnow() - agelimit,
+        label=('listed', __("Listed")),
+    )
     # OLD = Posted more than 30 days ago
-    state.add_conditional_state('OLD', state.PUBLIC, lambda jobpost: not jobpost.state.LISTED, label=('old', __("Old")))
+    state.add_conditional_state(
+        'OLD',
+        state.PUBLIC,
+        lambda jobpost: not jobpost.state.LISTED,
+        label=('old', __("Old")),
+    )
     # Checks if current user has the permission to confirm the jobpost
-    state.add_conditional_state('CONFIRMABLE', state.UNPUBLISHED, lambda jobpost: jobpost.current_permissions.edit, label=('confirmable', __("Confirmable")))
+    state.add_conditional_state(
+        'CONFIRMABLE',
+        state.UNPUBLISHED,
+        lambda jobpost: jobpost.current_permissions.edit,
+        label=('confirmable', __("Confirmable")),
+    )
 
-    @state.transition(state.PUBLIC, state.WITHDRAWN, title=__("Withdraw"), message=__("This job post has been withdrawn"), type='danger')
+    @state.transition(
+        state.PUBLIC,
+        state.WITHDRAWN,
+        title=__("Withdraw"),
+        message=__("This job post has been withdrawn"),
+        type='danger',
+    )
     def withdraw(self):
         self.closed_datetime = db.func.utcnow()
 
-    @state.transition(state.PUBLIC, state.CLOSED, title=__("Close"), message=__("This job post has been closed"), type='danger')
+    @state.transition(
+        state.PUBLIC,
+        state.CLOSED,
+        title=__("Close"),
+        message=__("This job post has been closed"),
+        type='danger',
+    )
     def close(self):
         self.closed_datetime = db.func.utcnow()
 
-    @state.transition(state.UNPUBLISHED_OR_MODERATED, state.CONFIRMED, title=__("Confirm"), message=__("This job post has been confirmed"), type='success')
+    @state.transition(
+        state.UNPUBLISHED_OR_MODERATED,
+        state.CONFIRMED,
+        title=__("Confirm"),
+        message=__("This job post has been confirmed"),
+        type='success',
+    )
     def confirm(self):
         self.email_verified = True
         self.datetime = db.func.utcnow()
 
-    @state.transition(state.CLOSED, state.CONFIRMED, title=__("Reopen"), message=__("This job post has been reopened"), type='success')
+    @state.transition(
+        state.CLOSED,
+        state.CONFIRMED,
+        title=__("Reopen"),
+        message=__("This job post has been reopened"),
+        type='success',
+    )
     def reopen(self):
         pass
 
-    @state.transition(state.PUBLIC, state.SPAM, title=__("Mark as spam"), message=__("This job post has been marked as spam"), type='danger')
+    @state.transition(
+        state.PUBLIC,
+        state.SPAM,
+        title=__("Mark as spam"),
+        message=__("This job post has been marked as spam"),
+        type='danger',
+    )
     def mark_spam(self, reason, user):
         self.closed_datetime = db.func.utcnow()
         self.review_datetime = db.func.utcnow()
         self.review_comments = reason
         self.reviewer = user
 
-    @state.transition(state.DRAFT, state.PENDING, title=__("Mark as pending"), message=__("This job post is awaiting email verification"), type='danger')
+    @state.transition(
+        state.DRAFT,
+        state.PENDING,
+        title=__("Mark as pending"),
+        message=__("This job post is awaiting email verification"),
+        type='danger',
+    )
     def mark_pending(self):
         pass
 
-    @state.transition(state.PUBLIC, state.REJECTED, title=__("Reject"), message=__("This job post has been rejected"), type='danger')
+    @state.transition(
+        state.PUBLIC,
+        state.REJECTED,
+        title=__("Reject"),
+        message=__("This job post has been rejected"),
+        type='danger',
+    )
     def reject(self, reason, user):
         self.closed_datetime = db.func.utcnow()
         self.review_datetime = db.func.utcnow()
         self.review_comments = reason
         self.reviewer = user
 
-    @state.transition(state.PUBLIC, state.MODERATED, title=__("Moderate"), message=__("This job post has been moderated"), type='primary')
+    @state.transition(
+        state.PUBLIC,
+        state.MODERATED,
+        title=__("Moderate"),
+        message=__("This job post has been moderated"),
+        type='primary',
+    )
     def moderate(self, reason, user):
         self.closed_datetime = db.func.utcnow()
         self.review_datetime = db.func.utcnow()
@@ -299,45 +461,148 @@ class JobPost(BaseMixin, db.Model):
                 kwargs.pop('b')
 
         if action == 'view':
-            return url_for('jobdetail', hashid=self.hashid, domain=domain, _external=_external, **kwargs)
+            return url_for(
+                'jobdetail',
+                hashid=self.hashid,
+                domain=domain,
+                _external=_external,
+                **kwargs,
+            )
         elif action == 'reveal':
-            return url_for('revealjob', hashid=self.hashid, domain=domain, _external=_external, **kwargs)
+            return url_for(
+                'revealjob',
+                hashid=self.hashid,
+                domain=domain,
+                _external=_external,
+                **kwargs,
+            )
         elif action == 'apply':
-            return url_for('applyjob', hashid=self.hashid, domain=domain, _external=_external, **kwargs)
+            return url_for(
+                'applyjob',
+                hashid=self.hashid,
+                domain=domain,
+                _external=_external,
+                **kwargs,
+            )
         elif action == 'edit':
-            return url_for('editjob', hashid=self.hashid, domain=domain, _external=_external, **kwargs)
+            return url_for(
+                'editjob',
+                hashid=self.hashid,
+                domain=domain,
+                _external=_external,
+                **kwargs,
+            )
         elif action == 'withdraw':
-            return url_for('withdraw', hashid=self.hashid, domain=domain, _external=_external, **kwargs)
+            return url_for(
+                'withdraw',
+                hashid=self.hashid,
+                domain=domain,
+                _external=_external,
+                **kwargs,
+            )
         elif action == 'close':
-            return url_for('close', hashid=self.hashid, domain=domain, _external=_external, **kwargs)
+            return url_for(
+                'close',
+                hashid=self.hashid,
+                domain=domain,
+                _external=_external,
+                **kwargs,
+            )
         elif action == 'viewstats':
-            return url_for('job_viewstats', hashid=self.hashid, domain=domain, _external=_external, **kwargs)
+            return url_for(
+                'job_viewstats',
+                hashid=self.hashid,
+                domain=domain,
+                _external=_external,
+                **kwargs,
+            )
         elif action == 'related_posts':
-            return url_for('job_related_posts', hashid=self.hashid, domain=domain, _external=_external, **kwargs)
+            return url_for(
+                'job_related_posts',
+                hashid=self.hashid,
+                domain=domain,
+                _external=_external,
+                **kwargs,
+            )
         elif action == 'reopen':
-            return url_for('reopen', hashid=self.hashid, domain=domain, _external=_external, **kwargs)
+            return url_for(
+                'reopen',
+                hashid=self.hashid,
+                domain=domain,
+                _external=_external,
+                **kwargs,
+            )
         elif action == 'moderate':
-            return url_for('moderatejob', hashid=self.hashid, domain=domain, _external=_external, **kwargs)
+            return url_for(
+                'moderatejob',
+                hashid=self.hashid,
+                domain=domain,
+                _external=_external,
+                **kwargs,
+            )
         elif action == 'pin':
-            return url_for('pinnedjob', hashid=self.hashid, domain=domain, _external=_external, **kwargs)
+            return url_for(
+                'pinnedjob',
+                hashid=self.hashid,
+                domain=domain,
+                _external=_external,
+                **kwargs,
+            )
         elif action == 'reject':
-            return url_for('rejectjob', hashid=self.hashid, domain=domain, _external=_external, **kwargs)
+            return url_for(
+                'rejectjob',
+                hashid=self.hashid,
+                domain=domain,
+                _external=_external,
+                **kwargs,
+            )
         elif action == 'confirm':
             return url_for('confirm', hashid=self.hashid, _external=_external, **kwargs)
         elif action == 'logo':
-            return url_for('logoimage', hashid=self.hashid, domain=domain, _external=_external, **kwargs)
+            return url_for(
+                'logoimage',
+                hashid=self.hashid,
+                domain=domain,
+                _external=_external,
+                **kwargs,
+            )
         elif action == 'confirm-link':
-            return url_for('confirm_email', hashid=self.hashid, domain=domain,
-                key=self.email_verify_key, _external=True, **kwargs)
+            return url_for(
+                'confirm_email',
+                hashid=self.hashid,
+                domain=domain,
+                key=self.email_verify_key,
+                _external=True,
+                **kwargs,
+            )
         elif action == 'star':
-            return url_for('starjob', hashid=self.hashid, domain=domain, _external=_external, **kwargs)
+            return url_for(
+                'starjob',
+                hashid=self.hashid,
+                domain=domain,
+                _external=_external,
+                **kwargs,
+            )
         elif action == 'manage':
-            return url_for('managejob', hashid=self.hashid, domain=domain, _external=_external, **kwargs)
+            return url_for(
+                'managejob',
+                hashid=self.hashid,
+                domain=domain,
+                _external=_external,
+                **kwargs,
+            )
         elif action == 'browse':
             if is_public_email_domain(self.email_domain, default=False):
-                return url_for('browse_by_email', md5sum=self.md5sum, _external=_external, **kwargs)
+                return url_for(
+                    'browse_by_email', md5sum=self.md5sum, _external=_external, **kwargs
+                )
             else:
-                return url_for('browse_by_domain', domain=self.email_domain, _external=_external, **kwargs)
+                return url_for(
+                    'browse_by_domain',
+                    domain=self.email_domain,
+                    _external=_external,
+                    **kwargs,
+                )
 
     def permissions(self, user, inherited=None):
         perms = super(JobPost, self).permissions(user, inherited)
@@ -367,7 +632,11 @@ class JobPost(BaseMixin, db.Model):
     def pays_cash(self):
         if self.pay_type is None:  # Legacy record from before `pay_type` was mandatory
             return True
-        return self.pay_type != PAY_TYPE.NOCASH and self.pay_cash_min is not None and self.pay_cash_max is not None
+        return (
+            self.pay_type != PAY_TYPE.NOCASH
+            and self.pay_cash_min is not None
+            and self.pay_cash_max is not None
+        )
 
     @property
     def pays_equity(self):
@@ -401,7 +670,12 @@ class JobPost(BaseMixin, db.Model):
             if self.pay_cash_min == self.pay_cash_max:
                 cash = symbol + number_abbreviate(self.pay_cash_min, indian)
             else:
-                cash = symbol + number_abbreviate(self.pay_cash_min, indian) + "-" + number_abbreviate(self.pay_cash_max, indian)
+                cash = (
+                    symbol
+                    + number_abbreviate(self.pay_cash_min, indian)
+                    + "-"
+                    + number_abbreviate(self.pay_cash_max, indian)
+                )
 
             if suffix:
                 cash = cash + " " + suffix
@@ -426,11 +700,13 @@ class JobPost(BaseMixin, db.Model):
                 return "No pay"
 
     def tag_content(self):
-        return Markup('\n').join((
-            Markup('<div>') + Markup(escape(self.headline)) + Markup('</div>'),
-            Markup('<div>') + Markup(self.description) + Markup('</div>'),
-            Markup('<div>') + Markup(self.perks) + Markup('</div>')
-            ))
+        return Markup('\n').join(
+            (
+                Markup('<div>') + Markup(escape(self.headline)) + Markup('</div>'),
+                Markup('<div>') + Markup(self.description) + Markup('</div>'),
+                Markup('<div>') + Markup(self.perks) + Markup('</div>'),
+            )
+        )
 
     @staticmethod
     def viewcounts_key(jobpost_id):
@@ -448,9 +724,13 @@ class JobPost(BaseMixin, db.Model):
     @cached_property
     def ab_impressions(self):
         results = {'NA': 0, 'A': 0, 'B': 0}
-        counts = db.session.query(
-            JobImpression.bgroup.label('bgroup'), db.func.count('*').label('count')).filter(
-            JobImpression.jobpost == self).group_by(JobImpression.bgroup)
+        counts = (
+            db.session.query(
+                JobImpression.bgroup.label('bgroup'), db.func.count('*').label('count')
+            )
+            .filter(JobImpression.jobpost == self)
+            .group_by(JobImpression.bgroup)
+        )
         for row in counts:
             if row.bgroup is False:
                 results['A'] = row.count
@@ -463,17 +743,31 @@ class JobPost(BaseMixin, db.Model):
     @cached_property
     def ab_views(self):
         results = {
-            'C_NA': 0, 'C_A': 0, 'C_B': 0,  # Conversions (cointoss=True, crosstoss=False)
-            'E_NA': 0, 'E_A': 0, 'E_B': 0,  # External (cointoss=False, crosstoss=True OR False [do sum])
-            'X_NA': 0, 'X_A': 0, 'X_B': 0,  # Cross toss (cointoss=True, crosstoss=True)
-            }
-        counts = db.session.query(
-            JobViewSession.bgroup.label('bgroup'),
-            JobViewSession.cointoss.label('cointoss'),
-            JobViewSession.crosstoss.label('crosstoss'),
-            db.func.count('*').label('count')
-            ).filter(JobViewSession.jobpost == self
-            ).group_by(JobViewSession.bgroup, JobViewSession.cointoss, JobViewSession.crosstoss)
+            # Conversions (cointoss=True, crosstoss=False)
+            'C_NA': 0,
+            'C_A': 0,
+            'C_B': 0,
+            # External (cointoss=False, crosstoss=True OR False [do sum])
+            'E_NA': 0,
+            'E_A': 0,
+            'E_B': 0,
+            # Cross toss (cointoss=True, crosstoss=True)
+            'X_NA': 0,
+            'X_A': 0,
+            'X_B': 0,
+        }
+        counts = (
+            db.session.query(
+                JobViewSession.bgroup.label('bgroup'),
+                JobViewSession.cointoss.label('cointoss'),
+                JobViewSession.crosstoss.label('crosstoss'),
+                db.func.count('*').label('count'),
+            )
+            .filter(JobViewSession.jobpost == self)
+            .group_by(
+                JobViewSession.bgroup, JobViewSession.cointoss, JobViewSession.crosstoss
+            )
+        )
 
         for row in counts:
             if row.cointoss is True and row.crosstoss is False:
@@ -499,7 +793,7 @@ class JobPost(BaseMixin, db.Model):
         opened = int(viewcounts['opened'])
         applied = int(viewcounts['applied'])
         age = utcnow() - self.datetime
-        hours = age.days * 24 + age.seconds / 3600
+        hours = age.days * 24 + age.seconds // 3600
 
         return ((applied * 3) + (opened - applied)) / pow((hours + 2), 1.8)
 
@@ -519,7 +813,10 @@ class JobPost(BaseMixin, db.Model):
         counts = {}
         for flag in self.flags:
             counts[flag.reportcode] = counts.setdefault(flag.reportcode, 0) + 1
-        return [{'count': i[2], 'title': i[1]} for i in sorted([(k.seq, k.title, v) for k, v in counts.items()])]
+        return [
+            {'count': i[2], 'title': i[1]}
+            for i in sorted((k.seq, k.title, v) for k, v in counts.items())
+        ]
 
 
 def viewstats_helper(jobpost_id, interval, limit, daybatch=False):
@@ -527,8 +824,12 @@ def viewstats_helper(jobpost_id, interval, limit, daybatch=False):
     if not post.datetime:
         return {}
     viewed = UserJobView.query.filter_by(jobpost_id=jobpost_id).all()
-    opened = [v for v in viewed if v.applied == True]  # NOQA
-    applied = db.session.query(JobApplication.created_at).filter_by(jobpost_id=jobpost_id).all()
+    opened = [v for v in viewed if v.applied.is_(True)]
+    applied = (
+        db.session.query(JobApplication.created_at)
+        .filter_by(jobpost_id=jobpost_id)
+        .all()
+    )
 
     # Now batch them by size
     now = utcnow()
@@ -548,29 +849,37 @@ def viewstats_helper(jobpost_id, interval, limit, daybatch=False):
     capplied = batches * [0]
     cbuckets = batches * ['']
 
-    interval_hour = interval / 3600
+    interval_hour = interval // 3600
     # these are used as initial values for hourly stats
     # buckets are like "HH:00 - HH:00"
-    to_datetime = (now + timedelta(hours=1))  # if now is 09:45, bucket ending hour will be 10:00
-    from_datetime = to_datetime - timedelta(hours=interval_hour)  # starting hour will be, 06:00, if interval is 4 hours
+
+    # if now is 09:45, bucket ending hour will be 10:00
+    to_datetime = now + timedelta(hours=1)
+    # starting hour will be, 06:00, if interval is 4 hours
+    from_datetime = to_datetime - timedelta(hours=interval_hour)
 
     for delta in range(batches):
         if daybatch:
             # here delta=0 at first, and last item is the latest date/hour
-            cbuckets[batches - delta - 1] = format_datetime((now - timedelta(days=delta)), 'd MMM')
+            cbuckets[batches - delta - 1] = format_datetime(
+                (now - timedelta(days=delta)), 'd MMM'
+            )
         else:
             from_hour = format_datetime(from_datetime, 'd MMM HH:00')
             to_hour = format_datetime(to_datetime, 'HH:00')
-            cbuckets[batches - delta - 1] = "{from_hour} — {to_hour}".format(from_hour=from_hour, to_hour=to_hour)
+            cbuckets[batches - delta - 1] = "{from_hour} — {to_hour}".format(
+                from_hour=from_hour, to_hour=to_hour
+            )
             # if current bucket was 18:00-22:00, then
             # previous bucket becomes 14:00-18:00
             to_datetime = from_datetime
             from_datetime = to_datetime - timedelta(hours=interval_hour)
 
     for clist, source, attr in [
-            (cviewed, viewed, 'created_at'),
-            (copened, opened, 'updated_at'),
-            (capplied, applied, 'created_at')]:
+        (cviewed, viewed, 'created_at'),
+        (copened, opened, 'updated_at'),
+        (capplied, applied, 'created_at'),
+    ]:
         for item in source:
             sourcedate = getattr(item, attr)
             if sourcedate < post.datetime:
@@ -582,9 +891,9 @@ def viewstats_helper(jobpost_id, interval, limit, daybatch=False):
             itemdelta = sourcedate - post.datetime
             try:
                 if daybatch:
-                    clist[int(itemdelta.days // interval)] += 1
+                    clist[int(itemdelta.days / interval)] += 1
                 else:
-                    clist[int(int(itemdelta.total_seconds()) // interval)] += 1
+                    clist[int(int(itemdelta.total_seconds()) / interval)] += 1
             except IndexError:
                 # Server time got messed up. Ouch! Ignore for now.
                 pass
@@ -596,17 +905,19 @@ def viewstats_helper(jobpost_id, interval, limit, daybatch=False):
         cbuckets = cbuckets[:limit]
 
     return {
-        'max': max([
-            max(cviewed) if cviewed else 0,
-            max(copened) if copened else 0,
-            max(capplied) if capplied else 0,
-            ]),
+        'max': max(
+            [
+                max(cviewed) if cviewed else 0,
+                max(copened) if copened else 0,
+                max(capplied) if capplied else 0,
+            ]
+        ),
         'length': max([len(cviewed), len(copened), len(capplied)]),
         'viewed': cviewed,
         'opened': copened,
         'applied': capplied,
-        'buckets': cbuckets
-        }
+        'buckets': cbuckets,
+    }
 
 
 @cache.memoize(timeout=3600)
@@ -619,18 +930,30 @@ def viewstats_by_id_day(jobpost_id, limit=30):
     return viewstats_helper(jobpost_id, 1, limit, daybatch=True)
 
 
-jobpost_admin_table = db.Table('jobpost_admin', db.Model.metadata,
-    *(make_timestamp_columns(timezone=True) + (
-        db.Column('user_id', None, db.ForeignKey('user.id'), primary_key=True),
-        db.Column('jobpost_id', None, db.ForeignKey('jobpost.id'), primary_key=True)
-        )))
+jobpost_admin_table = db.Table(
+    'jobpost_admin',
+    db.Model.metadata,
+    *(
+        make_timestamp_columns(timezone=True)
+        + (
+            db.Column('user_id', None, db.ForeignKey('user.id'), primary_key=True),
+            db.Column(
+                'jobpost_id', None, db.ForeignKey('jobpost.id'), primary_key=True
+            ),
+        )
+    ),
+)
 
 
 class JobLocation(TimestampMixin, db.Model):
     __tablename__ = 'job_location'
     #: Job post we are tagging
-    jobpost_id = db.Column(None, db.ForeignKey('jobpost.id'), primary_key=True, nullable=False)
-    jobpost = db.relationship(JobPost, backref=db.backref('locations', cascade='all, delete-orphan'))
+    jobpost_id = db.Column(
+        None, db.ForeignKey('jobpost.id'), primary_key=True, nullable=False
+    )
+    jobpost = db.relationship(
+        JobPost, backref=db.backref('locations', cascade='all, delete-orphan')
+    )
     #: Geonameid for this job post
     geonameid = db.Column(db.Integer, primary_key=True, nullable=False, index=True)
     primary = db.Column(db.Boolean, default=True, nullable=False)
@@ -639,7 +962,8 @@ class JobLocation(TimestampMixin, db.Model):
         return '<JobLocation %d %s for job %s>' % (
             self.geonameid,
             'primary' if self.primary else 'secondary',
-            self.jobpost.hashid)
+            self.jobpost.hashid,
+        )
 
 
 class UserJobView(TimestampMixin, db.Model):
@@ -666,10 +990,17 @@ class AnonJobView(db.Model):
     jobpost_id = db.Column(None, db.ForeignKey('jobpost.id'), primary_key=True)
     jobpost = db.relationship(JobPost)
     #: User who saw this post
-    anon_user_id = db.Column(None, db.ForeignKey('anon_user.id'), primary_key=True, index=True)
+    anon_user_id = db.Column(
+        None, db.ForeignKey('anon_user.id'), primary_key=True, index=True
+    )
     anon_user = db.relationship(AnonUser)
     #: Timestamp
-    created_at = db.Column(db.TIMESTAMP(timezone=True), default=db.func.utcnow(), nullable=False, index=True)
+    created_at = db.Column(
+        db.TIMESTAMP(timezone=True),
+        default=db.func.utcnow(),
+        nullable=False,
+        index=True,
+    )
 
     @classmethod
     def get(cls, jobpost, anon_user):
@@ -679,12 +1010,19 @@ class AnonJobView(db.Model):
 class JobImpression(TimestampMixin, db.Model):
     __tablename__ = 'job_impression'
     #: Datetime when this activity happened (which is likely much before it was written to the database)
-    datetime = db.Column(db.TIMESTAMP(timezone=True), default=db.func.utcnow(), nullable=False, index=True)
+    datetime = db.Column(
+        db.TIMESTAMP(timezone=True),
+        default=db.func.utcnow(),
+        nullable=False,
+        index=True,
+    )
     #: Job post that was impressed
     jobpost_id = db.Column(None, db.ForeignKey('jobpost.id'), primary_key=True)
     jobpost = db.relationship(JobPost)
     #: Event session in which it was impressed
-    event_session_id = db.Column(None, db.ForeignKey('event_session.id'), primary_key=True, index=True)
+    event_session_id = db.Column(
+        None, db.ForeignKey('event_session.id'), primary_key=True, index=True
+    )
     event_session = db.relationship(EventSession)
     #: Whether it was pinned at any time in this session
     pinned = db.Column(db.Boolean, nullable=False, default=False)
@@ -705,21 +1043,33 @@ class JobImpression(TimestampMixin, db.Model):
 class JobViewSession(TimestampMixin, db.Model):
     __tablename__ = 'job_view_session'
     #: Datetime indicates the time, impression has made
-    datetime = db.Column(db.TIMESTAMP(timezone=True), default=db.func.utcnow(), nullable=False, index=True)
+    datetime = db.Column(
+        db.TIMESTAMP(timezone=True),
+        default=db.func.utcnow(),
+        nullable=False,
+        index=True,
+    )
     #: Job post that was impressed
     #: Event session in which jobpost was viewed
     #: This takes precedence as we'll be loading all instances
     #: matching the current session in each index request
-    event_session_id = db.Column(None, db.ForeignKey('event_session.id'), primary_key=True)
+    event_session_id = db.Column(
+        None, db.ForeignKey('event_session.id'), primary_key=True
+    )
     event_session = db.relationship(EventSession)
     #: Job post that was viewed
-    jobpost_id = db.Column(None, db.ForeignKey('jobpost.id'), primary_key=True, index=True)
+    jobpost_id = db.Column(
+        None, db.ForeignKey('jobpost.id'), primary_key=True, index=True
+    )
     jobpost = db.relationship(JobPost)
     #: Related impression
-    impression = db.relationship(JobImpression,
+    impression = db.relationship(
+        JobImpression,
         primaryjoin='''and_(JobViewSession.event_session_id == foreign(JobImpression.event_session_id),
             JobViewSession.jobpost_id == foreign(JobImpression.jobpost_id))''',
-        uselist=False, backref='view')
+        uselist=False,
+        backref='view',
+    )
     #: Was this view in the B group of an A/B test? (null = no test conducted)
     bgroup = db.Column(db.Boolean, nullable=True)
     #: Was the bgroup assigned by coin toss or was it predetermined?
@@ -741,12 +1091,15 @@ class JobApplication(BaseMixin, db.Model):
     #: Hash id (to hide database ids)
     hashid = db.Column(db.String(40), nullable=False, unique=True)
     #: User who applied for this post
-    user_id = db.Column(None, db.ForeignKey('user.id'), nullable=True, index=True)  # TODO: add unique=True
+    # TODO: add unique=True
+    user_id = db.Column(None, db.ForeignKey('user.id'), nullable=True, index=True)
     user = db.relationship(User, foreign_keys=user_id)
     #: Full name of the user (as it was at the time of the application)
     fullname = db.Column(db.Unicode(250), nullable=False)
     #: Job post they applied to
-    jobpost_id = db.Column(None, db.ForeignKey('jobpost.id'), nullable=False, index=True)
+    jobpost_id = db.Column(
+        None, db.ForeignKey('jobpost.id'), nullable=False, index=True
+    )
     # jobpost relationship is below, outside the class definition
     #: User's email address
     email = db.Column(db.Unicode(80), nullable=False)
@@ -757,9 +1110,13 @@ class JobApplication(BaseMixin, db.Model):
     #: User opted-in to experimental features
     optin = db.Column(db.Boolean, default=False, nullable=False)
     #: Employer's response code
-    _response = db.Column('response', db.Integer,
+    _response = db.Column(
+        'response',
+        db.Integer,
         StateManager.check_constraint('response', EMPLOYER_RESPONSE),
-        nullable=False, default=EMPLOYER_RESPONSE.NEW)
+        nullable=False,
+        default=EMPLOYER_RESPONSE.NEW,
+    )
     response = StateManager('_response', EMPLOYER_RESPONSE, doc="Employer's response")
     #: Employer's response message
     response_message = db.Column(db.UnicodeText, nullable=True)
@@ -778,31 +1135,67 @@ class JobApplication(BaseMixin, db.Model):
         if self.hashid is None:
             self.hashid = unique_long_hash()
 
-    @response.transition(response.NEW, response.PENDING, title=__("Mark read"), message=__("This job application has been read"), type='success')
+    @response.transition(
+        response.NEW,
+        response.PENDING,
+        title=__("Mark read"),
+        message=__("This job application has been read"),
+        type='success',
+    )
     def mark_read(self):
         pass
 
-    @response.transition(response.CAN_REPLY, response.REPLIED, title=__("Reply"), message=__("This job application has been replied to"), type='success')
+    @response.transition(
+        response.CAN_REPLY,
+        response.REPLIED,
+        title=__("Reply"),
+        message=__("This job application has been replied to"),
+        type='success',
+    )
     def reply(self, message, user):
         self.response_message = message
         self.replied_by = user
         self.replied_at = db.func.utcnow()
 
-    @response.transition(response.CAN_REJECT, response.REJECTED, title=__("Reject"), message=__("This job application has been rejected"), type='danger')
+    @response.transition(
+        response.CAN_REJECT,
+        response.REJECTED,
+        title=__("Reject"),
+        message=__("This job application has been rejected"),
+        type='danger',
+    )
     def reject(self, message, user):
         self.response_message = message
         self.replied_by = user
         self.replied_at = db.func.utcnow()
 
-    @response.transition(response.CAN_IGNORE, response.IGNORED, title=__("Ignore"), message=__("This job application has been ignored"), type='danger')
+    @response.transition(
+        response.CAN_IGNORE,
+        response.IGNORED,
+        title=__("Ignore"),
+        message=__("This job application has been ignored"),
+        type='danger',
+    )
     def ignore(self):
         pass
 
-    @response.transition(response.CAN_REPORT, response.FLAGGED, title=__("Report"), message=__("This job application has been reported"), type='danger')
+    @response.transition(
+        response.CAN_REPORT,
+        response.FLAGGED,
+        title=__("Report"),
+        message=__("This job application has been reported"),
+        type='danger',
+    )
     def flag(self):
         pass
 
-    @response.transition(response.FLAGGED, response.PENDING, title=__("Unflag"), message=__("This job application has been unflagged"), type='success')
+    @response.transition(
+        response.FLAGGED,
+        response.PENDING,
+        title=__("Unflag"),
+        message=__("This job application has been unflagged"),
+        type='success',
+    )
     def unflag(self):
         pass
 
@@ -816,15 +1209,18 @@ class JobApplication(BaseMixin, db.Model):
                 'replied': 0,
                 'flagged': 0,
                 'spam': 0,
-                'rejected': 0
-                }
+                'rejected': 0,
+            }
         date_min = self.created_at - timedelta(days=7)
         date_max = self.created_at + timedelta(days=7)
         grouped = JobApplication.response.group(
-            JobApplication.query.filter(JobApplication.user == self.user).filter(
-                JobApplication.created_at > date_min, JobApplication.created_at < date_max
-                ).options(db.load_only('id'))
+            JobApplication.query.filter(JobApplication.user == self.user)
+            .filter(
+                JobApplication.created_at > date_min,
+                JobApplication.created_at < date_max,
             )
+            .options(db.load_only('id'))
+        )
         counts = {k.label.name: len(v) for k, v in grouped.items()}
         counts['count'] = sum(counts.values())
         return counts
@@ -832,53 +1228,92 @@ class JobApplication(BaseMixin, db.Model):
     def url_for(self, action='view', _external=False, **kwargs):
         domain = self.jobpost.email_domain
         if action == 'view':
-            return url_for('view_application', hashid=self.jobpost.hashid, domain=domain, application=self.hashid,
-                _external=_external, **kwargs)
+            return url_for(
+                'view_application',
+                hashid=self.jobpost.hashid,
+                domain=domain,
+                application=self.hashid,
+                _external=_external,
+                **kwargs,
+            )
         elif action == 'process':
-            return url_for('process_application', hashid=self.jobpost.hashid, domain=domain, application=self.hashid,
-                _external=_external, **kwargs)
+            return url_for(
+                'process_application',
+                hashid=self.jobpost.hashid,
+                domain=domain,
+                application=self.hashid,
+                _external=_external,
+                **kwargs,
+            )
         elif action == 'track-open':
-            return url_for('view_application_email_gif', hashid=self.jobpost.hashid, domain=domain, application=self.hashid,
-                _external=_external, **kwargs)
+            return url_for(
+                'view_application_email_gif',
+                hashid=self.jobpost.hashid,
+                domain=domain,
+                application=self.hashid,
+                _external=_external,
+                **kwargs,
+            )
 
 
-JobApplication.jobpost = db.relationship(JobPost,
-    backref=db.backref('applications', lazy='dynamic', order_by=(
-        db.case(value=JobApplication._response, whens={
-            EMPLOYER_RESPONSE.NEW: 0,
-            EMPLOYER_RESPONSE.PENDING: 1,
-            EMPLOYER_RESPONSE.IGNORED: 2,
-            EMPLOYER_RESPONSE.REPLIED: 3,
-            EMPLOYER_RESPONSE.REJECTED: 4,
-            EMPLOYER_RESPONSE.FLAGGED: 5,
-            EMPLOYER_RESPONSE.SPAM: 6
-            }),
-        db.desc(JobApplication.created_at)), cascade='all, delete-orphan'))
+JobApplication.jobpost = db.relationship(
+    JobPost,
+    backref=db.backref(
+        'applications',
+        lazy='dynamic',
+        order_by=(
+            db.case(
+                value=JobApplication._response,
+                whens={
+                    EMPLOYER_RESPONSE.NEW: 0,
+                    EMPLOYER_RESPONSE.PENDING: 1,
+                    EMPLOYER_RESPONSE.IGNORED: 2,
+                    EMPLOYER_RESPONSE.REPLIED: 3,
+                    EMPLOYER_RESPONSE.REJECTED: 4,
+                    EMPLOYER_RESPONSE.FLAGGED: 5,
+                    EMPLOYER_RESPONSE.SPAM: 6,
+                },
+            ),
+            db.desc(JobApplication.created_at),
+        ),
+        cascade='all, delete-orphan',
+    ),
+)
 
 
 JobPost.new_applications = db.column_property(
     db.select([db.func.count(JobApplication.id)]).where(
-        db.and_(JobApplication.jobpost_id == JobPost.id, JobApplication.response.NEW)))
+        db.and_(JobApplication.jobpost_id == JobPost.id, JobApplication.response.NEW)
+    )
+)
 
 
 JobPost.replied_applications = db.column_property(
     db.select([db.func.count(JobApplication.id)]).where(
-        db.and_(JobApplication.jobpost_id == JobPost.id, JobApplication.response.REPLIED)))
+        db.and_(
+            JobApplication.jobpost_id == JobPost.id, JobApplication.response.REPLIED
+        )
+    )
+)
 
 
 JobPost.viewcounts_viewed = db.column_property(
-    db.select([db.func.count()]).where(
-        UserJobView.jobpost_id == JobPost.id))
+    db.select([db.func.count()]).where(UserJobView.jobpost_id == JobPost.id)
+)
 
 
 JobPost.viewcounts_opened = db.column_property(
     db.select([db.func.count()]).where(
-        db.and_(UserJobView.jobpost_id == JobPost.id, UserJobView.applied == True)))  # NOQA
+        db.and_(UserJobView.jobpost_id == JobPost.id, UserJobView.applied.is_(True))
+    )
+)
 
 
 JobPost.viewcounts_applied = db.column_property(
     db.select([db.func.count(JobApplication.id)]).where(
-        JobApplication.jobpost_id == JobPost.id))
+        JobApplication.jobpost_id == JobPost.id
+    )
+)
 
 
 def unique_hash(model=JobPost):
@@ -925,7 +1360,11 @@ create_jobpost_search_trigger = DDL(
     FOR EACH ROW EXECUTE PROCEDURE jobpost_search_vector_update();
 
     CREATE INDEX ix_jobpost_search_vector ON jobpost USING gin(search_vector);
-    ''')
+    '''
+)
 
-event.listen(JobPost.__table__, 'after_create',
-    create_jobpost_search_trigger.execute_if(dialect='postgresql'))
+event.listen(
+    JobPost.__table__,
+    'after_create',
+    create_jobpost_search_trigger.execute_if(dialect='postgresql'),
+)

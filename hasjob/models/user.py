@@ -2,14 +2,25 @@
 
 from datetime import timedelta
 from uuid import uuid4
-from flask import request
-from flask_lastuser.sqlalchemy import UserBase2
-from coaster.utils import unicode_http_header, utcnow
-from coaster.sqlalchemy import UuidMixin, JsonDict
-from baseframe import _, cache
-from . import db, BaseMixin
 
-__all__ = ['User', 'UserActiveAt', 'AnonUser', 'EventSessionBase', 'EventSession', 'UserEventBase', 'UserEvent']
+from flask import request
+
+from baseframe import _, cache
+from coaster.sqlalchemy import JsonDict, UuidMixin
+from coaster.utils import unicode_http_header, utcnow
+from flask_lastuser.sqlalchemy import UserBase2
+
+from . import BaseMixin, db
+
+__all__ = [
+    'User',
+    'UserActiveAt',
+    'AnonUser',
+    'EventSessionBase',
+    'EventSession',
+    'UserEventBase',
+    'UserEvent',
+]
 
 
 class User(UserBase2, db.Model):
@@ -26,9 +37,17 @@ class UserActiveAt(db.Model):
     user is on the site for less than five minutes per session, there will typically be just one entry
     per user per active period.
     """
+
     __tablename__ = 'user_active_at'
-    active_at = db.Column(db.TIMESTAMP(timezone=True), nullable=False, default=db.func.utcnow(), primary_key=True)
-    user_id = db.Column(None, db.ForeignKey('user.id'), nullable=False, primary_key=True, index=True)
+    active_at = db.Column(
+        db.TIMESTAMP(timezone=True),
+        nullable=False,
+        default=db.func.utcnow(),
+        primary_key=True,
+    )
+    user_id = db.Column(
+        None, db.ForeignKey('user.id'), nullable=False, primary_key=True, index=True
+    )
     user = db.relationship(User)
     board_id = db.Column(None, db.ForeignKey('board.id'), nullable=True, index=True)
 
@@ -41,9 +60,13 @@ class AnonUser(BaseMixin, db.Model):
     known user (except in certain conditions), but if the user does login, we track that so we can understand
     the conditions under which the login happened.
     """
+
     __tablename__ = 'anon_user'
     user_id = db.Column(None, db.ForeignKey('user.id'), nullable=True, index=True)
-    user = db.relationship(User, backref=db.backref('anonusers', lazy='dynamic', order_by='AnonUser.id.desc()'))
+    user = db.relationship(
+        User,
+        backref=db.backref('anonusers', lazy='dynamic', order_by='AnonUser.id.desc()'),
+    )
 
     def __repr__(self):
         if self.user:
@@ -53,7 +76,8 @@ class AnonUser(BaseMixin, db.Model):
 
     @property
     def username(self):
-        return None  # Don't return 'anon' or anything cute to avoid unique constraint issues elsewhere
+        # Don't return 'anon' or anything cute to avoid unique constraint issues elsewhere
+        return None
 
     @property
     def fullname(self):
@@ -73,7 +97,9 @@ class EventSessionBase(object):
         # EventSessionBase is used independently, isn't a db model, and doesn't have a uuid column.
         instance.uuid = uuid4()
         instance.created_at = utcnow()
-        instance.referrer = unicode_http_header(request.referrer)[:2083] if request.referrer else None
+        instance.referrer = (
+            unicode_http_header(request.referrer)[:2083] if request.referrer else None
+        )
         instance.utm_source = request.args.get('utm_source', '')[:250] or None
         instance.utm_medium = request.args.get('utm_medium', '')[:250] or None
         instance.utm_term = request.args.get('utm_term', '')[:250] or None
@@ -95,8 +121,8 @@ class EventSessionBase(object):
             'utm_id': self.utm_id,
             'utm_campaign': self.utm_campaign,
             'gclid': self.gclid,
-            'events': [e.as_dict() for e in self.events]
-            }
+            'events': [e.as_dict() for e in self.events],
+        }
 
     def save_to_cache(self, key):
         # Use cache instead of redis_store because we're too lazy to handle type marshalling
@@ -117,6 +143,7 @@ class EventSession(EventSessionBase, UuidMixin, BaseMixin, db.Model):
     """
     A user's event session. Groups together user activity within a single time period.
     """
+
     persistent = True  # This will be saved to db
 
     # See https://support.google.com/analytics/answer/2731565?hl=en for source of inspiration
@@ -125,7 +152,9 @@ class EventSession(EventSessionBase, UuidMixin, BaseMixin, db.Model):
     user_id = db.Column(None, db.ForeignKey('user.id'), nullable=True, index=True)
     user = db.relationship(User)
     # If unknown
-    anon_user_id = db.Column(None, db.ForeignKey('anon_user.id'), nullable=True, index=True)
+    anon_user_id = db.Column(
+        None, db.ForeignKey('anon_user.id'), nullable=True, index=True
+    )
     anon_user = db.relationship(AnonUser)
     # Where did we get this user? Referrer URL
     referrer = db.Column(db.Unicode(2083), nullable=True)
@@ -146,9 +175,14 @@ class EventSession(EventSessionBase, UuidMixin, BaseMixin, db.Model):
     # (timeout or campaign tag)
     ended_at = db.Column(db.TIMESTAMP(timezone=True), nullable=True)
 
-    __table_args__ = (db.CheckConstraint(
-        db.case([(user_id != None, 1)], else_=0) + db.case([(anon_user_id != None, 1)], else_=0) == 1,  # NOQA
-        name='user_event_session_user_id_or_anon_user_id'),)
+    __table_args__ = (
+        db.CheckConstraint(
+            db.case([(user_id.isnot(None), 1)], else_=0)
+            + db.case([(anon_user_id.isnot(None), 1)], else_=0)
+            == 1,
+            name='user_event_session_user_id_or_anon_user_id',
+        ),
+    )
 
     @classmethod
     def get_session(cls, uuid, user=None, anon_user=None):
@@ -158,7 +192,7 @@ class EventSession(EventSessionBase, UuidMixin, BaseMixin, db.Model):
         # require_one_of(user=user, anon_user=anon_user)
         # ues = cls.query.filter_by(
         #     user=user, anon_user=anon_user).filter(
-        #     cls.ended_at == None).order_by(cls.created_at.desc()).first()  # NOQA
+        #     cls.ended_at.is_(None)).order_by(cls.created_at.desc()).first()
 
         if ues:
             # Has this session been inactive for over half an hour? Close it,
@@ -172,7 +206,15 @@ class EventSession(EventSessionBase, UuidMixin, BaseMixin, db.Model):
             # Campaign parameters changed? End the session again. See Google's documentation for reasoning
             # https://developers.google.com/analytics/devguides/collection/gajs/gaTrackingCampaigns
             if ues is not None:
-                for param in ('utm_source', 'utm_medium', 'utm_term', 'utm_content', 'utm_id', 'utm_campaign', 'gclid'):
+                for param in (
+                    'utm_source',
+                    'utm_medium',
+                    'utm_term',
+                    'utm_content',
+                    'utm_id',
+                    'utm_campaign',
+                    'gclid',
+                ):
                     pvalue = request.args.get(param, '')[:250] or None
                     if pvalue and pvalue != getattr(ues, param):
                         ues.ended_at = utcnow()
@@ -193,7 +235,9 @@ class UserEventBase(object):
     def new_from_request(cls, request):
         instance = cls()
         instance.ipaddr = request and str(request.environ['REMOTE_ADDR'][:45])
-        instance.useragent = request and unicode_http_header(request.user_agent.string)[:250]
+        instance.useragent = (
+            request and unicode_http_header(request.user_agent.string)[:250]
+        )
         instance.url = request and request.url[:2038]
         instance.method = request and str(request.method[:10])
         instance.name = request and ('endpoint/' + (request.endpoint or '')[:80])
@@ -207,10 +251,15 @@ class UserEvent(UserEventBase, BaseMixin, db.Model):
     """
     An event, anything from a page load (typical) to an activity within that page load.
     """
+
     __tablename__ = 'user_event'
-    event_session_id = db.Column(None, db.ForeignKey('event_session.id'), nullable=False)
-    event_session = db.relationship(EventSession,
-        backref=db.backref('events', lazy='dynamic', order_by='UserEvent.created_at'))
+    event_session_id = db.Column(
+        None, db.ForeignKey('event_session.id'), nullable=False
+    )
+    event_session = db.relationship(
+        EventSession,
+        backref=db.backref('events', lazy='dynamic', order_by='UserEvent.created_at'),
+    )
     #: User's IP address
     ipaddr = db.Column(db.Unicode(45), nullable=True)
     #: User's browser
@@ -218,8 +267,12 @@ class UserEvent(UserEventBase, BaseMixin, db.Model):
     #: URL
     url = db.Column(db.Unicode(2038), nullable=True)
     #: Referrer
-    referrer = db.Column(db.Unicode(2038), nullable=True,
-        default=lambda: request and (unicode_http_header(request.referrer or '')[:2038] or None))
+    referrer = db.Column(
+        db.Unicode(2038),
+        nullable=True,
+        default=lambda: request
+        and (unicode_http_header(request.referrer or '')[:2038] or None),
+    )
     #: HTTP Method
     method = db.Column(db.Unicode(10), nullable=True)
     #: Status code

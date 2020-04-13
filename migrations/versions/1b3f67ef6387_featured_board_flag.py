@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Featured board flag
 
 Revision ID: 1b3f67ef6387
@@ -15,7 +16,9 @@ import sqlalchemy as sa
 
 
 def upgrade():
-    op.add_column('board', sa.Column('featured', sa.Boolean(), nullable=False, server_default='0'))
+    op.add_column(
+        'board', sa.Column('featured', sa.Boolean(), nullable=False, server_default='0')
+    )
     op.alter_column('board', 'featured', server_default=None)
     op.create_index('ix_board_featured', 'board', ['featured'])
 

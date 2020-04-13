@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 
 from flask import jsonify
+
 from coaster.views import requestargs
-from ..models import Tag, Domain
+
 from .. import app, lastuser
+from ..models import Domain, Tag
 
 
 @app.route('/api/1/tag/autocomplete')

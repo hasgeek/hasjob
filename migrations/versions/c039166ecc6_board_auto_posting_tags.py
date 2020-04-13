@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Board auto posting tags
 
 Revision ID: c039166ecc6
@@ -15,14 +16,15 @@ import sqlalchemy as sa
 
 
 def upgrade():
-    op.create_table('board_auto_tag',
+    op.create_table(
+        'board_auto_tag',
         sa.Column('tag_id', sa.Integer(), nullable=False),
         sa.Column('board_id', sa.Integer(), nullable=False),
         sa.Column('created_at', sa.DateTime(), nullable=True),
-        sa.ForeignKeyConstraint(['tag_id'], ['tag.id'], ),
-        sa.ForeignKeyConstraint(['board_id'], ['board.id'], ),
-        sa.PrimaryKeyConstraint('tag_id', 'board_id')
-        )
+        sa.ForeignKeyConstraint(['tag_id'], ['tag.id']),
+        sa.ForeignKeyConstraint(['board_id'], ['board.id']),
+        sa.PrimaryKeyConstraint('tag_id', 'board_id'),
+    )
 
 
 def downgrade():

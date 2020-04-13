@@ -1,15 +1,17 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 from datetime import timedelta
-from coaster.utils import utcnow
-from coaster.manage import init_manager, Manager
 
-import hasjob
-import hasjob.models as models
-import hasjob.forms as forms
-import hasjob.views as views
-from hasjob.models import db
 from hasjob import app
+from hasjob.models import db
+import hasjob
+import hasjob.forms as forms
+import hasjob.models as models
+import hasjob.views as views
+
+from coaster.manage import Manager, init_manager
+from coaster.utils import utcnow
 
 periodic = Manager(usage="Periodic tasks from cron (with recommended intervals)")
 
@@ -19,9 +21,9 @@ def sessions():
     """Sweep user sessions to close all inactive sessions (10m)"""
     es = models.EventSession
     # Close all sessions that have been inactive for >= 30 minutes
-    es.query.filter(es.ended_at == None,  # NOQA
-        es.active_at < (utcnow() - timedelta(minutes=30))).update(
-        {es.ended_at: es.active_at})
+    es.query.filter(
+        es.ended_at.is_(None), es.active_at < (utcnow() - timedelta(minutes=30))
+    ).update({es.ended_at: es.active_at})
     db.session.commit()
 
 
@@ -39,6 +41,8 @@ def campaignviews():
 
 if __name__ == '__main__':
     db.init_app(app)
-    manager = init_manager(app, db, hasjob=hasjob, models=models, forms=forms, views=views)
+    manager = init_manager(
+        app, db, hasjob=hasjob, models=models, forms=forms, views=views
+    )
     manager.add_command('periodic', periodic)
     manager.run()

@@ -31,6 +31,6 @@
     if (typeof tinymce.editors[0] !== 'undefined') {
       tinymce.editors[0].remove(); {#- FIXME: Do this right with Baseframe’s richtext editor #}
     };
-    {% include "inc/tinymce.js" %}
+    {% include "inc/tinymce.js.jinja2" %}
   </script>
 {%- endif %}

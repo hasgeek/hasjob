@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from . import db, BaseNameMixin
+from . import BaseNameMixin, db
 
 __all__ = ['JobType']
 
@@ -20,4 +20,8 @@ class JobType(BaseNameMixin, db.Model):
     webmail_allowed = db.Column(db.Boolean, nullable=False, default=True)
 
     def __repr__(self):
-        return '<JobType %d %s%s>' % (self.seq, self.title, ' (private)' if self.private else '')
+        return '<JobType %d %s%s>' % (
+            self.seq,
+            self.title,
+            ' (private)' if self.private else '',
+        )

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Auto posting to board by type and category
 
 Revision ID: 576b32d25ea2
@@ -15,23 +16,27 @@ import sqlalchemy as sa
 
 
 def upgrade():
-    op.create_table('board_auto_jobcategory',
+    op.create_table(
+        'board_auto_jobcategory',
         sa.Column('jobcategory_id', sa.Integer(), nullable=False),
         sa.Column('board_id', sa.Integer(), nullable=False),
         sa.Column('created_at', sa.DateTime(), nullable=True),
-        sa.ForeignKeyConstraint(['board_id'], ['board.id'], ),
-        sa.ForeignKeyConstraint(['jobcategory_id'], ['jobcategory.id'], ),
-        sa.PrimaryKeyConstraint('jobcategory_id', 'board_id')
-        )
-    op.create_table('board_auto_jobtype',
+        sa.ForeignKeyConstraint(['board_id'], ['board.id']),
+        sa.ForeignKeyConstraint(['jobcategory_id'], ['jobcategory.id']),
+        sa.PrimaryKeyConstraint('jobcategory_id', 'board_id'),
+    )
+    op.create_table(
+        'board_auto_jobtype',
         sa.Column('jobtype_id', sa.Integer(), nullable=False),
         sa.Column('board_id', sa.Integer(), nullable=False),
         sa.Column('created_at', sa.DateTime(), nullable=True),
-        sa.ForeignKeyConstraint(['board_id'], ['board.id'], ),
-        sa.ForeignKeyConstraint(['jobtype_id'], ['jobtype.id'], ),
-        sa.PrimaryKeyConstraint('jobtype_id', 'board_id')
-        )
-    op.add_column('board', sa.Column('auto_all', sa.Boolean(), nullable=False, server_default='0'))
+        sa.ForeignKeyConstraint(['board_id'], ['board.id']),
+        sa.ForeignKeyConstraint(['jobtype_id'], ['jobtype.id']),
+        sa.PrimaryKeyConstraint('jobtype_id', 'board_id'),
+    )
+    op.add_column(
+        'board', sa.Column('auto_all', sa.Boolean(), nullable=False, server_default='0')
+    )
     op.alter_column('board', 'auto_all', server_default=None)
 
 

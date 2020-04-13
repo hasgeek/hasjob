@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Index JobApplication.jobpost_id
 
 Revision ID: 2c1dec2d1dc5
@@ -14,7 +15,12 @@ from alembic import op
 
 
 def upgrade():
-    op.create_index(op.f('ix_job_application_jobpost_id'), 'job_application', ['jobpost_id'], unique=False)
+    op.create_index(
+        op.f('ix_job_application_jobpost_id'),
+        'job_application',
+        ['jobpost_id'],
+        unique=False,
+    )
 
 
 def downgrade():

@@ -1,15 +1,18 @@
 # -*- coding: utf-8 -*-
 
-from werkzeug.utils import cached_property
-from sqlalchemy import event, DDL
-from sqlalchemy.orm import deferred
+from sqlalchemy import DDL, event
 from sqlalchemy.dialects.postgresql import TSVECTOR
+from sqlalchemy.orm import deferred
+
 from flask import url_for
+from werkzeug.utils import cached_property
+
 from baseframe.utils import is_public_email_domain
-from . import db, BaseMixin
+
 from ..utils import escape_for_sql_like
-from .user import User
+from . import BaseMixin, db
 from .jobpost import JobPost
+from .user import User
 
 __all__ = ['Domain']
 
@@ -18,6 +21,7 @@ class Domain(BaseMixin, db.Model):
     """
     A DNS domain affiliated with a job post.
     """
+
     __tablename__ = 'domain'
     #: DNS name of this domain (domain.tld)
     name = db.Column(db.Unicode(80), nullable=False, unique=True)
@@ -34,7 +38,9 @@ class Domain(BaseMixin, db.Model):
     #: Is this domain banned from listing on Hasjob? (Recruiter, etc)
     is_banned = db.Column(db.Boolean, default=False, nullable=False)
     #: Who banned it?
-    banned_by_id = db.Column(None, db.ForeignKey('user.id', ondelete='SET NULL'), nullable=True)
+    banned_by_id = db.Column(
+        None, db.ForeignKey('user.id', ondelete='SET NULL'), nullable=True
+    )
     banned_by = db.relationship(User)
     #: Banned when?
     banned_at = db.Column(db.TIMESTAMP(timezone=True), nullable=True)
@@ -46,7 +52,10 @@ class Domain(BaseMixin, db.Model):
     search_vector = deferred(db.Column(TSVECTOR, nullable=True))
 
     def __repr__(self):
-        flags = [' webmail' if self.is_webmail else '', ' banned' if self.is_banned else '']
+        flags = [
+            ' webmail' if self.is_webmail else '',
+            ' banned' if self.is_banned else '',
+        ]
         return '<Domain %s%s>' % (self.name, ''.join(flags))
 
     @property
@@ -55,7 +64,11 @@ class Domain(BaseMixin, db.Model):
             return self.title
         if self.is_webmail:
             return self.name
-        post = self.jobposts.filter(JobPost.state.ARCHIVED).order_by(JobPost.datetime.desc()).first()
+        post = (
+            self.jobposts.filter(JobPost.state.ARCHIVED)
+            .order_by(JobPost.datetime.desc())
+            .first()
+        )
         if post:
             return post.company_name
         return self.name
@@ -75,9 +88,13 @@ class Domain(BaseMixin, db.Model):
         else:
             if self.is_webmail:
                 return None
-            post = self.jobposts.filter(
-                JobPost.company_logo != None, JobPost.state.ARCHIVED
-            ).order_by(JobPost.datetime.desc()).first()  # NOQA
+            post = (
+                self.jobposts.filter(
+                    JobPost.company_logo.isnot(None), JobPost.state.ARCHIVED
+                )
+                .order_by(JobPost.datetime.desc())
+                .first()
+            )
             return post.url_for('logo', _external=True) if post else None
 
     def editor_is(self, user):
@@ -86,28 +103,40 @@ class Domain(BaseMixin, db.Model):
         """
         if not user:
             return False
-        if JobPost.query.filter_by(domain=self, user=user).filter(~JobPost.state.UNPUBLISHED).notempty():
+        if (
+            JobPost.query.filter_by(domain=self, user=user)
+            .filter(~(JobPost.state.UNPUBLISHED))
+            .notempty()
+        ):
             return True
         return False
 
     def url_for(self, action='view', _external=False, **kwargs):
         if action == 'view':
-            return url_for('browse_by_domain', domain=self.name, _external=_external, **kwargs)
+            return url_for(
+                'browse_by_domain', domain=self.name, _external=_external, **kwargs
+            )
         elif action == 'edit':
-            return url_for('domain_edit', domain=self.name, _external=_external, **kwargs)
+            return url_for(
+                'domain_edit', domain=self.name, _external=_external, **kwargs
+            )
 
     @classmethod
     def get(cls, name, create=False):
         name = name.lower()
         result = cls.query.filter_by(name=name).one_or_none()
         if not result and create:
-            result = cls(name=name, is_webmail=is_public_email_domain(name, default=False))
+            result = cls(
+                name=name, is_webmail=is_public_email_domain(name, default=False)
+            )
             db.session.add(result)
         return result
 
     @classmethod
     def autocomplete(cls, prefix):
-        return cls.query.filter(cls.name.ilike(escape_for_sql_like(prefix)), cls.is_banned == False).all()  # NOQA
+        return cls.query.filter(
+            cls.name.ilike(escape_for_sql_like(prefix)), cls.is_banned.is_(False)
+        ).all()
 
 
 create_domain_search_trigger = DDL(
@@ -123,7 +152,11 @@ create_domain_search_trigger = DDL(
     FOR EACH ROW EXECUTE PROCEDURE domain_search_vector_update();
 
     CREATE INDEX ix_domain_search_vector ON domain USING gin(search_vector);
-    ''')
+    '''
+)
 
-event.listen(Domain.__table__, 'after_create',
-    create_domain_search_trigger.execute_if(dialect='postgresql'))
+event.listen(
+    Domain.__table__,
+    'after_create',
+    create_domain_search_trigger.execute_if(dialect='postgresql'),
+)

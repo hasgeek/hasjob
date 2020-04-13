@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Use UUID key for event sessions
 
 Revision ID: 57da2d78c9ca
@@ -16,7 +17,10 @@ import sqlalchemy_utils.types
 
 
 def upgrade():
-    op.add_column('event_session', sa.Column('uuid', sqlalchemy_utils.types.UUIDType(binary=False), nullable=True))
+    op.add_column(
+        'event_session',
+        sa.Column('uuid', sqlalchemy_utils.types.UUIDType(binary=False), nullable=True),
+    )
     op.create_unique_constraint('event_session_uuid_key', 'event_session', ['uuid'])
 
 

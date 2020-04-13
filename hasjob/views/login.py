@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
 
 from sqlalchemy.exc import IntegrityError
-from flask import g, Response, redirect, flash
-from flask_lastuser import signal_user_session_refreshed
+
+from flask import Response, flash, g, redirect
+
 from coaster.views import get_next_url
+from flask_lastuser import signal_user_session_refreshed
 
 from .. import app, lastuser
+from ..models import UserActiveAt, db
 from ..signals import signal_login, signal_logout
-from ..models import db, UserActiveAt
 
 
 @app.route('/500')
@@ -18,7 +20,7 @@ def error500():
 @app.route('/login')
 @lastuser.login_handler
 def login():
-    return {'scope': 'id email/* phone/* organizations/* teams/* notice/*'}
+    return {'scope': 'id email/* phone/* organizations/*'}
 
 
 @app.route('/logout')
@@ -48,10 +50,12 @@ def lastuser_error(error, error_description=None, error_uri=None):
     if error == 'access_denied':
         flash("You denied the request to login", category='error')
         return redirect(get_next_url())
-    return Response("Error: %s\n"
-                    "Description: %s\n"
-                    "URI: %s" % (error, error_description, error_uri),
-                    mimetype="text/plain")
+    return Response(
+        "Error: %s\n"
+        "Description: %s\n"
+        "URI: %s" % (error, error_description, error_uri),
+        mimetype="text/plain",
+    )
 
 
 @signal_user_session_refreshed.connect

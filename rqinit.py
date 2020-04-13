@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from urllib.parse import urlparse
 
 from hasjob import app
@@ -11,4 +12,4 @@ r = urlparse(REDIS_URL)
 REDIS_HOST = r.hostname
 REDIS_PORT = r.port
 REDIS_PASSWORD = r.password
-REDIS_DB = 0
+REDIS_DB = int(r.path[1:])

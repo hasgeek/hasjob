@@ -1,10 +1,13 @@
+# -*- coding: utf-8 -*-
+from random import choice, randint
 import re
-from random import randint, choice
+
 from coaster.utils import simplify_text
 
 NO_NUM_RE = re.compile('[^0-9]+', re.UNICODE)
 
-LEGAL_SUFFIX_RE = re.compile(r'''
+LEGAL_SUFFIX_RE = re.compile(
+    r'''
     (  # Common descriptors
     Business\s+Systems|
     Consultancy|
@@ -45,7 +48,9 @@ LEGAL_SUFFIX_RE = re.compile(r'''
     LLP|
     Inc\.?|
     LLC\.?|
-    )$''', re.VERBOSE | re.IGNORECASE)
+    )$''',
+    re.VERBOSE | re.IGNORECASE,
+)
 
 
 def common_legal_names(candidate):
@@ -91,7 +96,7 @@ def base36encode(number, alphabet='0123456789abcdefghijklmnopqrstuvwxyz'):
     sign = ''
     if number < 0:
         sign = '-'
-        number = - number
+        number = -number
     while number != 0:
         number, i = divmod(number, len(alphabet))
         base36 = alphabet[i] + base36
@@ -103,8 +108,7 @@ def base36decode(number):
 
 
 def random_long_key():
-    return base36encode(randint(1000000000000000,
-                                10000000000000000))
+    return base36encode(randint(1000000000000000, 10000000000000000))
 
 
 def random_hash_key():
@@ -133,7 +137,9 @@ def cointoss():
 
 EMAIL_RE = re.compile(r'\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,63}\b', re.I)
 # From http://www.codinghorror.com/blog/2008/10/the-problem-with-urls.html
-URL_RE = re.compile(r'\(?\bhttps?://[-A-Za-z0-9+&@#/%?=~_()|!:,.;]*[-A-Za-z0-9+&@#/%=~_()|]')
+URL_RE = re.compile(
+    r'\(?\bhttps?://[-A-Za-z0-9+&@#/%?=~_()|!:,.;]*[-A-Za-z0-9+&@#/%=~_()|]'
+)
 PHONE_DETECT_RE = re.compile('(^|[^0-9])([0-9][ .()_-]*){10}($|[^0-9])')
 
 
@@ -164,6 +170,7 @@ def scrubemail(data, rot13=False, css_junk=None):
     >>> scrubemail(u"Send email to test@example.com and you are all set.", rot13=False, css_junk=('z', 'y'))
     u'Send email to <a href="mailto:test@example.com"><span class="y">test&#64;</span><span class="z">no</span><span class="y">examp</span><span class="z">spam</span><span class="y">le.com</span></a> and you are all set.'
     """
+
     def convertemail(m):
         aclass = ' class="rot13"' if rot13 else ''
         email = m.group(0)
@@ -172,22 +179,36 @@ def scrubemail(data, rot13=False, css_junk=None):
             link = link.decode('rot13')
         if css_junk and len(email) > 3:
             third = int(len(email) / 3)
-            parts = (email[:third], email[third:third * 2], email[third * 2:])
+            parts = (email[:third], email[third : third * 2], email[third * 2 :])
             if isinstance(css_junk, (tuple, list)):
                 css_dirty, css_clean = css_junk
-                email = '<span class="%s">%s</span><span class="%s">no</span>'\
-                    '<span class="%s">%s</span><span class="%s">spam</span>'\
-                    '<span class="%s">%s</span>' % (
-                        css_clean, parts[0], css_dirty, css_clean, parts[1],
-                        css_dirty, css_clean, parts[2])
+                email = (
+                    '<span class="%s">%s</span><span class="%s">no</span>'
+                    '<span class="%s">%s</span><span class="%s">spam</span>'
+                    '<span class="%s">%s</span>'
+                    % (
+                        css_clean,
+                        parts[0],
+                        css_dirty,
+                        css_clean,
+                        parts[1],
+                        css_dirty,
+                        css_clean,
+                        parts[2],
+                    )
+                )
             else:
-                email = '%s<span class="%s">no</span>%s<span class="%s">spam</span>%s' % (
-                    parts[0], css_junk, parts[1], css_junk, parts[2])
+                email = (
+                    '%s<span class="%s">no</span>'
+                    '%s<span class="%s">spam</span>%s'
+                    % (parts[0], css_junk, parts[1], css_junk, parts[2])
+                )
             email = email.replace('@', '&#64;')
         if rot13:
             return '<a%s data-href="%s">%s</a>' % (aclass, link, email)
         else:
             return '<a%s href="%s">%s</a>' % (aclass, link, email)
+
     data = EMAIL_RE.sub(convertemail, data)
     return data
 
@@ -255,7 +276,10 @@ def escape_for_sql_like(query):
     >>> escape_for_sql_like("query%_[]")
     "query\%\_%"
     """
-    return query.replace('%', r'\%').replace('_', r'\_').replace('[', '').replace(']', '') + '%'
+    return (
+        query.replace('%', r'\%').replace('_', r'\_').replace('[', '').replace(']', '')
+        + '%'
+    )
 
 
 def strip_null(text):
