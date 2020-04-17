@@ -824,7 +824,7 @@ def viewstats_helper(jobpost_id, interval, limit, daybatch=False):
     if not post.datetime:
         return {}
     viewed = UserJobView.query.filter_by(jobpost_id=jobpost_id).all()
-    opened = [v for v in viewed if v.applied.is_(True)]
+    opened = [v for v in viewed if v.applied is True]
     applied = (
         db.session.query(JobApplication.created_at)
         .filter_by(jobpost_id=jobpost_id)
