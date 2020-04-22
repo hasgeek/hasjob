@@ -504,7 +504,7 @@ class CampaignAction(BaseScopedNameMixin, db.Model):
     """
 
     __tablename__ = 'campaign_action'
-    # TODO: Enable UUID primary keys and switch /go URLs to suuid
+    # TODO: Enable UUID primary keys and switch /go URLs to uuid_b58
     #: Campaign
     campaign_id = db.Column(None, db.ForeignKey('campaign.id'), nullable=False)
     campaign = db.relationship(

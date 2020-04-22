@@ -12,7 +12,7 @@ from pytz import UTC
 
 from baseframe import __
 from baseframe.forms import render_delete_sqla, render_form, render_redirect
-from coaster.utils import classmethodproperty, make_name, suuid
+from coaster.utils import classmethodproperty, make_name, uuid_b58
 from coaster.views import (
     InstanceLoader,
     ModelView,
@@ -94,7 +94,7 @@ class AdminCampaignList(AdminView):
             campaign = Campaign(user=g.user)
             form.populate_obj(campaign)
             # Use a random name since it's also used in user action submit forms
-            campaign.name = suuid()
+            campaign.name = uuid_b58()
             db.session.add(campaign)
             db.session.commit()
             flash("Created a campaign", 'success')
@@ -231,7 +231,7 @@ class AdminCampaignView(UrlForView, InstanceLoader, ModelView):
             action = CampaignAction(campaign=self.obj)
             db.session.add(action)
             form.populate_obj(action)
-            action.name = suuid()  # Use a random name since it needs to be permanent
+            action.name = uuid_b58()  # Use a random name since it needs to be permanent
             db.session.commit()
             flash("Added campaign action ‘%s’" % action.title, 'interactive')
             return redirect(self.obj.url_for(), code=303)
