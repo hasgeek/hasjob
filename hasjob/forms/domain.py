@@ -27,7 +27,7 @@ class DomainForm(forms.Form):
         validators=[
             forms.validators.Optional(),
             forms.validators.Length(
-                min=1, max=250, message=__("%%(max)d characters maximum")
+                min=1, max=250, message=__("%(max)d characters maximum")
             ),
         ],
         filters=[forms.filters.none_if_empty()],

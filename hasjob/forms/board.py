@@ -64,7 +64,7 @@ class BoardOptionsForm(forms.Form):
         ),
         validators=[
             forms.validators.Length(
-                min=0, max=100, message=__("%%(max)d characters maximum")
+                min=0, max=100, message=__("%(max)d characters maximum")
             )
         ],
         filters=[forms.filters.strip(), forms.filters.none_if_empty()],
@@ -197,7 +197,7 @@ class BoardForm(forms.Form):
         validators=[
             forms.validators.DataRequired(__("The board needs a name")),
             forms.validators.Length(
-                min=1, max=80, message=__("%%(max)d characters maximum")
+                min=1, max=80, message=__("%(max)d characters maximum")
             ),
         ],
         filters=[forms.filters.strip()],
@@ -210,7 +210,7 @@ class BoardForm(forms.Form):
         validators=[
             forms.validators.Optional(),
             forms.validators.Length(
-                min=0, max=80, message=__("%%(max)d characters maximum")
+                min=0, max=80, message=__("%(max)d characters maximum")
             ),
         ],
         filters=[forms.filters.strip(), forms.filters.none_if_empty()],
@@ -223,7 +223,7 @@ class BoardForm(forms.Form):
         validators=[
             forms.validators.ValidName(),
             forms.validators.Length(
-                min=0, max=63, message=__("%%(max)d characters maximum")
+                min=0, max=63, message=__("%(max)d characters maximum")
             ),
             AvailableName(__("This name has been taken by another board"), model=Board),
         ],

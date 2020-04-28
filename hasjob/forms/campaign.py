@@ -171,7 +171,7 @@ class CampaignActionForm(forms.Form):
         validators=[
             optional_url,
             forms.validators.Length(
-                min=0, max=250, message=__("%%(max)d characters maximum")
+                min=0, max=250, message=__("%(max)d characters maximum")
             ),
             forms.validators.ValidUrl(),
         ],
