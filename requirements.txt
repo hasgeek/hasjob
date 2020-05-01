@@ -9,7 +9,7 @@ Flask-Redis>=0.3.0
 Pillow==7.1.2
 sqlalchemy_utils==0.36.4
 SQLAlchemy>=1.0.0
-pytz==2019.3
+pytz==2020.1
 markdown==3.2.1
 tweepy==3.8.0
 coverage==5.0.4
