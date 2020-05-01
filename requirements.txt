@@ -7,7 +7,7 @@ Flask-RQ2==18.3
 Flask-Testing==0.8.0
 Flask-Redis>=0.3.0
 Pillow==7.1.2
-sqlalchemy_utils==0.36.3
+sqlalchemy_utils==0.36.4
 SQLAlchemy>=1.0.0
 pytz==2019.3
 markdown==3.2.1
