@@ -1,4 +1,4 @@
-coverage==5.0.4
+coverage==5.1
 nose-progressive==1.5.2
 pytest>=4.6.3
-coveralls==1.11.1
+coveralls==2.0.0
