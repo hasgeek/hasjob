@@ -23,9 +23,9 @@ premailer==3.6.1
 langid>=1.1.4dev
 tldextract==2.2.2
 geoip2==3.0.0
-git+https://github.com/maxcountryman/flask-uploads.git
-git+https://github.com/hasgeek/coaster
-git+https://github.com/hasgeek/flask-lastuser
-git+https://github.com/hasgeek/baseframe
+git+https://github.com/maxcountryman/flask-uploads.git#egg=Flask-Uploads
+git+https://github.com/hasgeek/coaster#egg=coaster
+git+https://github.com/hasgeek/flask-lastuser#egg=Flask-Lastuser
+git+https://github.com/hasgeek/baseframe#egg=baseframe
 Flask-Migrate==2.5.3
 progressbar2==3.51.1
