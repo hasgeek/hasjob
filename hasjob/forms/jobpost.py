@@ -61,7 +61,7 @@ class ListingForm(forms.Form):
         validators=[
             forms.validators.DataRequired(__("A headline is required")),
             forms.validators.Length(
-                min=1, max=100, message=__("%%(max)d characters maximum")
+                min=1, max=100, message=__("%(max)d characters maximum")
             ),
             forms.validators.NoObfuscatedEmail(
                 __("Do not include contact information in the post")
@@ -78,7 +78,7 @@ class ListingForm(forms.Form):
         validators=[
             forms.validators.Optional(),
             forms.validators.Length(
-                min=1, max=100, message=__("%%(max)d characters maximum")
+                min=1, max=100, message=__("%(max)d characters maximum")
             ),
             forms.validators.NoObfuscatedEmail(
                 __("Do not include contact information in the post")
@@ -108,7 +108,7 @@ class ListingForm(forms.Form):
                 __("If this job doesn’t have a fixed location, use “Anywhere”")
             ),
             forms.validators.Length(
-                min=3, max=80, message=__("%%(max)d characters maximum")
+                min=3, max=80, message=__("%(max)d characters maximum")
             ),
         ],
         filters=[forms.filters.strip()],
@@ -193,7 +193,7 @@ class ListingForm(forms.Form):
             forms.validators.Length(
                 min=4,
                 max=80,
-                message=__("The name must be within %%(min)d to %%(max)d characters"),
+                message=__("The name must be within %(min)d to %(max)d characters"),
             ),
         ],
         filters=[forms.filters.strip()],
@@ -212,7 +212,7 @@ class ListingForm(forms.Form):
         validators=[
             forms.validators.DataRequired(),
             optional_url,
-            forms.validators.Length(max=255, message=__("%%(max)d characters maximum")),
+            forms.validators.Length(max=255, message=__("%(max)d characters maximum")),
             forms.validators.ValidUrl(),
         ],
         filters=[forms.filters.strip()],
@@ -250,7 +250,7 @@ class ListingForm(forms.Form):
                 __("We need to confirm your email address before the job can be listed")
             ),
             forms.validators.Length(
-                min=5, max=80, message=__("%%(max)d characters maximum")
+                min=5, max=80, message=__("%(max)d characters maximum")
             ),
             forms.validators.ValidEmail(
                 __("This does not appear to be a valid email address")
@@ -270,7 +270,7 @@ class ListingForm(forms.Form):
             forms.validators.Length(
                 min=0,
                 max=15,
-                message=__("Twitter accounts can’t be over %%(max)d characters long"),
+                message=__("Twitter accounts can’t be over %(max)d characters long"),
             ),
         ],
         filters=[forms.filters.strip(), forms.filters.none_if_empty()],
@@ -380,7 +380,7 @@ class ListingForm(forms.Form):
                 raise forms.ValidationError(_("Please specify what this job pays"))
             data = string_to_number(data)
             if data is None:
-                raise forms.ValidationError(_("Unrecognised value %%s") % field.data)
+                raise forms.ValidationError(_("Unrecognised value %s") % field.data)
             else:
                 field.data = data
         else:
@@ -390,7 +390,7 @@ class ListingForm(forms.Form):
         if self.job_pay_type.data in (PAY_TYPE.ONETIME, PAY_TYPE.RECURRING):
             data = string_to_number(field.data.strip())
             if data is None:
-                raise forms.ValidationError(_("Unrecognised value %%s") % field.data)
+                raise forms.ValidationError(_("Unrecognised value %s") % field.data)
             else:
                 field.data = data
         else:
@@ -410,7 +410,7 @@ class ListingForm(forms.Form):
                         _("Please enter a percentage between 0%% and 100%%")
                     )
             else:
-                raise forms.ValidationError(_("Unrecognised value %%s") % field.data)
+                raise forms.ValidationError(_("Unrecognised value %s") % field.data)
         else:
             # Discard submission if equity checkbox is unchecked
             field.data = None
@@ -429,7 +429,7 @@ class ListingForm(forms.Form):
                         _("Please enter a percentage between 0%% and 100%%")
                     )
             else:
-                raise forms.ValidationError(_("Unrecognised value %%s") % field.data)
+                raise forms.ValidationError(_("Unrecognised value %s") % field.data)
         else:
             # Discard submission if equity checkbox is unchecked
             field.data = None
@@ -441,7 +441,7 @@ class ListingForm(forms.Form):
                 not self.job_type_ob.nopay_allowed
             ) and self.job_pay_type.data == PAY_TYPE.NOCASH:
                 self.job_pay_type.errors.append(
-                    _("“%%s” cannot pay nothing") % self.job_type_ob.title
+                    _("“%s” cannot pay nothing") % self.job_type_ob.title
                 )
                 success = False
 
@@ -449,7 +449,7 @@ class ListingForm(forms.Form):
             domain = Domain.get(domain_name)
             if domain and domain.is_banned:
                 self.poster_email.errors.append(
-                    _("%%s is banned from posting jobs on Hasjob") % domain_name
+                    _("%s is banned from posting jobs on Hasjob") % domain_name
                 )
                 success = False
             elif (not self.job_type_ob.webmail_allowed) and is_public_email_domain(
@@ -526,7 +526,7 @@ class ListingForm(forms.Form):
                     ):
                         self.job_pay_equity_max.errors.append(
                             _(
-                                "Please select a narrower range, with maximum within %%d× minimum"
+                                "Please select a narrower range, with maximum within %d× minimum"
                             )
                             % multiplier
                         )
@@ -574,7 +574,7 @@ class ApplicationForm(forms.Form):
         validators=[
             forms.validators.DataRequired(__("Specify a phone number")),
             forms.validators.Length(
-                min=1, max=15, message=__("%%(max)d characters maximum")
+                min=1, max=15, message=__("%(max)d characters maximum")
             ),
         ],
         filters=[forms.filters.strip()],
@@ -677,7 +677,7 @@ class KioskApplicationForm(forms.Form):
         validators=[
             forms.validators.DataRequired(__("Specify a phone number")),
             forms.validators.Length(
-                min=1, max=15, message=__("%%(max)d characters maximum")
+                min=1, max=15, message=__("%(max)d characters maximum")
             ),
         ],
         description=__("A phone number the employer can reach you at"),
