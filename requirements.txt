@@ -19,7 +19,7 @@ jsmin==2.2.2
 psycopg2==2.8.5
 dnspython==1.16.0
 html2text==2020.1.16
-premailer==3.6.1
+premailer==3.7.0
 langid>=1.1.4dev
 tldextract==2.2.2
 geoip2==3.0.0
