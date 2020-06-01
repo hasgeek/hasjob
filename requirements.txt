@@ -10,7 +10,7 @@ Pillow==7.1.2
 sqlalchemy_utils==0.36.6
 SQLAlchemy>=1.0.0
 pytz==2020.1
-markdown==3.2.1
+markdown==3.2.2
 tweepy==3.8.0
 coverage==5.1
 bleach==3.1.5
