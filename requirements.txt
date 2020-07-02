@@ -6,7 +6,7 @@ Flask-Assets==2.0
 Flask-RQ2==18.3
 Flask-Testing==0.8.0
 Flask-Redis>=0.3.0
-Pillow==7.1.2
+Pillow==7.2.0
 sqlalchemy_utils==0.36.6
 SQLAlchemy>=1.0.0
 pytz==2020.1
@@ -28,4 +28,4 @@ git+https://github.com/hasgeek/coaster#egg=coaster
 git+https://github.com/hasgeek/flask-lastuser#egg=Flask-Lastuser
 git+https://github.com/hasgeek/baseframe#egg=baseframe
 Flask-Migrate==2.5.3
-progressbar2==3.51.3
+progressbar2==3.51.4
