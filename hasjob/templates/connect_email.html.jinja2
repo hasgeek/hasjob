@@ -1,6 +1,5 @@
-{% extends "inc/email_layout_lite.html.jinja2" %}
-
-{% block content -%}
+{% extends "inc/email_layout.html.jinja2" %}
+{% block innercontent %}
 <p>
   <strong>{{ job_application.fullname }}</strong>, meet <strong>{{ post.fullname or post.company_name }}</strong> regarding your application for <a href="{{ post.url_for(_external=true) }}" target="_blank">{{ post.headline }}</a>. You can reply to this email to initiate a conversation.
 </p>

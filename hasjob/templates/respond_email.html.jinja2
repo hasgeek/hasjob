@@ -1,6 +1,5 @@
-{% extends "inc/email_layout_lite.html.jinja2" %}
-
-{% block content -%}
+{% extends "inc/email_layout.html.jinja2" %}
+{% block innercontent %}
   <div itemscope itemtype="http://schema.org/EmailMessage">
     <div itemprop="action" itemscope itemtype="http://schema.org/ViewAction">
       <meta itemprop="name" content="View Employer Response"/>
@@ -30,4 +29,9 @@
     <em>Your application on {{ job_application.created_at|longdate }}:</em>
   </p>
   {{ job_application.message|safe }}
+  <hr class="separator">
+  <p>
+    {% if g.board and g.board.not_root %}[{{ g.board.title }}][board] is powered by Hasjob. {% endif -%}
+    <a href="{{ url_for('index', subdomain=none, _external=true) }}">Hasjob</a> is a service of <a href="https://hasgeek.com/">HasGeek</a>. Write to us at <a href="mailto:{{ config['SUPPORT_EMAIL'] }}">{{ config['SUPPORT_EMAIL'] }}</a> if you have suggestions or questions on this service.
+  </p>
 {%- endblock %}
