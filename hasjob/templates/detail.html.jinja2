@@ -124,7 +124,7 @@
             <a class="list-group-item visible-xs-block visible-sm-block" href="whatsapp://send?text={{ headline|urlquoteplus }}+{{ post.url_for(utm_campaign='share', utm_medium='whatsapp', _external=true)|urlquoteplus }}">
               <i class="fa fa-fw fa-whatsapp"></i>&nbsp;&nbsp; Share on WhatsApp
             </a>
-            <a class="list-group-item share-popup" data-width="550" data-height="250" rel="noopener" target="_blank" href="https://twitter.com/share?url={{ post.url_for(utm_campaign='share', utm_medium='twitter', _external=true)|urlquoteplus }}&amp;counturl={{ post.url_for(_external=true)|urlquoteplus }}&amp;via=hasjob&amp;related=hasjob:HasGeek%20Job%20Board&amp;text=Job%3A%20{{ headline|urlquoteplus }}">
+            <a class="list-group-item share-popup" data-width="550" data-height="250" rel="noopener" target="_blank" href="https://twitter.com/share?url={{ post.url_for(utm_campaign='share', utm_medium='twitter', _external=true)|urlquoteplus }}&amp;counturl={{ post.url_for(_external=true)|urlquoteplus }}&amp;via=hasjob&amp;related=hasjob:Hasgeek%20Job%20Board&amp;text=Job%3A%20{{ headline|urlquoteplus }}">
               <span class="badge" id="tweet-count"></span><i class="fa fa-fw fa-twitter"></i>&nbsp;&nbsp; Tweet this
             </a>
             <a class="list-group-item share-popup" data-width="520" data-height="230" rel="noopener" target="_blank" href="http://www.facebook.com/sharer.php?s=100&p[url]={{ post.url_for(utm_campaign='share', utm_medium='facebook', _external=true)|urlquoteplus }}">
