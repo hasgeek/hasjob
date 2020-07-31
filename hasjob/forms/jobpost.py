@@ -279,7 +279,7 @@ class ListingForm(forms.Form):
         __("Collaborators"),
         description=__(
             "If someone is helping you evaluate candidates, type their names here. "
-            "They must have a HasGeek account. They will not receive email notifications "
+            "They must have a Hasgeek account. They will not receive email notifications "
             "— use a shared email address above for that — but they will be able to respond "
             "to candidates who apply"
         ),

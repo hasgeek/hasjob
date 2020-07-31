@@ -112,7 +112,7 @@
       {%- if g.board -%}
         <span class="board-title">{{ g.board.title }}</span> <small class="board-caption">{%- if g.board.caption -%} {{ g.board.caption }} {%- else -%} Powered by Hasjob {%- endif -%}</small>
       {%- else -%}
-        <span class="board-title">Hasjob</span> <small>The HasGeek Job Board</small>
+        <span class="board-title">Hasjob</span> <small>The Hasgeek Job Board</small>
       {%- endif -%}
       </a></h1>
     </div>
@@ -262,14 +262,14 @@
 {% block footer %}
 <p>
   {%- if g.kiosk %}
-    Hasjob is a service of HasGeek. You are in kiosk mode with a limited view of posts.
+    Hasjob is a service of Hasgeek. You are in kiosk mode with a limited view of posts.
   {%- elif g.board and g.board.not_root %}
-    Powered by <a href="{{ url_for('index', subdomain=none) }}">Hasjob</a>, a service of <a href="https://hasgeek.com/">HasGeek</a>.
+    Powered by <a href="{{ url_for('index', subdomain=none) }}">Hasjob</a>, a service of <a href="https://hasgeek.com/">Hasgeek</a>.
     Subscribe to <a href="{{ url_for('feed') }}">the feed</a> or follow
     <a href="https://twitter.com/hasjob">@hasjob on Twitter</a>
     to find out when new jobs are posted.
   {%- else %}
-    Hasjob is a service of <a href="https://hasgeek.com/">HasGeek</a>.
+    Hasjob is a service of <a href="https://hasgeek.com/">Hasgeek</a>.
     Subscribe to <a href="{{ url_for('feed') }}">the feed</a> or follow
     <a href="https://twitter.com/hasjob">@hasjob on Twitter</a>
     to find out when new jobs are posted.

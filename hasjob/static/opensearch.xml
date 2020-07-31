@@ -4,7 +4,7 @@
   <Description>Search for jobs at Hasjob</Description>
   <Url type="text/html" method="get"
        template="https://hasjob.co/?q={searchTerms}"/>
-  <Developer>HasGeek</Developer>
+  <Developer>Hasgeek</Developer>
   <Language>en-us</Language>
   <OutputEncoding>UTF-8</OutputEncoding>
   <InputEncoding>UTF-8</InputEncoding>

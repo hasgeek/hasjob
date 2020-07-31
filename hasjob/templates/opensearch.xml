@@ -4,7 +4,7 @@
   <Description>{% if g.board and g.board.description %}{{ g.board.description|firstline }}{% else %}Hasjob is India’s best job board for tech startups{% endif %}</Description>
   <Url type="text/html" method="get"
        template="{{ request.url_root }}?q={searchTerms}"/>
-  <Developer>HasGeek</Developer>
+  <Developer>Hasgeek</Developer>
   <Language>en-us</Language>
   <OutputEncoding>UTF-8</OutputEncoding>
   <InputEncoding>UTF-8</InputEncoding>
