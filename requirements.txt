@@ -17,7 +17,7 @@ bleach==3.1.5
 ordereddict==1.1
 jsmin==2.2.2
 psycopg2==2.8.5
-dnspython==1.16.0
+dnspython==2.0.0
 html2text==2020.1.16
 premailer==3.7.0
 langid>=1.1.4dev
