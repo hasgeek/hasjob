@@ -3,6 +3,7 @@
 from base64 import b64decode
 from datetime import timedelta
 from os import path
+from types import SimpleNamespace
 from urllib.parse import quote, quote_plus
 from uuid import uuid4
 import hashlib
@@ -10,7 +11,7 @@ import hashlib
 from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
 
-from flask import Markup, g, request, session
+from flask import Markup, copy_current_request_context, g, request, session
 
 from geoip2.errors import AddressNotFoundError
 from pytz import UTC
@@ -247,121 +248,142 @@ def record_views_and_events(response):
     if hasattr(g, 'db_commit_needed') and g.db_commit_needed:
         db.session.commit()
 
-    # We had a few error reports with g.* variables missing in this function, so now
-    # we look again and make note if something is missing. We haven't encountered
-    # this problem ever since after several days of logging, but this bit of code
-    # remains just in case something turns up in future.
-    missing_in_context = []
-    now = utcnow()
-    if not hasattr(g, 'esession'):
-        g.esession = None
-        missing_in_context.append('esession')
-    if not hasattr(g, 'response_code'):
-        g.response_code = None
-    if not hasattr(g, 'campaign_views'):
-        g.campaign_views = []
-        missing_in_context.append('campaign_views')
-    if not hasattr(g, 'user'):
-        g.user = None
-        missing_in_context.append('user')
-    if not hasattr(g, 'anon_user'):
-        g.anon_user = None
-        missing_in_context.append('anon_user')
-    if not hasattr(g, 'event_data'):
-        g.event_data = {}
-        missing_in_context.append('event_data')
-    if not hasattr(g, 'user_geonameids'):
-        g.user_geonameids = {}
-        missing_in_context.append('user_geonameids')
-    if not hasattr(g, 'impressions'):
-        g.impressions = {}
-        missing_in_context.append('impressions')
-    if not hasattr(g, 'jobpost_viewed'):
-        g.jobpost_viewed = None, None
-        missing_in_context.append('jobpost_viewed')
+    # g.esession will be None for anon static requests
+    if g.esession and not g.esession.persistent:
+        g.esession.save_to_cache(session['au'])
+        if g.impressions:
+            # Save impressions to user's cookie session to write to db later
+            session['impressions'] = g.impressions
 
-    if missing_in_context:
-        g.event_data['missing_in_context'] = missing_in_context
+    # Make a copy for the process_after_response closure
+    lg = SimpleNamespace(**vars(g))
 
-    # Now log whatever needs to be logged
-    if response.status_code in (301, 302, 303, 307, 308):
-        g.event_data['location'] = response.headers.get('Location')
+    @response.call_on_close
+    @copy_current_request_context
+    def process_after_response():
+        # We had a few error reports with g.* variables missing in this function, so now
+        # we look again and make note if something is missing. We haven't encountered
+        # this problem ever since after several days of logging, but this bit of code
+        # remains just in case something turns up in future.
+        missing_in_context = []
+        now = utcnow()
+        if not hasattr(lg, 'esession'):
+            lg.esession = None
+            missing_in_context.append('esession')
+        elif lg.esession.persistent:
+            db.session.add(lg.esession)
 
-    # TODO: Consider moving this to a background job
-    if g.campaign_views:
-        g.event_data['campaign_views'] = [c.id for c in g.campaign_views]
-        if g.esession and g.esession.persistent:
-            for campaign in g.campaign_views:
-                if g.esession not in campaign.session_views:
-                    campaign.session_views.append(g.esession)
-            try:
-                db.session.commit()
-            except IntegrityError:  # Race condition from parallel requests
-                db.session.rollback()
+        if not hasattr(lg, 'response_code'):
+            lg.response_code = None
+        if not hasattr(lg, 'campaign_views'):
+            lg.campaign_views = []
+            missing_in_context.append('campaign_views')
+        if not hasattr(lg, 'user'):
+            lg.user = None
+            missing_in_context.append('user')
+        elif lg.user:
+            db.session.add(lg.user)
+        if not hasattr(lg, 'anon_user'):
+            lg.anon_user = None
+            missing_in_context.append('anon_user')
+        elif lg.anon_user:
+            db.session.add(lg.anon_user)
+        if not hasattr(lg, 'event_data'):
+            lg.event_data = {}
+            missing_in_context.append('event_data')
+        if not hasattr(lg, 'user_geonameids'):
+            lg.user_geonameids = {}
+            missing_in_context.append('user_geonameids')
+        if not hasattr(lg, 'impressions'):
+            lg.impressions = {}
+            missing_in_context.append('impressions')
+        if not hasattr(lg, 'jobpost_viewed'):
+            lg.jobpost_viewed = None, None
+            missing_in_context.append('jobpost_viewed')
 
-    if g.user_geonameids:
-        g.event_data['user_geonameids'] = g.user_geonameids
+        if missing_in_context:
+            lg.event_data['missing_in_context'] = missing_in_context
 
-    if g.impressions:
-        g.event_data['impressions'] = list(g.impressions.values())
+        # Now log whatever needs to be logged
+        if response.status_code in (301, 302, 303, 307, 308):
+            lg.event_data['location'] = response.headers.get('Location')
 
-    if g.user:
-        for campaign in g.campaign_views:
-            if not CampaignView.exists(campaign, g.user):
-                db.session.begin_nested()
+        # TODO: Consider moving this to a background job
+        if lg.campaign_views:
+            for campaign in lg.campaign_views:
+                db.session.add(campaign)
+            lg.event_data['campaign_views'] = [c.id for c in lg.campaign_views]
+            if lg.esession and lg.esession.persistent:
+                for campaign in lg.campaign_views:
+                    if lg.esession not in campaign.session_views:
+                        campaign.session_views.append(lg.esession)
                 try:
-                    db.session.add(CampaignView(campaign=campaign, user=g.user))
                     db.session.commit()
                 except IntegrityError:  # Race condition from parallel requests
                     db.session.rollback()
-            db.session.commit()
-            campaign_view_count_update.queue(campaign_id=campaign.id, user_id=g.user.id)
-    elif g.anon_user:
-        for campaign in g.campaign_views:
-            if not CampaignAnonView.exists(campaign, g.anon_user):
-                db.session.begin_nested()
-                try:
-                    db.session.add(
-                        CampaignAnonView(campaign=campaign, anon_user=g.anon_user)
-                    )
-                    db.session.commit()
-                except IntegrityError:  # Race condition from parallel requests
-                    db.session.rollback()
-            db.session.commit()
-            campaign_view_count_update.queue(
-                campaign_id=campaign.id, anon_user_id=g.anon_user.id
-            )
 
-    if g.esession:  # Will be None for anon static requests
-        if g.user or g.anon_user:
-            ue = UserEvent.new_from_request(request)
-        else:
-            ue = UserEventBase.new_from_request(request)
-        ue.status_code = response.status_code
-        ue.data = g.event_data or None
-        g.esession.events.append(ue)
+        if lg.user_geonameids:
+            lg.event_data['user_geonameids'] = lg.user_geonameids
 
-        if g.esession.persistent:
-            try:
+        if lg.impressions:
+            lg.event_data['impressions'] = list(lg.impressions.values())
+
+        if lg.user:
+            for campaign in lg.campaign_views:
+                if not CampaignView.exists(campaign, lg.user):
+                    db.session.begin_nested()
+                    try:
+                        db.session.add(CampaignView(campaign=campaign, user=lg.user))
+                        db.session.commit()
+                    except IntegrityError:  # Race condition from parallel requests
+                        db.session.rollback()
                 db.session.commit()
-            except IntegrityError:
-                db.session.rollback()
-
-            if g.impressions:
-                save_impressions.queue(g.esession.id, list(g.impressions.values()), now)
-
-            if g.jobpost_viewed != (None, None):
-                save_jobview.queue(
-                    viewed_time=now,
-                    event_session_id=g.esession.id,
-                    jobpost_id=g.jobpost_viewed[0],
-                    bgroup=g.jobpost_viewed[1],
+                campaign_view_count_update.queue(
+                    campaign_id=campaign.id, user_id=lg.user.id
                 )
-        else:
-            g.esession.save_to_cache(session['au'])
-            if g.impressions:
-                # Save impressions to user's cookie session to write to db later
-                session['impressions'] = g.impressions
+        elif lg.anon_user:
+            for campaign in lg.campaign_views:
+                if not CampaignAnonView.exists(campaign, lg.anon_user):
+                    db.session.begin_nested()
+                    try:
+                        db.session.add(
+                            CampaignAnonView(campaign=campaign, anon_user=lg.anon_user)
+                        )
+                        db.session.commit()
+                    except IntegrityError:  # Race condition from parallel requests
+                        db.session.rollback()
+                db.session.commit()
+                campaign_view_count_update.queue(
+                    campaign_id=campaign.id, anon_user_id=lg.anon_user.id
+                )
+
+        if lg.esession:  # Will be None for anon static requests
+            if lg.user or lg.anon_user:
+                ue = UserEvent.new_from_request(request)
+            else:
+                ue = UserEventBase.new_from_request(request)
+            ue.status_code = response.status_code
+            ue.data = lg.event_data or None
+            lg.esession.events.append(ue)
+
+            if lg.esession.persistent:
+                try:
+                    db.session.commit()
+                except IntegrityError:
+                    db.session.rollback()
+
+                if lg.impressions:
+                    save_impressions.queue(
+                        lg.esession.id, list(lg.impressions.values()), now
+                    )
+
+                if lg.jobpost_viewed != (None, None):
+                    save_jobview.queue(
+                        viewed_time=now,
+                        event_session_id=lg.esession.id,
+                        jobpost_id=lg.jobpost_viewed[0],
+                        bgroup=lg.jobpost_viewed[1],
+                    )
 
     return response
 
