@@ -592,7 +592,7 @@ class JobPost(BaseMixin, db.Model):
                 **kwargs,
             )
         elif action == 'browse':
-            if is_public_email_domain(self.email_domain, default=False):
+            if self.from_webmail_domain:
                 return url_for(
                     'browse_by_email', md5sum=self.md5sum, _external=_external, **kwargs
                 )
@@ -618,7 +618,11 @@ class JobPost(BaseMixin, db.Model):
 
     @property
     def from_webmail_domain(self):
-        return is_public_email_domain(self.email_domain, default=False)
+        return (
+            self.domain.is_webmail
+            if self.domain
+            else is_public_email_domain(self.email_domain, default=False)
+        )
 
     @property
     def company_url_domain_zone(self):
