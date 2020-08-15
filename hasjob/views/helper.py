@@ -248,6 +248,46 @@ def record_views_and_events(response):
     if hasattr(g, 'db_commit_needed') and g.db_commit_needed:
         db.session.commit()
 
+        # g.* variables will be missing for static URLs because :func:`load_user_data`
+        # above skips them
+
+        missing_in_context = []
+        now = utcnow()
+        if not hasattr(g, 'esession'):
+            g.esession = None
+            missing_in_context.append('esession')
+
+        if not hasattr(g, 'response_code'):
+            g.response_code = None
+        if not hasattr(g, 'campaign_views'):
+            g.campaign_views = []
+            missing_in_context.append('campaign_views')
+        if not hasattr(g, 'user'):
+            g.user = None
+            missing_in_context.append('user')
+        if not hasattr(g, 'anon_user'):
+            g.anon_user = None
+            missing_in_context.append('anon_user')
+        if not hasattr(g, 'event_data'):
+            g.event_data = {}
+            missing_in_context.append('event_data')
+        if not hasattr(g, 'user_geonameids'):
+            g.user_geonameids = {}
+            missing_in_context.append('user_geonameids')
+        if not hasattr(g, 'impressions'):
+            g.impressions = {}
+            missing_in_context.append('impressions')
+        if not hasattr(g, 'jobpost_viewed'):
+            g.jobpost_viewed = None, None
+            missing_in_context.append('jobpost_viewed')
+
+        if missing_in_context:
+            g.event_data['missing_in_context'] = missing_in_context
+
+        # Now log whatever needs to be logged
+        if response.status_code in (301, 302, 303, 307, 308):
+            g.event_data['location'] = response.headers.get('Location')
+
     # g.esession will be None for anon static requests
     if g.esession and not g.esession.persistent:
         g.esession.save_to_cache(session['au'])
@@ -261,52 +301,12 @@ def record_views_and_events(response):
     @response.call_on_close
     @copy_current_request_context
     def process_after_response():
-        # We had a few error reports with g.* variables missing in this function, so now
-        # we look again and make note if something is missing. We haven't encountered
-        # this problem ever since after several days of logging, but this bit of code
-        # remains just in case something turns up in future.
-        missing_in_context = []
-        now = utcnow()
-        if not hasattr(lg, 'esession'):
-            lg.esession = None
-            missing_in_context.append('esession')
-        elif lg.esession.persistent:
+        if lg.esession and lg.esession.persistent:
             db.session.add(lg.esession)
-
-        if not hasattr(lg, 'response_code'):
-            lg.response_code = None
-        if not hasattr(lg, 'campaign_views'):
-            lg.campaign_views = []
-            missing_in_context.append('campaign_views')
-        if not hasattr(lg, 'user'):
-            lg.user = None
-            missing_in_context.append('user')
-        elif lg.user:
+        if lg.user:
             db.session.add(lg.user)
-        if not hasattr(lg, 'anon_user'):
-            lg.anon_user = None
-            missing_in_context.append('anon_user')
-        elif lg.anon_user:
+        if lg.anon_user:
             db.session.add(lg.anon_user)
-        if not hasattr(lg, 'event_data'):
-            lg.event_data = {}
-            missing_in_context.append('event_data')
-        if not hasattr(lg, 'user_geonameids'):
-            lg.user_geonameids = {}
-            missing_in_context.append('user_geonameids')
-        if not hasattr(lg, 'impressions'):
-            lg.impressions = {}
-            missing_in_context.append('impressions')
-        if not hasattr(lg, 'jobpost_viewed'):
-            lg.jobpost_viewed = None, None
-            missing_in_context.append('jobpost_viewed')
-
-        if missing_in_context:
-            lg.event_data['missing_in_context'] = missing_in_context
-
-        # Now log whatever needs to be logged
-        if response.status_code in (301, 302, 303, 307, 308):
-            lg.event_data['location'] = response.headers.get('Location')
 
         # TODO: Consider moving this to a background job
         if lg.campaign_views:
