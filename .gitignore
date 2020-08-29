@@ -9,6 +9,7 @@ test.db
 .sass-cache
 .webassets-cache
 error.log
+error.log.*
 .coverage
 instance/production.py
 instance/development.py
