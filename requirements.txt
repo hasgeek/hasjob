@@ -21,7 +21,7 @@ dnspython==2.0.0
 html2text==2020.1.16
 premailer==3.7.0
 langid>=1.1.4dev
-tldextract==2.2.2
+tldextract==2.2.3
 geoip2==4.0.2
 git+https://github.com/maxcountryman/flask-uploads.git#egg=Flask-Uploads
 git+https://github.com/hasgeek/coaster#egg=coaster
