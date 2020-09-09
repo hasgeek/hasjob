@@ -899,7 +899,10 @@ def filterset_view(name):
 @app.route('/opensearch.xml', subdomain='<subdomain>')
 @app.route('/opensearch.xml')
 def opensearch():
-    return render_template('opensearch.xml')
+    return Response(
+        render_template('opensearch.xml'),
+        mimetype='application/opensearchdescription+xml',
+    )
 
 
 @app.route('/feed', subdomain='<subdomain>')
