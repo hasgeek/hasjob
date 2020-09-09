@@ -86,11 +86,11 @@ workboxSW.router.registerRoute(
 /* The service worker handles all fetch requests. If fetching of job post page or
 other pages fails due to a network error, it will return the cached "offline" page.
 */
-workboxSW.router.registerRoute('/(.*)', args => {
+workboxSW.router.registerRoute('/(.*)', (args) => {
   return workboxSW.strategies
     .networkFirst({ cacheName: 'routes' })
     .handle(args)
-    .then(response => {
+    .then((response) => {
       if (!response) {
         return caches.match('/offline');
       }
@@ -115,12 +115,12 @@ function createCacheBustedRequest(url) {
 }
 
 // Cache the offline page during install phase of the service worker
-self.addEventListener('install', event => {
+self.addEventListener('install', (event) => {
   event.waitUntil(
-    fetch(createCacheBustedRequest('/api/1/template/offline')).then(function(
+    fetch(createCacheBustedRequest('/api/1/template/offline')).then(function (
       response
     ) {
-      return caches.open('hasjob-offline').then(function(cache) {
+      return caches.open('hasjob-offline').then(function (cache) {
         return cache.put('offline', response);
       });
     })

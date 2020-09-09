@@ -396,7 +396,9 @@ def fetch_jobposts(
         startdate = None
         if 'startdate' in request_values:
             try:
-                startdate = parse_isoformat(request_values['startdate'].upper(), naive=False)
+                startdate = parse_isoformat(
+                    request_values['startdate'].upper(), naive=False
+                )
             except ParseError:
                 abort(400)
 
