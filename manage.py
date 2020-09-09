@@ -3,15 +3,14 @@
 
 from datetime import timedelta
 
+from coaster.manage import Manager, init_manager
+from coaster.utils import utcnow
 from hasjob import app
 from hasjob.models import db
 import hasjob
 import hasjob.forms as forms
 import hasjob.models as models
 import hasjob.views as views
-
-from coaster.manage import Manager, init_manager
-from coaster.utils import utcnow
 
 periodic = Manager(usage="Periodic tasks from cron (with recommended intervals)")
 

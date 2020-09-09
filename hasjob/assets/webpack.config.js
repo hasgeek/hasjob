@@ -12,13 +12,13 @@ function ManifestPlugin(options) {
     : '../static/build/manifest.json';
 }
 
-ManifestPlugin.prototype.apply = function(compiler) {
-  compiler.plugin('done', stats => {
+ManifestPlugin.prototype.apply = function (compiler) {
+  compiler.plugin('done', (stats) => {
     var stats_json = stats.toJson();
     var parsed_stats = {
       assets: stats_json.assetsByChunkName,
     };
-    Object.keys(parsed_stats.assets).forEach(function(key) {
+    Object.keys(parsed_stats.assets).forEach(function (key) {
       if (typeof parsed_stats.assets[key] == 'object') {
         for (var index in parsed_stats.assets[key]) {
           if (
@@ -93,7 +93,7 @@ module.exports = {
         // split vendor js into its own file
         new webpack.optimize.CommonsChunkPlugin({
           name: 'vendor',
-          minChunks: function(module) {
+          minChunks: function (module) {
             // any required modules inside node_modules are extracted to vendor
             return (
               module.resource &&

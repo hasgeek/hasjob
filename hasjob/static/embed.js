@@ -1,4 +1,4 @@
-(function() {
+(function () {
   var containerDivs = document.getElementsByClassName('hasjob-embed');
   var hostnames = [];
   var urlParserElem = document.createElement('a');
@@ -8,11 +8,7 @@
     hostnames.push(urlParserElem.origin);
     iframeId = containerDivs[index].getAttribute('data-iframe-id');
     if (!iframeId) {
-      iframeId =
-        'hasjob-iframe-' +
-        Math.random()
-          .toString(36)
-          .slice(3);
+      iframeId = 'hasjob-iframe-' + Math.random().toString(36).slice(3);
     }
     if (urlParserElem.search) {
       iframeSrc = urlParserElem + '&embed=1&limit=';
