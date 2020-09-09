@@ -21,11 +21,11 @@ dnspython==2.0.0
 html2text==2020.1.16
 premailer==3.7.0
 langid>=1.1.4dev
-tldextract==2.2.2
+tldextract==2.2.3
 geoip2==4.0.2
 git+https://github.com/maxcountryman/flask-uploads.git#egg=Flask-Uploads
 git+https://github.com/hasgeek/coaster#egg=coaster
 git+https://github.com/hasgeek/flask-lastuser#egg=Flask-Lastuser
 git+https://github.com/hasgeek/baseframe#egg=baseframe
 Flask-Migrate==2.5.3
-progressbar2==3.51.4
+progressbar2==3.52.1
