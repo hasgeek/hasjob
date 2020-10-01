@@ -12,7 +12,7 @@ SQLAlchemy>=1.0.0
 pytz==2020.1
 markdown==3.2.2
 tweepy==3.9.0
-coverage==5.2.1
+coverage==5.3
 bleach==3.1.5
 ordereddict==1.1
 jsmin==2.2.2
