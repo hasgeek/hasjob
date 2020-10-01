@@ -28,4 +28,4 @@ git+https://github.com/hasgeek/coaster#egg=coaster
 git+https://github.com/hasgeek/flask-lastuser#egg=Flask-Lastuser
 git+https://github.com/hasgeek/baseframe#egg=baseframe
 Flask-Migrate==2.5.3
-progressbar2==3.52.1
+progressbar2==3.53.1
