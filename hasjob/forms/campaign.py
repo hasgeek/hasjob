@@ -92,7 +92,7 @@ class CampaignForm(forms.Form):
     geonameids = forms.GeonameSelectMultiField(
         "Locations",
         description=__(
-            "This campaign will be targetted at users and jobs with matching locations"
+            "This campaign will be targeted at users and jobs with matching locations"
         ),
     )
     user_required = forms.RadioField(
