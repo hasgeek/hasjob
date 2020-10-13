@@ -1,5 +1,6 @@
 from io import BytesIO
 from os.path import splitext
+from uuid import uuid4
 
 from werkzeug.datastructures import FileStorage
 
@@ -8,9 +9,25 @@ from PIL import Image
 
 uploaded_logos = UploadSet('logos', IMAGES)
 
+common_extensions = {
+    'JPEG': '.jpg',
+    'JPEG2000': '.jp2',
+    'GIF': '.gif',
+    'PNG': '.png',
+}
+
 
 def configure(app):
     configure_uploads(app, uploaded_logos)
+
+
+def image_extension(img_format):
+    if img_format in common_extensions:
+        return common_extensions[img_format]
+    for extension, ext_format in Image.EXTENSION.items():
+        if img_format == ext_format:
+            return extension
+    return '.unknown'
 
 
 def process_image(requestfile, maxsize=(170, 130)):
@@ -26,9 +43,9 @@ def process_image(requestfile, maxsize=(170, 130)):
         img, ((boximg.size[0] - img.size[0]) // 2, (boximg.size[1] - img.size[1]) // 2)
     )
     savefile = BytesIO()
-    savefile.name = requestfile.filename
-    boximg.save(savefile)
+    savefile.name = uuid4().hex + image_extension(img.format)
+    boximg.save(savefile, img.format)
     savefile.seek(0)
     return FileStorage(
-        savefile, filename=requestfile.filename, content_type=requestfile.content_type
+        savefile, filename=savefile.name, content_type=Image.MIME[img.format]
     )

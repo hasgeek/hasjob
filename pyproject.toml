@@ -23,3 +23,29 @@ exclude = '''
   | funnel/assets
 )/
 '''
+
+[tool.isort]
+multi_line_output = 3
+include_trailing_comma = true
+line_length = 88
+order_by_type = true
+use_parentheses = true
+from_first = true
+known_future_library = ['six', 'future', '__future__']
+known_first_party = ['baseframe', 'coaster', 'flask_lastuser', 'hasjob']
+known_sqlalchemy = ['alembic', 'sqlalchemy', 'sqlalchemy_utils', 'flask_sqlalchemy', 'psycopg2']
+known_flask = [
+  'flask',
+  'werkzeug',
+  'itsdangerous',
+  'wtforms',
+  'webassets',
+  'flask_assets',
+  'flask_flatpages',
+  'flask_mail',
+  'flask_migrate',
+  'flask_redis',
+  'flask_rq2',
+]
+default_section = 'THIRDPARTY'
+sections = ['FUTURE', 'STDLIB', 'SQLALCHEMY', 'FLASK', 'THIRDPARTY', 'FIRSTPARTY', 'LOCALFOLDER']

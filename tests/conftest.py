@@ -1,3 +1,4 @@
+from PIL import Image
 import pytest
 
 from hasjob import app
@@ -31,3 +32,8 @@ def test_db(test_client):
     db.session.rollback()
     db.session.remove()
     db.drop_all()
+
+
+@pytest.fixture(scope='session')
+def pil_init():
+    Image.init()
