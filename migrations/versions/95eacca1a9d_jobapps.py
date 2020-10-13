@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """jobapps
 
 Revision ID: 95eacca1a9d

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from baseframe import forms
 
 from .. import app

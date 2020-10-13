@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """appwords
 
 Revision ID: 4c8265da3caa

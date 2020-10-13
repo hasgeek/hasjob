@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """User opt-in for experimental features
 
 Revision ID: 593fed090308

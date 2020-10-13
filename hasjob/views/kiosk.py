@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from flask import Response, abort, flash, g, redirect, request, session, url_for
 
 from coaster.utils import getbool

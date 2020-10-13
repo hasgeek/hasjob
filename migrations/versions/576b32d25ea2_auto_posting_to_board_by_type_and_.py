@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Auto posting to board by type and category
 
 Revision ID: 576b32d25ea2

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Location tagging
 
 Revision ID: 434344d0a2d0

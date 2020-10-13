@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """NLP tagging
 
 Revision ID: 1fce9db567a5

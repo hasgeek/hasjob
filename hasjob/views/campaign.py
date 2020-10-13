@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from collections import defaultdict
 from datetime import timedelta
 from functools import wraps

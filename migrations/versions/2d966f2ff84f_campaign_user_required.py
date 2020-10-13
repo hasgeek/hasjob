@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Campaign user required
 
 Revision ID: 2d966f2ff84f

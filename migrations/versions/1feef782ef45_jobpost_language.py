@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """JobPost language
 
 Revision ID: 1feef782ef45

@@ -11,9 +11,10 @@ repos:
             '--remove-all-unused-imports',
             '--ignore-init-module-imports',
             '--remove-unused-variable',
+            '--remove-duplicate-keys',
           ]
   - repo: https://github.com/pre-commit/mirrors-isort
-    rev: v5.5.1
+    rev: v5.6.4
     hooks:
       - id: isort
         additional_dependencies:
@@ -25,19 +26,32 @@ repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v3.2.0
     hooks:
-      - id: trailing-whitespace
-      - id: end-of-file-fixer
-      - id: check-yaml
       - id: check-added-large-files
+      - id: check-ast
       - id: check-byte-order-marker
       - id: check-case-conflict
+      - id: check-docstring-first
       - id: check-executables-have-shebangs
       - id: check-json
       - id: check-merge-conflict
+      - id: check-symlinks
+      - id: check-toml
       - id: check-xml
+      - id: check-yaml
+      - id: debug-statements
+      - id: detect-aws-credentials
+        args: ['--allow-missing-credentials']
+      - id: detect-private-key
+      - id: end-of-file-fixer
       - id: fix-encoding-pragma
+        args: ['--remove']
+      - id: forbid-new-submodules
+      - id: mixed-line-ending
+      - id: no-commit-to-branch
+      - id: requirements-txt-fixer
+      - id: trailing-whitespace
   - repo: https://gitlab.com/pycqa/flake8
-    rev: 3.8.3
+    rev: 3.8.4
     hooks:
       - id: flake8
         additional_dependencies:
@@ -45,15 +59,20 @@ repos:
           - flake8-assertive
           - flake8-blind-except
           - flake8-builtins
-          - flake8-coding
           - flake8-comprehensions
           - flake8-isort
           - flake8-logging-format
           - flake8-mutable
           - flake8-print
           - pep8-naming
+  # - repo: https://github.com/PyCQA/bandit
+  #   rev: 1.6.2
+  #   hooks:
+  #     - id: bandit
+  #       language_version: python3
+  #       exclude: ^tests
   - repo: https://github.com/prettier/prettier
-    rev: 2.1.1
+    rev: 2.1.2
     hooks:
       - id: prettier
         args: ['--single-quote', '--trailing-comma', 'es5']

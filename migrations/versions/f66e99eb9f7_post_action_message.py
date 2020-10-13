@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Post action message
 
 Revision ID: f66e99eb9f7

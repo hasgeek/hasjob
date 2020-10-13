@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-
-
 # from flask import Markup
 from baseframe import __
 import baseframe.forms as forms

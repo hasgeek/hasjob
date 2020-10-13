@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """apphash
 
 Revision ID: 4f639a4a5fc3

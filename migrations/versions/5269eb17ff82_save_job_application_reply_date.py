@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Save job application reply date
 
 Revision ID: 5269eb17ff82

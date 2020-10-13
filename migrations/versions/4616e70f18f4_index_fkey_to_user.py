@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Index fkey to user
 
 Revision ID: 4616e70f18f4

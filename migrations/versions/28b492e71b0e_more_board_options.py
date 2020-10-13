@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """More board options
 
 Revision ID: 28b492e71b0e

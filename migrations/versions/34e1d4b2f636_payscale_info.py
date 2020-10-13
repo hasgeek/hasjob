@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Payscale info
 
 Revision ID: 34e1d4b2f636

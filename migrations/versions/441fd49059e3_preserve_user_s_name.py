@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Preserve user's name when they apply for a job
 
 Revision ID: 441fd49059e3

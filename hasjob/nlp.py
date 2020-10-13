@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Natural language processing helpers.
 """

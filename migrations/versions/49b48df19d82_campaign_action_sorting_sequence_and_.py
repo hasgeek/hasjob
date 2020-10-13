@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Campaign action sorting sequence and icon
 
 Revision ID: 49b48df19d82

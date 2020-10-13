@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #: The title of this site
 SITE_TITLE = 'Job Board'
 #: TypeKit code for fonts

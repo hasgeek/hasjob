@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Switch to timestamptz
 
 Revision ID: 05e807853572

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from sqlalchemy.exc import IntegrityError
 
 from flask import Response, flash, g, redirect

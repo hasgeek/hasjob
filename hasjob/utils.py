@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from random import choice, randint
 import re
 

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from coaster.utils import classmethodproperty
 from coaster.views import ClassView
 

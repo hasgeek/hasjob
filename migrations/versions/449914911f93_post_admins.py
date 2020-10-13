@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Post admins
 
 Revision ID: 449914911f93

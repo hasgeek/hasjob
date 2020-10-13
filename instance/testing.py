@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import os
 
 #: The title of this site

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from base64 import b64decode
 from datetime import timedelta
 from os import path

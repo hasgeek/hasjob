@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """A/B tests for headlines
 
 Revision ID: 140e56666d9e

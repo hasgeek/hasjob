@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from six.moves.urllib.parse import SplitResult, urlsplit
 
 from collections import OrderedDict

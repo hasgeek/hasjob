@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """creates filterset
 
 Revision ID: 859f6f33c02d

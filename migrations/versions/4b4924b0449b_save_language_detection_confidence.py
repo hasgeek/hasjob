@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Save language detection confidence
 
 Revision ID: 4b4924b0449b

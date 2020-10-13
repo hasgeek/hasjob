@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """JobApplication.replied_by
 
 Revision ID: 470c8feb73cc

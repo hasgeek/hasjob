@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from . import db
 from .jobpost import JobPost
 from .reportcode import ReportCode

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Jobpost search
 
 Revision ID: 2aab4c974a75

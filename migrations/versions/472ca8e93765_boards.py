@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Boards
 
 Revision ID: 472ca8e93765

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """apply_message
 
 Revision ID: 499df876f3f2

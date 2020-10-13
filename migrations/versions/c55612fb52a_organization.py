@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Organization
 
 Revision ID: c55612fb52a

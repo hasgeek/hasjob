@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Coin toss column for A/B testing
 
 Revision ID: 525b125ec799

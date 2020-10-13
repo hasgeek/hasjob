@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Index JobApplication.jobpost_id
 
 Revision ID: 2c1dec2d1dc5

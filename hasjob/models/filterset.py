@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from sqlalchemy import DDL, event
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.ext.associationproxy import association_proxy

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from flask import jsonify
 
 from coaster.views import requestargs

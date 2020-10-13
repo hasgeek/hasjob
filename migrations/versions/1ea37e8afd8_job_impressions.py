@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Job impressions
 
 Revision ID: 1ea37e8afd8

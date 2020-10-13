@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Domain has organization profile now
 
 Revision ID: 1728cf57a9ac

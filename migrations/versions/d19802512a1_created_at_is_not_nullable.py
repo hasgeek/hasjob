@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """created_at is not nullable
 
 Revision ID: d19802512a1

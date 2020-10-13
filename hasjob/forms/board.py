@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from flask import Markup
 from wtforms.ext.sqlalchemy.fields import QuerySelectMultipleField
 from wtforms.widgets import CheckboxInput, ListWidget

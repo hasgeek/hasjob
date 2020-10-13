@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Switch to UserBase2
 
 Revision ID: 260571e00aef

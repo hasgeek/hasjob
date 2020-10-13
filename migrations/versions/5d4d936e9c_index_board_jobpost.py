@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Index board jobpost
 
 Revision ID: 5d4d936e9c

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Campaigns
 
 Revision ID: c20bd2c9b35

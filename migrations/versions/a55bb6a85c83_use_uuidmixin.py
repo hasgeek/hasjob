@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Use UuidMixin
 
 Revision ID: a55bb6a85c83

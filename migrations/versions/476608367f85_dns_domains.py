@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """DNS Domains
 
 Revision ID: 476608367f85
