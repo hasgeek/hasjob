@@ -320,8 +320,8 @@ class ListingForm(forms.Form):
             return
         try:
             g.company_logo = process_image(request.files['company_logo'])
-        except IOError as e:
-            raise forms.ValidationError(e.message)
+        except IOError:
+            raise forms.ValidationError(_("This image could not be processed"))
         except KeyError:
             raise forms.ValidationError(_("Unknown file format"))
         except UploadNotAllowed:
