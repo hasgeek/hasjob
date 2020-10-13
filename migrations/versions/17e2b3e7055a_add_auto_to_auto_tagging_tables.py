@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Add 'auto' to auto tagging tables
 
 Revision ID: 17e2b3e7055a

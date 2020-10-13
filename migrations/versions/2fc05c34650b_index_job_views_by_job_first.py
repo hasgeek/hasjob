@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Index job views by job first
 
 Revision ID: 2fc05c34650b

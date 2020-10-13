@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Org teams
 
 Revision ID: 29fd6847a8e2

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """JobType flags
 
 Revision ID: 3fc1aa06cbeb

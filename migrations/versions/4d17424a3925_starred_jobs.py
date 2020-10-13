@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Starred jobs
 
 Revision ID: 4d17424a3925

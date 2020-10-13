@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Additional columns
 
 Revision ID: 5a725fd5ddd6

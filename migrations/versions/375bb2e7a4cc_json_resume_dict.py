@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """JSON Resume dict
 
 Revision ID: 375bb2e7a4cc

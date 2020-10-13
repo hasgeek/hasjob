@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Location scoped to board
 
 Revision ID: da1dfcda8b3

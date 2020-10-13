@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Discard unused Org and Team models
 
 Revision ID: 1710bfac281a

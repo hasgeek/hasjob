@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Candidate feedback
 
 Revision ID: c2a626c5618

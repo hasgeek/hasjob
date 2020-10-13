@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from . import BaseNameMixin, db
 
 __all__ = ['JobCategory']

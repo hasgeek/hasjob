@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Track user activity in boards
 
 Revision ID: 326e0a8e6137

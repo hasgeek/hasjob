@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Track user presence
 
 Revision ID: 348bd4e2226b

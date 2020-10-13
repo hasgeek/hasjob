@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Board auto posting tags
 
 Revision ID: c039166ecc6

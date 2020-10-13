@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Anon job view
 
 Revision ID: e49788bea4a

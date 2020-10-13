@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Jobpost twitter account
 
 Revision ID: 4bd08758f049

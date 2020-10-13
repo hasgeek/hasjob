@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Domain banned at
 
 Revision ID: 15aede1ebe6f

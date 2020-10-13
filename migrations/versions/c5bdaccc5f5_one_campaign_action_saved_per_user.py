@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """One campaign action saved per user
 
 Revision ID: c5bdaccc5f5

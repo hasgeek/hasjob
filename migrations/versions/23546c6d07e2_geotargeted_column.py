@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Geotargeted column
 
 Revision ID: 23546c6d07e2

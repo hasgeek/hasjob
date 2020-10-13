@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """jobpost state constraint
 
 Revision ID: b26b524d3fba

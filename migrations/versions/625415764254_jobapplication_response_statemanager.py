@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """job_application response statemanager
 
 Revision ID: 625415764254

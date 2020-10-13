@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """fullname
 
 Revision ID: 1bcc4e025b04

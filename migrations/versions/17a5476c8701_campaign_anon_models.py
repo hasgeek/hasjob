@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Campaign anon models
 
 Revision ID: 17a5476c8701

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Event sessions
 
 Revision ID: 17869f3e044c

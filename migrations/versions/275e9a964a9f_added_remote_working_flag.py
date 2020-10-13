@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Added remote working flag.
 
 Revision ID: 275e9a964a9f

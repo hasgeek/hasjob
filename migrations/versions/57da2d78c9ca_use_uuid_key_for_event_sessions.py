@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Use UUID key for event sessions
 
 Revision ID: 57da2d78c9ca

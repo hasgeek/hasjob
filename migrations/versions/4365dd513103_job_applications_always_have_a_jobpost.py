@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Job applications always have a jobpost
 
 Revision ID: 4365dd513103

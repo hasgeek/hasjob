@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Campaign last view datetime
 
 Revision ID: 8a37fe07ef9d

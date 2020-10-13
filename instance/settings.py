@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import re
 
 #: The title of this site

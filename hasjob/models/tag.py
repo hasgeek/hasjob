@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from baseframe import __
 from coaster.sqlalchemy import Query, failsafe_add
 from coaster.utils import LabeledEnum, make_name

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Board options
 
 Revision ID: 1016f365bfa7

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Private types and categories
 
 Revision ID: 2cd06f7444f8

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from sqlalchemy import DDL, event
 from sqlalchemy.dialects.postgresql import TSVECTOR
 from sqlalchemy.orm import deferred

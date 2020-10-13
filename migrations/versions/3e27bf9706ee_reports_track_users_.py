@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Reports track users now
 
 Revision ID: 3e27bf9706ee

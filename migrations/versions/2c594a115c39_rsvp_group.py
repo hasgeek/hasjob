@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """RSVP group
 
 Revision ID: 2c594a115c39

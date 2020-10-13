@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Featured board flag
 
 Revision ID: 1b3f67ef6387

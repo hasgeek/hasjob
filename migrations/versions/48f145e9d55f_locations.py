@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Locations
 
 Revision ID: 48f145e9d55f

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Board domains and locations
 
 Revision ID: 3ac38e8fc78b

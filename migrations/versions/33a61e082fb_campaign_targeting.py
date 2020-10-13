@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Campaign targeting
 
 Revision ID: 33a61e082fb

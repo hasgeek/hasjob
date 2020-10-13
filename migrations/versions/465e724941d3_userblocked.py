@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """userblocked
 
 Revision ID: 465e724941d3

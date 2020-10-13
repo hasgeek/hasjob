@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Adding datetime column
 
 Revision ID: 33de75e55858

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """BoardJobPost doesn't need its own primary key
 
 Revision ID: 504175f63661

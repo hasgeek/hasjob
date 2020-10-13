@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Employer response message
 
 Revision ID: 2420dd9c9949

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Dismissed campaign
 
 Revision ID: 241feed6748b
