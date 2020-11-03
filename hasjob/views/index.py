@@ -397,7 +397,7 @@ def fetch_jobposts(
                 startdate = parse_isoformat(
                     request_values['startdate'].upper(), naive=False
                 )
-            except ParseError:
+            except (ParseError, ValueError):
                 abort(400)
 
         batchsize = 32
