@@ -60,6 +60,22 @@ from ..views.helper import (
     session_jobpost_ab,
 )
 
+allowed_index_params = {
+    'l',  # Filter locations
+    't',  # Filter job types
+    'c',  # Filter job categories
+    'currency',  # Filter currency code
+    'equity',  # Filter equity flag
+    'q',  # Search terms
+    'startdate',  # For pagination by datetime
+    'ph',  # For excluding pinned listings in additional pages
+    'archive',  # Flag for loading from archive
+}
+
+
+def sanitized_index_params(kwargs):
+    return {k: v for k, v in kwargs.items() if k in allowed_index_params}
+
 
 def stickie_dict(
     post,
@@ -482,7 +498,7 @@ def fetch_jobposts(
         'showall': showall,
         'f_locations': f_locations,
         'loadmore': loadmore,
-        'query_params': query_params,
+        'query_params': sanitized_index_params(query_params),
         'data_filters': data_filters,
         'pay_graph_data': pay_graph_data,
         'paginated': index_is_paginated(),
@@ -1205,7 +1221,7 @@ def logoimage(domain, hashid):
 @app.route('/search', subdomain='<subdomain>')
 @app.route('/search')
 def search():
-    return redirect(url_for('index', **request.args))
+    return redirect(url_for('index', **sanitized_index_params(request.args)))
 
 
 @app.route('/api/1/template/offline', subdomain='<subdomain>')
