@@ -27,5 +27,5 @@ psycopg2==2.8.6
 pytz==2020.4
 SQLAlchemy>=1.0.0
 sqlalchemy_utils==0.36.8
-tldextract==3.0.2
+tldextract==3.1.0
 tweepy==3.9.0
