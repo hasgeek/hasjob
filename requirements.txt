@@ -1,7 +1,7 @@
 git+https://github.com/hasgeek/baseframe#egg=baseframe
 bleach==3.2.1
 git+https://github.com/hasgeek/coaster#egg=coaster
-coverage==5.3
+coverage==5.3.1
 dnspython==2.0.0
 Flask==1.1.2
 Flask-Assets==2.0
@@ -11,7 +11,7 @@ Flask-Migrate==2.5.3
 Flask-Redis>=0.3.0
 Flask-RQ2==18.3
 Flask-SQLAlchemy==2.4.4
-Flask-Testing==0.8.0
+Flask-Testing==0.8.1
 git+https://github.com/maxcountryman/flask-uploads.git#egg=Flask-Uploads
 Flask-WTF==0.14.3
 geoip2==4.1.0
@@ -24,8 +24,8 @@ Pillow==8.0.1
 premailer==3.7.0
 progressbar2==3.53.1
 psycopg2==2.8.6
-pytz==2020.1
+pytz==2020.5
 SQLAlchemy>=1.0.0
 sqlalchemy_utils==0.36.8
-tldextract==3.0.2
-tweepy==3.9.0
+tldextract==3.1.0
+tweepy==3.10.0
