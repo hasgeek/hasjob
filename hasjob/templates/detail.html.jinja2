@@ -144,7 +144,7 @@
                   <a class="close-popup" href="#">&#10005;</a>
                   {%- if current_auth.is_anonymous %}
                     <p>You need to be logged in to report a post</p>
-                    <p><a class="btn btn-primary btn-sm" href="{{ url_for('login') }}">Login with Google or GitHub</a></p>
+                    <p><a class="btn btn-primary btn-sm" href="{{ url_for('login') }}" rel="nofollow">Login with Google or GitHub</a></p>
                   {%- else %}
                     <h2>What’s wrong with it?</h2>
                     {% include "inc/reportform.html.jinja2" %}
@@ -276,9 +276,9 @@
             {%- if post.state.DRAFT %}{# Always show when in draft state #}
               {{ post.how_to_apply|hideemail }}
             {%- elif g.user %}
-              <a class="btn btn-primary" id="reveal-button" href="{{ post.url_for('reveal') }}">Show instructions</a> <span class="loading hidden"></span>
+              <a class="btn btn-primary" id="reveal-button" href="{{ post.url_for('reveal') }}" rel="nofollow">Show instructions</a> <span class="loading hidden"></span>
             {%- else %}
-              <a class="btn btn-primary" href="{{ url_for('login') }}">Login with Google or GitHub</a>
+              <a class="btn btn-primary" href="{{ url_for('login') }}" rel="nofollow">Login with Google or GitHub</a>
               to see instructions on how to apply.
               Your identity will not be revealed to the employer.
             {%- endif %}
