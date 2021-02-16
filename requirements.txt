@@ -1,5 +1,5 @@
 git+https://github.com/hasgeek/baseframe#egg=baseframe
-bleach==3.2.3
+bleach==3.3.0
 git+https://github.com/hasgeek/coaster#egg=coaster
 coverage==5.4
 dnspython==2.1.0
