@@ -1,13 +1,13 @@
 git+https://github.com/hasgeek/baseframe#egg=baseframe
 bleach==3.3.0
 git+https://github.com/hasgeek/coaster#egg=coaster
-coverage==5.4
+coverage==5.5
 dnspython==2.1.0
 Flask==1.1.2
 Flask-Assets==2.0
 git+https://github.com/hasgeek/flask-lastuser#egg=Flask-Lastuser
 Flask-Mail==0.9.1
-Flask-Migrate==2.6.0
+Flask-Migrate==2.7.0
 Flask-Redis>=0.3.0
 Flask-RQ2==18.3
 Flask-SQLAlchemy==2.4.4
@@ -18,7 +18,7 @@ geoip2==4.1.0
 html2text==2020.1.16
 jsmin==2.2.2
 langid>=1.1.4dev
-markdown==3.3.3
+markdown==3.3.4
 ordereddict==1.1
 Pillow==8.1.0
 premailer==3.7.0
