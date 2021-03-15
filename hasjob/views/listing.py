@@ -1110,6 +1110,7 @@ def withdraw(domain, hashid, key):
     if not (
         (key is None and g.user is not None and post.admin_is(g.user))
         or (key == post.edit_key)
+        or 'siteadmin' in lastuser.permissions()
     ):
         abort(403)
     if post.state.WITHDRAWN:
@@ -1120,6 +1121,9 @@ def withdraw(domain, hashid, key):
         return redirect(url_for('index'), code=303)
     if form.validate_on_submit():
         post.withdraw()
+        if 'siteadmin' in lastuser.permissions() and not post.admin_is(g.user):
+            # Crude way to log siteadmin action. Needs to be cleaner
+            post.reviewer = g.user
         db.session.commit()
         flash("Your job post has been withdrawn and is no longer available", "info")
         # cache bust
