@@ -20,7 +20,7 @@ jsmin==2.2.2
 langid>=1.1.4dev
 markdown==3.3.4
 ordereddict==1.1
-Pillow==8.1.0
+Pillow==8.1.1
 premailer==3.7.0
 progressbar2==3.53.1
 psycopg2==2.8.6
