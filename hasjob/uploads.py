@@ -5,7 +5,7 @@ from uuid import uuid4
 from werkzeug.datastructures import FileStorage
 
 from flask_uploads import IMAGES, UploadNotAllowed, UploadSet, configure_uploads
-from PIL import Image
+from PIL import Image, UnidentifiedImageError
 
 uploaded_logos = UploadSet('logos', IMAGES)
 
@@ -34,7 +34,12 @@ def process_image(requestfile, maxsize=(170, 130)):
     fileext = splitext(requestfile.filename)[1].lower()
     if fileext not in ['.jpg', '.jpeg', '.png', '.gif']:
         raise UploadNotAllowed("Unsupported file format")
-    img = Image.open(requestfile)
+    try:
+        img = Image.open(requestfile)
+    except UnidentifiedImageError:
+        raise UploadNotAllowed("Unsupported file format")
+    except Image.DecompressionBombError:
+        raise UploadNotAllowed("This image is too large to process")
     img.load()
     if img.size[0] > maxsize[0] or img.size[1] > maxsize[1]:
         img.thumbnail(maxsize, Image.ANTIALIAS)
