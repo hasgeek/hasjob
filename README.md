@@ -44,7 +44,7 @@ In a production environment, you must set `FLASK_ENV` globally for it to be avai
 
   ```
   $ docker-compose run web sh
-      web$ python manage.py db create
+      web$ flask db create
       web$ exit
   ```
 
@@ -119,7 +119,7 @@ If you intend to actively contribute to Hasjob code, some functionality is sourc
 
 Finish configuration with:
 
-    $ python manage.py db create
+    $ flask db create
 
 You will need to install all dependencies listed in `package.json`
 
@@ -143,9 +143,9 @@ Some functionality in Hasjob requires the presence of a sub-board named `www`. C
 
 Hasjob requires some tasks to be run in periodic background jobs. These can be called from cron. Use `crontab -e` as the user account running Hasjob and add:
 
-    */10 * * * * cd /path/to/hasjob; python manage.py periodic sessions
-    */5  * * * * cd /path/to/hasjob; python manage.py periodic impressions
-    0    2 * * * cd /path/to/hasjob; python manage.py periodic campaignviews
+    */10 * * * * cd /path/to/hasjob; flask periodic sessions
+    */5  * * * * cd /path/to/hasjob; flask periodic impressions
+    0    2 * * * cd /path/to/hasjob; flask periodic campaignviews
 
 ### Testing
 
