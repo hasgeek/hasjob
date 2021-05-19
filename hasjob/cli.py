@@ -5,10 +5,9 @@ from datetime import timedelta
 from flask.cli import AppGroup
 
 from coaster.utils import utcnow
-from hasjob import app
-from hasjob.models import db
-import hasjob.models as models
-import hasjob.views as views
+
+from . import app, models, views
+from .models import db
 
 
 @app.shell_context_processor
