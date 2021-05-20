@@ -36,6 +36,7 @@ known_first_party = ['baseframe', 'coaster', 'flask_lastuser', 'hasjob']
 known_sqlalchemy = ['alembic', 'sqlalchemy', 'sqlalchemy_utils', 'flask_sqlalchemy', 'psycopg2']
 known_flask = [
   'flask',
+  'click',
   'werkzeug',
   'itsdangerous',
   'wtforms',

@@ -26,40 +26,6 @@ Hasjob requires a `FLASK_ENV` environment variable set to one of the following v
 
 In a production environment, you must set `FLASK_ENV` globally for it to be available across processes. On Ubuntu/Debian systems, add it to `/etc/environment` and reboot.
 
-### With Docker
-
-#### Install and run with Docker
-
-- Install [Docker](https://docs.docker.com/installation/) and [Compose](https://docs.docker.com/compose/install/)
-
-- Next, rename the `instance/development.docker.py` to `instance/development.py`
-
-- Build the images
-
-  ```
-  $ docker-compose build
-  ```
-
-- Initialize the database
-
-  ```
-  $ docker-compose run web sh
-      web$ python manage.py db create
-      web$ exit
-  ```
-
-- Start the server
-
-  ```
-  $ docker-compose up
-  ```
-
-- You can edit the server name and Lastuser settings in `docker-compose.yml`
-
-### Without Docker
-
-Hasjob without Docker requires manual installation of all dependencies.
-
 #### Postgres and Redis
 
 Hasjob requires Postgres >= 9.4 and Redis. To set up a Postgres DB:
@@ -117,23 +83,14 @@ If you intend to actively contribute to Hasjob code, some functionality is sourc
     $ for DIR in coaster baseframe flask-lastuser; do cd $DIR; python setup.py develop; cd ..; done
     $ cd baseframe && make && cd ..
 
-Finish configuration with:
+You will need to install all dependencies, run Webpack to bundle CSS, JS files & generate the service-worker.js
 
-    $ python manage.py db create
-
-You will need to install all dependencies listed in `package.json`
-
-    $ cd hasjob/assets
-    $ npm install
-
-You will need to run Webpack to bundle CSS, JS files & generate the service-worker.js
-
-    $ cd hasjob/assets
-    $ yarn build
+    $ cd <project root>
+    $ make
 
 Before you run the server in development mode, make sure you have Postgres server and Redis server running as well. To start Hasjob:
 
-    $ python runserver.py
+    $ ./runserver.sh
 
 ### Create root board
 
@@ -143,9 +100,9 @@ Some functionality in Hasjob requires the presence of a sub-board named `www`. C
 
 Hasjob requires some tasks to be run in periodic background jobs. These can be called from cron. Use `crontab -e` as the user account running Hasjob and add:
 
-    */10 * * * * cd /path/to/hasjob; python manage.py periodic sessions
-    */5  * * * * cd /path/to/hasjob; python manage.py periodic impressions
-    0    2 * * * cd /path/to/hasjob; python manage.py periodic campaignviews
+    */10 * * * * cd /path/to/hasjob; flask periodic sessions
+    */5  * * * * cd /path/to/hasjob; flask periodic impressions
+    0    2 * * * cd /path/to/hasjob; flask periodic campaignviews
 
 ### Testing
 

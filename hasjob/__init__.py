@@ -31,7 +31,7 @@ version = Version(__version__)
 
 # Third, after config, import the models and views
 
-from . import models, views  # NOQA  # isort:skip
+from . import cli, models, views  # NOQA  # isort:skip
 from .models import db  # NOQA  # isort:skip
 
 # Configure the app

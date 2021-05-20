@@ -2,19 +2,25 @@
 
 from datetime import timedelta
 
-from coaster.manage import Manager, init_manager
+from flask.cli import AppGroup
+
 from coaster.utils import utcnow
-from hasjob import app
-from hasjob.models import db
-import hasjob
-import hasjob.forms as forms
-import hasjob.models as models
-import hasjob.views as views
 
-periodic = Manager(usage="Periodic tasks from cron (with recommended intervals)")
+from . import app, models, views
+from .models import db
 
 
-@periodic.command
+@app.shell_context_processor
+def shell_context():
+    return {'db': db, 'models': models}
+
+
+periodic = AppGroup(
+    'periodic', help="Periodic tasks from cron (with recommended intervals)"
+)
+
+
+@periodic.command('sessions')
 def sessions():
     """Sweep user sessions to close all inactive sessions (10m)"""
     es = models.EventSession
@@ -25,22 +31,16 @@ def sessions():
     db.session.commit()
 
 
-@periodic.command
+@periodic.command('impressions')
 def impressions():
     """Recount impressions for jobposts in the dirty list (5m)"""
     views.helper.update_dirty_impression_counts()
 
 
-@periodic.command
+@periodic.command('campaignviews')
 def campaignviews():
     """Reset campaign views after more than 30 days since last view (1d)"""
     views.helper.reset_campaign_views()
 
 
-if __name__ == '__main__':
-    db.init_app(app)
-    manager = init_manager(
-        app, db, hasjob=hasjob, models=models, forms=forms, views=views
-    )
-    manager.add_command('periodic', periodic)
-    manager.run()
+app.cli.add_command(periodic)

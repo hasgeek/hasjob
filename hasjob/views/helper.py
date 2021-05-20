@@ -824,7 +824,7 @@ def campaign_view_count_update(campaign_id, user_id=None, anon_user_id=None):
     db.session.commit()
 
 
-def reset_campaign_views():  # Periodic job (see manage.py)
+def reset_campaign_views():  # Periodic job
     live_campaigns = Campaign.query.filter(Campaign.state.is_live).options(
         db.load_only(Campaign.id)
     )
