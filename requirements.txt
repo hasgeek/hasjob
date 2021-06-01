@@ -13,7 +13,7 @@ Flask-RQ2==18.3
 Flask-SQLAlchemy==2.5.1
 Flask-Testing==0.8.1
 git+https://github.com/maxcountryman/flask-uploads.git#egg=Flask-Uploads
-Flask-WTF==0.14.3
+Flask-WTF==0.15.1
 geoip2==4.1.0
 html2text==2020.1.16
 jsmin==2.2.2
