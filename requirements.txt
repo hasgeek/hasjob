@@ -21,7 +21,7 @@ langid>=1.1.4dev
 markdown==3.3.4
 ordereddict==1.1
 Pillow==8.2.0
-premailer==3.8.0
+premailer==3.9.0
 progressbar2==3.53.1
 psycopg2==2.8.6
 pytz==2021.1
