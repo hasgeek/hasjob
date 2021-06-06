@@ -810,14 +810,14 @@ $(function () {
   var presetCurrency =
     (window.Hasjob.Config && window.Hasjob.Config.selectedFilters.currency) ||
     'NA';
-  $.each($("input[type='radio'][name='currency']"), function (
-    index,
-    currencyRadio
-  ) {
-    if ($(currencyRadio).val() === presetCurrency) {
-      $(currencyRadio).attr('checked', 'checked');
+  $.each(
+    $("input[type='radio'][name='currency']"),
+    function (index, currencyRadio) {
+      if ($(currencyRadio).val() === presetCurrency) {
+        $(currencyRadio).attr('checked', 'checked');
+      }
     }
-  });
+  );
 
   // preset equity
   if (window.Hasjob.Config && window.Hasjob.Config.selectedFilters.equity) {
