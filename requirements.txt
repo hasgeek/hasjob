@@ -26,6 +26,6 @@ progressbar2==3.53.1
 psycopg2==2.8.6
 pytz==2021.1
 SQLAlchemy==1.4.17
-sqlalchemy_utils==0.37.5
+SQLAlchemy-Utils==0.37.6
 tldextract==3.1.0
 tweepy==3.10.0

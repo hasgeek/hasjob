@@ -111,13 +111,13 @@ def has_starred_post(user, post):
     """Checks if user has starred a particular post"""
     if not post:
         return False
-    query = (
-        starred_job_table.count()
-        .where(starred_job_table.c.user_id == user.id)
-        .where(starred_job_table.c.jobpost_id == post.id)
+    return bool(
+        db.session.query(db.func.count('*'))
+        .select_from(starred_job_table)
+        .filter(starred_job_table.c.user_id == user.id)
+        .filter(starred_job_table.c.jobpost_id == post.id)
+        .scalar()
     )
-    res = db.session.execute(query)
-    return bool(res.first()[0]) if res else False
 
 
 User.has_starred_post = has_starred_post
@@ -1067,9 +1067,12 @@ class JobViewSession(TimestampMixin, db.Model):
     #: Related impression
     impression = db.relationship(
         JobImpression,
-        primaryjoin='''and_(JobViewSession.event_session_id == foreign(JobImpression.event_session_id),
-            JobViewSession.jobpost_id == foreign(JobImpression.jobpost_id))''',
+        primaryjoin='''and_(
+            JobViewSession.event_session_id == foreign(JobImpression.event_session_id),
+            JobViewSession.jobpost_id == foreign(JobImpression.jobpost_id)
+            )''',
         uselist=False,
+        viewonly=True,
         backref='view',
     )
     #: Was this view in the B group of an A/B test? (null = no test conducted)
@@ -1284,37 +1287,43 @@ JobApplication.jobpost = db.relationship(
 
 
 JobPost.new_applications = db.column_property(
-    db.select([db.func.count(JobApplication.id)]).where(
+    db.select([db.func.count(JobApplication.id)])
+    .where(
         db.and_(JobApplication.jobpost_id == JobPost.id, JobApplication.response.NEW)
     )
+    .scalar_subquery()
 )
 
 
 JobPost.replied_applications = db.column_property(
-    db.select([db.func.count(JobApplication.id)]).where(
+    db.select([db.func.count(JobApplication.id)])
+    .where(
         db.and_(
             JobApplication.jobpost_id == JobPost.id, JobApplication.response.REPLIED
         )
     )
+    .scalar_subquery()
 )
 
 
 JobPost.viewcounts_viewed = db.column_property(
-    db.select([db.func.count()]).where(UserJobView.jobpost_id == JobPost.id)
+    db.select([db.func.count()])
+    .where(UserJobView.jobpost_id == JobPost.id)
+    .scalar_subquery()
 )
 
 
 JobPost.viewcounts_opened = db.column_property(
-    db.select([db.func.count()]).where(
-        db.and_(UserJobView.jobpost_id == JobPost.id, UserJobView.applied.is_(True))
-    )
+    db.select([db.func.count()])
+    .where(db.and_(UserJobView.jobpost_id == JobPost.id, UserJobView.applied.is_(True)))
+    .scalar_subquery()
 )
 
 
 JobPost.viewcounts_applied = db.column_property(
-    db.select([db.func.count(JobApplication.id)]).where(
-        JobApplication.jobpost_id == JobPost.id
-    )
+    db.select([db.func.count(JobApplication.id)])
+    .where(JobApplication.jobpost_id == JobPost.id)
+    .scalar_subquery()
 )
 
 

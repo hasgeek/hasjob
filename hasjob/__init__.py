@@ -70,13 +70,13 @@ baseframe.init_app(
 # Fix this by generating absolute URLs to the static subdomain during build.
 app.add_url_rule(
     '/static/<path:filename>',
-    endpoint='static',
+    endpoint='static_root',
     view_func=app.send_static_file,
     subdomain=None,
 )
 app.add_url_rule(
     '/static/<path:filename>',
-    endpoint='static',
+    endpoint='static_subdomain',
     view_func=app.send_static_file,
     subdomain='<subdomain>',
 )
