@@ -272,6 +272,10 @@ def job_related_posts(domain, hashid):
     g.impressions = {
         rp.id: (False, rp.id, bgroup(jobpost_ab, rp)) for rp in related_posts
     }
+    if g.user:
+        g.starred_ids = set(g.user.starred_job_ids(agelimit))
+    else:
+        g.starred_ids = set()
     max_counts = get_max_counts()
     return jsonify(
         template=render_template(
