@@ -3,7 +3,7 @@ from datetime import timedelta
 from sqlalchemy import DDL, event
 from sqlalchemy.dialects.postgresql import TSVECTOR
 from sqlalchemy.ext.associationproxy import association_proxy
-from sqlalchemy.orm import defer, deferred, load_only
+from sqlalchemy.orm import defer, load_only
 
 from flask import Markup, escape, url_for
 from werkzeug.utils import cached_property
@@ -204,7 +204,7 @@ class JobPost(BaseMixin, db.Model):
     review_datetime = db.Column(db.TIMESTAMP(timezone=True), nullable=True)
     review_comments = db.Column(db.Unicode(250), nullable=True)
 
-    search_vector = deferred(db.Column(TSVECTOR, nullable=True))
+    search_vector = db.Column(TSVECTOR, nullable=True)
 
     _state = db.Column(
         'status',
