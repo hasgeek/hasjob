@@ -18,8 +18,6 @@ SERVER_NAME = 'hasjob.local'
 STATIC_SUBDOMAIN = 'static'
 #: Upload path
 UPLOADED_LOGOS_DEST = '/tmp/uploads'
-#: Hascore server
-HASCORE_SERVER = 'https://api.hasgeek.com/'
 #: Cache settings
 CACHE_TYPE = 'redis'
 #: RQ settings
