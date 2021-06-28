@@ -10,7 +10,7 @@ __all__ = ['JobPostReport']
 class JobPostReport(db.Model):
     __tablename__ = 'jobpostreport'
 
-    id = db.Column(db.Integer, primary_key=True)  # NOQA: A003
+    id = db.Column(db.Integer, primary_key=True)  # noqa: A003
     user_id = db.Column(None, db.ForeignKey('user.id'), nullable=True)
     user = db.relationship(User)
     datetime = db.Column(

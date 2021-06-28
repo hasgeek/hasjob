@@ -40,7 +40,7 @@ class ListingPayCurrencyField(forms.RadioField):
             if not self.data:
                 raise ValueError(_("Pick one"))
             else:
-                return super(ListingPayCurrencyField, self).pre_validate(form)
+                return super().pre_validate(form)
         else:
             self.data = None
 
@@ -320,7 +320,7 @@ class ListingForm(forms.Form):
             return
         try:
             g.company_logo = process_image(request.files['company_logo'])
-        except IOError:
+        except OSError:
             raise forms.ValidationError(_("This image could not be processed"))
         except KeyError:
             raise forms.ValidationError(_("Unknown file format"))
@@ -433,7 +433,7 @@ class ListingForm(forms.Form):
             field.data = None
 
     def validate(self):
-        success = super(ListingForm, self).validate(send_signals=False)
+        success = super().validate(send_signals=False)
         if success:
             if (
                 not self.job_type_ob.nopay_allowed
@@ -600,7 +600,7 @@ class ApplicationForm(forms.Form):
     )
 
     def __init__(self, *args, **kwargs):
-        super(ApplicationForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.apply_email.choices = []
         if g.user:
             self.apply_email.description = Markup(

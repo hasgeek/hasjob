@@ -18,7 +18,7 @@ __all__ = ['UserFlags']
 UserFlag = namedtuple('UserFlag', ['category', 'title', 'for_user', 'user_ids'])
 
 
-class UserFlags(object):
+class UserFlags:
     """
     A collection of bi-directional flags to (a) set on a user or (b) find matching users.
     This is a convenience class, meant only to be an easy way to look up contents.
@@ -383,7 +383,7 @@ class UserFlags(object):
             ~User.id.in_(
                 db.session.query(JobPost.user_id).filter(JobPost.user_id.isnot(None))
             ),
-        ),  # NOQA
+        ),
     )
 
     # Has always been a lurker

@@ -131,7 +131,7 @@ class CampaignActionForm(forms.Form):
         description=__("Optional Font-Awesome icon name"),
     )
     public = forms.BooleanField(__("This action is live"))
-    type = forms.RadioField(  # NOQA: A003
+    type = forms.RadioField(  # noqa: A003
         __("Type"),
         choices=list(CAMPAIGN_ACTION.items()),
         validators=[forms.validators.DataRequired(__("This is required"))],

@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 from datetime import timedelta
 
 from flask.cli import AppGroup

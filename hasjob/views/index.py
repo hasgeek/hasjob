@@ -864,7 +864,7 @@ def browse_by_location(location):
             'description': Markup(loc.description),
         }
     else:
-        return redirect(url_for('index', l=location), code=302)  # NOQA: E741
+        return redirect(url_for('index', l=location), code=302)
     if location != geodata['name']:
         return redirect(url_for('browse_by_location', location=geodata['name']))
     return index(location=geodata, title=geodata['use_title'])
@@ -873,7 +873,7 @@ def browse_by_location(location):
 @app.route('/in/anywhere', methods=['GET', 'POST'], subdomain='<subdomain>')
 @app.route('/in/anywhere', methods=['GET', 'POST'])
 def browse_by_anywhere():
-    return redirect(url_for('index', l='anywhere'), code=302)  # NOQA: E741
+    return redirect(url_for('index', l='anywhere'), code=302)
 
 
 @app.route('/tag/<tag>', methods=['GET', 'POST'], subdomain='<subdomain>')
@@ -923,7 +923,7 @@ def opensearch():
 @app.route('/feed')
 def feed(
     basequery=None,
-    type=None,  # NOQA: A002
+    type=None,  # noqa: A002
     category=None,
     md5sum=None,
     domain=None,
@@ -941,7 +941,7 @@ def feed(
     elif location:
         title = "Jobs in {location}".format(location=location['use_title'])
     elif tag:
-        title = "Jobs tagged {tag}".format(tag=title)
+        title = f"Jobs tagged {title}"
     posts = list(getposts(basequery, showall=True, limit=100))
     if posts:  # Can't do this unless posts is a list
         updated = posts[0].datetime.isoformat() + 'Z'

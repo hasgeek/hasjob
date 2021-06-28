@@ -152,7 +152,7 @@ class JobPost(BaseMixin, db.Model):
     headline = db.Column(db.Unicode(100), nullable=False)
     headlineb = db.Column(db.Unicode(100), nullable=True)
     type_id = db.Column(None, db.ForeignKey('jobtype.id'), nullable=False)
-    type = db.relation(JobType, primaryjoin=type_id == JobType.id)  # NOQA: A003
+    type = db.relation(JobType, primaryjoin=type_id == JobType.id)  # noqa: A003
     category_id = db.Column(None, db.ForeignKey('jobcategory.id'), nullable=False)
     category = db.relation(JobCategory, primaryjoin=category_id == JobCategory.id)
     location = db.Column(db.Unicode(80), nullable=False)
@@ -300,7 +300,7 @@ class JobPost(BaseMixin, db.Model):
         )
 
     @classmethodproperty
-    def query_listed(cls):  # NOQA: N805
+    def query_listed(cls):  # noqa: N805
         """Returns a SQLAlchemy query for listed jobposts"""
         return cls.query.filter(JobPost.state.LISTED).options(
             db.load_only('id', 'hashid')
@@ -603,7 +603,7 @@ class JobPost(BaseMixin, db.Model):
                 )
 
     def permissions(self, user, inherited=None):
-        perms = super(JobPost, self).permissions(user, inherited)
+        perms = super().permissions(user, inherited)
         if self.state.PUBLIC:
             perms.add('view')
         if self.admin_is(user):
@@ -1136,7 +1136,7 @@ class JobApplication(BaseMixin, db.Model):
     candidate_feedback = db.Column(db.SmallInteger, nullable=True)
 
     def __init__(self, **kwargs):
-        super(JobApplication, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         if self.hashid is None:
             self.hashid = unique_long_hash()
 

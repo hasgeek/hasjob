@@ -419,7 +419,7 @@ def applyjob(domain, hashid):
     if job_application:
         flashmsg = "You have already applied to this job. You may not apply again"
         if request_is_xhr():
-            return '<p><strong>{}</strong></p>'.format(flashmsg)
+            return f'<p><strong>{flashmsg}</strong></p>'
         else:
             flash(flashmsg, 'interactive')
             return redirect(post.url_for(), 303)
@@ -485,7 +485,7 @@ def applyjob(domain, hashid):
                 mail.send(msg)
 
             if request_is_xhr():
-                return '<p><strong>{}</strong></p>'.format(flashmsg)
+                return f'<p><strong>{flashmsg}</strong></p>'
             else:
                 flash(flashmsg, 'interactive')
                 return redirect(post.url_for(), 303)
@@ -749,7 +749,7 @@ def process_application(domain, hashid, application):
 
     if flashmsg:
         if request_is_xhr():
-            return '<p><strong>{}</strong></p>'.format(flashmsg)
+            return f'<p><strong>{flashmsg}</strong></p>'
         else:
             flash(flashmsg, 'interactive')
 
@@ -954,7 +954,7 @@ def confirm(domain, hashid):
     if 'form.id' in request.form and form.validate_on_submit():
         # User has accepted terms of service. Now send email and/or wait for payment
         msg = Message(
-            subject="Confirm your job post: {headline}".format(headline=post.headline),
+            subject=f"Confirm your job post: {post.headline}",
             recipients=[post.email],
         )
         msg.html = email_transform(

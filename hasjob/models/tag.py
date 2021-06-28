@@ -9,7 +9,7 @@ from .jobpost import JobPost
 __all__ = ['TAG_TYPE', 'Tag', 'JobPostTag']
 
 
-class TAG_TYPE(LabeledEnum):  # NOQA: N801
+class TAG_TYPE(LabeledEnum):  # noqa: N801
     # The NLP parser added this tag
     AUTO = (0, 'auto', __("Automatic"))
     # A user confirmed an automatic tag
@@ -80,7 +80,7 @@ class JobPostTag(TimestampMixin, db.Model):
     status = db.Column(db.SmallInteger, nullable=False)
 
     def __repr__(self):
-        return "<JobPostTag %r for %s>" % (self.tag.title, self.jobpost.hashid)
+        return f"<JobPostTag {self.tag.title!r} for {self.jobpost.hashid}>"
 
     @property
     def status_label(self):

@@ -174,7 +174,7 @@ class AdminCampaignView(UrlForView, InstanceLoader, ModelView):
     route_model_map = {'campaign': 'name'}
 
     @classmethodproperty
-    def tabs(cls):  # NOQA: N805
+    def tabs(cls):  # noqa: N805
         return AdminCampaignList.tabs
 
     @route('')
@@ -415,7 +415,7 @@ class AdminCampaignActionView(UrlForView, InstanceLoader, ModelView):
     route_model_map = {'action': 'name', 'campaign': 'parent.name'}
 
     @classmethodproperty
-    def tabs(cls):  # NOQA: N805
+    def tabs(cls):  # noqa: N805
         return AdminCampaignList.tabs
 
     @property

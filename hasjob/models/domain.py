@@ -54,7 +54,7 @@ class Domain(BaseMixin, db.Model):
             ' webmail' if self.is_webmail else '',
             ' banned' if self.is_banned else '',
         ]
-        return '<Domain %s%s>' % (self.name, ''.join(flags))
+        return '<Domain {}{}>'.format(self.name, ''.join(flags))
 
     @property
     def use_title(self):
