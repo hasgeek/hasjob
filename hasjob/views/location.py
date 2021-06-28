@@ -41,7 +41,7 @@ def location_new():
     for row in data.values():
         geonames[row['geonameid']] = row
     choices = [
-        ('%s/%s' % (row['geonameid'], row['name']), row['picker_title'])
+        ('{}/{}'.format(row['geonameid'], row['name']), row['picker_title'])
         for row in geonames.values()
     ]
     form = NewLocationForm()

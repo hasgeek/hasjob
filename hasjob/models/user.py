@@ -85,7 +85,7 @@ class AnonUser(BaseMixin, db.Model):
     title = fullname
 
 
-class EventSessionBase(object):
+class EventSessionBase:
     persistent = False  # This won't be saved to db
 
     @classmethod
@@ -228,7 +228,7 @@ class EventSession(EventSessionBase, UuidMixin, BaseMixin, db.Model):
         return ues
 
 
-class UserEventBase(object):
+class UserEventBase:
     @classmethod
     def new_from_request(cls, request):
         instance = cls()

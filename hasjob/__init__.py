@@ -31,8 +31,8 @@ version = Version(__version__)
 
 # Third, after config, import the models and views
 
-from . import cli, models, views  # NOQA  # isort:skip
-from .models import db  # NOQA  # isort:skip
+from . import cli, models, views  # noqa  # isort:skip
+from .models import db  # isort:skip
 
 # Configure the app
 coaster.app.init_app(app)

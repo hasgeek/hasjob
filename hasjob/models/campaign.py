@@ -79,13 +79,13 @@ campaign_event_session_table = db.Table(
 )
 
 
-class CAMPAIGN_STATE(LabeledEnum):  # NOQA: N801
+class CAMPAIGN_STATE(LabeledEnum):  # noqa: N801
     DISABLED = (False, 'disabled', __("Disabled"))
     ENABLED = (True, 'enabled', __("Enabled"))
     # LIVE (and others) are conditional states in the model
 
 
-class CAMPAIGN_POSITION(LabeledEnum):  # NOQA: N801
+class CAMPAIGN_POSITION(LabeledEnum):  # noqa: N801
     #: Shown in the header of all pages
     HEADER = (0, __("Header"))
     #: Shown in the sidebar of jobs
@@ -98,7 +98,7 @@ class CAMPAIGN_POSITION(LabeledEnum):  # NOQA: N801
     __order__ = (HEADER, SIDEBAR, BEFOREPOST, AFTERPOST)
 
 
-class CAMPAIGN_ACTION(LabeledEnum):  # NOQA: N801
+class CAMPAIGN_ACTION(LabeledEnum):  # noqa: N801
     LINK = ('L', __("Follow link"))
     RSVP_Y = ('Y', __("RSVP Yes"))
     RSVP_N = ('N', __("RSVP No"))
@@ -112,7 +112,7 @@ class CAMPAIGN_ACTION(LabeledEnum):  # NOQA: N801
     DATA_TYPES = {RSVP_Y, RSVP_N, RSVP_M, FORM}
 
 
-class BANNER_LOCATION(LabeledEnum):  # NOQA: N801
+class BANNER_LOCATION(LabeledEnum):  # noqa: N801
     TOP = (0, __("Top"))
     RIGHT = (1, __("Right"))
     BOTTOM = (2, __("Bottom"))
@@ -282,7 +282,7 @@ class Campaign(BaseNameMixin, db.Model):
         return self
 
     def __repr__(self):
-        return '<Campaign %s "%s" %s:%s>' % (
+        return '<Campaign {} "{}" {}:{}>'.format(
             self.name,
             self.title,
             self.start_at.strftime('%Y-%m-%d'),
@@ -520,7 +520,7 @@ class CampaignAction(BaseScopedNameMixin, db.Model):
     #: Is this action live?
     public = db.Column(db.Boolean, nullable=False, default=False)
     #: Action type
-    type = db.Column(  # NOQA: A003
+    type = db.Column(  # noqa: A003
         db.Enum(*CAMPAIGN_ACTION.keys(), name='campaign_action_type_enum'),
         nullable=False,
     )
@@ -679,7 +679,7 @@ class CampaignAnonView(TimestampMixin, db.Model):
         return cls.query.filter_by(campaign=campaign, anon_user=anon_user).notempty()
 
 
-class UserActionFormData(object):
+class UserActionFormData:
     """
     Form data access helper for campaign user actions
     """

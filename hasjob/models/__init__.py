@@ -1,8 +1,8 @@
 from datetime import timedelta
 
 from baseframe import __
-from coaster.db import db  # NOQA: F401
-from coaster.sqlalchemy import (  # NOQA: F401
+from coaster.db import db  # noqa: F401
+from coaster.sqlalchemy import (  # noqa: F401
     BaseMixin,
     BaseNameMixin,
     BaseScopedIdMixin,
@@ -19,7 +19,7 @@ agelimit = timedelta(days=30)
 newlimit = timedelta(days=1)
 
 
-class POST_STATE(LabeledEnum):  # NOQA: N801
+class POST_STATE(LabeledEnum):  # noqa: N801
     #: Being written
     DRAFT = (0, 'draft', __("Draft"))
     #: Pending email verification
@@ -66,7 +66,7 @@ class POST_STATE(LabeledEnum):  # NOQA: N801
     ARCHIVED = {CONFIRMED, REVIEWED, ANNOUNCEMENT, CLOSED}
 
 
-class CURRENCY(LabeledEnum):  # NOQA: N801
+class CURRENCY(LabeledEnum):
     INR = ('INR', 'INR')
     USD = ('USD', 'USD')
     EUR = ('EUR', 'EUR')
@@ -74,7 +74,7 @@ class CURRENCY(LabeledEnum):  # NOQA: N801
     __order__ = (INR, USD, EUR)
 
 
-class EMPLOYER_RESPONSE(LabeledEnum):  # NOQA: N801
+class EMPLOYER_RESPONSE(LabeledEnum):  # noqa: N801
     #: New application
     NEW = (0, 'new', __("New"))
     #: Employer viewed on website
@@ -98,7 +98,7 @@ class EMPLOYER_RESPONSE(LabeledEnum):  # NOQA: N801
     CAN_REPORT = {NEW, PENDING, IGNORED, REJECTED}
 
 
-class PAY_TYPE(LabeledEnum):  # NOQA: N801
+class PAY_TYPE(LabeledEnum):  # noqa: N801
     NOCASH = (0, __("Nothing"))
     ONETIME = (1, __("One-time"))
     RECURRING = (2, __("Recurring"))
@@ -106,7 +106,7 @@ class PAY_TYPE(LabeledEnum):  # NOQA: N801
     __order__ = (NOCASH, ONETIME, RECURRING)
 
 
-class CANDIDATE_FEEDBACK(LabeledEnum):  # NOQA: N801
+class CANDIDATE_FEEDBACK(LabeledEnum):  # noqa: N801
     NORESPONSE = (0, __("No response"))
     INPROCESS = (1, __("In process"))
     DID_NOT_GET = (2, __("Did not get the job"))

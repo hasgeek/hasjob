@@ -155,7 +155,7 @@ class BoardAutoDomain(TimestampMixin, db.Model):
     domain = db.Column(db.Unicode(80), primary_key=True, nullable=False, index=True)
 
     def __repr__(self):
-        return '<BoardAutoDomain %s for board %s>' % (self.domain, self.board.name)
+        return f'<BoardAutoDomain {self.domain} for board {self.board.name}>'
 
 
 class BoardAutoLocation(TimestampMixin, db.Model):
@@ -246,7 +246,7 @@ class Board(BaseNameMixin, db.Model):
     users_active_at = db.relationship(UserActiveAt, lazy='dynamic', backref='board')
 
     def __repr__(self):
-        return '<Board %s "%s">' % (self.name, self.title)
+        return f'<Board {self.name} "{self.title}">'
 
     @property
     def is_root(self):
@@ -296,7 +296,7 @@ class Board(BaseNameMixin, db.Model):
         return link
 
     def permissions(self, user, inherited=None):
-        perms = super(Board, self).permissions(user, inherited)
+        perms = super().permissions(user, inherited)
         perms.add('view')
         if not self.restrict_listing:
             perms.add('new-job')

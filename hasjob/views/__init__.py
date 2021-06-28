@@ -1,7 +1,7 @@
 from flask import redirect, url_for
 
 from .. import app
-from . import (  # NOQA: F401
+from . import (  # noqa: F401
     admin_filterset,
     admindash,
     api,

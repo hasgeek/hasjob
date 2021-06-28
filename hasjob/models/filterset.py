@@ -114,7 +114,7 @@ class Filterset(BaseScopedNameMixin, db.Model):
     keywords = db.Column(db.Unicode(250), nullable=False, default='', index=True)
 
     def __repr__(self):
-        return '<Filterset %s "%s">' % (self.board.title, self.title)
+        return f'<Filterset {self.board.title} "{self.title}">'
 
     @classmethod
     def get(cls, board, name):
@@ -122,9 +122,7 @@ class Filterset(BaseScopedNameMixin, db.Model):
 
     def url_for(self, action='view', _external=True, **kwargs):
         kwargs.setdefault('subdomain', self.board.name if self.board.not_root else None)
-        return super(Filterset, self).url_for(
-            action, name=self.name, _external=_external, **kwargs
-        )
+        return super().url_for(action, name=self.name, _external=_external, **kwargs)
 
     def to_filters(self, translate_geonameids=False):
         location_names = []

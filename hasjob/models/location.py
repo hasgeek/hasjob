@@ -12,7 +12,7 @@ class Location(BaseScopedNameMixin, db.Model):
     """
 
     __tablename__ = 'location'
-    id = db.Column(db.Integer, primary_key=True, autoincrement=False)  # NOQA: A003
+    id = db.Column(db.Integer, primary_key=True, autoincrement=False)  # noqa: A003
     geonameid = db.synonym('id')
     board_id = db.Column(
         None, db.ForeignKey('board.id'), nullable=False, primary_key=True, index=True
