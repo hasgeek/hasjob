@@ -2,7 +2,7 @@
 
 Code for Hasjob, Hasgeek’s job board at https://hasjob.co/
 
-Copyright © 2010-2020 by Hasgeek
+Copyright © 2010-2021 by Hasgeek
 
 Hasjob’s code is open source under the AGPL v3 license (see LICENSE.txt). We welcome your examination of our code to:
 
@@ -15,7 +15,7 @@ To establish our intent, we use the AGPL v3 license, which requires you to relea
 
 ## Installation
 
-Hasjob can be used with Docker (recommended for quick start) or the harder way with a manual setup (recommended for getting involved). The Docker approach is unmaintained at this time. Let us know if something doesn't work.
+Installation is a multi-step process. If any of this is outdated, consult the `.travis.yml` file. That tends to be better maintained.
 
 ### Pick an environment
 
@@ -26,100 +26,119 @@ Hasjob requires a `FLASK_ENV` environment variable set to one of the following v
 
 In a production environment, you must set `FLASK_ENV` globally for it to be available across processes. On Ubuntu/Debian systems, add it to `/etc/environment` and reboot.
 
-#### Postgres and Redis
+### PostgreSQL, Redis, NodeJS
 
-Hasjob requires Postgres >= 9.4 and Redis. To set up a Postgres DB:
+Hasjob requires PostgreSQL, Redis and NodeJS. Installation
 
-On OS X using the [Postgres App](http://postgresapp.com):
+On macOS using Homebrew:
 
-    $ # Add Postgres app to the path if it's not already in there
-    $ export PATH="/Applications/Postgres.app/Contents/Versions/9.4/bin:$PATH"
-    $ # Make the user and database
-    $ createuser -d hasjob
-    $ createdb -O hasjob -W hasjob
+    $ brew install postgresql
+    $ brew services start postgresql
+    $ brew install redis
+    $ brew services start redis
+    $ brew install node
+
+On Ubuntu:
+
+* PostgreSQL:
+
+    ```
+    $ sudo apt install postgresql
+    $ sudo systemctl enable postgresql@13-main
+    ```
+
+* Redis: `sudo apt install redis`
+* NodeJS: Follow instructions at https://node.dev/node-binary
+
+Next, create a PostgreSQL DB. On macOS:
+
+    $ createdb hasjob
 
 On any Linux distribution:
 
     $ sudo -u postgres createuser -d hasgeek
     $ sudo -u postgres createdb -O hasgeek hasjob
 
-Edit `instance/development.py` to set the variable `SQLALCHEMY_DATABASE_URI` to `postgres://hasjob:YOUR_PASSWORD_HERE@localhost:5432/hasjob`.
+Edit `instance/development.py` to set the variable `SQLALCHEMY_DATABASE_URI` to one of these, depending on whether the database is hosted under the `hasgeek` user or your personal account, and whether your database is accessed over a Unix socket or IP:
+
+1. `postgresql:///hasjob`
+2. `postgresql://localhost/hasjob`
+3. `postgresql://hasgeek:YOUR_PASSWORD_HERE@localhost:5432/hasjob`
 
 Redis does not require special configuration, but must listen on localhost and port 6379 (default).
 
-#### Local URLs
+### Configuration
 
-Hasjob makes use of subdomains to serve different sub-boards for jobs. To set it up:
+Hasjob requires several configuration variables. Copy `instance/settings-sample.py` into a new file named either `instance/development.py` or `instance/production.py` depending on runtime environment, and set all values.
 
-- Edit `/etc/hosts` and add these entries (substituting `your-machine` with whatever you call your computer):
+Hasjob operates as a client app of [Funnel](https://github.com/hasgeek/funnel) (previously Lastuser before it merged into Funnel). You must either run Funnel yourself, in parallel with Hasjob, or register as a client on the production website at https://hasgeek.com/apps.
+
+Hasjob makes use of subdomains to serve different sub-boards for jobs. To set it up for development:
+
+* Edit `/etc/hosts` and add these entries:
 
   ```
-  127.0.0.1    hasjob.your-machine.local
-  127.0.0.1    static.hasjob.your-machine.local
-  127.0.0.1    subboard.hasjob.your-machine.local
+  127.0.0.1    hasjob.test
+  127.0.0.1    static.hasjob.test
+  127.0.0.1    www.hasjob.test
+  129.0.0.1    your-test-subboard.hasjob.test
   ```
 
-- Edit `instance/development.py` and change `SERVER_NAME` to `'hasjob.your-machine.local:5000'`
+* Edit `instance/development.py` and change `SERVER_NAME` to `'hasjob.test:5000'`
 
-#### Install dependencies
+### Install dependencies
 
-Hasjob runs on [Python](https://www.python.org) with the [Flask](http://flask.pocoo.org/) microframework.
+Hasjob runs on [Python](https://www.python.org) 3.7 or later with the [Flask](http://flask.pocoo.org/) microframework.
 
-##### Virutalenv + pip + webpack
+#### Virutalenv + pip + webpack
 
 If you are going to use a computer on which you would work on multiple Python based projects, [Virtualenv](docs.python-guide.org/en/latest/dev/virtualenvs/) is strongly recommended to ensure Hasjob’s elaborate and sometimes version-specific requirements doesn't clash with anything else.
 
 You will need to install all the requirements listed in `requirements.txt` using `pip`:
 
-    $ pip install -r requirements.txt
+```
+$ pip install -r requirements.txt
+```
 
-If you intend to actively contribute to Hasjob code, some functionality is sourced from the related libraries [coaster](https://github.com/hasgeek/coaster), [baseframe](https://github.com/hasgeek/baseframe) and [Flask-Lastuser](https://github.com/hasgeek/flask-lastuser). You may want to clone these repositories separately and put them in development mode:
+If you intend to actively contribute to Hasjob code, some functionality is sourced from the related libraries [coaster](https://github.com/hasgeek/coaster), [baseframe](https://github.com/hasgeek/baseframe), [Flask-Lastuser](https://github.com/hasgeek/flask-lastuser) and [Flask-Babelhg](https://github.com/flask-babelhg). You may want to clone these repositories separately and put them in development mode:
 
-    $ cd ..
-    $ git clone https://github.com/hasgeek/coaster.git
-    $ git clone https://github.com/hasgeek/baseframe.git
-    $ git clone https://github.com/hasgeek/flask-lastuser.git
-    $ pip uninstall coaster baseframe flask-lastuser
-    $ for DIR in coaster baseframe flask-lastuser; do cd $DIR; python setup.py develop; cd ..; done
-    $ cd baseframe && make && cd ..
+```
+$ cd ..
+$ git clone https://github.com/hasgeek/coaster.git
+$ git clone https://github.com/hasgeek/flask-babelhg.git
+$ git clone https://github.com/hasgeek/baseframe.git
+$ git clone https://github.com/hasgeek/flask-lastuser.git
+$ pip uninstall coaster flask-babelhg baseframe flask-lastuser
+$ for DIR in coaster flask-babelhg baseframe flask-lastuser; do cd $DIR; python setup.py develop; cd ..; done
+$ cd baseframe && make && cd ..
+```
 
 You will need to install all dependencies, run Webpack to bundle CSS, JS files & generate the service-worker.js
 
-    $ cd <project root>
-    $ make
+```
+$ cd <hasjob project root>
+$ make
+```
 
 Before you run the server in development mode, make sure you have Postgres server and Redis server running as well. To start Hasjob:
 
-    $ ./runserver.sh
+```
+$ ./runserver.sh
+```
 
 ### Create root board
 
-Some functionality in Hasjob requires the presence of a sub-board named `www`. Create it by visiting `http://hasjob.your-machine.local:5000/board` (or the `/board` page on whatever hostname and port you used for your installation). The `www` board is a special-case to refer to the root website.
+Some functionality in Hasjob requires the presence of a sub-board named `www`. Create it by visiting `http://hasjob.test:5000/board` (or the `/board` page on whatever hostname and port you used for your installation). The `www` board is a special-case to refer to the root website.
 
 ### Periodic jobs
 
 Hasjob requires some tasks to be run in periodic background jobs. These can be called from cron. Use `crontab -e` as the user account running Hasjob and add:
 
-    */10 * * * * cd /path/to/hasjob; flask periodic sessions
-    */5  * * * * cd /path/to/hasjob; flask periodic impressions
-    0    2 * * * cd /path/to/hasjob; flask periodic campaignviews
-
-### Testing
-
-Tests are outdated at this time, but whatever tests exist are written in [CasperJS](http://casperjs.org/).
-
-You need to [install CasperJS](http://docs.casperjs.org/en/latest/installation.html), which needs Python 2.6 (or greater) and [PhantomJS](http://phantomjs.org/) installed.
-
-Edit the top few lines of test file `tests/test_job_post.js` with the URL, username and password.
-
-Run the test with `casperjs test tests/test_job_post.js`.
-
-### Disabling cache
-
-To disable cache in development, add these lines to to `development.py`:
-
-    CACHE_TYPE = 'null'
-    CACHE_NO_NULL_WARNING = False
+```cron
+*/10 * * * * cd /path/to/hasjob; flask periodic sessions
+*/5  * * * * cd /path/to/hasjob; flask periodic impressions
+0    2 * * * cd /path/to/hasjob; flask periodic campaignviews
+```
 
 ### Other notes
 
@@ -127,13 +146,40 @@ If you encounter a problem setting up, please look at existing issue reports on 
 
 WSGI is recommended for production. For Apache, enable `mod_wsgi` and make a `VirtualHost` with:
 
-    WSGIScriptAlias / /path/to/hasjob/git/repo/folder/website.py
+```apache
+WSGIScriptAlias / /path/to/hasjob/git/repo/folder/wsgi.py
+```
 
-For Nginx, run `website.py` under uWSGI and proxy to it:
+For Nginx, run `wsgi.py` under uWSGI and proxy to it:
 
-    location / {
-        include uwsgi_params; # Include common uWSGI settings here
-        uwsgi_pass 127.0.0.1:8093;  # Use the port number uWSGI is running on
-        uwsgi_param UWSGI_CHDIR /path/to/hasjob/git/repo/folder;
-        uwsgi_param UWSGI_MODULE website;
-    }
+```nginx
+location / {
+    include uwsgi_params; # Include common uWSGI settings here
+    uwsgi_pass 127.0.0.1:8093;  # Use the port number uWSGI is running on
+    uwsgi_param UWSGI_CHDIR /path/to/hasjob/git/repo/folder;
+    uwsgi_param UWSGI_MODULE wsgi;
+}
+```
+
+Sample uWSGI configuration:
+
+```uwsgi
+[uwsgi]
+socket = 127.0.0.1:8093
+processes = 8
+threads = 2
+enable-threads = True
+master = true
+uid = <user-account-on-your-server>
+gid = <group-for-user-account>
+chdir = /path/to/hasjob/git/repo/folder
+virtualenv = /path/to/virtualenv
+plugins-dir = /usr/lib/uwsgi/plugins
+plugins = python37
+pp = ..
+wsgi-file = wsgi.py
+callable = application
+touch-reload = /path/to/file/to/touch/to/cause/reload
+pidfile = /var/run/uwsgi/%n.pid
+daemonize = /var/log/uwsgi/app/%n.log
+```
