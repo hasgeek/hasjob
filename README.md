@@ -40,15 +40,15 @@ On macOS using Homebrew:
 
 On Ubuntu:
 
-* PostgreSQL:
+- PostgreSQL:
 
-    ```
-    $ sudo apt install postgresql
-    $ sudo systemctl enable postgresql@13-main
-    ```
+  ```
+  $ sudo apt install postgresql
+  $ sudo systemctl enable postgresql@13-main
+  ```
 
-* Redis: `sudo apt install redis`
-* NodeJS: Follow instructions at https://node.dev/node-binary
+- Redis: `sudo apt install redis`
+- NodeJS: Follow instructions at https://node.dev/node-binary
 
 Next, create a PostgreSQL DB. On macOS:
 
@@ -75,7 +75,7 @@ Hasjob operates as a client app of [Funnel](https://github.com/hasgeek/funnel) (
 
 Hasjob makes use of subdomains to serve different sub-boards for jobs. To set it up for development:
 
-* Edit `/etc/hosts` and add these entries:
+- Edit `/etc/hosts` and add these entries:
 
   ```
   127.0.0.1    hasjob.test
@@ -84,7 +84,7 @@ Hasjob makes use of subdomains to serve different sub-boards for jobs. To set it
   129.0.0.1    your-test-subboard.hasjob.test
   ```
 
-* Edit `instance/development.py` and change `SERVER_NAME` to `'hasjob.test:5000'`
+- Edit `instance/development.py` and change `SERVER_NAME` to `'hasjob.test:5000'`
 
 ### Install dependencies
 
