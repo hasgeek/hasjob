@@ -14,7 +14,7 @@ repos:
             '--remove-duplicate-keys',
           ]
   - repo: https://github.com/asottile/pyupgrade
-    rev: v2.21.2
+    rev: v2.23.3
     hooks:
       - id: pyupgrade
         args:
@@ -35,7 +35,7 @@ repos:
           - pep8-naming==0.11.1
           - toml==0.10.2
   - repo: https://github.com/PyCQA/isort
-    rev: 5.9.2
+    rev: 5.9.3
     hooks:
       - id: isort
         additional_dependencies:
