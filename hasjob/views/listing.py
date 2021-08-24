@@ -51,7 +51,7 @@ from ..models import (
 from ..nlp import identify_language
 from ..tagging import add_to_boards, tag_jobpost, tag_locations
 from ..twitter import tweet
-from ..uploads import uploaded_logos
+from ..uploads import UploadNotAllowed, uploaded_logos
 from ..utils import common_legal_names, get_word_bag, random_long_key, redactemail
 from .helper import (
     ALLOWED_TAGS,
@@ -1329,11 +1329,16 @@ def editjob(hashid, key, domain=None, form=None, validated=False, newpost=None):
             if post.state.MODERATED:
                 post.confirm()
 
-            if 'company_logo' in request.files and request.files['company_logo']:
+            if hasattr(g, 'company_logo'):
                 # The form's validator saved the processed logo in g.company_logo.
                 thumbnail = g.company_logo
-                logofilename = uploaded_logos.save(thumbnail, name='%s.' % post.hashid)
-                post.company_logo = logofilename
+                try:
+                    logofilename = uploaded_logos.save(
+                        thumbnail, name='%s.' % post.hashid
+                    )
+                    post.company_logo = logofilename
+                except UploadNotAllowed:
+                    pass
             else:
                 if form.company_logo_remove.data:
                     post.company_logo = None
