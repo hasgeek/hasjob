@@ -879,19 +879,6 @@ def jobpost_location_hierarchy(self):
 JobPost.location_hierarchy = property(jobpost_location_hierarchy)
 
 
-@app.template_filter('cleanurl')
-def cleanurl(url):
-    if url.startswith('http://'):
-        url = url[7:]
-    elif url.startswith('https://'):
-        url = url[8:]
-    if url.endswith('/') and url.count('/') == 1:
-        # Remove trailing slash if applied to end of domain name
-        # but leave it in if it's a path
-        url = url[:-1]
-    return url
-
-
 @app.template_filter('urlquote')
 def urlquote(data):
     return quote(data)
