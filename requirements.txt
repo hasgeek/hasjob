@@ -28,3 +28,4 @@ SQLAlchemy==1.4.20
 SQLAlchemy-Utils==0.37.8
 tldextract==3.1.0
 tweepy==3.10.0
+wtforms>=3.0.0a1 # not directly required, pinned by Snyk to avoid a vulnerability
