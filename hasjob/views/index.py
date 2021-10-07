@@ -559,7 +559,7 @@ def fetch_cached_jobposts(
 )
 def index(
     basequery=None,
-    filters={},
+    filters=None,
     md5sum=None,
     tag=None,
     domain=None,
@@ -572,8 +572,12 @@ def index(
     cached=False,
     query_string=None,
     filterset=None,
-    template_vars={},
+    template_vars=None,
 ):
+    if filters is None:
+        filters = {}
+    if template_vars is None:
+        template_vars = {}
     now = utcnow()
     is_siteadmin = lastuser.has_permission('siteadmin')
     board = g.board

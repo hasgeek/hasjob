@@ -806,7 +806,9 @@ def pinnedjob(domain, hashid):
 @app.route('/reject/<hashid>', defaults={'domain': None}, methods=('GET', 'POST'))
 @lastuser.requires_permission('siteadmin')
 def rejectjob(domain, hashid):
-    def send_reject_mail(reject_type, post, banned_posts=[]):
+    def send_reject_mail(reject_type, post, banned_posts=None):
+        if banned_posts is None:
+            banned_posts = []
         if reject_type not in ['reject', 'ban']:
             return
         mail_meta = {
