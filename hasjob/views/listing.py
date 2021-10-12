@@ -1037,8 +1037,7 @@ def confirm_email(domain, hashid, key):
                 flash(
                     "We have received too many posts with %s addresses in the last 24 hours. "
                     "Posts are rate-limited per domain, so yours was not confirmed for now. "
-                    "Please try confirming again in a few hours."
-                    % post.email_domain,
+                    "Please try confirming again in a few hours." % post.email_domain,
                     category='info',
                 )
                 return redirect(url_for('index'))
@@ -1197,9 +1196,7 @@ def editjob(hashid, key, domain=None, form=None, validated=False, newpost=None):
                         post.url_for('edit', subdomain=blink.board.name, _external=True)
                     )
 
-                return redirect(
-                    post.url_for('edit', subdomain=None, _external=True)
-                )
+                return redirect(post.url_for('edit', subdomain=None, _external=True))
 
         # Don't allow email address to be changed once it's confirmed
         if not post.state.UNPUBLISHED:
