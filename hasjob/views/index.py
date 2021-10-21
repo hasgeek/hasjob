@@ -339,7 +339,7 @@ def fetch_jobposts(
     ).all()
 
     if getbool(request_args.get('embed')):
-        embed = True
+        embed = True  # skipcq: PYL-W0621
         if posts:
             limit = string_to_number(request_args.get('limit'))
             if limit is not None:
@@ -433,7 +433,7 @@ def fetch_jobposts(
             else:
                 # Loop through group looking for start of next batch. See below to understand the
                 # nesting structure of 'grouped'
-                for startindex, row in enumerate(grouped.values()):
+                for startindex, row in enumerate(grouped.values()):  # noqa: B007
                     # Skip pinned posts when looking for starting index
                     if (
                         row[0][1].hashid not in pinned_hashids
@@ -461,7 +461,7 @@ def fetch_jobposts(
                     else:
                         pinned_hashids.append(row[1].hashid)
             else:
-                for startindex, row in enumerate(pinsandposts):
+                for startindex, row in enumerate(pinsandposts):  # noqa: B007
                     # Skip pinned posts when looking for starting index
                     if (
                         row[1].hashid not in pinned_hashids
@@ -578,6 +578,7 @@ def index(
         filters = {}
     if template_vars is None:
         template_vars = {}
+
     now = utcnow()
     is_siteadmin = lastuser.has_permission('siteadmin')
     board = g.board
