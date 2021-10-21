@@ -339,7 +339,7 @@ def fetch_jobposts(
     ).all()
 
     if getbool(request_args.get('embed')):
-        embed = True
+        embed = True  # skipcq: PYL-W0621
         if posts:
             limit = string_to_number(request_args.get('limit'))
             if limit is not None:
