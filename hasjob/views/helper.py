@@ -919,7 +919,7 @@ def usessl(url):
     return url
 
 
-def filter_basequery(basequery, filters, exclude_list=[]):
+def filter_basequery(basequery, filters, exclude_list=()):
     """
     - Accepts a query of type sqlalchemy.Query, and returns a modified query
     based on the keys in the `filters` object.
