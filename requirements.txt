@@ -21,7 +21,7 @@ langid==1.1.6
 Markdown==3.3.6
 Pillow==8.4.0
 premailer==3.10.0
-progressbar2==3.53.3
+progressbar2==3.55.0
 psycopg2==2.9.1
 pytz==2021.1
 SQLAlchemy==1.4.25
