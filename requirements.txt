@@ -23,7 +23,7 @@ Pillow==8.4.0
 premailer==3.10.0
 progressbar2==3.55.0
 psycopg2==2.9.2
-pytz==2021.1
+pytz==2021.3
 SQLAlchemy==1.4.25
 SQLAlchemy-Utils==0.37.8
 tldextract==3.1.2
