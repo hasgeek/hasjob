@@ -28,3 +28,4 @@ SQLAlchemy==1.4.25
 SQLAlchemy-Utils==0.37.8
 tldextract==3.1.2
 tweepy==4.0.0
+WTForms-SQLAlchemy==0.3

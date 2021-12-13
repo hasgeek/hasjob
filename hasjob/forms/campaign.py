@@ -1,5 +1,5 @@
-from wtforms.ext.sqlalchemy.fields import QuerySelectMultipleField
 from wtforms.widgets import CheckboxInput, ListWidget
+from wtforms_sqlalchemy.fields import QuerySelectMultipleField
 
 from baseframe import __
 from coaster.utils import getbool

@@ -1,6 +1,6 @@
 from flask import g
-from wtforms.ext.sqlalchemy.fields import QuerySelectMultipleField
 from wtforms.widgets import CheckboxInput, ListWidget
+from wtforms_sqlalchemy.fields import QuerySelectMultipleField
 
 from baseframe import __
 import baseframe.forms as forms
