@@ -1,6 +1,3 @@
-from wtforms.widgets import CheckboxInput, ListWidget
-from wtforms_sqlalchemy.fields import QuerySelectMultipleField
-
 from baseframe import __
 from coaster.utils import getbool
 import baseframe.forms as forms
@@ -78,10 +75,10 @@ class CampaignForm(forms.Form):
             "same dates. 0 implies lowest priority"
         ),
     )
-    boards = QuerySelectMultipleField(
+    boards = forms.QuerySelectMultipleField(
         __("Boards"),
-        widget=ListWidget(),
-        option_widget=CheckboxInput(),
+        widget=forms.ListWidget(),
+        option_widget=forms.CheckboxInput(),
         query_factory=lambda: Board.query.order_by(Board.featured.desc(), Board.title),
         get_label='title_and_name',
         validators=[forms.validators.Optional()],

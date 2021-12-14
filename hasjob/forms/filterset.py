@@ -1,6 +1,4 @@
 from flask import g
-from wtforms.widgets import CheckboxInput, ListWidget
-from wtforms_sqlalchemy.fields import QuerySelectMultipleField
 
 from baseframe import __
 import baseframe.forms as forms
@@ -35,17 +33,17 @@ class FiltersetForm(forms.Form):
         description=__("Description shown to viewers and search engines"),
         validators=[forms.validators.DataRequired()],
     )
-    types = QuerySelectMultipleField(
+    types = forms.QuerySelectMultipleField(
         __("Job types"),
-        widget=ListWidget(),
-        option_widget=CheckboxInput(),
+        widget=forms.ListWidget(),
+        option_widget=forms.CheckboxInput(),
         get_label='title',
         validators=[forms.validators.Optional()],
     )
-    categories = QuerySelectMultipleField(
+    categories = forms.QuerySelectMultipleField(
         __("Job categories"),
-        widget=ListWidget(),
-        option_widget=CheckboxInput(),
+        widget=forms.ListWidget(),
+        option_widget=forms.CheckboxInput(),
         get_label='title',
         validators=[forms.validators.Optional()],
     )
