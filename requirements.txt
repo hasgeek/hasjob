@@ -16,7 +16,7 @@ git+https://github.com/maxcountryman/flask-uploads.git#egg=Flask-Uploads
 Flask-WTF==1.0.0
 geoip2==4.5.0
 html2text==2020.1.16
-jsmin==3.0.0
+jsmin==3.0.1
 langid==1.1.6
 Markdown==3.3.4
 Pillow==8.3.2
