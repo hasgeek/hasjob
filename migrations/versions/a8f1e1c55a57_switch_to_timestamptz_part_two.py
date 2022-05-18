@@ -28,7 +28,7 @@ migrate_table_columns = [
 def upgrade():
     for table, column in migrate_table_columns:
         now = datetime.now()  # Local time
-        print(  # noqa: T001
+        print(  # noqa: T201
             "{}: {}.{}".format(now.strftime('%Y-%m-%d %T'), table, column)
         )
         op.execute(
@@ -37,13 +37,13 @@ def upgrade():
                 context={'table': table, 'column': column},
             )
         )
-        print('...%s' % str(datetime.now() - now))  # noqa: T001
+        print('...%s' % str(datetime.now() - now))  # noqa: T201
 
 
 def downgrade():
     for table, column in reversed(migrate_table_columns):
         now = datetime.now()  # Local time
-        print(  # noqa: T001
+        print(  # noqa: T201
             "{}: {}.{}".format(now.strftime('%Y-%m-%d %T'), table, column)
         )
         op.execute(
@@ -52,4 +52,4 @@ def downgrade():
                 context={'table': table, 'column': column},
             )
         )
-        print('...%s' % str(datetime.now() - now))  # noqa: T001
+        print('...%s' % str(datetime.now() - now))  # noqa: T201
