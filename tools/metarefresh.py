@@ -44,4 +44,4 @@ def final_url(url):
 
 
 if __name__ == '__main__':
-    print(final_url('http://localhost:8000/'))  # noqa: T001
+    print(final_url('http://localhost:8000/'))  # noqa: T201
