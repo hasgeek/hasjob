@@ -19,7 +19,7 @@ html2text==2020.1.16
 jsmin==3.0.1
 langid==1.1.6
 Markdown==3.3.7
-Pillow==9.1.0
+Pillow==9.1.1
 premailer==3.10.0
 progressbar2==4.0.0
 psycopg2==2.9.3
