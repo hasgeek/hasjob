@@ -26,5 +26,5 @@ psycopg2==2.9.3
 pytz==2022.1
 SQLAlchemy==1.4.37
 SQLAlchemy-Utils==0.38.2
-tldextract==3.2.1
+tldextract==3.3.0
 tweepy==4.8.0
