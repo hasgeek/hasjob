@@ -1,7 +1,7 @@
 git+https://github.com/hasgeek/baseframe#egg=baseframe
 bleach==5.0.1
 git+https://github.com/hasgeek/coaster#egg=coaster
-coverage==6.3.2
+coverage==6.4.1
 dnspython==2.2.1
 Flask==2.1.2
 Flask-Assets==2.0
