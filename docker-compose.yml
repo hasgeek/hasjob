@@ -4,7 +4,7 @@ web:
   volumes:
     - .:/code/hasjob
   environment:
-    SERVER_NAME: hasjob.docker.dev
+    SERVER_NAME: hasjob.docker.test
     LASTUSER_SERVER: https://auth.hasgeek.com
     LASTUSER_CLIENT_ID: client-key-here
     LASTUSER_CLIENT_SECRET: client-secret-here
@@ -12,7 +12,7 @@ web:
     - pg
     - redis
   ports:
-    - '5000:5000'
+    - '5001:5001'
     - '5432:5432'
     - '6379:6379'
 pg:

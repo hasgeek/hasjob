@@ -20,7 +20,7 @@ workboxSW.router.registerRoute(
 
 //For development setup caching of assets
 workboxSW.router.registerRoute(
-  /^http:\/\/localhost:5000\/static/,
+  /^http:\/\/localhost:5001\/static/,
   workboxSW.strategies.networkFirst({
     cacheName: 'baseframe-local',
   }),

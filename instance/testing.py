@@ -4,7 +4,7 @@ import os
 SITE_TITLE = 'Job Board'
 #: Database backend
 SQLALCHEMY_DATABASE_URI = 'postgresql:///hasjob_testing'
-SERVER_NAME = 'hasjob.travis.local:5000'
+SERVER_NAME = 'hasjob.travis.local:5001'
 #: LastUser server
 LASTUSER_SERVER = 'https://hasgeek.com/'
 #: LastUser client id
