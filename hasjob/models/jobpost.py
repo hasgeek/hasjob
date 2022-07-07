@@ -8,7 +8,7 @@ from sqlalchemy.orm import defer, load_only
 from flask import Markup, escape, url_for
 from werkzeug.utils import cached_property
 
-from flask_babelhg import format_datetime
+from flask_babel import format_datetime
 import tldextract
 
 from baseframe import __, cache
