@@ -100,16 +100,15 @@ You will need to install all the requirements listed in `requirements.txt` using
 $ pip install -r requirements.txt
 ```
 
-If you intend to actively contribute to Hasjob code, some functionality is sourced from the related libraries [coaster](https://github.com/hasgeek/coaster), [baseframe](https://github.com/hasgeek/baseframe), [Flask-Lastuser](https://github.com/hasgeek/flask-lastuser) and [Flask-Babelhg](https://github.com/flask-babelhg). You may want to clone these repositories separately and put them in development mode:
+If you intend to actively contribute to Hasjob code, some functionality is sourced from the related libraries [coaster](https://github.com/hasgeek/coaster), [baseframe](https://github.com/hasgeek/baseframe) and [Flask-Lastuser](https://github.com/hasgeek/flask-lastuser). You may want to clone these repositories separately and put them in development mode:
 
 ```
 $ cd ..
 $ git clone https://github.com/hasgeek/coaster.git
-$ git clone https://github.com/hasgeek/flask-babelhg.git
 $ git clone https://github.com/hasgeek/baseframe.git
 $ git clone https://github.com/hasgeek/flask-lastuser.git
-$ pip uninstall coaster flask-babelhg baseframe flask-lastuser
-$ for DIR in coaster flask-babelhg baseframe flask-lastuser; do cd $DIR; python setup.py develop; cd ..; done
+$ pip uninstall coaster baseframe flask-lastuser
+$ for DIR in coaster baseframe flask-lastuser; do cd $DIR; python setup.py develop; cd ..; done
 $ cd baseframe && make && cd ..
 ```
 
