@@ -13,7 +13,7 @@ SECRET_KEY = 'make this something random'
 #: Timezone
 TIMEZONE = 'Asia/Kolkata'
 #: Server host name (and port if not 80/443)
-SERVER_NAME = 'hasjob.local'
+SERVER_NAME = 'hasjob.test:5001'
 #: Static resource subdomain (defaults to 'static')
 STATIC_SUBDOMAIN = 'static'
 #: Upload path

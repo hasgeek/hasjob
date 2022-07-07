@@ -84,7 +84,7 @@ Hasjob makes use of subdomains to serve different sub-boards for jobs. To set it
   129.0.0.1    your-test-subboard.hasjob.test
   ```
 
-- Edit `instance/development.py` and change `SERVER_NAME` to `'hasjob.test:5000'`
+- Edit `instance/development.py` and change `SERVER_NAME` to `'hasjob.test:5001'`
 
 ### Install dependencies
 
@@ -127,7 +127,7 @@ $ ./runserver.sh
 
 ### Create root board
 
-Some functionality in Hasjob requires the presence of a sub-board named `www`. Create it by visiting `http://hasjob.test:5000/board` (or the `/board` page on whatever hostname and port you used for your installation). The `www` board is a special-case to refer to the root website.
+Some functionality in Hasjob requires the presence of a sub-board named `www`. Create it by visiting `http://hasjob.test:5001/board` (or the `/board` page on whatever hostname and port you used for your installation). The `www` board is a special-case to refer to the root website.
 
 ### Periodic jobs
 

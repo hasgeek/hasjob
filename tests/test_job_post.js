@@ -1,6 +1,6 @@
 var system = require('system');
 
-var host = 'http://hasjob.travis.local:5000'; //presumably 127.0.0.1
+var host = 'http://hasjob.travis.local:5001'; //presumably 127.0.0.1
 var test_username = system.env.TEST_USERNAME; // Dummy user's username that's create on startup
 var test_password = system.env.TEST_PASSWORD; // Dummy user's password that's create on startup
 

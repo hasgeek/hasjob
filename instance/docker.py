@@ -6,7 +6,7 @@ CACHE_REDIS_HOST = 'redis'
 SQLALCHEMY_DATABASE_URI = 'postgres://postgres:postgres@pg/postgres'
 REDIS_URL = 'redis://redis:6379/0'
 RQ_DEFAULT_HOST = 'redis'
-SERVER_NAME = (os.environ.get('SERVER_NAME') or 'hasjob.docker.dev') + ':5000'
+SERVER_NAME = os.environ.get('SERVER_NAME') or ('hasjob.docker.test' + ':5001')
 #: LastUser server
 LASTUSER_SERVER = os.environ.get('LASTUSER_SERVER') or 'https://hasgeek.com'
 #: LastUser client id

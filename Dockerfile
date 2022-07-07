@@ -18,5 +18,5 @@ ADD . /code/hasjob
 
 WORKDIR /code/hasjob/
 
-EXPOSE 5000
+EXPOSE 5001
 EXPOSE 5432
