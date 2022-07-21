@@ -1,6 +1,5 @@
-from six.moves.urllib.parse import SplitResult, urlsplit
-
 from collections import OrderedDict
+from urllib.parse import SplitResult, urlsplit
 from uuid import uuid4
 
 from sqlalchemy.exc import ProgrammingError
