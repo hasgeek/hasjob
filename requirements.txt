@@ -18,7 +18,7 @@ geoip2==4.6.0
 html2text==2020.1.16
 jsmin==3.0.1
 langid==1.1.6
-Markdown==3.3.7
+Markdown==3.4.1
 Pillow==9.1.1
 premailer==3.10.0
 progressbar2==4.0.0
