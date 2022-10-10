@@ -117,12 +117,12 @@ function createCacheBustedRequest(url) {
 // Cache the offline page during install phase of the service worker
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    fetch(createCacheBustedRequest('/api/1/template/offline')).then(function (
-      response
-    ) {
-      return caches.open('hasjob-offline').then(function (cache) {
-        return cache.put('offline', response);
-      });
-    })
+    fetch(createCacheBustedRequest('/api/1/template/offline')).then(
+      function (response) {
+        return caches.open('hasjob-offline').then(function (cache) {
+          return cache.put('offline', response);
+        });
+      }
+    )
   );
 });
