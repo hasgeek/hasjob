@@ -14,7 +14,7 @@ repos:
             '--remove-duplicate-keys',
           ]
   - repo: https://github.com/asottile/pyupgrade
-    rev: v2.38.0
+    rev: v3.0.0
     hooks:
       - id: pyupgrade
         args:
@@ -43,7 +43,7 @@ repos:
         additional_dependencies:
           - toml
   - repo: https://github.com/psf/black
-    rev: 22.8.0
+    rev: 22.10.0
     hooks:
       - id: black
   - repo: https://github.com/PyCQA/flake8
@@ -87,7 +87,7 @@ repos:
   #       language_version: python3
   #       exclude: ^tests
   - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v3.0.0-alpha.0
+    rev: v3.0.0-alpha.1
     hooks:
       - id: prettier
         args: ['--single-quote', '--trailing-comma', 'es5']
