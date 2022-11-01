@@ -10,7 +10,7 @@ Flask-Mail==0.9.1
 Flask-Migrate==3.1.0
 Flask-Redis==0.4.0
 Flask-RQ2==18.3
-Flask-SQLAlchemy==2.5.1
+Flask-SQLAlchemy==3.0.2
 Flask-Testing==0.8.1
 git+https://github.com/maxcountryman/flask-uploads.git#egg=Flask-Uploads
 Flask-WTF==1.0.1
