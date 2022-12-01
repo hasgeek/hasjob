@@ -7,7 +7,7 @@ Flask==2.2.2
 Flask-Assets==2.0
 git+https://github.com/hasgeek/flask-lastuser#egg=Flask-Lastuser
 Flask-Mail==0.9.1
-Flask-Migrate==3.1.0
+Flask-Migrate==4.0.0
 Flask-Redis==0.4.0
 Flask-RQ2==18.3
 Flask-SQLAlchemy==3.0.2
