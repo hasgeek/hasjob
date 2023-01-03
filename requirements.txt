@@ -1,7 +1,7 @@
 git+https://github.com/hasgeek/baseframe#egg=baseframe
 bleach==5.0.1
 git+https://github.com/hasgeek/coaster#egg=coaster
-coverage==6.5.0
+coverage==7.0.1
 dnspython==2.2.1
 Flask==2.2.2
 Flask-Assets==2.0
@@ -23,8 +23,8 @@ Pillow==9.3.0
 premailer==3.10.0
 progressbar2==4.2.0
 psycopg2==2.9.5
-pytz==2022.6
-SQLAlchemy==1.4.44
-SQLAlchemy-Utils==0.38.3
+pytz==2022.7
+SQLAlchemy==1.4.45
+SQLAlchemy-Utils==0.39.0
 tldextract==3.4.0
 tweepy==4.12.1
