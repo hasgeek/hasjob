@@ -58,7 +58,7 @@
         "url": {{ url_for('index', _external=true)|tojson }},
         "potentialAction": {
           "@type": "SearchAction",
-          "target": {{ url_for('index', _external=true, q=query)|tojson }},
+          "target": "{{ url_for('index', _external=true) }}?q={query}",
           "query-input": "required name=query"
         }
       },
