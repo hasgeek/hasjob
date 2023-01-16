@@ -54,11 +54,11 @@
       "@context": "http://schema.org",
       "@graph": [{
         "@type": "WebSite",
-        "name": "{{ self.title()|e }}",
-        "url": "{{ url_for('index', _external=true) }}",
+        "name": {% if g.board -%} {{ g.board.title|tojson }} {%- else -%} {{ config['SITE_TITLE']|tojson }} {%- endif %},
+        "url": {{ url_for('index', _external=true)|tojson }},
         "potentialAction": {
           "@type": "SearchAction",
-          "target": "{{ url_for('index', _external=true) }}?q={query}",
+          "target": {{ url_for('index', _external=true, q=query)|tojson }},
           "query-input": "required name=query"
         }
       },
@@ -66,7 +66,7 @@
         "@type" : "Organization",
         "name" : "Hasjob",
         "url" : "https://{{ config['SERVER_NAME'] }}",
-        "logo" : "{{ url_for('static', filename='img/hasjob-logo.png', _external=true) }}",
+        "logo" : {{ url_for('static', filename='img/hasjob-logo.png', _external=true)|tojson }},
         "contactPoint" : [{
           "@type" : "ContactPoint",
           "telephone" : "+91 7676 33 2020",
