@@ -24,18 +24,18 @@ repos:
     hooks:
       - id: yesqa
         additional_dependencies: &flake8deps
-          - flake8-assertive==2.1.0
-          - flake8-blind-except==0.2.1
-          - flake8-bugbear==22.7.1
-          - flake8-builtins==1.5.3
-          - flake8-comprehensions==3.10.0
-          - flake8-isort==4.2.0
-          - flake8-logging-format==0.7.4
-          - flake8-mutable==1.2.0
-          - flake8-print==5.0.0
-          - flake8-pytest-style==1.6.0
-          - pep8-naming==0.12.1
-          - toml==0.10.2
+          - flake8-assertive
+          - flake8-blind-except
+          - flake8-bugbear
+          - flake8-builtins
+          - flake8-comprehensions
+          - flake8-isort
+          - flake8-logging-format
+          - flake8-mutable
+          - flake8-print
+          - flake8-pytest-style
+          - pep8-naming
+          - toml
   - repo: https://github.com/PyCQA/isort
     rev: 5.11.4
     hooks:
