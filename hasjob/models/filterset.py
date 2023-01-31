@@ -114,7 +114,7 @@ class Filterset(BaseScopedNameMixin, db.Model):
     keywords = db.Column(db.Unicode(250), nullable=False, default='', index=True)
 
     def __repr__(self):
-        return f'<Filterset {self.board.title} "{self.title}">'
+        return f'<Filterset {self.board.title} {self.title!r}>'
 
     @classmethod
     def get(cls, board, name):
@@ -165,7 +165,7 @@ class Filterset(BaseScopedNameMixin, db.Model):
             basequery = basequery.filter(
                 ~(
                     db.exists(
-                        db.select([1]).where(
+                        db.select(1).where(
                             Filterset.id == filterset_jobtype_table.c.filterset_id
                         )
                     )
@@ -187,7 +187,7 @@ class Filterset(BaseScopedNameMixin, db.Model):
             basequery = basequery.filter(
                 ~(
                     db.exists(
-                        db.select([1]).where(
+                        db.select(1).where(
                             Filterset.id == filterset_jobcategory_table.c.filterset_id
                         )
                     )
@@ -209,7 +209,7 @@ class Filterset(BaseScopedNameMixin, db.Model):
             basequery = basequery.filter(
                 ~(
                     db.exists(
-                        db.select([1]).where(
+                        db.select(1).where(
                             Filterset.id == filterset_tag_table.c.filterset_id
                         )
                     )
@@ -231,7 +231,7 @@ class Filterset(BaseScopedNameMixin, db.Model):
             basequery = basequery.filter(
                 ~(
                     db.exists(
-                        db.select([1]).where(
+                        db.select(1).where(
                             Filterset.id == filterset_domain_table.c.filterset_id
                         )
                     )

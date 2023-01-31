@@ -587,7 +587,7 @@ def index(
             r.jobpost_id: r
             for r in BoardJobPost.query.join(BoardJobPost.jobpost)
             .filter(BoardJobPost.board == g.board, JobPost.state.LISTED)
-            .options(db.load_only('jobpost_id', 'pinned'))
+            .options(db.load_only(BoardJobPost.jobpost_id, BoardJobPost.pinned))
             .all()
         }
 

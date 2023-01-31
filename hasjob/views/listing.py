@@ -235,7 +235,7 @@ def job_viewstats(domain, hashid):
     is_siteadmin = lastuser.has_permission('siteadmin')
     post = (
         JobPost.query.filter_by(hashid=hashid)
-        .options(db.load_only('id', 'datetime'))
+        .options(db.load_only(JobPost.id, JobPost.datetime))
         .first_or_404()
     )
     if (
@@ -349,7 +349,7 @@ def revealjob(domain, hashid):
     """
     post = (
         JobPost.query.filter_by(hashid=hashid)
-        .options(db.load_only('id', '_state', 'how_to_apply'))
+        .options(db.load_only(JobPost.id, JobPost._state, JobPost.how_to_apply))
         .first_or_404()
     )
     if post.state.GONE:
@@ -403,7 +403,7 @@ def applyjob(domain, hashid):
     """
     post = (
         JobPost.query.filter_by(hashid=hashid)
-        .options(db.load_only('id', 'email', 'email_domain'))
+        .options(db.load_only(JobPost.id, JobPost.email, JobPost.email_domain))
         .first_or_404()
     )
     # If the domain doesn't match, redirect to correct URL
@@ -527,7 +527,7 @@ def managejob(post, kwargs):
     if post.email_domain != kwargs.get('domain'):
         return redirect(post.url_for('manage'), code=301)
 
-    first_application = post.applications.options(db.load_only('hashid')).first()
+    first_application = post.applications.options(db.load_only(JobPost.hashid)).first()
     if first_application:
         return redirect(first_application.url_for(), code=303)
     else:

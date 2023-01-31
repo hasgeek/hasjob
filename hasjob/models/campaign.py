@@ -150,7 +150,9 @@ class Campaign(BaseNameMixin, db.Model):
     boards = db.relationship(Board, secondary=board_campaign_table)
     #: Quick lookup locations to run this campaign in
     geonameids = association_proxy(
-        'locations', 'geonameid', creator=lambda l: CampaignLocation(geonameid=l)
+        'locations',
+        'geonameid',
+        creator=lambda geonameid: CampaignLocation(geonameid=geonameid),
     )
     #: Is this campaign location-based?
     geotargeted = db.Column(db.Boolean, nullable=False, default=False)
@@ -575,7 +577,7 @@ class CampaignView(TimestampMixin, db.Model):
     campaign = db.relationship(
         Campaign,
         backref=db.backref(
-            'views', lazy='dynamic', order_by='CampaignView.created_at.desc()'
+            'campaign_views', lazy='dynamic', order_by='CampaignView.created_at.desc()'
         ),
     )
     #: User who saw this campaign
