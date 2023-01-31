@@ -204,8 +204,8 @@ def scrubemail(data, rot13=False, css_junk=None):
                 )
             email = email.replace('@', '&#64;')
         if rot13:
-            return f'<a{aclass} data-href="{link}">{email}</a>'  # noqa: B028
-        return f'<a{aclass} href="{link}">{email}</a>'  # noqa: B028
+            return f'<a{aclass} data-href="{link}">{email}</a>'
+        return f'<a{aclass} href="{link}">{email}</a>'
 
     data = EMAIL_RE.sub(convertemail, data)
     return data
