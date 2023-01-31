@@ -541,7 +541,7 @@ def getposts(
     query = (
         basequery.filter(statusfilter)
         .options(*JobPost._defercols)
-        .options(db.joinedload('domain'))
+        .options(db.joinedload(JobPost.domain))
     )
 
     if g.board:
@@ -1025,7 +1025,9 @@ def filter_types(basequery, board, filters):
     basequery = filter_basequery(basequery, filters, exclude_list=['types'])
     filtered_typeids = [
         post.type_id
-        for post in basequery.options(db.load_only('type_id')).distinct('type_id').all()
+        for post in basequery.options(db.load_only(JobPost.type_id))
+        .distinct(JobPost.type_id)
+        .all()
     ]
 
     def format_job_type(job_type):
@@ -1056,8 +1058,8 @@ def filter_categories(basequery, board, filters):
     basequery = filter_basequery(basequery, filters, exclude_list=['categories'])
     filtered_categoryids = [
         post.category_id
-        for post in basequery.options(db.load_only('category_id'))
-        .distinct('category_id')
+        for post in basequery.options(db.load_only(JobPost.category_id))
+        .distinct(JobPost.category_id)
         .all()
     ]
 

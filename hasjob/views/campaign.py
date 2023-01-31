@@ -43,7 +43,11 @@ class AdminCampaignList(AdminView):
     def listquery(self):
         return Campaign.query.order_by(
             Campaign.start_at.desc(), Campaign.priority.desc()
-        ).options(db.load_only('title', 'start_at', 'end_at', 'public'))
+        ).options(
+            db.load_only(
+                Campaign.title, Campaign.start_at, Campaign.end_at, Campaign.public
+            )
+        )
 
     @route('')
     @viewdata(tab=True, index=0, title=__("Current"))

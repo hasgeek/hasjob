@@ -44,14 +44,14 @@ def get_progressbar(label, maxval):
 def upgrade():
     conn = op.get_bind()
     count = conn.scalar(
-        sa.select([sa.func.count('*')])
+        sa.select(sa.func.count('*'))
         .select_from(event_session)
         .where(event_session.c.uuid.is_(None))
     )
     progress = get_progressbar("UUIDs", count)
     progress.start()
     items = conn.execute(
-        sa.select([event_session.c.id]).where(event_session.c.uuid.is_(None))
+        sa.select(event_session.c.id).where(event_session.c.uuid.is_(None))
     )
     for counter, item in enumerate(items):
         conn.execute(

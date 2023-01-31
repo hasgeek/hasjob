@@ -227,7 +227,9 @@ class Board(BaseNameMixin, db.Model):
         BoardAutoLocation, backref='board', cascade='all, delete-orphan'
     )
     auto_geonameids = association_proxy(
-        'auto_locations', 'geonameid', creator=lambda l: BoardAutoLocation(geonameid=l)
+        'auto_locations',
+        'geonameid',
+        creator=lambda geonameid: BoardAutoLocation(geonameid=geonameid),
     )
     #: Automatic tagging keywords
     auto_tags = db.relationship(Tag, secondary=board_auto_tag_table, order_by=Tag.name)
@@ -246,7 +248,7 @@ class Board(BaseNameMixin, db.Model):
     users_active_at = db.relationship(UserActiveAt, lazy='dynamic', backref='board')
 
     def __repr__(self):
-        return f'<Board {self.name} "{self.title}">'
+        return f'<Board {self.name} {self.title!r}>'
 
     @property
     def is_root(self):
@@ -339,7 +341,7 @@ class Board(BaseNameMixin, db.Model):
 def _user_boards(self):
     return (
         Board.query.filter(Board.userid.in_(self.user_organizations_owned_ids()))
-        .options(db.load_only('id', 'name', 'title', 'userid'))
+        .options(db.load_only(Board.id, Board.name, Board.title, Board.userid))
         .all()
     )
 

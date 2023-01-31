@@ -173,8 +173,8 @@ class EventSession(EventSessionBase, UuidMixin, BaseMixin, db.Model):
 
     __table_args__ = (
         db.CheckConstraint(
-            db.case([(user_id.isnot(None), 1)], else_=0)
-            + db.case([(anon_user_id.isnot(None), 1)], else_=0)
+            db.case((user_id.isnot(None), 1), else_=0)
+            + db.case((anon_user_id.isnot(None), 1), else_=0)
             == 1,
             name='user_event_session_user_id_or_anon_user_id',
         ),
