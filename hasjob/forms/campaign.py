@@ -113,6 +113,9 @@ class CampaignForm(forms.Form):
     def validate_geonameids(self, field):
         field.data = [int(x) for x in field.data if x.isdigit()]
 
+    def set_content(self, value):
+        """Ignore FormField."""
+
 
 class CampaignActionForm(forms.Form):
     title = forms.StringField(

@@ -265,3 +265,9 @@ class BoardForm(forms.Form):
                 raise forms.ValidationError(
                     _("This name is reserved. Please use another name")
                 )
+
+    def set_options(self, value):
+        """Ignore FormField."""
+
+    def set_autotag(self, value):
+        """Ignore FormField."""
