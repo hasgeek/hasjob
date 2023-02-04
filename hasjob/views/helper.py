@@ -329,12 +329,13 @@ def record_views_and_events(response):
         if lg.user:
             for campaign in lg.campaign_views:
                 if not CampaignView.exists(campaign, lg.user):
-                    db.session.begin_nested()
                     try:
-                        db.session.add(CampaignView(campaign=campaign, user=lg.user))
-                        db.session.commit()
+                        with db.session.begin_nested():
+                            db.session.add(
+                                CampaignView(campaign=campaign, user=lg.user)
+                            )
                     except IntegrityError:  # Race condition from parallel requests
-                        db.session.rollback()
+                        pass
                 db.session.commit()
                 campaign_view_count_update.queue(
                     campaign_id=campaign.id, user_id=lg.user.id
@@ -342,14 +343,15 @@ def record_views_and_events(response):
         elif lg.anon_user:
             for campaign in lg.campaign_views:
                 if not CampaignAnonView.exists(campaign, lg.anon_user):
-                    db.session.begin_nested()
                     try:
-                        db.session.add(
-                            CampaignAnonView(campaign=campaign, anon_user=lg.anon_user)
-                        )
-                        db.session.commit()
+                        with db.session.begin_nested():
+                            db.session.add(
+                                CampaignAnonView(
+                                    campaign=campaign, anon_user=lg.anon_user
+                                )
+                            )
                     except IntegrityError:  # Race condition from parallel requests
-                        db.session.rollback()
+                        pass
                 db.session.commit()
                 campaign_view_count_update.queue(
                     campaign_id=campaign.id, anon_user_id=lg.anon_user.id
