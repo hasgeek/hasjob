@@ -2,8 +2,6 @@ from collections import OrderedDict
 from urllib.parse import SplitResult, urlsplit
 from uuid import uuid4
 
-from sqlalchemy.exc import ProgrammingError
-
 from flask import (
     Markup,
     Response,
@@ -18,7 +16,7 @@ from flask import (
 )
 
 from baseframe import _, request_is_xhr  # , dogpile
-from coaster.utils import ParseError, for_tsquery, getbool, parse_isoformat, utcnow
+from coaster.utils import ParseError, getbool, parse_isoformat, utcnow
 from coaster.views import endpoint_for, render_with, requestargs
 
 from .. import app, lastuser
@@ -186,7 +184,7 @@ def fetch_jobposts(
     batched,
     ageless,
     template_vars,
-    search_query=None,
+    search_tsquery=None,
     query_string=None,
 ):
     if basequery is None:
@@ -319,10 +317,10 @@ def fetch_jobposts(
         statusfilter = JobPost.state.ARCHIVED
 
     if query_string:
-        data_filters['query'] = search_query
+        data_filters['search_tsquery'] = search_tsquery
         data_filters['query_string'] = query_string
         basequery = basequery.filter(
-            JobPost.search_vector.match(search_query, postgresql_regconfig='english')
+            JobPost.search_vector.bool_op('@@')(db.func.to_tsquery(search_tsquery))
         )
 
     if data_filters:
@@ -525,7 +523,7 @@ def fetch_cached_jobposts(
     batched,
     ageless,
     template_vars,
-    search_query=None,
+    search_tsquery=None,
     query_string=None,
 ):
     return fetch_jobposts(
@@ -546,7 +544,7 @@ def fetch_cached_jobposts(
         batched,
         ageless,
         template_vars,
-        search_query,
+        search_tsquery,
         query_string,
     )
 
@@ -605,27 +603,25 @@ def index(
         batched = False
 
     # `query_string` is user-supplied
-    # `search_query` is PostgreSQL syntax
+    # `search_tsquery` is PostgreSQL syntax
     if not query_string:
         query_string = request.args.get('q')
     if query_string:
-        search_query = for_tsquery(query_string)
-        try:
-            # TODO: Can we do syntax validation without a database roundtrip?
-            db.session.query(db.func.to_tsquery(search_query)).all()
-        except ProgrammingError:
-            db.session.rollback()
-            g.event_data['search_syntax_error'] = (query_string, search_query)
+        with db.session.no_autoflush:
+            search_tsquery = db.session.query(
+                db.func.websearch_to_tsquery('english', query_string)
+            ).scalar()
+        if not search_tsquery:
             if not request_is_xhr():
                 flash(
                     _("Search terms ignored because this didn’t parse: {query}").format(
-                        query=search_query
+                        query=query_string
                     ),
                     'danger',
                 )
-            search_query = None
+            search_tsquery = None
     else:
-        search_query = None
+        search_tsquery = None
 
     if cached:
         data = fetch_cached_jobposts(
@@ -646,7 +642,7 @@ def index(
             batched,
             ageless,
             template_vars,
-            search_query,
+            search_tsquery,
             query_string,
         )
     else:
@@ -668,7 +664,7 @@ def index(
             batched,
             ageless,
             template_vars,
-            search_query,
+            search_tsquery,
             query_string,
         )
 

@@ -77,7 +77,7 @@ from .helper import (
 def jobdetail(domain, hashid):
     is_siteadmin = lastuser.has_permission('siteadmin')
     query = JobPost.fetch(hashid).options(
-        db.subqueryload('locations'), db.subqueryload('taglinks')
+        db.subqueryload(JobPost.locations), db.subqueryload(JobPost.taglinks)
     )
     post = query.first_or_404()
 
