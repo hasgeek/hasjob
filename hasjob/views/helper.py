@@ -971,10 +971,10 @@ def filter_basequery(basequery, filters, exclude_list=()):
         basequery = basequery.filter(JobPost.pay_currency == filters.get('currency'))
     if filters.get('equity') and 'equity' not in exclude_list:
         basequery = basequery.filter(JobPost.pay_equity_min.isnot(None))
-    if filters.get('query') and 'query' not in exclude_list:
+    if filters.get('search_tsquery') and 'search_tsquery' not in exclude_list:
         basequery = basequery.filter(
-            JobPost.search_vector.match(
-                filters['query'], postgresql_regconfig='english'
+            JobPost.search_vector.bool_op('@@')(
+                db.func.to_tsquery(filters['search_tsquery'])
             )
         )
 
