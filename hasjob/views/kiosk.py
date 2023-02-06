@@ -25,7 +25,6 @@ def kiosk_mode():
 @app.route('/kiosk.appcache', subdomain='<subdomain>')
 @app.route('/kiosk.appcache')
 def kiosk_manifest():
-
     if g.kiosk:
         lines = []
         lines.append('CACHE MANIFEST')

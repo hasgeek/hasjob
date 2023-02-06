@@ -61,5 +61,7 @@ def track_user(user):
     db.session.add(UserActiveAt(user=user, board=g.board))
     try:
         db.session.commit()
-    except IntegrityError:  # Small but not impossible chance we got two parallel signals
+    except (
+        IntegrityError
+    ):  # Small but not impossible chance we got two parallel signals
         db.session.rollback()
