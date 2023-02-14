@@ -14,6 +14,7 @@ common_extensions = {
     'JPEG2000': '.jp2',
     'GIF': '.gif',
     'PNG': '.png',
+    'WEBP': '.webp',
 }
 
 
@@ -32,7 +33,7 @@ def image_extension(img_format):
 
 def process_image(requestfile, maxsize=(170, 130)):
     fileext = splitext(requestfile.filename)[1].lower()
-    if fileext not in ['.jpg', '.jpeg', '.png', '.gif']:
+    if fileext not in ['.jpg', '.jpeg', '.png', '.gif', '.webp']:
         raise UploadNotAllowed("Unsupported file format")
     try:
         img = Image.open(requestfile)

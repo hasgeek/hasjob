@@ -329,12 +329,13 @@ def record_views_and_events(response):
         if lg.user:
             for campaign in lg.campaign_views:
                 if not CampaignView.exists(campaign, lg.user):
-                    db.session.begin_nested()
                     try:
-                        db.session.add(CampaignView(campaign=campaign, user=lg.user))
-                        db.session.commit()
+                        with db.session.begin_nested():
+                            db.session.add(
+                                CampaignView(campaign=campaign, user=lg.user)
+                            )
                     except IntegrityError:  # Race condition from parallel requests
-                        db.session.rollback()
+                        pass
                 db.session.commit()
                 campaign_view_count_update.queue(
                     campaign_id=campaign.id, user_id=lg.user.id
@@ -342,14 +343,15 @@ def record_views_and_events(response):
         elif lg.anon_user:
             for campaign in lg.campaign_views:
                 if not CampaignAnonView.exists(campaign, lg.anon_user):
-                    db.session.begin_nested()
                     try:
-                        db.session.add(
-                            CampaignAnonView(campaign=campaign, anon_user=lg.anon_user)
-                        )
-                        db.session.commit()
+                        with db.session.begin_nested():
+                            db.session.add(
+                                CampaignAnonView(
+                                    campaign=campaign, anon_user=lg.anon_user
+                                )
+                            )
                     except IntegrityError:  # Race condition from parallel requests
-                        db.session.rollback()
+                        pass
                 db.session.commit()
                 campaign_view_count_update.queue(
                     campaign_id=campaign.id, anon_user_id=lg.anon_user.id
@@ -541,7 +543,7 @@ def getposts(
     query = (
         basequery.filter(statusfilter)
         .options(*JobPost._defercols)
-        .options(db.joinedload('domain'))
+        .options(db.joinedload(JobPost.domain))
     )
 
     if g.board:
@@ -879,19 +881,6 @@ def jobpost_location_hierarchy(self):
 JobPost.location_hierarchy = property(jobpost_location_hierarchy)
 
 
-@app.template_filter('cleanurl')
-def cleanurl(url):
-    if url.startswith('http://'):
-        url = url[7:]
-    elif url.startswith('https://'):
-        url = url[8:]
-    if url.endswith('/') and url.count('/') == 1:
-        # Remove trailing slash if applied to end of domain name
-        # but leave it in if it's a path
-        url = url[:-1]
-    return url
-
-
 @app.template_filter('urlquote')
 def urlquote(data):
     return quote(data)
@@ -932,7 +921,7 @@ def usessl(url):
     return url
 
 
-def filter_basequery(basequery, filters, exclude_list=[]):
+def filter_basequery(basequery, filters, exclude_list=()):
     """
     - Accepts a query of type sqlalchemy.Query, and returns a modified query
     based on the keys in the `filters` object.
@@ -982,10 +971,10 @@ def filter_basequery(basequery, filters, exclude_list=[]):
         basequery = basequery.filter(JobPost.pay_currency == filters.get('currency'))
     if filters.get('equity') and 'equity' not in exclude_list:
         basequery = basequery.filter(JobPost.pay_equity_min.isnot(None))
-    if filters.get('query') and 'query' not in exclude_list:
+    if filters.get('search_tsquery') and 'search_tsquery' not in exclude_list:
         basequery = basequery.filter(
-            JobPost.search_vector.match(
-                filters['query'], postgresql_regconfig='english'
+            JobPost.search_vector.bool_op('@@')(
+                db.func.to_tsquery(filters['search_tsquery'])
             )
         )
 
@@ -1038,7 +1027,9 @@ def filter_types(basequery, board, filters):
     basequery = filter_basequery(basequery, filters, exclude_list=['types'])
     filtered_typeids = [
         post.type_id
-        for post in basequery.options(db.load_only('type_id')).distinct('type_id').all()
+        for post in basequery.options(db.load_only(JobPost.type_id))
+        .distinct(JobPost.type_id)
+        .all()
     ]
 
     def format_job_type(job_type):
@@ -1069,8 +1060,8 @@ def filter_categories(basequery, board, filters):
     basequery = filter_basequery(basequery, filters, exclude_list=['categories'])
     filtered_categoryids = [
         post.category_id
-        for post in basequery.options(db.load_only('category_id'))
-        .distinct('category_id')
+        for post in basequery.options(db.load_only(JobPost.category_id))
+        .distinct(JobPost.category_id)
         .all()
     ]
 

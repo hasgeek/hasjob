@@ -34,6 +34,6 @@ def test_db(test_client):
     db.drop_all()
 
 
-@pytest.fixture(scope='session')
-def pil_init():
+@pytest.fixture(scope='session', autouse=True)
+def _pil_init():
     Image.init()

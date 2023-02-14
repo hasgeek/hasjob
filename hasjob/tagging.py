@@ -92,7 +92,7 @@ def tag_locations(jobpost_id):
 def add_to_boards(jobpost_id):
     with app.test_request_context():
         post = JobPost.query.options(
-            db.joinedload('locations'), db.joinedload('taglinks')
+            db.joinedload(JobPost.locations), db.joinedload(JobPost.taglinks)
         ).get(jobpost_id)
         # Find all boards that match and that don't have an all-match criteria
         query = Board.query.join(BoardAutoDomain).filter(

@@ -20,7 +20,7 @@ workboxSW.router.registerRoute(
 
 //For development setup caching of assets
 workboxSW.router.registerRoute(
-  /^http:\/\/localhost:5000\/static/,
+  /^http:\/\/localhost:5001\/static/,
   workboxSW.strategies.networkFirst({
     cacheName: 'baseframe-local',
   }),
@@ -117,12 +117,12 @@ function createCacheBustedRequest(url) {
 // Cache the offline page during install phase of the service worker
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    fetch(createCacheBustedRequest('/api/1/template/offline')).then(function (
-      response
-    ) {
-      return caches.open('hasjob-offline').then(function (cache) {
-        return cache.put('offline', response);
-      });
-    })
+    fetch(createCacheBustedRequest('/api/1/template/offline')).then(
+      function (response) {
+        return caches.open('hasjob-offline').then(function (cache) {
+          return cache.put('offline', response);
+        });
+      }
+    )
   );
 });

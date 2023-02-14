@@ -1,6 +1,5 @@
 from urllib.parse import urljoin
 
-from simplejson import JSONDecodeError
 import requests
 
 from baseframe import cache
@@ -17,7 +16,7 @@ def location_geodata(location):
             url = urljoin(app.config['LASTUSER_SERVER'], '/api/1/geo/get_by_name')
         try:
             response = requests.get(url, params={'name': location}).json()
-        except JSONDecodeError:
+        except requests.exceptions.JSONDecodeError:
             return {}
         if response.get('status') == 'ok':
             result = response.get('result', {})

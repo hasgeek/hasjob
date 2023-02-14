@@ -3,7 +3,7 @@ from werkzeug.datastructures import FileStorage
 from hasjob.uploads import image_extension, process_image
 
 
-def test_image_extension(pil_init):
+def test_image_extension():
     # Common extensions
     assert image_extension('JPEG') == '.jpg'
     assert image_extension('JPEG2000') == '.jp2'
@@ -14,7 +14,7 @@ def test_image_extension(pil_init):
     assert image_extension('WEBP') == '.webp'
 
 
-def test_process_image(pil_init, shared_datadir):
+def test_process_image(shared_datadir):
     for filename in (
         'sample-jpg.jpg',
         'sample-jpg.png',

@@ -170,9 +170,9 @@ def scrubemail(data, rot13=False, css_junk=None):
     u'Send email to <a href="mailto:test@example.com"><span class="y">test&#64;</span><span class="z">no</span><span class="y">examp</span><span class="z">spam</span><span class="y">le.com</span></a> and you are all set.'
     """
 
-    def convertemail(m):
+    def convertemail(match):
         aclass = ' class="rot13"' if rot13 else ''
-        email = m.group(0)
+        email = match.group(0)
         link = 'mailto:' + email
         if rot13:
             link = link.decode('rot13')
@@ -205,8 +205,7 @@ def scrubemail(data, rot13=False, css_junk=None):
             email = email.replace('@', '&#64;')
         if rot13:
             return f'<a{aclass} data-href="{link}">{email}</a>'
-        else:
-            return f'<a{aclass} href="{link}">{email}</a>'
+        return f'<a{aclass} href="{link}">{email}</a>'
 
     data = EMAIL_RE.sub(convertemail, data)
     return data

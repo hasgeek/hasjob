@@ -51,7 +51,7 @@ from ..models import (
 from ..nlp import identify_language
 from ..tagging import add_to_boards, tag_jobpost, tag_locations
 from ..twitter import tweet
-from ..uploads import uploaded_logos
+from ..uploads import UploadNotAllowed, uploaded_logos
 from ..utils import common_legal_names, get_word_bag, random_long_key, redactemail
 from .helper import (
     ALLOWED_TAGS,
@@ -77,7 +77,7 @@ from .helper import (
 def jobdetail(domain, hashid):
     is_siteadmin = lastuser.has_permission('siteadmin')
     query = JobPost.fetch(hashid).options(
-        db.subqueryload('locations'), db.subqueryload('taglinks')
+        db.subqueryload(JobPost.locations), db.subqueryload(JobPost.taglinks)
     )
     post = query.first_or_404()
 
@@ -235,7 +235,7 @@ def job_viewstats(domain, hashid):
     is_siteadmin = lastuser.has_permission('siteadmin')
     post = (
         JobPost.query.filter_by(hashid=hashid)
-        .options(db.load_only('id', 'datetime'))
+        .options(db.load_only(JobPost.id, JobPost.datetime))
         .first_or_404()
     )
     if (
@@ -349,7 +349,7 @@ def revealjob(domain, hashid):
     """
     post = (
         JobPost.query.filter_by(hashid=hashid)
-        .options(db.load_only('id', '_state', 'how_to_apply'))
+        .options(db.load_only(JobPost.id, JobPost._state, JobPost.how_to_apply))
         .first_or_404()
     )
     if post.state.GONE:
@@ -403,7 +403,7 @@ def applyjob(domain, hashid):
     """
     post = (
         JobPost.query.filter_by(hashid=hashid)
-        .options(db.load_only('id', 'email', 'email_domain'))
+        .options(db.load_only(JobPost.id, JobPost.email, JobPost.email_domain))
         .first_or_404()
     )
     # If the domain doesn't match, redirect to correct URL
@@ -527,7 +527,7 @@ def managejob(post, kwargs):
     if post.email_domain != kwargs.get('domain'):
         return redirect(post.url_for('manage'), code=301)
 
-    first_application = post.applications.options(db.load_only('hashid')).first()
+    first_application = post.applications.options(db.load_only(JobPost.hashid)).first()
     if first_application:
         return redirect(first_application.url_for(), code=303)
     else:
@@ -806,7 +806,7 @@ def pinnedjob(domain, hashid):
 @app.route('/reject/<hashid>', defaults={'domain': None}, methods=('GET', 'POST'))
 @lastuser.requires_permission('siteadmin')
 def rejectjob(domain, hashid):
-    def send_reject_mail(reject_type, post, banned_posts=[]):
+    def send_reject_mail(reject_type, post, banned_posts=()):
         if reject_type not in ['reject', 'ban']:
             return
         mail_meta = {
@@ -1329,11 +1329,16 @@ def editjob(hashid, key, domain=None, form=None, validated=False, newpost=None):
             if post.state.MODERATED:
                 post.confirm()
 
-            if 'company_logo' in request.files and request.files['company_logo']:
+            if hasattr(g, 'company_logo'):
                 # The form's validator saved the processed logo in g.company_logo.
                 thumbnail = g.company_logo
-                logofilename = uploaded_logos.save(thumbnail, name='%s.' % post.hashid)
-                post.company_logo = logofilename
+                try:
+                    logofilename = uploaded_logos.save(
+                        thumbnail, name='%s.' % post.hashid
+                    )
+                    post.company_logo = logofilename
+                except UploadNotAllowed:
+                    pass
             else:
                 if form.company_logo_remove.data:
                     post.company_logo = None

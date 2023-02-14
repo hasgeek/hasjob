@@ -8,7 +8,7 @@ from sqlalchemy.orm import defer, load_only
 from flask import Markup, escape, url_for
 from werkzeug.utils import cached_property
 
-from flask_babelhg import format_datetime
+from flask_babel import format_datetime
 import tldextract
 
 from baseframe import __, cache
@@ -152,9 +152,9 @@ class JobPost(BaseMixin, db.Model):
     headline = db.Column(db.Unicode(100), nullable=False)
     headlineb = db.Column(db.Unicode(100), nullable=True)
     type_id = db.Column(None, db.ForeignKey('jobtype.id'), nullable=False)
-    type = db.relation(JobType, primaryjoin=type_id == JobType.id)  # noqa: A003
+    type = db.relationship(JobType, primaryjoin=type_id == JobType.id)  # noqa: A003
     category_id = db.Column(None, db.ForeignKey('jobcategory.id'), nullable=False)
-    category = db.relation(JobCategory, primaryjoin=category_id == JobCategory.id)
+    category = db.relationship(JobCategory, primaryjoin=category_id == JobCategory.id)
     location = db.Column(db.Unicode(80), nullable=False)
     parsed_location = db.Column(JsonDict)
     # remote_location tracks whether the job is work-from-home/work-from-anywhere
@@ -233,50 +233,10 @@ class JobPost(BaseMixin, db.Model):
     )
     #: Quick lookup locations this post is referring to
     geonameids = association_proxy(
-        'locations', 'geonameid', creator=lambda l: JobLocation(geonameid=l)
+        'locations',
+        'geonameid',
+        creator=lambda geonameid: JobLocation(geonameid=geonameid),
     )
-
-    _defercols = [
-        defer('user_id'),
-        defer('closed_datetime'),
-        defer('parsed_location'),
-        defer('relocation_assist'),
-        defer('description'),
-        defer('perks'),
-        defer('how_to_apply'),
-        defer('hr_contact'),
-        defer('company_logo'),
-        defer('company_url'),
-        defer('fullname'),
-        defer('email'),
-        defer('words'),
-        defer('promocode'),
-        defer('ipaddr'),
-        defer('useragent'),
-        defer('edit_key'),
-        defer('email_verify_key'),
-        defer('email_sent'),
-        defer('email_verified'),
-        defer('payment_value'),
-        defer('payment_received'),
-        defer('reviewer_id'),
-        defer('review_datetime'),
-        defer('review_comments'),
-        defer('language'),
-        defer('language_confidence'),
-        # These are defined below JobApplication
-        defer('new_applications'),
-        defer('replied_applications'),
-        defer('viewcounts_viewed'),
-        defer('viewcounts_opened'),
-        defer('viewcounts_applied'),
-        # defer('pay_type'),
-        # defer('pay_currency'),
-        # defer('pay_cash_min'),
-        # defer('pay_cash_max'),
-        # defer('pay_equity_min'),
-        # defer('pay_equity_max'),
-    ]
 
     @classmethod
     def get(cls, hashid):
@@ -287,15 +247,15 @@ class JobPost(BaseMixin, db.Model):
         """Returns a SQLAlchemy query object for JobPost"""
         return cls.query.filter_by(hashid=hashid).options(
             load_only(
-                'id',
-                'headline',
-                'headlineb',
-                'hashid',
-                'datetime',
-                '_state',
-                'email_domain',
-                'review_comments',
-                'company_url',
+                cls.id,
+                cls.headline,
+                cls.headlineb,
+                cls.hashid,
+                cls.datetime,
+                cls._state,
+                cls.email_domain,
+                cls.review_comments,
+                cls.company_url,
             )
         )
 
@@ -303,7 +263,7 @@ class JobPost(BaseMixin, db.Model):
     def query_listed(cls):  # noqa: N805
         """Returns a SQLAlchemy query for listed jobposts"""
         return cls.query.filter(JobPost.state.LISTED).options(
-            db.load_only('id', 'hashid')
+            db.load_only(cls.id, cls.hashid)
         )
 
     def __repr__(self):
@@ -315,7 +275,7 @@ class JobPost(BaseMixin, db.Model):
         if user is None:
             return False
         return user == self.user or bool(
-            self.admins.options(db.load_only('id')).filter_by(id=user.id).count()
+            self.admins.options(db.load_only(JobPost.id)).filter_by(id=user.id).count()
         )
 
     @property
@@ -1224,7 +1184,7 @@ class JobApplication(BaseMixin, db.Model):
                 JobApplication.created_at > date_min,
                 JobApplication.created_at < date_max,
             )
-            .options(db.load_only('id'))
+            .options(db.load_only(JobApplication.id))
         )
         counts = {k.label.name: len(v) for k, v in grouped.items()}
         counts['count'] = sum(counts.values())
@@ -1268,8 +1228,7 @@ JobApplication.jobpost = db.relationship(
         lazy='dynamic',
         order_by=(
             db.case(
-                value=JobApplication._response,
-                whens={
+                {
                     EMPLOYER_RESPONSE.NEW: 0,
                     EMPLOYER_RESPONSE.PENDING: 1,
                     EMPLOYER_RESPONSE.IGNORED: 2,
@@ -1278,6 +1237,7 @@ JobApplication.jobpost = db.relationship(
                     EMPLOYER_RESPONSE.FLAGGED: 5,
                     EMPLOYER_RESPONSE.SPAM: 6,
                 },
+                value=JobApplication._response,
             ),
             db.desc(JobApplication.created_at),
         ),
@@ -1287,7 +1247,7 @@ JobApplication.jobpost = db.relationship(
 
 
 JobPost.new_applications = db.column_property(
-    db.select([db.func.count(JobApplication.id)])
+    db.select(db.func.count(JobApplication.id))
     .where(
         db.and_(JobApplication.jobpost_id == JobPost.id, JobApplication.response.NEW)
     )
@@ -1296,7 +1256,7 @@ JobPost.new_applications = db.column_property(
 
 
 JobPost.replied_applications = db.column_property(
-    db.select([db.func.count(JobApplication.id)])
+    db.select(db.func.count(JobApplication.id))
     .where(
         db.and_(
             JobApplication.jobpost_id == JobPost.id, JobApplication.response.REPLIED
@@ -1307,24 +1267,66 @@ JobPost.replied_applications = db.column_property(
 
 
 JobPost.viewcounts_viewed = db.column_property(
-    db.select([db.func.count()])
+    db.select(db.func.count())
     .where(UserJobView.jobpost_id == JobPost.id)
     .scalar_subquery()
 )
 
 
 JobPost.viewcounts_opened = db.column_property(
-    db.select([db.func.count()])
+    db.select(db.func.count())
     .where(db.and_(UserJobView.jobpost_id == JobPost.id, UserJobView.applied.is_(True)))
     .scalar_subquery()
 )
 
 
 JobPost.viewcounts_applied = db.column_property(
-    db.select([db.func.count(JobApplication.id)])
+    db.select(db.func.count(JobApplication.id))
     .where(JobApplication.jobpost_id == JobPost.id)
     .scalar_subquery()
 )
+
+JobPost._defercols = [  # pylint: disable=protected-access
+    defer(JobPost.user_id),
+    defer(JobPost.closed_datetime),
+    defer(JobPost.parsed_location),
+    defer(JobPost.relocation_assist),
+    defer(JobPost.description),
+    defer(JobPost.perks),
+    defer(JobPost.how_to_apply),
+    defer(JobPost.hr_contact),
+    defer(JobPost.company_logo),
+    defer(JobPost.company_url),
+    defer(JobPost.fullname),
+    defer(JobPost.email),
+    defer(JobPost.words),
+    defer(JobPost.promocode),
+    defer(JobPost.ipaddr),
+    defer(JobPost.useragent),
+    defer(JobPost.edit_key),
+    defer(JobPost.email_verify_key),
+    defer(JobPost.email_sent),
+    defer(JobPost.email_verified),
+    defer(JobPost.payment_value),
+    defer(JobPost.payment_received),
+    defer(JobPost.reviewer_id),
+    defer(JobPost.review_datetime),
+    defer(JobPost.review_comments),
+    defer(JobPost.language),
+    defer(JobPost.language_confidence),
+    # These are defined below JobApplication
+    defer(JobPost.new_applications),
+    defer(JobPost.replied_applications),
+    defer(JobPost.viewcounts_viewed),
+    defer(JobPost.viewcounts_opened),
+    defer(JobPost.viewcounts_applied),
+    # defer(JobPost.pay_type),
+    # defer(JobPost.pay_currency),
+    # defer(JobPost.pay_cash_min),
+    # defer(JobPost.pay_cash_max),
+    # defer(JobPost.pay_equity_min),
+    # defer(JobPost.pay_equity_max),
+]
 
 
 def unique_hash(model=JobPost):

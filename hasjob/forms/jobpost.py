@@ -7,7 +7,7 @@ from flask import Markup, g, request
 from baseframe import _, __
 from baseframe.utils import is_public_email_domain
 from coaster.utils import get_email_domain, getbool
-from flask_lastuser import LastuserResourceException
+from flask_lastuser import LastuserResourceError
 import baseframe.forms as forms
 
 from .. import app, lastuser
@@ -116,7 +116,8 @@ class ListingForm(forms.Form):
         __("Description"),
         content_css=content_css,
         description=__(
-            "Don’t just describe the job, tell a compelling story for why someone should work for you"
+            "Don’t just describe the job, tell a compelling story for why someone"
+            " should work for you"
         ),
         validators=[
             forms.validators.DataRequired(__("A description of the job is required")),
@@ -166,7 +167,8 @@ class ListingForm(forms.Form):
         validators=[
             forms.validators.DataRequired(
                 __(
-                    "We do not offer screening services. Please specify what candidates should submit"
+                    "We do not offer screening services. Please specify what candidates"
+                    " should submit"
                 )
             ),
             forms.validators.NoObfuscatedEmail(
@@ -177,15 +179,16 @@ class ListingForm(forms.Form):
     company_name = forms.StringField(
         __("Employer name"),
         description=__(
-            "The name of the organization where the position is. "
-            "If your stealth startup doesn't have a name yet, use your own. "
-            "We do not accept posts from third parties such as recruitment consultants. "
-            "Such posts may be removed without notice"
+            "The name of the organization where the position is."
+            " If your stealth startup doesn't have a name yet, use your own."
+            " We do not accept posts from third parties such as recruitment"
+            " consultants. Such posts may be removed without notice"
         ),
         validators=[
             forms.validators.DataRequired(
                 __(
-                    "This is required. Posting any name other than that of the actual organization is a violation of the ToS"
+                    "This is required. Posting any name other than that of the actual"
+                    " organization is a violation of the ToS"
                 )
             ),
             forms.validators.Length(
@@ -228,19 +231,15 @@ class ListingForm(forms.Form):
             (1, __("Yes, recruiters may contact me")),
         ],
     )
-    # Deprecated 2013-11-20
-    # poster_name = forms.StringField(__("Name"),
-    #     description=__(u"This is your name, for our records. Will not be revealed to applicants"),
-    #     validators=[forms.validators.DataRequired(__("We need your name"))])
     poster_email = forms.EmailField(
         __("Email"),
         description=Markup(
             __(
-                "This is where we’ll send your confirmation email and all job applications. "
-                "We recommend using a shared email address such as jobs@your-organization.com. "
-                "<strong>Listings are classified by your email domain,</strong> "
-                "so use a work email address. "
-                "Your email address will not be revealed to applicants until you respond"
+                "This is where we’ll send your confirmation email and all job"
+                " applications. We recommend using a shared email address such as"
+                " jobs@your-organization.com. <strong>Listings are classified by your"
+                " email domain,</strong> so use a work email address. Your email"
+                " address will not be revealed to applicants until you respond"
             )
         ),
         validators=[
@@ -276,10 +275,10 @@ class ListingForm(forms.Form):
     collaborators = forms.UserSelectMultiField(
         __("Collaborators"),
         description=__(
-            "If someone is helping you evaluate candidates, type their names here. "
-            "They must have a Hasgeek account. They will not receive email notifications "
-            "— use a shared email address above for that — but they will be able to respond "
-            "to candidates who apply"
+            "If someone is helping you evaluate candidates, type their names here."
+            " They must have a Hasgeek account. They will not receive email"
+            " notifications — use a shared email address above for that — but they will"
+            " be able to respond to candidates who apply"
         ),
         usermodel=User,
         lastuser=lastuser,
@@ -297,7 +296,8 @@ class ListingForm(forms.Form):
         field.data = field.data.lower()
 
     def validate_job_type(self, field):
-        # This validator exists primarily for this assignment, used later in the form by other validators
+        # This validator exists primarily for this assignment, used later in the form
+        # by other validators
         self.job_type_ob = JobType.query.get(field.data)
         if not self.job_type_ob:
             raise forms.ValidationError(_("Please select a job type"))
@@ -321,13 +321,15 @@ class ListingForm(forms.Form):
         try:
             g.company_logo = process_image(request.files['company_logo'])
         except OSError:
-            raise forms.ValidationError(_("This image could not be processed"))
+            raise forms.ValidationError(
+                _("This image could not be processed")
+            ) from None
         except KeyError:
-            raise forms.ValidationError(_("Unknown file format"))
+            raise forms.ValidationError(_("Unknown file format")) from None
         except UploadNotAllowed:
             raise forms.ValidationError(
                 _("Unsupported file format. We accept JPEG, PNG and GIF")
-            )
+            ) from None
 
     def validate_job_headline(self, field):
         if simplify_text(field.data) in (
@@ -341,7 +343,8 @@ class ListingForm(forms.Form):
         ):
             raise forms.ValidationError(
                 _(
-                    "Come on, write your own headline. You aren’t just another run-of-the-mill employer, right?"
+                    "Come on, write your own headline. You aren’t just another"
+                    " run-of-the-mill employer, right?"
                 )
             )
         caps = len(CAPS_RE.findall(field.data))
@@ -349,7 +352,8 @@ class ListingForm(forms.Form):
         if small == 0 or caps / float(small) > 1.0:
             raise forms.ValidationError(
                 _(
-                    "No shouting, please. Reduce the number of capital letters in your headline"
+                    "No shouting, please. Reduce the number of capital letters in your"
+                    " headline"
                 )
             )
         for word_list, message in app.config.get('BANNED_WORDS', []):
@@ -379,8 +383,7 @@ class ListingForm(forms.Form):
             data = string_to_number(data)
             if data is None:
                 raise forms.ValidationError(_("Unrecognised value %s") % field.data)
-            else:
-                field.data = data
+            field.data = data
         else:
             field.data = None
 
@@ -389,8 +392,7 @@ class ListingForm(forms.Form):
             data = string_to_number(field.data.strip())
             if data is None:
                 raise forms.ValidationError(_("Unrecognised value %s") % field.data)
-            else:
-                field.data = data
+            field.data = data
         else:
             field.data = None
 
@@ -406,7 +408,7 @@ class ListingForm(forms.Form):
                 except InvalidOperation:
                     raise forms.ValidationError(
                         _("Please enter a percentage between 0%% and 100%%")
-                    )
+                    ) from None
             else:
                 raise forms.ValidationError(_("Unrecognised value %s") % field.data)
         else:
@@ -425,15 +427,15 @@ class ListingForm(forms.Form):
                 except InvalidOperation:
                     raise forms.ValidationError(
                         _("Please enter a percentage between 0%% and 100%%")
-                    )
+                    ) from None
             else:
                 raise forms.ValidationError(_("Unrecognised value %s") % field.data)
         else:
             # Discard submission if equity checkbox is unchecked
             field.data = None
 
-    def validate(self):
-        success = super().validate(send_signals=False)
+    def validate(self, *args, **kwargs):
+        success = super().validate(*args, **kwargs)
         if success:
             if (
                 not self.job_type_ob.nopay_allowed
@@ -455,7 +457,8 @@ class ListingForm(forms.Form):
             ):
                 self.poster_email.errors.append(
                     _(
-                        "Public webmail accounts like Gmail are not accepted. Please use your corporate email address"
+                        "Public webmail accounts like Gmail are not accepted. Please"
+                        " use your corporate email address"
                     )
                 )
                 success = False
@@ -479,7 +482,8 @@ class ListingForm(forms.Form):
                             figure = _("10 million")
                         self.job_pay_cash_max.errors.append(
                             _(
-                                "You’ve selected an upper limit of {figure}. That can’t be right"
+                                "You’ve selected an upper limit of {figure}. That can’t"
+                                " be right"
                             ).format(figure=figure)
                         )
                         success = False
@@ -490,14 +494,16 @@ class ListingForm(forms.Form):
                     ):
                         self.job_pay_cash_min.errors.append(
                             _(
-                                "That’s rather low. Did you specify monthly pay instead of annual pay? Multiply by 12"
+                                "That’s rather low. Did you specify monthly pay instead"
+                                " of annual pay? Multiply by 12"
                             )
                         )
                         success = False
                     elif self.job_pay_cash_max.data > self.job_pay_cash_min.data * 4:
                         self.job_pay_cash_max.errors.append(
                             _(
-                                "Please select a narrower range, with maximum within 4× minimum"
+                                "Please select a narrower range, with maximum within 4×"
+                                " minimum"
                             )
                         )
                         success = False
@@ -524,7 +530,8 @@ class ListingForm(forms.Form):
                     ):
                         self.job_pay_equity_max.errors.append(
                             _(
-                                "Please select a narrower range, with maximum within %d× minimum"
+                                "Please select a narrower range, with maximum within"
+                                " %d× minimum"
                             )
                             % multiplier
                         )
@@ -551,7 +558,8 @@ class ListingForm(forms.Form):
         self.collaborators.data = post.admins
         self.job_pay_type.data = post.pay_type
         if post.pay_type is None:
-            # This kludge required because WTForms doesn't know how to handle None in forms
+            # This kludge required because WTForms doesn't know how to handle None in
+            # forms
             self.job_pay_type.data = -1
         self.job_pay_currency.data = post.pay_currency
         self.job_pay_cash_min.data = post.pay_cash_min
@@ -595,7 +603,8 @@ class ApplicationForm(forms.Form):
     apply_optin = forms.BooleanField(
         __("Optional: sign me up for a better Hasjob experience"),
         description=__(
-            "Hasjob’s maintainers may contact you about new features and can see this application for reference"
+            "Hasjob’s maintainers may contact you about new features and can see this"
+            " application for reference"
         ),
     )
 
@@ -605,14 +614,15 @@ class ApplicationForm(forms.Form):
         if g.user:
             self.apply_email.description = Markup(
                 _(
-                    'Add new email addresses from <a href="{}" target="_blank">your profile</a>'
+                    'Add new email addresses from <a href="{}" target="_blank">your'
+                    ' profile</a>'
                 ).format(g.user.profile_url)
             )
             try:
                 self.apply_email.choices = [
                     (e, e) for e in lastuser.user_emails(g.user)
                 ]
-            except LastuserResourceException:
+            except LastuserResourceError:
                 self.apply_email.choices = [(g.user.email, g.user.email)]
             # If choices is [] or [(None, None)]
             if not self.apply_email.choices or not self.apply_email.choices[0][0]:
@@ -634,14 +644,15 @@ class ApplicationForm(forms.Form):
         if similar:
             raise forms.ValidationError(
                 _(
-                    "Your application is very similar to one previously identified as spam"
+                    "Your application is very similar to one previously identified as"
+                    " spam"
                 )
             )
 
         # Check for email and phone numbers in the message
 
-        # Prepare text by replacing non-breaking spaces with spaces (for phone numbers) and removing URLs.
-        # URLs may contain numbers that are not phone numbers.
+        # Prepare text by replacing non-breaking spaces with spaces (for phone numbers)
+        # and removing URLs. URLs may contain numbers that are not phone numbers.
         phone_search_text = URL_RE.sub(
             '',
             field.data.replace('&nbsp;', ' ')
@@ -654,7 +665,8 @@ class ApplicationForm(forms.Form):
         ):
             raise forms.ValidationError(
                 _(
-                    "Do not include your email address or phone number in the application"
+                    "Do not include your email address or phone number in the"
+                    " application"
                 )
             )
 

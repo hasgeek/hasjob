@@ -84,7 +84,7 @@ Hasjob makes use of subdomains to serve different sub-boards for jobs. To set it
   129.0.0.1    your-test-subboard.hasjob.test
   ```
 
-- Edit `instance/development.py` and change `SERVER_NAME` to `'hasjob.test:5000'`
+- Edit `instance/development.py` and change `SERVER_NAME` to `'hasjob.test:5001'`
 
 ### Install dependencies
 
@@ -100,16 +100,15 @@ You will need to install all the requirements listed in `requirements.txt` using
 $ pip install -r requirements.txt
 ```
 
-If you intend to actively contribute to Hasjob code, some functionality is sourced from the related libraries [coaster](https://github.com/hasgeek/coaster), [baseframe](https://github.com/hasgeek/baseframe), [Flask-Lastuser](https://github.com/hasgeek/flask-lastuser) and [Flask-Babelhg](https://github.com/flask-babelhg). You may want to clone these repositories separately and put them in development mode:
+If you intend to actively contribute to Hasjob code, some functionality is sourced from the related libraries [coaster](https://github.com/hasgeek/coaster), [baseframe](https://github.com/hasgeek/baseframe) and [Flask-Lastuser](https://github.com/hasgeek/flask-lastuser). You may want to clone these repositories separately and put them in development mode:
 
 ```
 $ cd ..
 $ git clone https://github.com/hasgeek/coaster.git
-$ git clone https://github.com/hasgeek/flask-babelhg.git
 $ git clone https://github.com/hasgeek/baseframe.git
 $ git clone https://github.com/hasgeek/flask-lastuser.git
-$ pip uninstall coaster flask-babelhg baseframe flask-lastuser
-$ for DIR in coaster flask-babelhg baseframe flask-lastuser; do cd $DIR; python setup.py develop; cd ..; done
+$ pip uninstall coaster baseframe flask-lastuser
+$ for DIR in coaster baseframe flask-lastuser; do cd $DIR; python setup.py develop; cd ..; done
 $ cd baseframe && make && cd ..
 ```
 
@@ -128,7 +127,7 @@ $ ./runserver.sh
 
 ### Create root board
 
-Some functionality in Hasjob requires the presence of a sub-board named `www`. Create it by visiting `http://hasjob.test:5000/board` (or the `/board` page on whatever hostname and port you used for your installation). The `www` board is a special-case to refer to the root website.
+Some functionality in Hasjob requires the presence of a sub-board named `www`. Create it by visiting `http://hasjob.test:5001/board` (or the `/board` page on whatever hostname and port you used for your installation). The `www` board is a special-case to refer to the root website.
 
 ### Periodic jobs
 

@@ -1,6 +1,3 @@
-from wtforms.ext.sqlalchemy.fields import QuerySelectMultipleField
-from wtforms.widgets import CheckboxInput, ListWidget
-
 from baseframe import __
 from coaster.utils import getbool
 import baseframe.forms as forms
@@ -78,10 +75,10 @@ class CampaignForm(forms.Form):
             "same dates. 0 implies lowest priority"
         ),
     )
-    boards = QuerySelectMultipleField(
+    boards = forms.QuerySelectMultipleField(
         __("Boards"),
-        widget=ListWidget(),
-        option_widget=CheckboxInput(),
+        widget=forms.ListWidget(),
+        option_widget=forms.CheckboxInput(),
         query_factory=lambda: Board.query.order_by(Board.featured.desc(), Board.title),
         get_label='title_and_name',
         validators=[forms.validators.Optional()],
@@ -115,6 +112,9 @@ class CampaignForm(forms.Form):
 
     def validate_geonameids(self, field):
         field.data = [int(x) for x in field.data if x.isdigit()]
+
+    def set_content(self, value):
+        """Ignore FormField."""
 
 
 class CampaignActionForm(forms.Form):

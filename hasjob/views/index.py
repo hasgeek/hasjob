@@ -1,9 +1,6 @@
-from six.moves.urllib.parse import SplitResult, urlsplit
-
 from collections import OrderedDict
+from urllib.parse import SplitResult, urlsplit
 from uuid import uuid4
-
-from sqlalchemy.exc import ProgrammingError
 
 from flask import (
     Markup,
@@ -19,7 +16,7 @@ from flask import (
 )
 
 from baseframe import _, request_is_xhr  # , dogpile
-from coaster.utils import ParseError, for_tsquery, getbool, parse_isoformat, utcnow
+from coaster.utils import ParseError, getbool, parse_isoformat, utcnow
 from coaster.views import endpoint_for, render_with, requestargs
 
 from .. import app, lastuser
@@ -187,7 +184,7 @@ def fetch_jobposts(
     batched,
     ageless,
     template_vars,
-    search_query=None,
+    search_tsquery=None,
     query_string=None,
 ):
     if basequery is None:
@@ -320,10 +317,10 @@ def fetch_jobposts(
         statusfilter = JobPost.state.ARCHIVED
 
     if query_string:
-        data_filters['query'] = search_query
+        data_filters['search_tsquery'] = search_tsquery
         data_filters['query_string'] = query_string
         basequery = basequery.filter(
-            JobPost.search_vector.match(search_query, postgresql_regconfig='english')
+            JobPost.search_vector.bool_op('@@')(db.func.to_tsquery(search_tsquery))
         )
 
     if data_filters:
@@ -339,7 +336,7 @@ def fetch_jobposts(
     ).all()
 
     if getbool(request_args.get('embed')):
-        embed = True
+        embed = True  # skipcq: PYL-W0621
         if posts:
             limit = string_to_number(request_args.get('limit'))
             if limit is not None:
@@ -433,7 +430,7 @@ def fetch_jobposts(
             else:
                 # Loop through group looking for start of next batch. See below to understand the
                 # nesting structure of 'grouped'
-                for startindex, row in enumerate(grouped.values()):
+                for startindex, row in enumerate(grouped.values()):  # noqa: B007
                     # Skip pinned posts when looking for starting index
                     if (
                         row[0][1].hashid not in pinned_hashids
@@ -461,7 +458,7 @@ def fetch_jobposts(
                     else:
                         pinned_hashids.append(row[1].hashid)
             else:
-                for startindex, row in enumerate(pinsandposts):
+                for startindex, row in enumerate(pinsandposts):  # noqa: B007
                     # Skip pinned posts when looking for starting index
                     if (
                         row[1].hashid not in pinned_hashids
@@ -526,7 +523,7 @@ def fetch_cached_jobposts(
     batched,
     ageless,
     template_vars,
-    search_query=None,
+    search_tsquery=None,
     query_string=None,
 ):
     return fetch_jobposts(
@@ -547,7 +544,7 @@ def fetch_cached_jobposts(
         batched,
         ageless,
         template_vars,
-        search_query,
+        search_tsquery,
         query_string,
     )
 
@@ -559,7 +556,7 @@ def fetch_cached_jobposts(
 )
 def index(
     basequery=None,
-    filters={},
+    filters=None,
     md5sum=None,
     tag=None,
     domain=None,
@@ -572,8 +569,13 @@ def index(
     cached=False,
     query_string=None,
     filterset=None,
-    template_vars={},
+    template_vars=None,
 ):
+    if filters is None:
+        filters = {}
+    if template_vars is None:
+        template_vars = {}
+
     now = utcnow()
     is_siteadmin = lastuser.has_permission('siteadmin')
     board = g.board
@@ -583,7 +585,7 @@ def index(
             r.jobpost_id: r
             for r in BoardJobPost.query.join(BoardJobPost.jobpost)
             .filter(BoardJobPost.board == g.board, JobPost.state.LISTED)
-            .options(db.load_only('jobpost_id', 'pinned'))
+            .options(db.load_only(BoardJobPost.jobpost_id, BoardJobPost.pinned))
             .all()
         }
 
@@ -601,27 +603,25 @@ def index(
         batched = False
 
     # `query_string` is user-supplied
-    # `search_query` is PostgreSQL syntax
+    # `search_tsquery` is PostgreSQL syntax
     if not query_string:
         query_string = request.args.get('q')
     if query_string:
-        search_query = for_tsquery(query_string)
-        try:
-            # TODO: Can we do syntax validation without a database roundtrip?
-            db.session.query(db.func.to_tsquery(search_query)).all()
-        except ProgrammingError:
-            db.session.rollback()
-            g.event_data['search_syntax_error'] = (query_string, search_query)
+        with db.session.no_autoflush:
+            search_tsquery = db.session.query(
+                db.func.websearch_to_tsquery('english', query_string)
+            ).scalar()
+        if not search_tsquery:
             if not request_is_xhr():
                 flash(
                     _("Search terms ignored because this didn’t parse: {query}").format(
-                        query=search_query
+                        query=query_string
                     ),
                     'danger',
                 )
-            search_query = None
+            search_tsquery = None
     else:
-        search_query = None
+        search_tsquery = None
 
     if cached:
         data = fetch_cached_jobposts(
@@ -642,7 +642,7 @@ def index(
             batched,
             ageless,
             template_vars,
-            search_query,
+            search_tsquery,
             query_string,
         )
     else:
@@ -664,7 +664,7 @@ def index(
             batched,
             ageless,
             template_vars,
-            search_query,
+            search_tsquery,
             query_string,
         )
 
