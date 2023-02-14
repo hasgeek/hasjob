@@ -527,7 +527,9 @@ def managejob(post, kwargs):
     if post.email_domain != kwargs.get('domain'):
         return redirect(post.url_for('manage'), code=301)
 
-    first_application = post.applications.options(db.load_only(JobPost.hashid)).first()
+    first_application = post.applications.options(
+        db.load_only(JobApplication.hashid)
+    ).first()
     if first_application:
         return redirect(first_application.url_for(), code=303)
     else:
