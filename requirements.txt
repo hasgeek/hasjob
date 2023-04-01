@@ -24,7 +24,7 @@ premailer==3.10.0
 progressbar2==4.2.0
 psycopg2==2.9.5
 pytz==2023.3
-SQLAlchemy==2.0.4
+SQLAlchemy==2.0.8
 SQLAlchemy-Utils==0.40.0
 tldextract==3.4.0
 tweepy==4.12.1
