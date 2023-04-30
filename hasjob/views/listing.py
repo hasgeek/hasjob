@@ -1276,7 +1276,7 @@ def editjob(hashid, key, domain=None, form=None, validated=False, newpost=None):
             post.company_name = form.company_name.data
             post.company_url = form.company_url.data
             post.hr_contact = form.hr_contact.data
-            post.twitter = form.twitter.data
+            # post.twitter = form.twitter.data
 
             post.pay_type = form.job_pay_type.data
             if post.pay_type == -1:

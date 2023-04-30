@@ -255,23 +255,24 @@ class ListingForm(forms.Form):
         ],
         filters=[forms.filters.strip()],
     )
-    twitter = forms.AnnotatedTextField(
-        __("Twitter"),
-        description=__(
-            "Optional — your organization’s Twitter account. "
-            "We’ll tweet mentioning you so you get included on replies"
-        ),
-        prefix='@',
-        validators=[
-            forms.validators.Optional(),
-            forms.validators.Length(
-                min=0,
-                max=15,
-                message=__("Twitter accounts can’t be over %(max)d characters long"),
-            ),
-        ],
-        filters=[forms.filters.strip(), forms.filters.none_if_empty()],
-    )
+    #: Twitter support is disabled due to API access change in April 2023
+    # twitter = forms.AnnotatedTextField(
+    #     __("Twitter"),
+    #     description=__(
+    #         "Optional — your organization’s Twitter account. "
+    #         "We’ll tweet mentioning you so you get included on replies"
+    #     ),
+    #     prefix='@',
+    #     validators=[
+    #         forms.validators.Optional(),
+    #         forms.validators.Length(
+    #             min=0,
+    #             max=15,
+    #             message=__("Twitter accounts can’t be over %(max)d characters long"),
+    #         ),
+    #     ],
+    #     filters=[forms.filters.strip(), forms.filters.none_if_empty()],
+    # )
     collaborators = forms.UserSelectMultiField(
         __("Collaborators"),
         description=__(
@@ -553,7 +554,7 @@ class ListingForm(forms.Form):
         self.company_name.data = post.company_name
         self.company_url.data = post.company_url
         self.poster_email.data = post.email
-        self.twitter.data = post.twitter
+        # self.twitter.data = post.twitter
         self.hr_contact.data = int(post.hr_contact or False)
         self.collaborators.data = post.admins
         self.job_pay_type.data = post.pay_type
