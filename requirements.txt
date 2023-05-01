@@ -27,4 +27,4 @@ pytz==2023.3
 SQLAlchemy==2.0.12
 SQLAlchemy-Utils==0.41.1
 tldextract==3.4.1
-tweepy==4.13.0
+tweepy==4.14.0
