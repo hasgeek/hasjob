@@ -13,15 +13,15 @@ down_revision = '15aede1ebe6f'
 from uuid import uuid4
 
 from alembic import op
+from sqlalchemy.dialects import postgresql
 from sqlalchemy.sql import column, table
-from sqlalchemy_utils import UUIDType
 import sqlalchemy as sa
 
 from progressbar import ProgressBar
 import progressbar.widgets
 
 event_session = table(
-    'event_session', column('id', sa.Integer()), column('uuid', UUIDType(binary=False))
+    'event_session', column('id', sa.Integer()), column('uuid', postgresql.UUID())
 )
 
 
@@ -62,11 +62,11 @@ def upgrade():
         progress.update(counter)
     progress.finish()
     op.alter_column(
-        'event_session', 'uuid', existing_type=UUIDType(binary=False), nullable=False
+        'event_session', 'uuid', existing_type=postgresql.UUID(), nullable=False
     )
 
 
 def downgrade():
     op.alter_column(
-        'event_session', 'uuid', existing_type=UUIDType(binary=False), nullable=True
+        'event_session', 'uuid', existing_type=postgresql.UUID(), nullable=True
     )

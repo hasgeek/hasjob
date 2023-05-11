@@ -11,14 +11,14 @@ revision = '57da2d78c9ca'
 down_revision = '375bb2e7a4cc'
 
 from alembic import op
+from sqlalchemy.dialects import postgresql
 import sqlalchemy as sa
-import sqlalchemy_utils.types
 
 
 def upgrade():
     op.add_column(
         'event_session',
-        sa.Column('uuid', sqlalchemy_utils.types.UUIDType(binary=False), nullable=True),
+        sa.Column('uuid', postgresql.UUID(), nullable=True),
     )
     op.create_unique_constraint('event_session_uuid_key', 'event_session', ['uuid'])
 
