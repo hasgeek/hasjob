@@ -1,9 +1,9 @@
 git+https://github.com/hasgeek/baseframe#egg=baseframe
 bleach==6.0.0
 git+https://github.com/hasgeek/coaster#egg=coaster
-coverage==7.2.2
+coverage==7.2.5
 dnspython==2.3.0
-Flask==2.2.3
+Flask==2.2.5
 Flask-Assets==2.0
 git+https://github.com/hasgeek/flask-lastuser#egg=Flask-Lastuser
 Flask-Mail==0.9.1
@@ -22,9 +22,9 @@ Markdown==3.4.3
 Pillow==9.5.0
 premailer==3.10.0
 progressbar2==4.2.0
-psycopg2==2.9.5
+psycopg2==2.9.6
 pytz==2023.3
-SQLAlchemy==2.0.8
-SQLAlchemy-Utils==0.40.0
-tldextract==3.4.0
-tweepy==4.13.0
+SQLAlchemy==2.0.12
+SQLAlchemy-Utils==0.41.1
+tldextract==3.4.1
+tweepy==4.14.0
