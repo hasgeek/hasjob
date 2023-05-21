@@ -55,7 +55,7 @@ class AdminCampaignList(AdminView):
         return render_template(
             'campaign_list.html.jinja2',
             title="Current campaigns",
-            campaigns=self.listquery.filter(Campaign.state.is_current).all(),
+            campaigns=self.listquery.filter(Campaign.state.CURRENT).all(),
         )
 
     @route('longterm', methods=['GET'])
@@ -64,7 +64,7 @@ class AdminCampaignList(AdminView):
         return render_template(
             'campaign_list.html.jinja2',
             title="Long term campaigns",
-            campaigns=self.listquery.filter(Campaign.state.is_longterm).all(),
+            campaigns=self.listquery.filter(Campaign.state.LONGTERM).all(),
         )
 
     @route('offline', methods=['GET'])
@@ -73,7 +73,7 @@ class AdminCampaignList(AdminView):
         return render_template(
             'campaign_list.html.jinja2',
             title="Offline campaigns",
-            campaigns=self.listquery.filter(Campaign.state.is_offline).all(),
+            campaigns=self.listquery.filter(Campaign.state.OFFLINE).all(),
         )
 
     @route('disabled', methods=['GET'])
@@ -82,7 +82,7 @@ class AdminCampaignList(AdminView):
         return render_template(
             'campaign_list.html.jinja2',
             title="Disabled campaigns",
-            campaigns=self.listquery.filter(Campaign.state.is_disabled).all(),
+            campaigns=self.listquery.filter(Campaign.state.DISABLED).all(),
         )
 
     @route('new', methods=['GET', 'POST'])
@@ -141,13 +141,13 @@ def campaign_current_tab(f):
     @wraps(f)
     def wrapper(self, *args, **kwargs):
         if self.obj:
-            if self.obj.state.is_current:
+            if self.obj.state.CURRENT:
                 self.current_tab = 'list_current'
-            elif self.obj.state.is_longterm:
+            elif self.obj.state.LONGTERM:
                 self.current_tab = 'list_longterm'
-            elif self.obj.state.is_offline:
+            elif self.obj.state.OFFLINE:
                 self.current_tab = 'list_offline'
-            elif self.obj.state.is_disabled:
+            elif self.obj.state.DISABLED:
                 self.current_tab = 'list_disabled'
         return f(self, *args, **kwargs)
 
@@ -158,13 +158,13 @@ def campaign_action_current_tab(f):
     @wraps(f)
     def wrapper(self, *args, **kwargs):
         if self.obj:
-            if self.obj.parent.state.is_current:
+            if self.obj.parent.state.CURRENT:
                 self.current_tab = 'list_current'
-            elif self.obj.parent.state.is_longterm:
+            elif self.obj.parent.state.LONGTERM:
                 self.current_tab = 'list_longterm'
-            elif self.obj.parent.state.is_offline:
+            elif self.obj.parent.state.OFFLINE:
                 self.current_tab = 'list_offline'
-            elif self.obj.parent.state.is_disabled:
+            elif self.obj.parent.state.DISABLED:
                 self.current_tab = 'list_disabled'
         return f(self, *args, **kwargs)
 
