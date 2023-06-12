@@ -32,7 +32,6 @@ public_domains = {
     'yahoo.co.in',
     'yahoo.co.uk',
     'yahoo.com',
-    'yahoo.com',
     'yandex.com',
     'yandex.ru',
     'ymail.com',
