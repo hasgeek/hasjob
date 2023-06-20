@@ -1027,55 +1027,54 @@ def confirm_email(domain, hashid, key):
                 '403.html.jinja2',
                 description="This link has expired or is malformed. Check if you have received a newer email from us.",
             )
-        else:
-            if app.config.get('THROTTLE_LIMIT', 0) > 0:
-                post_count = (
-                    JobPost.query.filter(JobPost.email_domain == post.email_domain)
-                    .filter(~(JobPost.state.UNPUBLISHED))
-                    .filter(JobPost.datetime > utcnow() - timedelta(days=1))
-                    .count()
-                )
-                if post_count > app.config['THROTTLE_LIMIT']:
-                    flash(
-                        "We have received too many posts with %s addresses in the last 24 hours. "
-                        "Posts are rate-limited per domain, so yours was not confirmed for now. "
-                        "Please try confirming again in a few hours."
-                        % post.email_domain,
-                        category='info',
-                    )
-                    return redirect(url_for('index'))
-            post.confirm()
-            db.session.commit()
-            if app.config['TWITTER_ENABLED']:
-                if post.headlineb:
-                    tweet.queue(
-                        post.headline,
-                        post.url_for(b=0, _external=True),
-                        post.location,
-                        dict(post.parsed_location or {}),
-                        username=post.twitter,
-                    )
-                    tweet.queue(
-                        post.headlineb,
-                        post.url_for(b=1, _external=True),
-                        post.location,
-                        dict(post.parsed_location or {}),
-                        username=post.twitter,
-                    )
-                else:
-                    tweet.queue(
-                        post.headline,
-                        post.url_for(_external=True),
-                        post.location,
-                        dict(post.parsed_location or {}),
-                        username=post.twitter,
-                    )
-            add_to_boards.queue(post.id)
-            flash(
-                "Congratulations! Your job post has been published. As a bonus for being an employer on Hasjob, "
-                "you can now see how your post is performing relative to others. Look in the footer of any post.",
-                "interactive",
+
+        if app.config.get('THROTTLE_LIMIT', 0) > 0:
+            post_count = (
+                JobPost.query.filter(JobPost.email_domain == post.email_domain)
+                .filter(~(JobPost.state.UNPUBLISHED))
+                .filter(JobPost.datetime > utcnow() - timedelta(days=1))
+                .count()
             )
+            if post_count > app.config['THROTTLE_LIMIT']:
+                flash(
+                    "We have received too many posts with %s addresses in the last 24 hours. "
+                    "Posts are rate-limited per domain, so yours was not confirmed for now. "
+                    "Please try confirming again in a few hours." % post.email_domain,
+                    category='info',
+                )
+                return redirect(url_for('index'))
+        post.confirm()
+        db.session.commit()
+        if app.config['TWITTER_ENABLED']:
+            if post.headlineb:
+                tweet.queue(
+                    post.headline,
+                    post.url_for(b=0, _external=True),
+                    post.location,
+                    dict(post.parsed_location or {}),
+                    username=post.twitter,
+                )
+                tweet.queue(
+                    post.headlineb,
+                    post.url_for(b=1, _external=True),
+                    post.location,
+                    dict(post.parsed_location or {}),
+                    username=post.twitter,
+                )
+            else:
+                tweet.queue(
+                    post.headline,
+                    post.url_for(_external=True),
+                    post.location,
+                    dict(post.parsed_location or {}),
+                    username=post.twitter,
+                )
+        add_to_boards.queue(post.id)
+        flash(
+            "Congratulations! Your job post has been published. As a bonus for being an employer on Hasjob, "
+            "you can now see how your post is performing relative to others. Look in the footer of any post.",
+            "interactive",
+        )
     # cache bust
     # dogpile.invalidate_region('hasjob_index')
     return redirect(post.url_for(), code=302)
@@ -1198,10 +1197,8 @@ def editjob(hashid, key, domain=None, form=None, validated=False, newpost=None):
                     return redirect(
                         post.url_for('edit', subdomain=blink.board.name, _external=True)
                     )
-                else:
-                    return redirect(
-                        post.url_for('edit', subdomain=None, _external=True)
-                    )
+
+                return redirect(post.url_for('edit', subdomain=None, _external=True))
 
         # Don't allow email address to be changed once it's confirmed
         if not post.state.UNPUBLISHED:
@@ -1375,10 +1372,10 @@ def newjob():
                 " We'll add details about your company later",
             )
         )
-    else:
-        if g.user.blocked:
-            flash("Your account has been blocked from posting jobs", category='info')
-            return redirect(url_for('index'), code=303)
+
+    if g.user.blocked:
+        flash("Your account has been blocked from posting jobs", category='info')
+        return redirect(url_for('index'), code=303)
 
     if g.board:
         if 'new-job' not in g.board.permissions(g.user):
@@ -1432,9 +1429,9 @@ def newjob():
         return editjob(
             hashid=None, key=None, form=form, validated=True, newpost=newpost
         )
-    elif form.errors:
-        # POST request from new job page, with errors
-        flash("Please review the indicated issues", category='interactive')
+
+    # POST request from new job page, with errors
+    flash("Please review the indicated issues", category='interactive')
 
     # Render page. Execution reaches here under three conditions:
     # 1. GET request, page loaded for the first time
