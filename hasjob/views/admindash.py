@@ -1,10 +1,10 @@
+import csv
 from collections import defaultdict
 from io import StringIO
-import csv
-
-from flask import g, render_template
 
 from baseframe import __
+from flask import g, render_template
+
 from coaster.views import route, viewdata
 
 from .. import app, lastuser

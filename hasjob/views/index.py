@@ -2,6 +2,7 @@ from collections import OrderedDict
 from urllib.parse import SplitResult, urlsplit
 from uuid import uuid4
 
+from baseframe import _, request_is_xhr  # , dogpile
 from flask import (
     Markup,
     Response,
@@ -15,7 +16,6 @@ from flask import (
     url_for,
 )
 
-from baseframe import _, request_is_xhr  # , dogpile
 from coaster.utils import ParseError, getbool, parse_isoformat, utcnow
 from coaster.views import endpoint_for, render_with, requestargs
 

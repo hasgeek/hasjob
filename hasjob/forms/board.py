@@ -1,10 +1,8 @@
-from flask import Markup
-
+import baseframe.forms as forms
 import tldextract
-
 from baseframe import _, __
 from baseframe.utils import is_public_email_domain
-import baseframe.forms as forms
+from flask import Markup
 
 from .. import lastuser
 from ..models import Board, JobCategory, JobType, User

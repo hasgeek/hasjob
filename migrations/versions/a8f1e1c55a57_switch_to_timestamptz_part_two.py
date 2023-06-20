@@ -13,8 +13,8 @@ down_revision = '05e807853572'
 
 from datetime import datetime
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 
 migrate_table_columns = [
     ('job_impression', 'created_at'),

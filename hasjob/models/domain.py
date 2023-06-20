@@ -1,11 +1,9 @@
+from baseframe.utils import is_public_email_domain
+from flask import url_for
 from sqlalchemy import DDL, event
 from sqlalchemy.dialects.postgresql import TSVECTOR
 from sqlalchemy.orm import deferred
-
-from flask import url_for
 from werkzeug.utils import cached_property
-
-from baseframe.utils import is_public_email_domain
 
 from ..utils import escape_for_sql_like
 from . import BaseMixin, db

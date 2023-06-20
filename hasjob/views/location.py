@@ -1,9 +1,8 @@
 from collections import OrderedDict
 
-from flask import abort, g, redirect, url_for
-
 from baseframe import _
 from baseframe.forms import render_delete_sqla, render_form
+from flask import abort, g, redirect, url_for
 
 from .. import app, lastuser
 from ..extapi import location_geodata

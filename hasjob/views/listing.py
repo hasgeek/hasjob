@@ -1,9 +1,10 @@
 from datetime import timedelta
 from difflib import SequenceMatcher
 
-from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm.exc import StaleDataError
-
+import bleach
+from baseframe import cache, request_is_xhr  # , dogpile
+from baseframe.forms import Form
+from baseframe.utils import is_public_email_domain
 from flask import (
     Markup,
     abort,
@@ -17,14 +18,11 @@ from flask import (
     url_for,
 )
 from flask_mail import Message
-
 from html2text import html2text
 from premailer import transform as email_transform
-import bleach
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm.exc import StaleDataError
 
-from baseframe import cache, request_is_xhr  # , dogpile
-from baseframe.forms import Form
-from baseframe.utils import is_public_email_domain
 from coaster.utils import base_domain_matches, get_email_domain, getbool, md5sum, utcnow
 from coaster.views import load_model
 

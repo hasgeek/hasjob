@@ -1,15 +1,14 @@
+import csv
 from collections import defaultdict
 from datetime import timedelta
 from functools import wraps
 from io import StringIO
-import csv
-
-from flask import Markup, abort, flash, g, redirect, render_template, request, url_for
-
-from pytz import UTC
 
 from baseframe import __
 from baseframe.forms import render_delete_sqla, render_form, render_redirect
+from flask import Markup, abort, flash, g, redirect, render_template, request, url_for
+from pytz import UTC
+
 from coaster.utils import classmethodproperty, make_name, uuid_b58
 from coaster.views import (
     InstanceLoader,

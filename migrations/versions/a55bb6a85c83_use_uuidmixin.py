@@ -12,13 +12,12 @@ down_revision = '15aede1ebe6f'
 
 from uuid import uuid4
 
+import progressbar.widgets
+import sqlalchemy as sa
 from alembic import op
+from progressbar import ProgressBar
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.sql import column, table
-import sqlalchemy as sa
-
-from progressbar import ProgressBar
-import progressbar.widgets
 
 event_session = table(
     'event_session', column('id', sa.Integer()), column('uuid', postgresql.UUID())

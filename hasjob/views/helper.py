@@ -1,25 +1,23 @@
+import hashlib
 from base64 import b64decode
 from datetime import timedelta
 from os import path
 from types import SimpleNamespace
 from urllib.parse import quote, quote_plus
 from uuid import uuid4
-import hashlib
 
+import bleach
+from baseframe import _, cache
+from baseframe.signals import form_validation_error, form_validation_success
+from flask import Markup, copy_current_request_context, g, request, session
+from flask_lastuser import signal_user_looked_up
+from geoip2.errors import AddressNotFoundError
+from pytz import UTC
 from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
 
-from flask import Markup, copy_current_request_context, g, request, session
-
-from geoip2.errors import AddressNotFoundError
-from pytz import UTC
-import bleach
-
-from baseframe import _, cache
-from baseframe.signals import form_validation_error, form_validation_success
 from coaster.sqlalchemy import failsafe_add
 from coaster.utils import utcnow
-from flask_lastuser import signal_user_looked_up
 
 from .. import app, lastuser, redis_store, rq
 from ..extapi import location_geodata
@@ -1096,7 +1094,7 @@ def inject_filter_options():
         cache_key = (
             'jobfilters/'
             + (g.board.name + '/' if g.board else '')
-            + hashlib.sha1(repr(filters).encode('utf-8')).hexdigest()
+            + hashlib.blake2b(repr(filters).encode('utf-8'), digest_size=16).hexdigest()
         )
         result = cache.get(cache_key)
         if not result:

@@ -1,14 +1,14 @@
+import re
 from decimal import Decimal, InvalidOperation
 from difflib import SequenceMatcher
-import re
 
-from flask import Markup, g, request
-
+import baseframe.forms as forms
 from baseframe import _, __
 from baseframe.utils import is_public_email_domain
-from coaster.utils import get_email_domain, getbool
+from flask import Markup, g, request
 from flask_lastuser import LastuserResourceError
-import baseframe.forms as forms
+
+from coaster.utils import get_email_domain, getbool
 
 from .. import app, lastuser
 from ..models import CURRENCY, PAY_TYPE, Domain, JobApplication, JobType, User

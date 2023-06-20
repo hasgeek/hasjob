@@ -1,18 +1,16 @@
 from datetime import timedelta
 
+import tldextract
+from baseframe import __, cache
+from baseframe.utils import is_public_email_domain
+from flask import Markup, escape, url_for
+from flask_babel import format_datetime
 from sqlalchemy import DDL, event
 from sqlalchemy.dialects.postgresql import TSVECTOR
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import defer, load_only
-
-from flask import Markup, escape, url_for
 from werkzeug.utils import cached_property
 
-from flask_babel import format_datetime
-import tldextract
-
-from baseframe import __, cache
-from baseframe.utils import is_public_email_domain
 from coaster.sqlalchemy import JsonDict, Query, StateManager, make_timestamp_columns
 from coaster.utils import classmethodproperty, utcnow
 

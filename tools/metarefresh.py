@@ -1,8 +1,8 @@
 import mimetypes
 
-from lxml import html
 import magic
 import requests
+from lxml import html  # nosec B410
 
 
 def test_for_meta_redirections(r):
@@ -38,7 +38,7 @@ def follow_redirections(r, s):
 
 def final_url(url):
     s = requests.session()
-    r = s.get(url)
+    r = s.get(url, timeout=30)
     # test for and follow meta redirects
     return follow_redirections(r, s).url
 

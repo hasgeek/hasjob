@@ -1,5 +1,5 @@
-from PIL import Image
 import pytest
+from PIL import Image
 
 from hasjob import app
 from hasjob.models import db

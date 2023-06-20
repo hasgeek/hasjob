@@ -1,6 +1,10 @@
+"""Hasjob models."""
+# flake8: noqa
+
 from datetime import timedelta
 
 from baseframe import __
+
 from coaster.db import db  # noqa: F401
 from coaster.sqlalchemy import (  # noqa: F401
     BaseMixin,
@@ -116,16 +120,16 @@ class CANDIDATE_FEEDBACK(LabeledEnum):  # noqa: N801
     __order__ = (NORESPONSE, INPROCESS, DID_NOT_GET, DID_NOT_ACCEPT, GOT_JOB)
 
 
-from .board import *  # NOQA # isort:skip
-from .campaign import *  # NOQA # isort:skip
-from .domain import *  # NOQA # isort:skip
-from .filterset import *  # NOQA # isort:skip
-from .flags import *  # NOQA # isort:skip
-from .jobcategory import *  # NOQA # isort:skip
-from .jobpost import *  # NOQA # isort:skip
-from .jobpostreport import *  # NOQA # isort:skip
-from .jobtype import *  # NOQA # isort:skip
-from .location import *  # NOQA # isort:skip
-from .reportcode import *  # NOQA # isort:skip
-from .tag import *  # NOQA # isort:skip
-from .user import *  # NOQA # isort:skip
+from .board import *  # isort:skip
+from .campaign import *  # isort:skip
+from .domain import *  # isort:skip
+from .filterset import *  # isort:skip
+from .flags import *  # isort:skip
+from .jobcategory import *  # isort:skip
+from .jobpost import *  # isort:skip
+from .jobpostreport import *  # isort:skip
+from .jobtype import *  # isort:skip
+from .location import *  # isort:skip
+from .reportcode import *  # isort:skip
+from .tag import *  # isort:skip
+from .user import *  # isort:skip

@@ -10,8 +10,8 @@ Create Date: 2015-02-22 13:49:44.530434
 revision = '476608367f85'
 down_revision = '140e56666d9e'
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 
 public_domains = {
     'gmail.com',
@@ -68,7 +68,7 @@ def upgrade():
     # This is a risky cast from a Python set to a SQL list. Only guaranteed to work with Python 2.x
     op.execute(
         sa.text(
-            '''UPDATE domain SET is_webmail=true WHERE name IN %r'''
+            '''UPDATE domain SET is_webmail=true WHERE name IN %r'''  # nosec B608
             % (tuple(str(d.lower()) for d in public_domains),)
         )
     )

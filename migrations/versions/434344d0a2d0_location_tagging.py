@@ -10,8 +10,8 @@ Create Date: 2014-06-12 02:32:50.090106
 revision = '434344d0a2d0'
 down_revision = '441fd49059e3'
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 
 from coaster.sqlalchemy import JsonDict
 

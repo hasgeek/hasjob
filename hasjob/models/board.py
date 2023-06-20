@@ -1,9 +1,7 @@
-from sqlalchemy.ext.associationproxy import association_proxy
-
 from flask import Markup, url_for
-from werkzeug.utils import cached_property
-
 from pytz import timezone
+from sqlalchemy.ext.associationproxy import association_proxy
+from werkzeug.utils import cached_property
 
 from coaster.sqlalchemy import make_timestamp_columns
 

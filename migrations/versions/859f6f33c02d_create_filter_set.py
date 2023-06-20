@@ -10,9 +10,9 @@ Create Date: 2018-03-15 14:09:04.609985
 revision = '859f6f33c02d'
 down_revision = 'b26b524d3fba'
 
+import sqlalchemy as sa
 from alembic import op
 from sqlalchemy.dialects import postgresql
-import sqlalchemy as sa
 
 
 def upgrade():

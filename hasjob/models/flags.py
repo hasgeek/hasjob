@@ -1,10 +1,9 @@
 from collections import namedtuple
 
+from baseframe import __, cache
 from sqlalchemy import distinct
-
 from werkzeug.utils import cached_property
 
-from baseframe import __, cache
 from coaster.utils import utcnow
 
 from . import agelimit, db, newlimit

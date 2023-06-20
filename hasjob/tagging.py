@@ -35,6 +35,7 @@ def tag_locations(jobpost_id):
                 'bias': ['IN', 'US'],
                 'special': ['Anywhere', 'Remote', 'Home'],
             },
+            timeout=30,
         ).json()
         if response.get('status') == 'ok':
             remote_location = False

@@ -2,10 +2,9 @@ from io import BytesIO
 from os.path import splitext
 from uuid import uuid4
 
-from werkzeug.datastructures import FileStorage
-
 from flask_uploads import IMAGES, UploadNotAllowed, UploadSet, configure_uploads
 from PIL import Image, UnidentifiedImageError
+from werkzeug.datastructures import FileStorage
 
 uploaded_logos = UploadSet('logos', IMAGES)
 

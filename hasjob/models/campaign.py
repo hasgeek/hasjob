@@ -1,14 +1,13 @@
 from datetime import timedelta
 
+from baseframe import __
+from baseframe.forms import Form
+from flask import Markup, request
 from sqlalchemy import event
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.orm import deferred
 
-from flask import Markup, request
-
-from baseframe import __
-from baseframe.forms import Form
 from coaster.sqlalchemy import JsonDict, StateManager, cached
 from coaster.utils import LabeledEnum, utcnow
 

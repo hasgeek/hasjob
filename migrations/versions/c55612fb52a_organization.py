@@ -10,8 +10,8 @@ Create Date: 2015-01-27 02:02:42.510116
 revision = 'c55612fb52a'
 down_revision = '1fce9db567a5'
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 
 
 def upgrade():
