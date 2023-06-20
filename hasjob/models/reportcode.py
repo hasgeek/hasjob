@@ -1,10 +1,12 @@
-from . import BaseNameMixin, db
+from __future__ import annotations
+
+from . import BaseNameMixin, Model, sa
 
 __all__ = ['ReportCode']
 
 
-class ReportCode(BaseNameMixin, db.Model):
+class ReportCode(BaseNameMixin, Model):
     __tablename__ = 'reportcode'
 
-    seq = db.Column(db.Integer, nullable=False, default=0)
-    public = db.Column(db.Boolean, nullable=False, default=True)
+    seq = sa.orm.mapped_column(sa.Integer, nullable=False, default=0)
+    public = sa.orm.mapped_column(sa.Boolean, nullable=False, default=True)

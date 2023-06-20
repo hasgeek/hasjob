@@ -1,13 +1,14 @@
+from __future__ import annotations
+
 from collections import namedtuple
 
 from sqlalchemy import distinct
-
 from werkzeug.utils import cached_property
 
 from baseframe import __, cache
 from coaster.utils import utcnow
 
-from . import agelimit, db, newlimit
+from . import agelimit, db, newlimit, sa
 from .board import Board
 from .jobpost import JobApplication, JobPost
 from .user import User
@@ -160,7 +161,7 @@ class UserFlags:
         lambda user: JobPost.query.filter(
             JobPost.user == user, ~(JobPost.state.UNPUBLISHED)
         ).notempty(),
-        lambda: db.session.query(db.distinct(JobPost.user_id).label('id')).filter(
+        lambda: db.session.query(sa.distinct(JobPost.user_id).label('id')).filter(
             ~(JobPost.state.UNPUBLISHED)
         ),
     )
@@ -171,7 +172,7 @@ class UserFlags:
         lambda user: JobPost.query.filter(
             JobPost.user == user, JobPost.state.NEW, ~(JobPost.state.UNPUBLISHED)
         ).notempty(),
-        lambda: db.session.query(db.distinct(JobPost.user_id).label('id')).filter(
+        lambda: db.session.query(sa.distinct(JobPost.user_id).label('id')).filter(
             JobPost.state.NEW, ~(JobPost.state.UNPUBLISHED)
         ),
     )
@@ -182,7 +183,7 @@ class UserFlags:
         lambda user: JobPost.query.filter(
             JobPost.user == user, JobPost.state.LISTED, ~(JobPost.state.UNPUBLISHED)
         ).notempty(),
-        lambda: db.session.query(db.distinct(JobPost.user_id).label('id')).filter(
+        lambda: db.session.query(sa.distinct(JobPost.user_id).label('id')).filter(
             JobPost.state.LISTED, ~(JobPost.state.UNPUBLISHED)
         ),
     )
@@ -195,7 +196,7 @@ class UserFlags:
             JobPost.datetime < utcnow() - agelimit,
             ~(JobPost.state.UNPUBLISHED),
         ).notempty(),
-        lambda: db.session.query(db.distinct(JobPost.user_id).label('id')).filter(
+        lambda: db.session.query(sa.distinct(JobPost.user_id).label('id')).filter(
             JobPost.datetime < utcnow() - agelimit, ~(JobPost.state.UNPUBLISHED)
         ),
     )
@@ -208,7 +209,7 @@ class UserFlags:
         lambda user: JobPost.query.filter(
             JobPost.user == user, JobPost.state.UNPUBLISHED
         ).notempty(),
-        lambda: db.session.query(db.distinct(JobPost.user_id).label('id')).filter(
+        lambda: db.session.query(sa.distinct(JobPost.user_id).label('id')).filter(
             ~(JobPost.state.UNPUBLISHED)
         ),
     )
@@ -219,7 +220,7 @@ class UserFlags:
         lambda user: JobPost.query.filter(
             JobPost.user == user, JobPost.state.NEW, JobPost.state.UNPUBLISHED
         ).notempty(),
-        lambda: db.session.query(db.distinct(JobPost.user_id).label('id')).filter(
+        lambda: db.session.query(sa.distinct(JobPost.user_id).label('id')).filter(
             JobPost.state.NEW, ~(JobPost.state.UNPUBLISHED)
         ),
     )
@@ -230,7 +231,7 @@ class UserFlags:
         lambda user: JobPost.query.filter(
             JobPost.user == user, JobPost.state.LISTED, JobPost.state.UNPUBLISHED
         ).notempty(),
-        lambda: db.session.query(db.distinct(JobPost.user_id).label('id')).filter(
+        lambda: db.session.query(sa.distinct(JobPost.user_id).label('id')).filter(
             JobPost.state.LISTED, ~(JobPost.state.UNPUBLISHED)
         ),
     )

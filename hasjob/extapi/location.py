@@ -15,7 +15,7 @@ def location_geodata(location):
         else:
             url = urljoin(app.config['LASTUSER_SERVER'], '/api/1/geo/get_by_name')
         try:
-            response = requests.get(url, params={'name': location}).json()
+            response = requests.get(url, params={'name': location}, timeout=30).json()
         except requests.exceptions.JSONDecodeError:
             return {}
         if response.get('status') == 'ok':

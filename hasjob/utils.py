@@ -1,5 +1,5 @@
-from random import choice, randint
 import re
+from random import SystemRandom
 
 from coaster.utils import simplify_text
 
@@ -107,7 +107,7 @@ def base36decode(number):
 
 
 def random_long_key():
-    return base36encode(randint(1000000000000000, 10000000000000000))
+    return base36encode(SystemRandom().randint(1000000000000000, 10000000000000000))
 
 
 def random_hash_key():
@@ -118,7 +118,8 @@ def random_hash_key():
     ...     if len(random_hash_key()) != 5:
     ...         print "Length is not 5!"
     """
-    return ('0000' + base36encode(randint(0, 60466175)))[-5:]  # 60466175 is 'zzzzz'
+    # 60466175 is 'zzzzz'
+    return ('0000' + base36encode(SystemRandom().randint(0, 60466175)))[-5:]
 
 
 def cointoss():
@@ -129,8 +130,8 @@ def cointoss():
     # From https://en.wikipedia.org/wiki/Fair_coin#Fair_results_from_a_biased_coin
     r1 = r2 = None
     while r1 == r2:
-        r1 = choice([True, False])
-        r2 = choice([True, False])
+        r1 = SystemRandom().choice([True, False])
+        r2 = SystemRandom().choice([True, False])
     return r1
 
 

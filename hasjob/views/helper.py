@@ -1,25 +1,22 @@
+import hashlib
 from base64 import b64decode
 from datetime import timedelta
 from os import path
 from types import SimpleNamespace
 from urllib.parse import quote, quote_plus
 from uuid import uuid4
-import hashlib
 
-from sqlalchemy import or_
-from sqlalchemy.exc import IntegrityError
-
+import bleach
 from flask import Markup, copy_current_request_context, g, request, session
-
+from flask_lastuser import signal_user_looked_up
 from geoip2.errors import AddressNotFoundError
 from pytz import UTC
-import bleach
+from sqlalchemy.exc import IntegrityError
 
 from baseframe import _, cache
 from baseframe.signals import form_validation_error, form_validation_success
 from coaster.sqlalchemy import failsafe_add
 from coaster.utils import utcnow
-from flask_lastuser import signal_user_looked_up
 
 from .. import app, lastuser, redis_store, rq
 from ..extapi import location_geodata
@@ -44,6 +41,7 @@ from ..models import (
     UserEventBase,
     campaign_event_session_table,
     db,
+    sa,
 )
 from ..utils import cointoss, redactemail, scrubemail
 
@@ -420,7 +418,7 @@ def bgroup(jobpost_ab, post):
 def get_jobpost_impressions(jobpost_id):
     return (
         db.session.query(
-            db.func.count(db.func.distinct(EventSession.user_id)).label('count')
+            sa.func.count(sa.distinct(EventSession.user_id)).label('count')
         )
         .join(JobImpression)
         .filter(JobImpression.jobpost_id == jobpost_id)
@@ -543,7 +541,7 @@ def getposts(
     query = (
         basequery.filter(statusfilter)
         .options(*JobPost._defercols)
-        .options(db.joinedload(JobPost.domain))
+        .options(sa.orm.joinedload(JobPost.domain))
     )
 
     if g.board:
@@ -556,18 +554,18 @@ def getposts(
             if pinned:
                 if g.board:
                     query = query.filter(
-                        db.or_(
-                            db.and_(
+                        sa.or_(
+                            sa.and_(
                                 BoardJobPost.pinned.is_(True), JobPost.state.LISTED
                             ),
-                            db.and_(BoardJobPost.pinned.is_(False), JobPost.state.NEW),
+                            sa.and_(BoardJobPost.pinned.is_(False), JobPost.state.NEW),
                         )
                     )
                 else:
                     query = query.filter(
-                        db.or_(
-                            db.and_(JobPost.pinned.is_(True), JobPost.state.LISTED),
-                            db.and_(JobPost.pinned.is_(False), JobPost.state.NEW),
+                        sa.or_(
+                            sa.and_(JobPost.pinned.is_(True), JobPost.state.LISTED),
+                            sa.and_(JobPost.pinned.is_(False), JobPost.state.NEW),
                         )
                     )
             else:
@@ -575,13 +573,13 @@ def getposts(
 
     if pinned:
         if g.board:
-            query = query.order_by(db.desc(BoardJobPost.pinned))
+            query = query.order_by(sa.desc(BoardJobPost.pinned))
         else:
-            query = query.order_by(db.desc(JobPost.pinned))
+            query = query.order_by(sa.desc(JobPost.pinned))
 
     if not order and not limit:
         return query
-    return query.order_by(db.desc(JobPost.datetime)).limit(limit)
+    return query.order_by(sa.desc(JobPost.datetime)).limit(limit)
 
 
 def getallposts(order_by=None, desc=False, start=None, limit=None):
@@ -590,7 +588,7 @@ def getallposts(order_by=None, desc=False, start=None, limit=None):
     filt = JobPost.query.filter(JobPost.state.PUBLIC)
     count = filt.count()
     if desc:
-        filt = filt.order_by(db.desc(order_by))
+        filt = filt.order_by(sa.desc(order_by))
     else:
         filt = filt.order_by(order_by)
     if start is not None:
@@ -606,13 +604,13 @@ def gettags(alltime=False):
             Tag.name.label('name'),
             Tag.title.label('title'),
             Tag.public.label('public'),
-            db.func.count(Tag.id).label('count'),
+            sa.func.count(Tag.id).label('count'),
         )
         .join(JobPostTag)
         .join(JobPost)
         .filter(JobPost.state.PUBLIC, Tag.public.is_(True))
         .group_by(Tag.id)
-        .order_by(db.text('count DESC'))
+        .order_by(sa.text('count DESC'))
     )
     if not alltime:
         query = query.filter(JobPost.state.LISTED)
@@ -802,7 +800,7 @@ def campaign_view_count_update(campaign_id, user_id=None, anon_user_id=None):
             cv = CampaignAnonView(campaign_id=campaign_id, anon_user_id=anon_user_id)
             db.session.add(cv)
     query = (
-        db.session.query(db.func.count(campaign_event_session_table.c.event_session_id))
+        db.session.query(sa.func.count(campaign_event_session_table.c.event_session_id))
         .filter(campaign_event_session_table.c.campaign_id == campaign_id)
         .join(EventSession)
         .filter(EventSession.active_at >= (cv.reset_at or utcnow()))
@@ -810,7 +808,7 @@ def campaign_view_count_update(campaign_id, user_id=None, anon_user_id=None):
 
     # FIXME: Run this in a cron job and de-link from post-request processing
     # query = query.filter(
-    #    db.or_(
+    #    sa.or_(
     #        # Is this event session closed? Criteria: it's been half an hour or the
     #        # session's explicitly closed
     #        EventSession.ended_at.isnot(None),
@@ -822,20 +820,20 @@ def campaign_view_count_update(campaign_id, user_id=None, anon_user_id=None):
         query = query.filter(EventSession.anon_user_id == anon_user_id)
 
     cv.session_count = query.first()[0]
-    cv.last_viewed_at = db.func.utcnow()
+    cv.last_viewed_at = sa.func.utcnow()
     db.session.commit()
 
 
 def reset_campaign_views():  # Periodic job
     live_campaigns = Campaign.query.filter(Campaign.state.LIVE).options(
-        db.load_only(Campaign.id)
+        sa.orm.load_only(Campaign.id)
     )
 
     CampaignView.query.filter(
         CampaignView.campaign_id.in_(live_campaigns),
         CampaignView.last_viewed_at < utcnow() - timedelta(days=30),
     ).update(
-        {'dismissed': False, 'session_count': 0, 'reset_at': db.func.utcnow()},
+        {'dismissed': False, 'session_count': 0, 'reset_at': sa.func.utcnow()},
         synchronize_session=False,
     )
 
@@ -843,7 +841,7 @@ def reset_campaign_views():  # Periodic job
         CampaignAnonView.campaign_id.in_(live_campaigns),
         CampaignAnonView.last_viewed_at < utcnow() - timedelta(days=30),
     ).update(
-        {'dismissed': False, 'session_count': 0, 'reset_at': db.func.utcnow()},
+        {'dismissed': False, 'session_count': 0, 'reset_at': sa.func.utcnow()},
         synchronize_session=False,
     )
 
@@ -938,7 +936,7 @@ def filter_basequery(basequery, filters, exclude_list=()):
 
     if filter_by_location and filter_by_anywhere:
         basequery = basequery.filter(
-            or_(
+            sa.or_(
                 JobPost.id.in_(job_location_jobpost_ids),
                 JobPost.remote_location.is_(True),
             )
@@ -974,7 +972,7 @@ def filter_basequery(basequery, filters, exclude_list=()):
     if filters.get('search_tsquery') and 'search_tsquery' not in exclude_list:
         basequery = basequery.filter(
             JobPost.search_vector.bool_op('@@')(
-                db.func.to_tsquery(filters['search_tsquery'])
+                sa.func.to_tsquery(filters['search_tsquery'])
             )
         )
 
@@ -984,12 +982,12 @@ def filter_basequery(basequery, filters, exclude_list=()):
 def filter_locations(board, filters):
     basequery = (
         db.session.query(
-            JobLocation.geonameid, db.func.count(JobLocation.geonameid).label('count')
+            JobLocation.geonameid, sa.func.count(JobLocation.geonameid).label('count')
         )
         .join(JobPost)
         .filter(JobPost.state.LISTED, JobLocation.primary.is_(True))
         .group_by(JobLocation.geonameid)
-        .order_by(db.text('count DESC'))
+        .order_by(sa.text('count DESC'))
     )
     if board:
         basequery = basequery.join(BoardJobPost).filter(BoardJobPost.board == board)
@@ -1027,7 +1025,7 @@ def filter_types(basequery, board, filters):
     basequery = filter_basequery(basequery, filters, exclude_list=['types'])
     filtered_typeids = [
         post.type_id
-        for post in basequery.options(db.load_only(JobPost.type_id))
+        for post in basequery.options(sa.orm.load_only(JobPost.type_id))
         .distinct(JobPost.type_id)
         .all()
     ]
@@ -1060,7 +1058,7 @@ def filter_categories(basequery, board, filters):
     basequery = filter_basequery(basequery, filters, exclude_list=['categories'])
     filtered_categoryids = [
         post.category_id
-        for post in basequery.options(db.load_only(JobPost.category_id))
+        for post in basequery.options(sa.orm.load_only(JobPost.category_id))
         .distinct(JobPost.category_id)
         .all()
     ]
@@ -1096,7 +1094,7 @@ def inject_filter_options():
         cache_key = (
             'jobfilters/'
             + (g.board.name + '/' if g.board else '')
-            + hashlib.sha1(repr(filters).encode('utf-8')).hexdigest()
+            + hashlib.blake2b(repr(filters).encode('utf-8'), digest_size=16).hexdigest()
         )
         result = cache.get(cache_key)
         if not result:

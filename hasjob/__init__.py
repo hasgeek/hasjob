@@ -1,18 +1,18 @@
 import os.path
 
+import geoip2.database
 from flask import Flask
 from flask_assets import Bundle
+from flask_lastuser import Lastuser
+from flask_lastuser.sqlalchemy import UserManager
 from flask_mail import Mail
 from flask_migrate import Migrate
 from flask_redis import FlaskRedis
 from flask_rq2 import RQ
 
-import geoip2.database
-
-from baseframe import Version, assets, baseframe
-from flask_lastuser import Lastuser
-from flask_lastuser.sqlalchemy import UserManager
 import coaster.app
+from baseframe import Version, assets, baseframe
+from coaster.assets import WebpackManifest
 
 from ._version import __version__
 from .uploads import configure as uploads_configure
@@ -25,13 +25,16 @@ mail = Mail()
 lastuser = Lastuser()
 redis_store = FlaskRedis(decode_responses=True)
 rq = RQ()
+manifest = WebpackManifest(
+    app, filepath='static/build/manifest.json', urlpath='/static/build/'
+)
 
 # Second, setup assets
 version = Version(__version__)
 
 # Third, after config, import the models and views
 
-from . import cli, models, views  # noqa  # isort:skip
+from . import cli, models, views  # noqa: F401  # isort:skip
 from .models import db  # isort:skip
 
 # Configure the app

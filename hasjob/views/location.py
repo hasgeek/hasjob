@@ -8,7 +8,7 @@ from baseframe.forms import render_delete_sqla, render_form
 from .. import app, lastuser
 from ..extapi import location_geodata
 from ..forms import EditLocationForm, NewLocationForm
-from ..models import JobLocation, JobPost, Location, db
+from ..models import JobLocation, JobPost, Location, db, sa
 
 
 @app.route('/in/new', methods=['GET', 'POST'], subdomain='<subdomain>')
@@ -23,7 +23,7 @@ def location_new():
             (r.geonameid, None)
             for r in db.session.query(
                 JobLocation.geonameid,
-                db.func.count(JobLocation.geonameid).label('count'),
+                sa.func.count(JobLocation.geonameid).label('count'),
             )
             .join(JobPost)
             .filter(
@@ -33,7 +33,7 @@ def location_new():
                 ),
             )
             .group_by(JobLocation.geonameid)
-            .order_by(db.text('count DESC'))
+            .order_by(sa.text('count DESC'))
             .limit(100)
         ]
     )

@@ -10,9 +10,9 @@ Create Date: 2018-02-22 00:26:16.042019
 revision = '8a37fe07ef9d'
 down_revision = 'a55bb6a85c83'
 
+import sqlalchemy as sa
 from alembic import op
 from sqlalchemy.sql import column, table
-import sqlalchemy as sa
 
 campaign_view = table(
     'campaign_view',

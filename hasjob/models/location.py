@@ -1,32 +1,36 @@
+from __future__ import annotations
+
 from flask import url_for
 
-from . import BaseScopedNameMixin, db
+from . import BaseScopedNameMixin, Model, backref, relationship, sa
 from .board import Board
 
 __all__ = ['Location']
 
 
-class Location(BaseScopedNameMixin, db.Model):
+class Location(BaseScopedNameMixin, Model):
     """
     A location where jobs are listed, using geonameid for primary key. Scoped to a board
     """
 
     __tablename__ = 'location'
-    id = db.Column(db.Integer, primary_key=True, autoincrement=False)  # noqa: A003
-    geonameid = db.synonym('id')
-    board_id = db.Column(
-        None, db.ForeignKey('board.id'), nullable=False, primary_key=True, index=True
+    id = sa.orm.mapped_column(  # noqa: A003  # type: ignore[assignment]
+        sa.Integer, primary_key=True, autoincrement=False
     )
-    board = db.relationship(
+    geonameid = sa.orm.synonym('id')
+    board_id = sa.orm.mapped_column(
+        None, sa.ForeignKey('board.id'), nullable=False, primary_key=True, index=True
+    )
+    board = relationship(
         Board,
-        backref=db.backref('locations', lazy='dynamic', cascade='all, delete-orphan'),
+        backref=backref('locations', lazy='dynamic', cascade='all, delete-orphan'),
     )
-    parent = db.synonym('board')
+    parent = sa.orm.synonym('board')
 
     #: Landing page description
-    description = db.Column(db.UnicodeText, nullable=True)
+    description = sa.orm.mapped_column(sa.UnicodeText, nullable=True)
 
-    __table_args__ = (db.UniqueConstraint('board_id', 'name'),)
+    __table_args__ = (sa.UniqueConstraint('board_id', 'name'),)
 
     def url_for(self, action='view', **kwargs):
         subdomain = self.board.name if self.board.not_root else None

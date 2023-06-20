@@ -1,14 +1,16 @@
+from __future__ import annotations
+
 from datetime import timedelta
 from uuid import uuid4
 
 from flask import request
+from flask_lastuser.sqlalchemy import UserBase2
 
 from baseframe import _, cache
 from coaster.sqlalchemy import JsonDict, UuidMixin
 from coaster.utils import utcnow
-from flask_lastuser.sqlalchemy import UserBase2
 
-from . import BaseMixin, db
+from . import BaseMixin, Model, backref, db, relationship, sa
 
 __all__ = [
     'User',
@@ -21,14 +23,14 @@ __all__ = [
 ]
 
 
-class User(UserBase2, db.Model):
+class User(UserBase2, Model):
     __tablename__ = 'user'
 
-    resume = db.deferred(db.Column(JsonDict, nullable=False, default={}))
-    blocked = db.Column(db.Boolean, nullable=False, default=False)
+    resume = sa.orm.mapped_column(JsonDict, nullable=False, default={}, deferred=True)
+    blocked = sa.orm.mapped_column(sa.Boolean, nullable=False, default=False)
 
 
-class UserActiveAt(db.Model):
+class UserActiveAt(Model):
     """
     Track when a user's session was re-verified with Lastuser. This column records the user's presence
     at five minute intervals (when the Redis cache of session verification expires). Since the average
@@ -37,20 +39,22 @@ class UserActiveAt(db.Model):
     """
 
     __tablename__ = 'user_active_at'
-    active_at = db.Column(
-        db.TIMESTAMP(timezone=True),
+    active_at = sa.orm.mapped_column(
+        sa.TIMESTAMP(timezone=True),
         nullable=False,
-        default=db.func.utcnow(),
+        default=sa.func.utcnow(),
         primary_key=True,
     )
-    user_id = db.Column(
-        None, db.ForeignKey('user.id'), nullable=False, primary_key=True, index=True
+    user_id = sa.orm.mapped_column(
+        None, sa.ForeignKey('user.id'), nullable=False, primary_key=True, index=True
     )
-    user = db.relationship(User)
-    board_id = db.Column(None, db.ForeignKey('board.id'), nullable=True, index=True)
+    user = relationship(User)
+    board_id = sa.orm.mapped_column(
+        None, sa.ForeignKey('board.id'), nullable=True, index=True
+    )
 
 
-class AnonUser(BaseMixin, db.Model):
+class AnonUser(BaseMixin, Model):
     """
     An anonymous user. We know nothing about this person until they choose to login. If they do login,
     we still don't know if this is the same person or someone else at the computer, but we know there's
@@ -60,10 +64,12 @@ class AnonUser(BaseMixin, db.Model):
     """
 
     __tablename__ = 'anon_user'
-    user_id = db.Column(None, db.ForeignKey('user.id'), nullable=True, index=True)
-    user = db.relationship(
+    user_id = sa.orm.mapped_column(
+        None, sa.ForeignKey('user.id'), nullable=True, index=True
+    )
+    user = relationship(
         User,
-        backref=db.backref('anonusers', lazy='dynamic', order_by='AnonUser.id.desc()'),
+        backref=backref('anonusers', lazy='dynamic', order_by='AnonUser.id.desc()'),
     )
 
     def __repr__(self):
@@ -135,7 +141,7 @@ class EventSessionBase:
                     self.events = [eventclass(**kwargs) for kwargs in result[key]]
 
 
-class EventSession(EventSessionBase, UuidMixin, BaseMixin, db.Model):
+class EventSession(EventSessionBase, UuidMixin, BaseMixin, Model):
     """
     A user's event session. Groups together user activity within a single time period.
     """
@@ -145,36 +151,38 @@ class EventSession(EventSessionBase, UuidMixin, BaseMixin, db.Model):
     # See https://support.google.com/analytics/answer/2731565?hl=en for source of inspiration
     __tablename__ = 'event_session'
     # Who is this user? If known
-    user_id = db.Column(None, db.ForeignKey('user.id'), nullable=True, index=True)
-    user = db.relationship(User)
-    # If unknown
-    anon_user_id = db.Column(
-        None, db.ForeignKey('anon_user.id'), nullable=True, index=True
+    user_id = sa.orm.mapped_column(
+        None, sa.ForeignKey('user.id'), nullable=True, index=True
     )
-    anon_user = db.relationship(AnonUser)
+    user = relationship(User)
+    # If unknown
+    anon_user_id = sa.orm.mapped_column(
+        None, sa.ForeignKey('anon_user.id'), nullable=True, index=True
+    )
+    anon_user = relationship(AnonUser)
     # Where did we get this user? Referrer URL
-    referrer = db.Column(db.Unicode(2083), nullable=True)
+    referrer = sa.orm.mapped_column(sa.Unicode(2083), nullable=True)
 
     # Google Analytics parameters. If any of these is present in the
     # current request and different from the current session, a new session is created
-    utm_source = db.Column(db.Unicode(250), nullable=False, default='')
-    utm_medium = db.Column(db.Unicode(250), nullable=False, default='')
-    utm_term = db.Column(db.Unicode(250), nullable=False, default='')
-    utm_content = db.Column(db.Unicode(250), nullable=False, default='')
-    utm_id = db.Column(db.Unicode(250), nullable=False, default='')
-    utm_campaign = db.Column(db.Unicode(250), nullable=False, default='')
+    utm_source = sa.orm.mapped_column(sa.Unicode(250), nullable=False, default='')
+    utm_medium = sa.orm.mapped_column(sa.Unicode(250), nullable=False, default='')
+    utm_term = sa.orm.mapped_column(sa.Unicode(250), nullable=False, default='')
+    utm_content = sa.orm.mapped_column(sa.Unicode(250), nullable=False, default='')
+    utm_id = sa.orm.mapped_column(sa.Unicode(250), nullable=False, default='')
+    utm_campaign = sa.orm.mapped_column(sa.Unicode(250), nullable=False, default='')
     # Google click id (for AdWords)
-    gclid = db.Column(db.Unicode(250), nullable=False, default='')
+    gclid = sa.orm.mapped_column(sa.Unicode(250), nullable=False, default='')
 
-    active_at = db.Column(db.TIMESTAMP(timezone=True), nullable=False)
+    active_at = sa.orm.mapped_column(sa.TIMESTAMP(timezone=True), nullable=False)
     # This session was closed because the user showed up again under new conditions
     # (timeout or campaign tag)
-    ended_at = db.Column(db.TIMESTAMP(timezone=True), nullable=True)
+    ended_at = sa.orm.mapped_column(sa.TIMESTAMP(timezone=True), nullable=True)
 
     __table_args__ = (
-        db.CheckConstraint(
-            db.case((user_id.isnot(None), 1), else_=0)
-            + db.case((anon_user_id.isnot(None), 1), else_=0)
+        sa.CheckConstraint(
+            sa.case((user_id.isnot(None), 1), else_=0)
+            + sa.case((anon_user_id.isnot(None), 1), else_=0)
             == 1,
             name='user_event_session_user_id_or_anon_user_id',
         ),
@@ -241,38 +249,38 @@ class UserEventBase:
         return dict(self.__dict__)
 
 
-class UserEvent(UserEventBase, BaseMixin, db.Model):
+class UserEvent(UserEventBase, BaseMixin, Model):
     """
     An event, anything from a page load (typical) to an activity within that page load.
     """
 
     __tablename__ = 'user_event'
-    event_session_id = db.Column(
-        None, db.ForeignKey('event_session.id'), nullable=False
+    event_session_id = sa.orm.mapped_column(
+        None, sa.ForeignKey('event_session.id'), nullable=False
     )
-    event_session = db.relationship(
+    event_session = relationship(
         EventSession,
-        backref=db.backref('events', lazy='dynamic', order_by='UserEvent.created_at'),
+        backref=backref('events', lazy='dynamic', order_by='UserEvent.created_at'),
     )
     #: User's IP address
-    ipaddr = db.Column(db.Unicode(45), nullable=True)
+    ipaddr = sa.orm.mapped_column(sa.Unicode(45), nullable=True)
     #: User's browser
-    useragent = db.Column(db.Unicode(250), nullable=True)
+    useragent = sa.orm.mapped_column(sa.Unicode(250), nullable=True)
     #: URL
-    url = db.Column(db.Unicode(2038), nullable=True)
+    url = sa.orm.mapped_column(sa.Unicode(2038), nullable=True)
     #: Referrer
-    referrer = db.Column(
-        db.Unicode(2038),
+    referrer = sa.orm.mapped_column(
+        sa.Unicode(2038),
         nullable=True,
         default=lambda: (
             request.referrer[:2038] if request and request.referrer else None
         ),
     )
     #: HTTP Method
-    method = db.Column(db.Unicode(10), nullable=True)
+    method = sa.orm.mapped_column(sa.Unicode(10), nullable=True)
     #: Status code
-    status_code = db.Column(db.SmallInteger, nullable=True)
+    status_code = sa.orm.mapped_column(sa.SmallInteger, nullable=True)
     #: Event name
-    name = db.Column(db.Unicode(80), nullable=False)
+    name = sa.orm.mapped_column(sa.Unicode(80), nullable=False)
     #: Custom event data (null = no data saved)
-    data = db.Column(JsonDict, nullable=True)
+    data = sa.orm.mapped_column(JsonDict, nullable=True)

@@ -1,6 +1,6 @@
+import baseframe.forms as forms
 from baseframe import __
 from coaster.utils import getbool
-import baseframe.forms as forms
 
 from ..models import (
     BANNER_LOCATION,

@@ -15,6 +15,3 @@ LASTUSER_CLIENT_SECRET = os.environ.get('LASTUSER_CLIENT_SECRET', '')
 STATIC_SUBDOMAIN = 'static'
 
 ASSET_SERVER = 'https://static.hasgeek.co.in/'
-ASSET_MANIFEST_PATH = "static/build/manifest.json"
-# no trailing slash
-ASSET_BASE_PATH = '/static/build'

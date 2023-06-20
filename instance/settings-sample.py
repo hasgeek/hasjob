@@ -9,7 +9,7 @@ ASSET_SERVER = ''
 #: Database backend
 SQLALCHEMY_DATABASE_URI = 'sqlite:///test.db'
 #: Secret key
-SECRET_KEY = 'make this something random'
+SECRET_KEY = 'make this something random'  # nosec B105
 #: Timezone
 TIMEZONE = 'Asia/Kolkata'
 #: Server host name (and port if not 80/443)
@@ -17,7 +17,7 @@ SERVER_NAME = 'hasjob.test:5001'
 #: Static resource subdomain (defaults to 'static')
 STATIC_SUBDOMAIN = 'static'
 #: Upload path
-UPLOADED_LOGOS_DEST = '/tmp/uploads'
+UPLOADED_LOGOS_DEST = '/tmp/uploads'  # nosec B108
 #: Cache settings
 CACHE_TYPE = 'redis'
 #: RQ settings
@@ -52,9 +52,9 @@ USE_SSL = False
 #: Twitter integration (register as a "client" app)
 TWITTER_ENABLED = False
 TWITTER_CONSUMER_KEY = ''
-TWITTER_CONSUMER_SECRET = ''
+TWITTER_CONSUMER_SECRET = ''  # nosec B105
 TWITTER_ACCESS_KEY = ''
-TWITTER_ACCESS_SECRET = ''
+TWITTER_ACCESS_SECRET = ''  # nosec B105
 #: Bit.ly integration for short URLs
 BITLY_USER = ''
 BITLY_KEY = ''
@@ -68,12 +68,3 @@ SHORTDATE_THRESHOLD_DAYS = 60
 SUPPORT_EMAIL = 'person@example.com'
 #: Sitemap key
 SITEMAP_KEY = None
-# Dogpile cache backend
-DOGPILE_CACHE_BACKEND = 'dogpile.cache.redis'
-# Dogpile cache backend URL
-DOGPILE_CACHE_URLS = '127.0.0.1:6379'
-# Dogpile cache regions (important, do not remove!)
-DOGPILE_CACHE_REGIONS = [('hasjob_index', 3600)]
-ASSET_MANIFEST_PATH = 'static/build/manifest.json'
-# no trailing slash
-ASSET_BASE_PATH = '/static/build'
