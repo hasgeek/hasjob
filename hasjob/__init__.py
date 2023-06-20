@@ -12,6 +12,7 @@ from flask_redis import FlaskRedis
 from flask_rq2 import RQ
 
 import coaster.app
+from coaster.assets import WebpackManifest
 
 from ._version import __version__
 from .uploads import configure as uploads_configure
@@ -24,6 +25,9 @@ mail = Mail()
 lastuser = Lastuser()
 redis_store = FlaskRedis(decode_responses=True)
 rq = RQ()
+manifest = WebpackManifest(
+    app, filepath='static/build/manifest.json', urlpath='/static/build/'
+)
 
 # Second, setup assets
 version = Version(__version__)
