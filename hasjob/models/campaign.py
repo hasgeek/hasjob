@@ -94,8 +94,6 @@ class CAMPAIGN_POSITION(LabeledEnum):  # noqa: N801
     #: Shown in the body after the employer posts a job
     AFTERPOST = (3, __("After posting a job"))
 
-    __order__ = (HEADER, SIDEBAR, BEFOREPOST, AFTERPOST)
-
 
 class CAMPAIGN_ACTION(LabeledEnum):  # noqa: N801
     LINK = ('L', __("Follow link"))
@@ -104,8 +102,6 @@ class CAMPAIGN_ACTION(LabeledEnum):  # noqa: N801
     RSVP_M = ('M', __("RSVP Maybe"))
     FORM = ('F', __("Show a form"))
     DISMISS = ('D', __("Dismiss campaign"))
-
-    __order__ = (LINK, RSVP_Y, RSVP_N, RSVP_M, FORM, DISMISS)
 
     RSVP_TYPES = {RSVP_Y, RSVP_N, RSVP_M}
     DATA_TYPES = {RSVP_Y, RSVP_N, RSVP_M, FORM}
@@ -116,8 +112,6 @@ class BANNER_LOCATION(LabeledEnum):  # noqa: N801
     RIGHT = (1, __("Right"))
     BOTTOM = (2, __("Bottom"))
     LEFT = (3, __("Left"))
-
-    __order__ = (TOP, RIGHT, BOTTOM, LEFT)
 
 
 class Campaign(BaseNameMixin, db.Model):

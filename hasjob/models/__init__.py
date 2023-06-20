@@ -32,34 +32,20 @@ class POST_STATE(LabeledEnum):  # noqa: N801
     CONFIRMED = (2, 'confirmed', __("Confirmed"))
     #: Reviewed and cleared for push channels
     REVIEWED = (3, 'reviewed', __("Reviewed"))
-    #: Reviewed and rejected as inappropriate
-    REJECTED = (4, 'rejected', __("Rejected"))
-    #: Withdrawn by owner
-    WITHDRAWN = (5, 'withdrawn', __("Withdrawn"))
-    #: Flagged by users for review
-    FLAGGED = (6, 'flagged', __("Flagged"))
-    #: Marked as spam
-    SPAM = (7, 'spam', __("Spam"))
-    #: Moderated, needs edit
-    MODERATED = (8, 'moderated', __("Moderated"))
     #: Special announcement
     ANNOUNCEMENT = (9, 'announcement', __("Announcement"))
     #: Not accepting applications, but publicly viewable
     CLOSED = (10, 'closed', __("Closed"))
-
-    __order__ = (
-        DRAFT,
-        PENDING,
-        CONFIRMED,
-        REVIEWED,
-        ANNOUNCEMENT,
-        CLOSED,
-        FLAGGED,
-        MODERATED,
-        REJECTED,
-        SPAM,
-        WITHDRAWN,
-    )
+    #: Flagged by users for review
+    FLAGGED = (6, 'flagged', __("Flagged"))
+    #: Moderated, needs edit
+    MODERATED = (8, 'moderated', __("Moderated"))
+    #: Reviewed and rejected as inappropriate
+    REJECTED = (4, 'rejected', __("Rejected"))
+    #: Marked as spam
+    SPAM = (7, 'spam', __("Spam"))
+    #: Withdrawn by owner
+    WITHDRAWN = (5, 'withdrawn', __("Withdrawn"))
 
     UNPUBLISHED = {DRAFT, PENDING}
     UNPUBLISHED_OR_MODERATED = {DRAFT, PENDING, MODERATED}
@@ -74,8 +60,6 @@ class CURRENCY(LabeledEnum):
     INR = ('INR', 'INR')
     USD = ('USD', 'USD')
     EUR = ('EUR', 'EUR')
-
-    __order__ = (INR, USD, EUR)
 
 
 class EMPLOYER_RESPONSE(LabeledEnum):  # noqa: N801
@@ -94,8 +78,6 @@ class EMPLOYER_RESPONSE(LabeledEnum):  # noqa: N801
     #: Employer rejected candidate with a message
     REJECTED = (6, 'rejected', __("Rejected"))
 
-    __order__ = (NEW, PENDING, IGNORED, REPLIED, FLAGGED, SPAM, REJECTED)
-
     CAN_REPLY = {NEW, PENDING, IGNORED}
     CAN_REJECT = CAN_REPLY
     CAN_IGNORE = {NEW, PENDING}
@@ -107,8 +89,6 @@ class PAY_TYPE(LabeledEnum):  # noqa: N801
     ONETIME = (1, __("One-time"))
     RECURRING = (2, __("Recurring"))
 
-    __order__ = (NOCASH, ONETIME, RECURRING)
-
 
 class CANDIDATE_FEEDBACK(LabeledEnum):  # noqa: N801
     NORESPONSE = (0, __("No response"))
@@ -116,8 +96,6 @@ class CANDIDATE_FEEDBACK(LabeledEnum):  # noqa: N801
     DID_NOT_GET = (2, __("Did not get the job"))
     DID_NOT_ACCEPT = (3, __("Got offer, did not accept"))
     GOT_JOB = (4, __("Got the job"))
-
-    __order__ = (NORESPONSE, INPROCESS, DID_NOT_GET, DID_NOT_ACCEPT, GOT_JOB)
 
 
 from .board import *  # isort:skip
