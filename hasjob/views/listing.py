@@ -2,9 +2,6 @@ from datetime import timedelta
 from difflib import SequenceMatcher
 
 import bleach
-from baseframe import cache, request_is_xhr  # , dogpile
-from baseframe.forms import Form
-from baseframe.utils import is_public_email_domain
 from flask import (
     Markup,
     abort,
@@ -23,6 +20,9 @@ from premailer import transform as email_transform
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import StaleDataError
 
+from baseframe import cache, request_is_xhr
+from baseframe.forms import Form
+from baseframe.utils import is_public_email_domain
 from coaster.utils import base_domain_matches, get_email_domain, getbool, md5sum, utcnow
 from coaster.views import load_model
 
@@ -42,6 +42,7 @@ from ..models import (
     UserJobView,
     agelimit,
     db,
+    sa,
     unique_hash,
     viewstats_by_id_day,
     viewstats_by_id_hour,
@@ -75,7 +76,7 @@ from .helper import (
 def jobdetail(domain, hashid):
     is_siteadmin = lastuser.has_permission('siteadmin')
     query = JobPost.fetch(hashid).options(
-        db.subqueryload(JobPost.locations), db.subqueryload(JobPost.taglinks)
+        sa.orm.subqueryload(JobPost.locations), sa.orm.subqueryload(JobPost.taglinks)
     )
     post = query.first_or_404()
 
@@ -233,7 +234,7 @@ def job_viewstats(domain, hashid):
     is_siteadmin = lastuser.has_permission('siteadmin')
     post = (
         JobPost.query.filter_by(hashid=hashid)
-        .options(db.load_only(JobPost.id, JobPost.datetime))
+        .options(sa.orm.load_only(JobPost.id, JobPost.datetime))
         .first_or_404()
     )
     if (
@@ -347,7 +348,7 @@ def revealjob(domain, hashid):
     """
     post = (
         JobPost.query.filter_by(hashid=hashid)
-        .options(db.load_only(JobPost.id, JobPost._state, JobPost.how_to_apply))
+        .options(sa.orm.load_only(JobPost.id, JobPost._state, JobPost.how_to_apply))
         .first_or_404()
     )
     if post.state.GONE:
@@ -401,7 +402,7 @@ def applyjob(domain, hashid):
     """
     post = (
         JobPost.query.filter_by(hashid=hashid)
-        .options(db.load_only(JobPost.id, JobPost.email, JobPost.email_domain))
+        .options(sa.orm.load_only(JobPost.id, JobPost.email, JobPost.email_domain))
         .first_or_404()
     )
     # If the domain doesn't match, redirect to correct URL
@@ -526,7 +527,7 @@ def managejob(post, kwargs):
         return redirect(post.url_for('manage'), code=301)
 
     first_application = post.applications.options(
-        db.load_only(JobApplication.hashid)
+        sa.orm.load_only(JobApplication.hashid)
     ).first()
     if first_application:
         return redirect(first_application.url_for(), code=303)
@@ -782,8 +783,6 @@ def pinnedjob(domain, hashid):
             msg = "This post has been pinned."
         else:
             msg = "This post is no longer pinned."
-        # cache bust
-        # dogpile.invalidate_region('hasjob_index')
     else:
         msg = "Invalid submission"
     if request_is_xhr():
@@ -861,7 +860,7 @@ def rejectjob(domain, hashid):
                 )
                 post.domain.is_banned = True
                 post.domain.banned_by = g.user
-                post.domain.banned_at = db.func.utcnow()
+                post.domain.banned_at = sa.func.utcnow()
                 post.domain.banned_reason = rejectform.reason.data
 
                 for jobpost in post.domain.jobposts:
@@ -874,8 +873,6 @@ def rejectjob(domain, hashid):
 
         db.session.commit()
         send_reject_mail(request.form.get('submit'), post, banned_posts)
-        # cache bust
-        # dogpile.invalidate_region('hasjob_index')
         if request_is_xhr():
             return "<p>%s</p>" % flashmsg
         else:
@@ -917,8 +914,6 @@ def moderatejob(domain, hashid):
         msg.body = html2text(msg.html)
         mail.send(msg)
         db.session.commit()
-        # cache bust
-        # dogpile.invalidate_region('hasjob_index')
         if request_is_xhr():
             return "<p>%s</p>" % flashmsg
     elif request.method == 'POST' and request_is_xhr():
@@ -1074,8 +1069,6 @@ def confirm_email(domain, hashid, key):
                 "you can now see how your post is performing relative to others. Look in the footer of any post.",
                 "interactive",
             )
-    # cache bust
-    # dogpile.invalidate_region('hasjob_index')
     return redirect(post.url_for(), code=302)
 
 
@@ -1130,8 +1123,6 @@ def withdraw(domain, hashid, key):
             post.reviewer = g.user
         db.session.commit()
         flash("Your job post has been withdrawn and is no longer available", "info")
-        # cache bust
-        # dogpile.invalidate_region('hasjob_index')
         return redirect(url_for('index'), code=303)
     return render_template("withdraw.html.jinja2", post=post, form=form)
 
@@ -1229,8 +1220,8 @@ def editjob(hashid, key, domain=None, form=None, validated=False, newpost=None):
         with db.session.no_autoflush:
             for oldpost in (
                 JobPost.query.filter(
-                    db.or_(
-                        db.and_(
+                    sa.or_(
+                        sa.and_(
                             JobPost.email_domain == form_email_domain,
                             ~(JobPost.state.UNPUBLISHED),
                         ),
@@ -1349,8 +1340,6 @@ def editjob(hashid, key, domain=None, form=None, validated=False, newpost=None):
             post.uncache_viewcounts('pay_label')
             session.pop('userkeys', None)  # Remove legacy userkeys dict
             session.permanent = True
-            # cache bust
-            # dogpile.invalidate_region('hasjob_index')
             return redirect(post.url_for(), code=303)
     elif request.method == 'POST':
         flash("Please review the indicated issues", category='interactive')
@@ -1469,8 +1458,6 @@ def close(domain, hashid, key):
         post.close()
         db.session.commit()
         flash(post.close.data['message'], "success")
-        # cache bust
-        # dogpile.invalidate_region('hasjob_index')
         return redirect(post.url_for(), code=303)
     return render_template("close.html.jinja2", post=post, form=form)
 
@@ -1496,7 +1483,5 @@ def reopen(domain, hashid, key):
     if form.validate_on_submit():
         post.reopen()
         db.session.commit()
-        # cache bust
-        # dogpile.invalidate_region('hasjob_index')
         return redirect(post.url_for(), code=303)
     return render_template("reopen.html.jinja2", post=post, form=form)

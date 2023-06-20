@@ -1,10 +1,20 @@
-from baseframe import __
+from __future__ import annotations
 
+from baseframe import __
 from coaster.sqlalchemy import Query, failsafe_add
 from coaster.utils import LabeledEnum, make_name
 
 from ..utils import escape_for_sql_like
-from . import POST_STATE, BaseNameMixin, TimestampMixin, db
+from . import (
+    POST_STATE,
+    BaseNameMixin,
+    Model,
+    TimestampMixin,
+    backref,
+    db,
+    relationship,
+    sa,
+)
 from .jobpost import JobPost
 
 __all__ = ['TAG_TYPE', 'Tag', 'JobPostTag']
@@ -28,14 +38,14 @@ class TAG_TYPE(LabeledEnum):  # noqa: N801
     TAG_PRESENT = {AUTO, CONFIRMED, MANUAL, REVIEWED}
 
 
-class Tag(BaseNameMixin, db.Model):
+class Tag(BaseNameMixin, Model):
     """
     A tag extracted from text.
     """
 
     __tablename__ = 'tag'
     __name_length__ = __title_length__ = 80
-    public = db.Column(db.Boolean, default=True, nullable=False)
+    public = sa.orm.mapped_column(sa.Boolean, default=True, nullable=False)
 
     def __repr__(self):
         return "<Tag %r>" % self.title
@@ -59,26 +69,26 @@ class Tag(BaseNameMixin, db.Model):
         return cls.query.filter(cls.name.like(search), cls.public.is_(True)).all()
 
 
-class JobPostTag(TimestampMixin, db.Model):
+class JobPostTag(TimestampMixin, Model):
     """
     A tag in a tag set.
     """
 
     __tablename__ = 'jobpost_tag'
     query_class = Query
-    jobpost_id = db.Column(
-        None, db.ForeignKey('jobpost.id'), nullable=False, primary_key=True
+    jobpost_id = sa.orm.mapped_column(
+        None, sa.ForeignKey('jobpost.id'), nullable=False, primary_key=True
     )
-    jobpost = db.relationship(
-        JobPost, backref=db.backref('taglinks', cascade='all, delete-orphan')
+    jobpost = relationship(
+        JobPost, backref=backref('taglinks', cascade='all, delete-orphan')
     )
-    tag_id = db.Column(
-        None, db.ForeignKey('tag.id'), nullable=False, primary_key=True, index=True
+    tag_id = sa.orm.mapped_column(
+        None, sa.ForeignKey('tag.id'), nullable=False, primary_key=True, index=True
     )
-    tag = db.relationship(
-        Tag, lazy='joined', backref=db.backref('taglinks', cascade='all, delete-orphan')
+    tag = relationship(
+        Tag, lazy='joined', backref=backref('taglinks', cascade='all, delete-orphan')
     )
-    status = db.Column(db.SmallInteger, nullable=False)
+    status = sa.orm.mapped_column(sa.SmallInteger, nullable=False)
 
     def __repr__(self):
         return f"<JobPostTag {self.tag.title!r} for {self.jobpost.hashid}>"
@@ -98,7 +108,7 @@ def related_posts(self, limit=12):
         db.session.query(JobPost)
         .options(*JobPost._defercols)
         .from_statement(
-            db.text(
+            sa.text(
                 '''SELECT jobpost.id, jobpost.hashid, jobpost.datetime, jobpost.headline, jobpost.headlineb,
             jobpost.location, jobpost.company_name, jobpost.type_id, jobpost.category_id, jobpost.status,
             jobpost.pay_type, jobpost.pay_currency, jobpost.pay_cash_min, jobpost.pay_cash_max,

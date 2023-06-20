@@ -20,7 +20,7 @@ exclude = '''
   | build
   | dist
   | node_modules
-  | funnel/assets
+  | hasjob/assets
 )/
 '''
 
@@ -35,15 +35,39 @@ use_parentheses = true
 combine_as_imports = true
 split_on_trailing_comma = false
 extra_standard_library = ['typing_extensions']
-known_first_party = ['coaster']
+known_first_party = ['baseframe', 'coaster']
+known_repo = ['hasjob']
 default_section = 'THIRDPARTY'
 sections = [
   'FUTURE',
   'STDLIB',
   'THIRDPARTY',
   'FIRSTPARTY',
+  'REPO',
   'LOCALFOLDER'
 ]
+
+[tool.pytest.ini_options]
+minversion = "6.1"  # For config.rootpath
+required_plugins = [
+  'pytest-cov',
+  'pytest-datadir',
+  'pytest-dotenv',
+  'pytest-env',
+  'pytest-rerunfailures',
+  'pytest-socket',
+  'requests-mock',
+]
+addopts = [
+  '--cov-report=term-missing',
+  '--disable-socket',
+  '--allow-unix-socket',  # Required for Selenium driver
+  '--allow-hosts=127.0.0.1,::1',  # Add Docker IPs here
+  '--strict-markers',
+]
+env = ['FLASK_ENV=testing', 'FLASK_TESTING=true']
+env_override_existing_values = false
+env_files = ['.env.testing', '.testenv', '.env', '.flaskenv']
 
 [tool.mypy]
 files = '**/*.py'
@@ -63,7 +87,7 @@ skips = ['*/*_test.py', '*/test_*.py']
 
 [tool.ruff]
 # This is a slight customisation of the default rules
-# 1. Coaster still supports Python 3.7 pending its EOL
+# 1. Hasjob still supports Python 3.7 pending its EOL
 # 2. Rule E402 (module-level import not top-level) is disabled as isort handles it
 # 3. Rule E501 (line too long) is left to Black; some strings are worse for wrapping
 
@@ -122,3 +146,6 @@ known-first-party = ['coaster']
 section-order = [
   'future', 'standard-library', 'third-party', 'first-party', 'repo', 'local-folder'
 ]
+
+[tool.ruff.isort.sections]
+repo = ['hasjob']

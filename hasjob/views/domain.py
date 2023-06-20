@@ -1,6 +1,7 @@
+from flask import abort, flash, g
+
 from baseframe import _
 from baseframe.forms import render_form, render_redirect
-from flask import abort, flash, g
 
 from .. import app, lastuser
 from ..forms import DomainForm

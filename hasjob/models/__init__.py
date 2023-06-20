@@ -1,21 +1,37 @@
 """Hasjob models."""
 # flake8: noqa
 
+from __future__ import annotations
+
 from datetime import timedelta
 
-from baseframe import __
+import sqlalchemy as sa
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import DeclarativeBase, Mapped
 
-from coaster.db import db  # noqa: F401
+from baseframe import __
 from coaster.sqlalchemy import (  # noqa: F401
     BaseMixin,
     BaseNameMixin,
     BaseScopedIdMixin,
     BaseScopedNameMixin,
     CoordinatesMixin,
+    DynamicMapped,
+    ModelBase,
     TimestampMixin,
+    backref,
     make_timestamp_columns,
+    relationship,
 )
 from coaster.utils import LabeledEnum
+
+
+class Model(ModelBase, DeclarativeBase):
+    __with_timezone__ = True
+
+
+db = SQLAlchemy(metadata=Model.metadata)
+Model.init_flask_sqlalchemy(db)
 
 TimestampMixin.__with_timezone__ = True
 

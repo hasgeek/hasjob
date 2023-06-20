@@ -1,17 +1,19 @@
-from . import BaseNameMixin, db
+from __future__ import annotations
+
+from . import BaseNameMixin, Model, sa
 
 __all__ = ['JobCategory']
 
 
-class JobCategory(BaseNameMixin, db.Model):
+class JobCategory(BaseNameMixin, Model):
     __tablename__ = 'jobcategory'
 
     #: Sequence number for sorting in the display list (to be deprecated by boards)
-    seq = db.Column(db.Integer, nullable=False, default=0)
+    seq = sa.orm.mapped_column(sa.Integer, nullable=False, default=0)
     #: This job category is an option for jobs on Hasjob (to be deprecated by boards)
-    public = db.Column(db.Boolean, nullable=False, default=True)
+    public = sa.orm.mapped_column(sa.Boolean, nullable=False, default=True)
     #: This job category is private and not available as an option in boards
-    private = db.Column(db.Boolean, nullable=False, default=False)
+    private = sa.orm.mapped_column(sa.Boolean, nullable=False, default=False)
 
     def __repr__(self):
         return '<JobCategory %d %s%s>' % (

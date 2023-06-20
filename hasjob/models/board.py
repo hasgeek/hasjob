@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from flask import Markup, url_for
 from pytz import timezone
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -5,7 +7,17 @@ from werkzeug.utils import cached_property
 
 from coaster.sqlalchemy import make_timestamp_columns
 
-from . import BaseNameMixin, TimestampMixin, db
+from . import (
+    BaseNameMixin,
+    DynamicMapped,
+    Mapped,
+    Model,
+    TimestampMixin,
+    backref,
+    db,
+    relationship,
+    sa,
+)
 from .jobcategory import JobCategory
 from .jobpost import JobPost
 from .jobtype import JobType
@@ -23,32 +35,32 @@ __all__ = [
 ]
 
 
-board_jobtype_table = db.Table(
+board_jobtype_table = sa.Table(
     'board_jobtype',
-    db.Model.metadata,
+    Model.metadata,
     *(
         make_timestamp_columns(timezone=True)
         + (
-            db.Column('board_id', None, db.ForeignKey('board.id'), primary_key=True),
-            db.Column(
-                'jobtype_id', None, db.ForeignKey('jobtype.id'), primary_key=True
+            sa.Column('board_id', None, sa.ForeignKey('board.id'), primary_key=True),
+            sa.Column(
+                'jobtype_id', None, sa.ForeignKey('jobtype.id'), primary_key=True
             ),
         )
     ),
 )
 
 
-board_jobcategory_table = db.Table(
+board_jobcategory_table = sa.Table(
     'board_jobcategory',
-    db.Model.metadata,
+    Model.metadata,
     *(
         make_timestamp_columns(timezone=True)
         + (
-            db.Column('board_id', None, db.ForeignKey('board.id'), primary_key=True),
-            db.Column(
+            sa.Column('board_id', None, sa.ForeignKey('board.id'), primary_key=True),
+            sa.Column(
                 'jobcategory_id',
                 None,
-                db.ForeignKey('jobcategory.id'),
+                sa.ForeignKey('jobcategory.id'),
                 primary_key=True,
             ),
         )
@@ -56,59 +68,59 @@ board_jobcategory_table = db.Table(
 )
 
 
-board_users_table = db.Table(
+board_users_table = sa.Table(
     'board_user',
-    db.Model.metadata,
+    Model.metadata,
     *(
         make_timestamp_columns(timezone=True)
         + (
-            db.Column('board_id', None, db.ForeignKey('board.id'), primary_key=True),
-            db.Column('user_id', None, db.ForeignKey('user.id'), primary_key=True),
+            sa.Column('board_id', None, sa.ForeignKey('board.id'), primary_key=True),
+            sa.Column('user_id', None, sa.ForeignKey('user.id'), primary_key=True),
         )
     ),
 )
 
 
-board_auto_tag_table = db.Table(
+board_auto_tag_table = sa.Table(
     'board_auto_tag',
-    db.Model.metadata,
-    db.Column('tag_id', None, db.ForeignKey('tag.id'), primary_key=True),
-    db.Column('board_id', None, db.ForeignKey('board.id'), primary_key=True),
-    db.Column(
+    Model.metadata,
+    sa.Column('tag_id', None, sa.ForeignKey('tag.id'), primary_key=True),
+    sa.Column('board_id', None, sa.ForeignKey('board.id'), primary_key=True),
+    sa.Column(
         'created_at',
-        db.TIMESTAMP(timezone=True),
+        sa.TIMESTAMP(timezone=True),
         nullable=False,
-        default=db.func.utcnow(),
+        default=sa.func.utcnow(),
     ),
 )
 
 
-board_auto_jobtype_table = db.Table(
+board_auto_jobtype_table = sa.Table(
     'board_auto_jobtype',
-    db.Model.metadata,
-    db.Column('jobtype_id', None, db.ForeignKey('jobtype.id'), primary_key=True),
-    db.Column('board_id', None, db.ForeignKey('board.id'), primary_key=True),
-    db.Column(
+    Model.metadata,
+    sa.Column('jobtype_id', None, sa.ForeignKey('jobtype.id'), primary_key=True),
+    sa.Column('board_id', None, sa.ForeignKey('board.id'), primary_key=True),
+    sa.Column(
         'created_at',
-        db.TIMESTAMP(timezone=True),
+        sa.TIMESTAMP(timezone=True),
         nullable=False,
-        default=db.func.utcnow(),
+        default=sa.func.utcnow(),
     ),
 )
 
 
-board_auto_jobcategory_table = db.Table(
+board_auto_jobcategory_table = sa.Table(
     'board_auto_jobcategory',
-    db.Model.metadata,
-    db.Column(
-        'jobcategory_id', None, db.ForeignKey('jobcategory.id'), primary_key=True
+    Model.metadata,
+    sa.Column(
+        'jobcategory_id', None, sa.ForeignKey('jobcategory.id'), primary_key=True
     ),
-    db.Column('board_id', None, db.ForeignKey('board.id'), primary_key=True),
-    db.Column(
+    sa.Column('board_id', None, sa.ForeignKey('board.id'), primary_key=True),
+    sa.Column(
         'created_at',
-        db.TIMESTAMP(timezone=True),
+        sa.TIMESTAMP(timezone=True),
         nullable=False,
-        default=db.func.utcnow(),
+        default=sa.func.utcnow(),
     ),
 )
 
@@ -139,41 +151,48 @@ def jobcategory_choices(cls, board=None):
 JobCategory.choices = classmethod(jobcategory_choices)
 
 
-class BoardAutoDomain(TimestampMixin, db.Model):
+class BoardAutoDomain(TimestampMixin, Model):
     """
     Domain tag for boards
     """
 
     __tablename__ = 'board_auto_domain'
     #: Board we are referencing
-    board_id = db.Column(
-        None, db.ForeignKey('board.id'), primary_key=True, nullable=False
+    board_id = sa.orm.mapped_column(
+        None, sa.ForeignKey('board.id'), primary_key=True, nullable=False
     )
     #: Domain for this board
-    domain = db.Column(db.Unicode(80), primary_key=True, nullable=False, index=True)
+    domain = sa.orm.mapped_column(
+        sa.Unicode(80), primary_key=True, nullable=False, index=True
+    )
+    board: Mapped[Board] = relationship(back_populates='domains')
 
     def __repr__(self):
         return f'<BoardAutoDomain {self.domain} for board {self.board.name}>'
 
 
-class BoardAutoLocation(TimestampMixin, db.Model):
+class BoardAutoLocation(TimestampMixin, Model):
     """
     Location tag for boards
     """
 
     __tablename__ = 'board_auto_location'
     #: Board we are referencing
-    board_id = db.Column(
-        None, db.ForeignKey('board.id'), primary_key=True, nullable=False
+    board_id = sa.orm.mapped_column(
+        None, sa.ForeignKey('board.id'), primary_key=True, nullable=False
     )
+    board: Mapped[Board] = relationship(back_populates='auto_locations')
+
     #: Geonameid for this board
-    geonameid = db.Column(db.Integer, primary_key=True, nullable=False, index=True)
+    geonameid = sa.orm.mapped_column(
+        sa.Integer, primary_key=True, nullable=False, index=True
+    )
 
     def __repr__(self):
         return '<BoardAutoLocation %d for board %s>' % (self.geonameid, self.board.name)
 
 
-class Board(BaseNameMixin, db.Model):
+class Board(BaseNameMixin, Model):
     """
     Boards show a filtered set of jobs at board-specific URLs.
     """
@@ -182,38 +201,38 @@ class Board(BaseNameMixin, db.Model):
     #: Reserved board names
     reserved_names = ['static', 'beta']
     #: Caption
-    caption = db.Column(db.Unicode(250), nullable=True)
+    caption = sa.orm.mapped_column(sa.Unicode(250), nullable=True)
     #: Lastuser organization userid that owns this
-    userid = db.Column(db.Unicode(22), nullable=False, index=True)
+    userid = sa.orm.mapped_column(sa.Unicode(22), nullable=False, index=True)
     #: Welcome text
-    description = db.Column(db.UnicodeText, nullable=False, default='')
+    description = sa.orm.mapped_column(sa.UnicodeText, nullable=False, default='')
     #: Restrict displayed posts to 24 hours if not logged in?
-    require_login = db.Column(db.Boolean, nullable=False, default=True)
+    require_login = sa.orm.mapped_column(sa.Boolean, nullable=False, default=True)
     #: Restrict ability to list via this board?
-    restrict_listing = db.Column(db.Boolean, nullable=False, default=True)
+    restrict_listing = sa.orm.mapped_column(sa.Boolean, nullable=False, default=True)
     #: Relax pay data requirement?
-    require_pay = db.Column(db.Boolean, nullable=False, default=True)
+    require_pay = sa.orm.mapped_column(sa.Boolean, nullable=False, default=True)
     #: New job template headline
-    newjob_headline = db.Column(db.Unicode(100), nullable=True)
+    newjob_headline = sa.orm.mapped_column(sa.Unicode(100), nullable=True)
     #: New job posting instructions
-    newjob_blurb = db.Column(db.UnicodeText, nullable=True)
+    newjob_blurb = sa.orm.mapped_column(sa.UnicodeText, nullable=True)
     #: Featured board
-    featured = db.Column(db.Boolean, default=False, nullable=False, index=True)
-    #: Posting users
-    posting_users = db.relationship(User, secondary=board_users_table)
-    #: Available job types
-    types = db.relationship(
-        JobType, secondary=board_jobtype_table, order_by=JobType.seq
+    featured = sa.orm.mapped_column(
+        sa.Boolean, default=False, nullable=False, index=True
     )
+    #: Posting users
+    posting_users = relationship(User, secondary=board_users_table)
+    #: Available job types
+    types = relationship(JobType, secondary=board_jobtype_table, order_by=JobType.seq)
     #: Available job categories
-    categories = db.relationship(
+    categories = relationship(
         JobCategory, secondary=board_jobcategory_table, order_by=JobCategory.seq
     )
 
     #: Automatic tagging domains
-    domains = db.relationship(
+    domains = relationship(
         BoardAutoDomain,
-        backref='board',
+        back_populates='board',
         cascade='all, delete-orphan',
         order_by=BoardAutoDomain.domain,
     )
@@ -221,8 +240,8 @@ class Board(BaseNameMixin, db.Model):
         'domains', 'domain', creator=lambda d: BoardAutoDomain(domain=d)
     )
     #: Automatic tagging locations
-    auto_locations = db.relationship(
-        BoardAutoLocation, backref='board', cascade='all, delete-orphan'
+    auto_locations = relationship(
+        BoardAutoLocation, back_populates='board', cascade='all, delete-orphan'
     )
     auto_geonameids = association_proxy(
         'auto_locations',
@@ -230,20 +249,24 @@ class Board(BaseNameMixin, db.Model):
         creator=lambda geonameid: BoardAutoLocation(geonameid=geonameid),
     )
     #: Automatic tagging keywords
-    auto_tags = db.relationship(Tag, secondary=board_auto_tag_table, order_by=Tag.name)
+    auto_tags = relationship(Tag, secondary=board_auto_tag_table, order_by=Tag.name)
     auto_keywords = association_proxy(
         'auto_tags', 'title', creator=lambda t: Tag.get(t, create=True)
     )
-    auto_types = db.relationship(
+    auto_types = relationship(
         JobType, secondary=board_auto_jobtype_table, order_by=JobType.seq
     )
-    auto_categories = db.relationship(
+    auto_categories = relationship(
         JobCategory, secondary=board_auto_jobcategory_table, order_by=JobCategory.seq
     )
     #: Must all criteria match for an auto-post?
-    auto_all = db.Column(db.Boolean, default=False, nullable=False)
+    auto_all = sa.orm.mapped_column(sa.Boolean, default=False, nullable=False)
     #: Users active on this board
-    users_active_at = db.relationship(UserActiveAt, lazy='dynamic', backref='board')
+    users_active_at = relationship(UserActiveAt, lazy='dynamic', backref='board')
+
+    boardposts: DynamicMapped[BoardJobPost] = relationship(
+        lazy='dynamic', cascade='all, delete-orphan', back_populates='board'
+    )
 
     def __repr__(self):
         return f'<Board {self.name} {self.title!r}>'
@@ -339,7 +362,7 @@ class Board(BaseNameMixin, db.Model):
 def _user_boards(self):
     return (
         Board.query.filter(Board.userid.in_(self.user_organizations_owned_ids()))
-        .options(db.load_only(Board.id, Board.name, Board.title, Board.userid))
+        .options(sa.orm.load_only(Board.id, Board.name, Board.title, Board.userid))
         .all()
     )
 
@@ -347,25 +370,22 @@ def _user_boards(self):
 User.boards = _user_boards
 
 
-class BoardJobPost(TimestampMixin, db.Model):
+class BoardJobPost(TimestampMixin, Model):
     """
     Link job posts to boards.
     """
 
     __tablename__ = 'board_jobpost'
     #: Linked Board
-    board_id = db.Column(None, db.ForeignKey('board.id'), primary_key=True)
-    board = db.relationship(
-        Board,
-        backref=db.backref('boardposts', lazy='dynamic', cascade='all, delete-orphan'),
-    )
+    board_id = sa.orm.mapped_column(None, sa.ForeignKey('board.id'), primary_key=True)
+    board = relationship(Board, back_populates='boardposts')
     #: Linked JobPost
-    jobpost_id = db.Column(
-        None, db.ForeignKey('jobpost.id'), primary_key=True, index=True
+    jobpost_id = sa.orm.mapped_column(
+        None, sa.ForeignKey('jobpost.id'), primary_key=True, index=True
     )
-    jobpost = db.relationship(
+    jobpost = relationship(
         JobPost,
-        backref=db.backref(
+        backref=backref(
             'postboards',
             lazy='dynamic',
             order_by='BoardJobPost.created_at',
@@ -373,7 +393,7 @@ class BoardJobPost(TimestampMixin, db.Model):
         ),
     )
     #: Is this post pinned on this board?
-    pinned = db.Column(db.Boolean, default=False, nullable=False)
+    pinned = sa.orm.mapped_column(sa.Boolean, default=False, nullable=False)
 
     def __repr__(self):
         return '<BoardJobPost {board_id}: {jobpost_id}>'.format(

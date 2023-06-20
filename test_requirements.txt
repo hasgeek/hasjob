@@ -1,6 +1,10 @@
-coverage==7.2.5
-coveralls==3.3.1
-nose-progressive==1.5.2
-pytest==7.3.1
-pytest-cov==4.0.0
-pytest-datadir==1.4.1
+coverage
+coveralls
+pytest
+pytest-cov
+pytest-datadir
+pytest-dotenv
+pytest-env
+pytest-rerunfailures
+pytest-socket
+requests-mock

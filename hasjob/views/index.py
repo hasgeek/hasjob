@@ -2,7 +2,6 @@ from collections import OrderedDict
 from urllib.parse import SplitResult, urlsplit
 from uuid import uuid4
 
-from baseframe import _, request_is_xhr  # , dogpile
 from flask import (
     Markup,
     Response,
@@ -16,6 +15,7 @@ from flask import (
     url_for,
 )
 
+from baseframe import _, request_is_xhr
 from coaster.utils import ParseError, getbool, parse_isoformat, utcnow
 from coaster.views import endpoint_for, render_with, requestargs
 
@@ -39,6 +39,7 @@ from ..models import (
     agelimit,
     db,
     newlimit,
+    sa,
     starred_job_table,
 )
 from ..uploads import uploaded_logos
@@ -320,7 +321,7 @@ def fetch_jobposts(
         data_filters['search_tsquery'] = search_tsquery
         data_filters['query_string'] = query_string
         basequery = basequery.filter(
-            JobPost.search_vector.bool_op('@@')(db.func.to_tsquery(search_tsquery))
+            JobPost.search_vector.bool_op('@@')(sa.func.to_tsquery(search_tsquery))
         )
 
     if data_filters:
@@ -504,7 +505,7 @@ def fetch_jobposts(
     }
 
 
-# @dogpile.region('hasjob_index')
+# TODO: Add cache
 def fetch_cached_jobposts(
     request_args,
     request_values,
@@ -585,7 +586,7 @@ def index(
             r.jobpost_id: r
             for r in BoardJobPost.query.join(BoardJobPost.jobpost)
             .filter(BoardJobPost.board == g.board, JobPost.state.LISTED)
-            .options(db.load_only(BoardJobPost.jobpost_id, BoardJobPost.pinned))
+            .options(sa.orm.load_only(BoardJobPost.jobpost_id, BoardJobPost.pinned))
             .all()
         }
 
@@ -609,7 +610,7 @@ def index(
     if query_string:
         with db.session.no_autoflush:
             search_tsquery = db.session.query(
-                db.func.websearch_to_tsquery('english', query_string)
+                sa.func.websearch_to_tsquery('english', query_string)
             ).scalar()
         if not search_tsquery:
             if not request_is_xhr():
@@ -881,7 +882,7 @@ def browse_by_anywhere():
 def browse_by_tag(tag):
     tag = Tag.query.filter_by(name=tag).first_or_404()
     basequery = JobPost.query.filter(
-        db.and_(JobPostTag.jobpost_id == JobPost.id, JobPostTag.tag == tag)
+        sa.and_(JobPostTag.jobpost_id == JobPost.id, JobPostTag.tag == tag)
     )
     return index(basequery=basequery, tag=tag, title=tag.title)
 
@@ -1023,7 +1024,7 @@ def feed_by_location(location):
     if not geodata:
         abort(404)
     basequery = JobPost.query.filter(
-        db.and_(
+        sa.and_(
             JobLocation.jobpost_id == JobPost.id,
             JobLocation.geonameid == geodata['geonameid'],
         )
@@ -1043,7 +1044,7 @@ def feed_by_anywhere():
 def feed_by_tag(tag):
     tag = Tag.query.filter_by(name=tag).first_or_404()
     basequery = JobPost.query.filter(
-        db.and_(JobPostTag.jobpost_id == JobPost.id, JobPostTag.tag == tag)
+        sa.and_(JobPostTag.jobpost_id == JobPost.id, JobPostTag.tag == tag)
     )
     return feed(basequery=basequery, tag=tag, title=tag.title)
 

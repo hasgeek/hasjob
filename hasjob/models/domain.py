@@ -1,51 +1,53 @@
-from baseframe.utils import is_public_email_domain
+from __future__ import annotations
+
 from flask import url_for
-from sqlalchemy import DDL, event
+from sqlalchemy import event
 from sqlalchemy.dialects.postgresql import TSVECTOR
-from sqlalchemy.orm import deferred
 from werkzeug.utils import cached_property
 
+from baseframe.utils import is_public_email_domain
+
 from ..utils import escape_for_sql_like
-from . import BaseMixin, db
+from . import BaseMixin, Model, backref, db, relationship, sa
 from .jobpost import JobPost
 from .user import User
 
 __all__ = ['Domain']
 
 
-class Domain(BaseMixin, db.Model):
+class Domain(BaseMixin, Model):
     """
     A DNS domain affiliated with a job post.
     """
 
     __tablename__ = 'domain'
     #: DNS name of this domain (domain.tld)
-    name = db.Column(db.Unicode(80), nullable=False, unique=True)
+    name = sa.orm.mapped_column(sa.Unicode(80), nullable=False, unique=True)
     #: Title of the employer at this domain
-    title = db.Column(db.Unicode(250), nullable=True)
+    title = sa.orm.mapped_column(sa.Unicode(250), nullable=True)
     #: Legal title
-    legal_title = db.Column(db.Unicode(250), nullable=True)
+    legal_title = sa.orm.mapped_column(sa.Unicode(250), nullable=True)
     #: Description
-    description = db.Column(db.UnicodeText, nullable=True)
+    description = sa.orm.mapped_column(sa.UnicodeText, nullable=True)
     #: Logo URL
-    logo_url = db.Column(db.Unicode(250), nullable=True)
+    logo_url = sa.orm.mapped_column(sa.Unicode(250), nullable=True)
     #: Is this a known webmail domain?
-    is_webmail = db.Column(db.Boolean, default=False, nullable=False)
+    is_webmail = sa.orm.mapped_column(sa.Boolean, default=False, nullable=False)
     #: Is this domain banned from listing on Hasjob? (Recruiter, etc)
-    is_banned = db.Column(db.Boolean, default=False, nullable=False)
+    is_banned = sa.orm.mapped_column(sa.Boolean, default=False, nullable=False)
     #: Who banned it?
-    banned_by_id = db.Column(
-        None, db.ForeignKey('user.id', ondelete='SET NULL'), nullable=True
+    banned_by_id = sa.orm.mapped_column(
+        None, sa.ForeignKey('user.id', ondelete='SET NULL'), nullable=True
     )
-    banned_by = db.relationship(User)
+    banned_by = relationship(User)
     #: Banned when?
-    banned_at = db.Column(db.TIMESTAMP(timezone=True), nullable=True)
+    banned_at = sa.orm.mapped_column(sa.TIMESTAMP(timezone=True), nullable=True)
     #: Reason for banning
-    banned_reason = db.Column(db.Unicode(250), nullable=True)
+    banned_reason = sa.orm.mapped_column(sa.Unicode(250), nullable=True)
     #: Jobposts using this domain
-    jobposts = db.relationship(JobPost, lazy='dynamic', backref=db.backref('domain'))
+    jobposts = relationship(JobPost, lazy='dynamic', backref=backref('domain'))
     #: Search vector
-    search_vector = deferred(db.Column(TSVECTOR, nullable=True))
+    search_vector = sa.orm.mapped_column(TSVECTOR, nullable=True, deferred=True)
 
     def __repr__(self):
         flags = [
@@ -135,7 +137,7 @@ class Domain(BaseMixin, db.Model):
         ).all()
 
 
-create_domain_search_trigger = DDL(
+create_domain_search_trigger = sa.DDL(
     '''
     CREATE FUNCTION domain_search_vector_update() RETURNS TRIGGER AS $$
     BEGIN

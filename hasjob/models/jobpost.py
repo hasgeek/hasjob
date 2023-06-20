@@ -1,16 +1,17 @@
+from __future__ import annotations
+
 from datetime import timedelta
 
 import tldextract
-from baseframe import __, cache
-from baseframe.utils import is_public_email_domain
 from flask import Markup, escape, url_for
 from flask_babel import format_datetime
-from sqlalchemy import DDL, event
+from sqlalchemy import event
 from sqlalchemy.dialects.postgresql import TSVECTOR
 from sqlalchemy.ext.associationproxy import association_proxy
-from sqlalchemy.orm import defer, load_only
 from werkzeug.utils import cached_property
 
+from baseframe import __, cache
+from baseframe.utils import is_public_email_domain
 from coaster.sqlalchemy import JsonDict, Query, StateManager, make_timestamp_columns
 from coaster.utils import classmethodproperty, utcnow
 
@@ -21,10 +22,14 @@ from . import (
     PAY_TYPE,
     POST_STATE,
     BaseMixin,
+    Model,
     TimestampMixin,
     agelimit,
+    backref,
     db,
     newlimit,
+    relationship,
+    sa,
 )
 from .jobcategory import JobCategory
 from .jobtype import JobType
@@ -70,15 +75,15 @@ def number_abbreviate(number, indian=False):
             return number_format(number / 100000000.0, 'b')
 
 
-starred_job_table = db.Table(
+starred_job_table = sa.Table(
     'starred_job',
-    db.Model.metadata,
-    db.Column('user_id', None, db.ForeignKey('user.id'), primary_key=True),
-    db.Column('jobpost_id', None, db.ForeignKey('jobpost.id'), primary_key=True),
-    db.Column(
+    Model.metadata,
+    sa.Column('user_id', None, sa.ForeignKey('user.id'), primary_key=True),
+    sa.Column('jobpost_id', None, sa.ForeignKey('jobpost.id'), primary_key=True),
+    sa.Column(
         'created_at',
-        db.TIMESTAMP(timezone=True),
-        default=db.func.utcnow(),
+        sa.TIMESTAMP(timezone=True),
+        default=sa.func.utcnow(),
         nullable=False,
     ),
 )
@@ -110,7 +115,7 @@ def has_starred_post(user, post):
     if not post:
         return False
     return bool(
-        db.session.query(db.func.count('*'))
+        db.session.query(sa.func.count('*'))
         .select_from(starred_job_table)
         .filter(starred_job_table.c.user_id == user.id)
         .filter(starred_job_table.c.jobpost_id == post.id)
@@ -121,92 +126,104 @@ def has_starred_post(user, post):
 User.has_starred_post = has_starred_post
 
 
-class JobPost(BaseMixin, db.Model):
+class JobPost(BaseMixin, Model):
     __tablename__ = 'jobpost'
 
     # --- Metadata
-    user_id = db.Column(None, db.ForeignKey('user.id'), nullable=True, index=True)
-    user = db.relationship(
+    user_id = sa.orm.mapped_column(
+        None, sa.ForeignKey('user.id'), nullable=True, index=True
+    )
+    user = relationship(
         User,
         primaryjoin=user_id == User.id,
-        backref=db.backref('jobposts', lazy='dynamic'),
+        backref=backref('jobposts', lazy='dynamic'),
     )
 
-    hashid = db.Column(db.String(5), nullable=False, unique=True)
+    hashid = sa.orm.mapped_column(sa.String(5), nullable=False, unique=True)
     #: Published time (but created time until it is published)
-    datetime = db.Column(
-        db.TIMESTAMP(timezone=True),
-        default=db.func.utcnow(),
+    datetime = sa.orm.mapped_column(
+        sa.TIMESTAMP(timezone=True),
+        default=sa.func.utcnow(),
         nullable=False,
         index=True,
     )
     #: If withdrawn or rejected
-    closed_datetime = db.Column(db.TIMESTAMP(timezone=True), nullable=True)
+    closed_datetime = sa.orm.mapped_column(sa.TIMESTAMP(timezone=True), nullable=True)
     # Pinned on the home page. Boards use the BoardJobPost.pinned column
-    sticky = db.Column(db.Boolean, nullable=False, default=False)
-    pinned = db.synonym('sticky')
+    sticky = sa.orm.mapped_column(sa.Boolean, nullable=False, default=False)
+    pinned = sa.orm.synonym('sticky')
 
     # --- Job description
-    headline = db.Column(db.Unicode(100), nullable=False)
-    headlineb = db.Column(db.Unicode(100), nullable=True)
-    type_id = db.Column(None, db.ForeignKey('jobtype.id'), nullable=False)
-    type = db.relationship(JobType, primaryjoin=type_id == JobType.id)  # noqa: A003
-    category_id = db.Column(None, db.ForeignKey('jobcategory.id'), nullable=False)
-    category = db.relationship(JobCategory, primaryjoin=category_id == JobCategory.id)
-    location = db.Column(db.Unicode(80), nullable=False)
-    parsed_location = db.Column(JsonDict)
+    headline = sa.orm.mapped_column(sa.Unicode(100), nullable=False)
+    headlineb = sa.orm.mapped_column(sa.Unicode(100), nullable=True)
+    type_id = sa.orm.mapped_column(None, sa.ForeignKey('jobtype.id'), nullable=False)
+    type = relationship(JobType, primaryjoin=type_id == JobType.id)  # noqa: A003
+    category_id = sa.orm.mapped_column(
+        None, sa.ForeignKey('jobcategory.id'), nullable=False
+    )
+    category = relationship(JobCategory, primaryjoin=category_id == JobCategory.id)
+    location = sa.orm.mapped_column(sa.Unicode(80), nullable=False)
+    parsed_location = sa.orm.mapped_column(JsonDict)
     # remote_location tracks whether the job is work-from-home/work-from-anywhere
-    remote_location = db.Column(db.Boolean, default=False, nullable=False)
-    relocation_assist = db.Column(db.Boolean, default=False, nullable=False)
-    description = db.Column(db.UnicodeText, nullable=False)
-    perks = db.Column(db.UnicodeText, nullable=False)
-    how_to_apply = db.Column(db.UnicodeText, nullable=False)
-    hr_contact = db.Column(db.Boolean, nullable=True)
+    remote_location = sa.orm.mapped_column(sa.Boolean, default=False, nullable=False)
+    relocation_assist = sa.orm.mapped_column(sa.Boolean, default=False, nullable=False)
+    description = sa.orm.mapped_column(sa.UnicodeText, nullable=False)
+    perks = sa.orm.mapped_column(sa.UnicodeText, nullable=False)
+    how_to_apply = sa.orm.mapped_column(sa.UnicodeText, nullable=False)
+    hr_contact = sa.orm.mapped_column(sa.Boolean, nullable=True)
 
     # --- Compensation details
-    pay_type = db.Column(db.SmallInteger, nullable=True)  # Value in models.PAY_TYPE
-    pay_currency = db.Column(db.CHAR(3), nullable=True)
-    pay_cash_min = db.Column(db.Integer, nullable=True)
-    pay_cash_max = db.Column(db.Integer, nullable=True)
-    pay_equity_min = db.Column(db.Numeric, nullable=True)
-    pay_equity_max = db.Column(db.Numeric, nullable=True)
+    pay_type = sa.orm.mapped_column(
+        sa.SmallInteger, nullable=True
+    )  # Value in models.PAY_TYPE
+    pay_currency = sa.orm.mapped_column(sa.CHAR(3), nullable=True)
+    pay_cash_min = sa.orm.mapped_column(sa.Integer, nullable=True)
+    pay_cash_max = sa.orm.mapped_column(sa.Integer, nullable=True)
+    pay_equity_min = sa.orm.mapped_column(sa.Numeric, nullable=True)
+    pay_equity_max = sa.orm.mapped_column(sa.Numeric, nullable=True)
 
     # --- Company details
-    company_name = db.Column(db.Unicode(80), nullable=False)
-    company_logo = db.Column(db.Unicode(255), nullable=True)
-    company_url = db.Column(db.Unicode(255), nullable=False, default='')
-    twitter = db.Column(db.Unicode(15), nullable=True)
+    company_name = sa.orm.mapped_column(sa.Unicode(80), nullable=False)
+    company_logo = sa.orm.mapped_column(sa.Unicode(255), nullable=True)
+    company_url = sa.orm.mapped_column(sa.Unicode(255), nullable=False, default='')
+    twitter = sa.orm.mapped_column(sa.Unicode(15), nullable=True)
     #: XXX: Deprecated field, used before user_id was introduced
-    fullname = db.Column(db.Unicode(80), nullable=True)
-    email = db.Column(db.Unicode(80), nullable=False)
-    email_domain = db.Column(db.Unicode(80), nullable=False, index=True)
-    domain_id = db.Column(None, db.ForeignKey('domain.id'), nullable=False)
-    md5sum = db.Column(db.String(32), nullable=False, index=True)
+    fullname = sa.orm.mapped_column(sa.Unicode(80), nullable=True)
+    email = sa.orm.mapped_column(sa.Unicode(80), nullable=False)
+    email_domain = sa.orm.mapped_column(sa.Unicode(80), nullable=False, index=True)
+    domain_id = sa.orm.mapped_column(None, sa.ForeignKey('domain.id'), nullable=False)
+    md5sum = sa.orm.mapped_column(sa.String(32), nullable=False, index=True)
 
     # --- Payment, audit and workflow fields
     #: All words in description, perks and how_to_apply
-    words = db.Column(db.UnicodeText, nullable=True)
-    promocode = db.Column(db.String(40), nullable=True)
-    ipaddr = db.Column(db.String(45), nullable=False)
-    useragent = db.Column(db.Unicode(250), nullable=True)
-    edit_key = db.Column(db.String(40), nullable=False, default=random_long_key)
-    email_verify_key = db.Column(db.String(40), nullable=False, default=random_long_key)
-    email_sent = db.Column(db.Boolean, nullable=False, default=False)
-    email_verified = db.Column(db.Boolean, nullable=False, default=False)
-    payment_value = db.Column(db.Integer, nullable=False, default=0)
-    payment_received = db.Column(db.Boolean, nullable=False, default=False)
-    reviewer_id = db.Column(None, db.ForeignKey('user.id'), nullable=True, index=True)
-    reviewer = db.relationship(
+    words = sa.orm.mapped_column(sa.UnicodeText, nullable=True)
+    promocode = sa.orm.mapped_column(sa.String(40), nullable=True)
+    ipaddr = sa.orm.mapped_column(sa.String(45), nullable=False)
+    useragent = sa.orm.mapped_column(sa.Unicode(250), nullable=True)
+    edit_key = sa.orm.mapped_column(
+        sa.String(40), nullable=False, default=random_long_key
+    )
+    email_verify_key = sa.orm.mapped_column(
+        sa.String(40), nullable=False, default=random_long_key
+    )
+    email_sent = sa.orm.mapped_column(sa.Boolean, nullable=False, default=False)
+    email_verified = sa.orm.mapped_column(sa.Boolean, nullable=False, default=False)
+    payment_value = sa.orm.mapped_column(sa.Integer, nullable=False, default=0)
+    payment_received = sa.orm.mapped_column(sa.Boolean, nullable=False, default=False)
+    reviewer_id = sa.orm.mapped_column(
+        None, sa.ForeignKey('user.id'), nullable=True, index=True
+    )
+    reviewer = relationship(
         User, primaryjoin=reviewer_id == User.id, backref="reviewed_posts"
     )
-    review_datetime = db.Column(db.TIMESTAMP(timezone=True), nullable=True)
-    review_comments = db.Column(db.Unicode(250), nullable=True)
+    review_datetime = sa.orm.mapped_column(sa.TIMESTAMP(timezone=True), nullable=True)
+    review_comments = sa.orm.mapped_column(sa.Unicode(250), nullable=True)
 
-    search_vector = db.Column(TSVECTOR, nullable=True)
+    search_vector = sa.orm.mapped_column(TSVECTOR, nullable=True)
 
-    _state = db.Column(
+    _state = sa.orm.mapped_column(
         'status',
-        db.Integer,
+        sa.Integer,
         StateManager.check_constraint('status', POST_STATE),
         default=POST_STATE.DRAFT,
         nullable=False,
@@ -214,20 +231,20 @@ class JobPost(BaseMixin, db.Model):
     state = StateManager('_state', POST_STATE, doc="Current state of the job post")
 
     # --- Metadata for classification
-    language = db.Column(db.CHAR(2), nullable=True)
-    language_confidence = db.Column(db.Float, nullable=True)
+    language = sa.orm.mapped_column(sa.CHAR(2), nullable=True)
+    language_confidence = sa.orm.mapped_column(sa.Float, nullable=True)
 
-    admins = db.relationship(
+    admins = relationship(
         User,
         lazy='dynamic',
         secondary=lambda: jobpost_admin_table,
-        backref=db.backref('admin_of', lazy='dynamic'),
+        backref=backref('admin_of', lazy='dynamic'),
     )
-    starred_by = db.relationship(
+    starred_by = relationship(
         User,
         lazy='dynamic',
         secondary=starred_job_table,
-        backref=db.backref('starred_jobs', lazy='dynamic'),
+        backref=backref('starred_jobs', lazy='dynamic'),
     )
     #: Quick lookup locations this post is referring to
     geonameids = association_proxy(
@@ -244,7 +261,7 @@ class JobPost(BaseMixin, db.Model):
     def fetch(cls, hashid):
         """Returns a SQLAlchemy query object for JobPost"""
         return cls.query.filter_by(hashid=hashid).options(
-            load_only(
+            sa.orm.load_only(
                 cls.id,
                 cls.headline,
                 cls.headlineb,
@@ -261,8 +278,53 @@ class JobPost(BaseMixin, db.Model):
     def query_listed(cls):  # noqa: N805
         """Returns a SQLAlchemy query for listed jobposts"""
         return cls.query.filter(JobPost.state.LISTED).options(
-            db.load_only(cls.id, cls.hashid)
+            sa.orm.load_only(cls.id, cls.hashid)
         )
+
+    @classmethodproperty
+    def _defercols(cls):  # noqa: N805
+        """Return columns that can be deferred."""
+        return [
+            sa.orm.defer(cls.user_id),
+            sa.orm.defer(cls.closed_datetime),
+            sa.orm.defer(cls.parsed_location),
+            sa.orm.defer(cls.relocation_assist),
+            sa.orm.defer(cls.description),
+            sa.orm.defer(cls.perks),
+            sa.orm.defer(cls.how_to_apply),
+            sa.orm.defer(cls.hr_contact),
+            sa.orm.defer(cls.company_logo),
+            sa.orm.defer(cls.company_url),
+            sa.orm.defer(cls.fullname),
+            sa.orm.defer(cls.email),
+            sa.orm.defer(cls.words),
+            sa.orm.defer(cls.promocode),
+            sa.orm.defer(cls.ipaddr),
+            sa.orm.defer(cls.useragent),
+            sa.orm.defer(cls.edit_key),
+            sa.orm.defer(cls.email_verify_key),
+            sa.orm.defer(cls.email_sent),
+            sa.orm.defer(cls.email_verified),
+            sa.orm.defer(cls.payment_value),
+            sa.orm.defer(cls.payment_received),
+            sa.orm.defer(cls.reviewer_id),
+            sa.orm.defer(cls.review_datetime),
+            sa.orm.defer(cls.review_comments),
+            sa.orm.defer(cls.language),
+            sa.orm.defer(cls.language_confidence),
+            # These are defined below JobApplication
+            sa.orm.defer(cls.new_applications),
+            sa.orm.defer(cls.replied_applications),
+            sa.orm.defer(cls.viewcounts_viewed),
+            sa.orm.defer(cls.viewcounts_opened),
+            sa.orm.defer(cls.viewcounts_applied),
+            # sa.orm.defer(cls.pay_type),
+            # sa.orm.defer(cls.pay_currency),
+            # sa.orm.defer(cls.pay_cash_min),
+            # sa.orm.defer(cls.pay_cash_max),
+            # sa.orm.defer(cls.pay_equity_min),
+            # sa.orm.defer(cls.pay_equity_max),
+        ]
 
     def __repr__(self):
         return '<JobPost {hashid} "{headline}">'.format(
@@ -273,7 +335,9 @@ class JobPost(BaseMixin, db.Model):
         if user is None:
             return False
         return user == self.user or bool(
-            self.admins.options(db.load_only(JobPost.id)).filter_by(id=user.id).count()
+            self.admins.options(sa.orm.load_only(JobPost.id))
+            .filter_by(id=user.id)
+            .count()
         )
 
     @property
@@ -321,7 +385,7 @@ class JobPost(BaseMixin, db.Model):
         type='danger',
     )
     def withdraw(self):
-        self.closed_datetime = db.func.utcnow()
+        self.closed_datetime = sa.func.utcnow()
 
     @state.transition(
         state.PUBLIC,
@@ -331,7 +395,7 @@ class JobPost(BaseMixin, db.Model):
         type='danger',
     )
     def close(self):
-        self.closed_datetime = db.func.utcnow()
+        self.closed_datetime = sa.func.utcnow()
 
     @state.transition(
         state.UNPUBLISHED_OR_MODERATED,
@@ -342,7 +406,7 @@ class JobPost(BaseMixin, db.Model):
     )
     def confirm(self):
         self.email_verified = True
-        self.datetime = db.func.utcnow()
+        self.datetime = sa.func.utcnow()
 
     @state.transition(
         state.CLOSED,
@@ -362,8 +426,8 @@ class JobPost(BaseMixin, db.Model):
         type='danger',
     )
     def mark_spam(self, reason, user):
-        self.closed_datetime = db.func.utcnow()
-        self.review_datetime = db.func.utcnow()
+        self.closed_datetime = sa.func.utcnow()
+        self.review_datetime = sa.func.utcnow()
         self.review_comments = reason
         self.reviewer = user
 
@@ -385,8 +449,8 @@ class JobPost(BaseMixin, db.Model):
         type='danger',
     )
     def reject(self, reason, user):
-        self.closed_datetime = db.func.utcnow()
-        self.review_datetime = db.func.utcnow()
+        self.closed_datetime = sa.func.utcnow()
+        self.review_datetime = sa.func.utcnow()
         self.review_comments = reason
         self.reviewer = user
 
@@ -398,8 +462,8 @@ class JobPost(BaseMixin, db.Model):
         type='primary',
     )
     def moderate(self, reason, user):
-        self.closed_datetime = db.func.utcnow()
-        self.review_datetime = db.func.utcnow()
+        self.closed_datetime = sa.func.utcnow()
+        self.review_datetime = sa.func.utcnow()
         self.review_comments = reason
         self.reviewer = user
 
@@ -686,7 +750,7 @@ class JobPost(BaseMixin, db.Model):
         results = {'NA': 0, 'A': 0, 'B': 0}
         counts = (
             db.session.query(
-                JobImpression.bgroup.label('bgroup'), db.func.count('*').label('count')
+                JobImpression.bgroup.label('bgroup'), sa.func.count('*').label('count')
             )
             .filter(JobImpression.jobpost == self)
             .group_by(JobImpression.bgroup)
@@ -721,7 +785,7 @@ class JobPost(BaseMixin, db.Model):
                 JobViewSession.bgroup.label('bgroup'),
                 JobViewSession.cointoss.label('cointoss'),
                 JobViewSession.crosstoss.label('crosstoss'),
-                db.func.count('*').label('count'),
+                sa.func.count('*').label('count'),
             )
             .filter(JobViewSession.jobpost == self)
             .group_by(
@@ -890,33 +954,35 @@ def viewstats_by_id_day(jobpost_id, limit=30):
     return viewstats_helper(jobpost_id, 1, limit, daybatch=True)
 
 
-jobpost_admin_table = db.Table(
+jobpost_admin_table = sa.Table(
     'jobpost_admin',
-    db.Model.metadata,
+    Model.metadata,
     *(
         make_timestamp_columns(timezone=True)
         + (
-            db.Column('user_id', None, db.ForeignKey('user.id'), primary_key=True),
-            db.Column(
-                'jobpost_id', None, db.ForeignKey('jobpost.id'), primary_key=True
+            sa.Column('user_id', None, sa.ForeignKey('user.id'), primary_key=True),
+            sa.Column(
+                'jobpost_id', None, sa.ForeignKey('jobpost.id'), primary_key=True
             ),
         )
     ),
 )
 
 
-class JobLocation(TimestampMixin, db.Model):
+class JobLocation(TimestampMixin, Model):
     __tablename__ = 'job_location'
     #: Job post we are tagging
-    jobpost_id = db.Column(
-        None, db.ForeignKey('jobpost.id'), primary_key=True, nullable=False
+    jobpost_id = sa.orm.mapped_column(
+        None, sa.ForeignKey('jobpost.id'), primary_key=True, nullable=False
     )
-    jobpost = db.relationship(
-        JobPost, backref=db.backref('locations', cascade='all, delete-orphan')
+    jobpost = relationship(
+        JobPost, backref=backref('locations', cascade='all, delete-orphan')
     )
     #: Geonameid for this job post
-    geonameid = db.Column(db.Integer, primary_key=True, nullable=False, index=True)
-    primary = db.Column(db.Boolean, default=True, nullable=False)
+    geonameid = sa.orm.mapped_column(
+        sa.Integer, primary_key=True, nullable=False, index=True
+    )
+    primary = sa.orm.mapped_column(sa.Boolean, default=True, nullable=False)
 
     def __repr__(self):
         return '<JobLocation %d %s for job %s>' % (
@@ -926,38 +992,44 @@ class JobLocation(TimestampMixin, db.Model):
         )
 
 
-class UserJobView(TimestampMixin, db.Model):
+class UserJobView(TimestampMixin, Model):
     __tablename__ = 'userjobview'
     #: Job post that was seen
-    jobpost_id = db.Column(None, db.ForeignKey('jobpost.id'), primary_key=True)
-    jobpost = db.relationship(JobPost)
+    jobpost_id = sa.orm.mapped_column(
+        None, sa.ForeignKey('jobpost.id'), primary_key=True
+    )
+    jobpost = relationship(JobPost)
     #: User who saw this post
-    user_id = db.Column(None, db.ForeignKey('user.id'), primary_key=True, index=True)
-    user = db.relationship(User)
+    user_id = sa.orm.mapped_column(
+        None, sa.ForeignKey('user.id'), primary_key=True, index=True
+    )
+    user = relationship(User)
     #: Has the user viewed apply instructions?
-    applied = db.Column(db.Boolean, default=False, nullable=False)
+    applied = sa.orm.mapped_column(sa.Boolean, default=False, nullable=False)
 
     @classmethod
     def get(cls, jobpost, user):
         return cls.query.get((jobpost.id, user.id))
 
 
-class AnonJobView(db.Model):
+class AnonJobView(Model):
     __tablename__ = 'anon_job_view'
     query_class = Query
 
     #: Job post that was seen
-    jobpost_id = db.Column(None, db.ForeignKey('jobpost.id'), primary_key=True)
-    jobpost = db.relationship(JobPost)
-    #: User who saw this post
-    anon_user_id = db.Column(
-        None, db.ForeignKey('anon_user.id'), primary_key=True, index=True
+    jobpost_id = sa.orm.mapped_column(
+        None, sa.ForeignKey('jobpost.id'), primary_key=True
     )
-    anon_user = db.relationship(AnonUser)
+    jobpost = relationship(JobPost)
+    #: User who saw this post
+    anon_user_id = sa.orm.mapped_column(
+        None, sa.ForeignKey('anon_user.id'), primary_key=True, index=True
+    )
+    anon_user = relationship(AnonUser)
     #: Timestamp
-    created_at = db.Column(
-        db.TIMESTAMP(timezone=True),
-        default=db.func.utcnow(),
+    created_at = sa.orm.mapped_column(
+        sa.TIMESTAMP(timezone=True),
+        default=sa.func.utcnow(),
         nullable=False,
         index=True,
     )
@@ -967,27 +1039,29 @@ class AnonJobView(db.Model):
         return cls.query.get((jobpost.id, anon_user.id))
 
 
-class JobImpression(TimestampMixin, db.Model):
+class JobImpression(TimestampMixin, Model):
     __tablename__ = 'job_impression'
     #: Datetime when this activity happened (which is likely much before it was written to the database)
-    datetime = db.Column(
-        db.TIMESTAMP(timezone=True),
-        default=db.func.utcnow(),
+    datetime = sa.orm.mapped_column(
+        sa.TIMESTAMP(timezone=True),
+        default=sa.func.utcnow(),
         nullable=False,
         index=True,
     )
     #: Job post that was impressed
-    jobpost_id = db.Column(None, db.ForeignKey('jobpost.id'), primary_key=True)
-    jobpost = db.relationship(JobPost)
-    #: Event session in which it was impressed
-    event_session_id = db.Column(
-        None, db.ForeignKey('event_session.id'), primary_key=True, index=True
+    jobpost_id = sa.orm.mapped_column(
+        None, sa.ForeignKey('jobpost.id'), primary_key=True
     )
-    event_session = db.relationship(EventSession)
+    jobpost = relationship(JobPost)
+    #: Event session in which it was impressed
+    event_session_id = sa.orm.mapped_column(
+        None, sa.ForeignKey('event_session.id'), primary_key=True, index=True
+    )
+    event_session = relationship(EventSession)
     #: Whether it was pinned at any time in this session
-    pinned = db.Column(db.Boolean, nullable=False, default=False)
+    pinned = sa.orm.mapped_column(sa.Boolean, nullable=False, default=False)
     #: Was this rendering in the B group of an A/B test? (null = no test conducted)
-    bgroup = db.Column(db.Boolean, nullable=True)
+    bgroup = sa.orm.mapped_column(sa.Boolean, nullable=True)
 
     @classmethod
     def get(cls, jobpost, event_session):
@@ -1000,12 +1074,12 @@ class JobImpression(TimestampMixin, db.Model):
         return cls.query.get((jobpost_id, event_session_id))
 
 
-class JobViewSession(TimestampMixin, db.Model):
+class JobViewSession(TimestampMixin, Model):
     __tablename__ = 'job_view_session'
     #: Datetime indicates the time, impression has made
-    datetime = db.Column(
-        db.TIMESTAMP(timezone=True),
-        default=db.func.utcnow(),
+    datetime = sa.orm.mapped_column(
+        sa.TIMESTAMP(timezone=True),
+        default=sa.func.utcnow(),
         nullable=False,
         index=True,
     )
@@ -1013,17 +1087,17 @@ class JobViewSession(TimestampMixin, db.Model):
     #: Event session in which jobpost was viewed
     #: This takes precedence as we'll be loading all instances
     #: matching the current session in each index request
-    event_session_id = db.Column(
-        None, db.ForeignKey('event_session.id'), primary_key=True
+    event_session_id = sa.orm.mapped_column(
+        None, sa.ForeignKey('event_session.id'), primary_key=True
     )
-    event_session = db.relationship(EventSession)
+    event_session = relationship(EventSession)
     #: Job post that was viewed
-    jobpost_id = db.Column(
-        None, db.ForeignKey('jobpost.id'), primary_key=True, index=True
+    jobpost_id = sa.orm.mapped_column(
+        None, sa.ForeignKey('jobpost.id'), primary_key=True, index=True
     )
-    jobpost = db.relationship(JobPost)
+    jobpost = relationship(JobPost)
     #: Related impression
-    impression = db.relationship(
+    impression = relationship(
         JobImpression,
         primaryjoin='''and_(
             JobViewSession.event_session_id == foreign(JobImpression.event_session_id),
@@ -1034,11 +1108,11 @@ class JobViewSession(TimestampMixin, db.Model):
         backref='view',
     )
     #: Was this view in the B group of an A/B test? (null = no test conducted)
-    bgroup = db.Column(db.Boolean, nullable=True)
+    bgroup = sa.orm.mapped_column(sa.Boolean, nullable=True)
     #: Was the bgroup assigned by coin toss or was it predetermined?
-    cointoss = db.Column(db.Boolean, nullable=False, default=False)
+    cointoss = sa.orm.mapped_column(sa.Boolean, nullable=False, default=False)
     #: Does this bgroup NOT match the impression's bgroup?
-    crosstoss = db.Column(db.Boolean, nullable=False, default=False)
+    crosstoss = sa.orm.mapped_column(sa.Boolean, nullable=False, default=False)
 
     @classmethod
     def get(cls, event_session, jobpost):
@@ -1049,49 +1123,53 @@ class JobViewSession(TimestampMixin, db.Model):
         return cls.query.get((event_session_id, jobpost_id))
 
 
-class JobApplication(BaseMixin, db.Model):
+class JobApplication(BaseMixin, Model):
     __tablename__ = 'job_application'
     #: Hash id (to hide database ids)
-    hashid = db.Column(db.String(40), nullable=False, unique=True)
+    hashid = sa.orm.mapped_column(sa.String(40), nullable=False, unique=True)
     #: User who applied for this post
     # TODO: add unique=True
-    user_id = db.Column(None, db.ForeignKey('user.id'), nullable=True, index=True)
-    user = db.relationship(User, foreign_keys=user_id)
+    user_id = sa.orm.mapped_column(
+        None, sa.ForeignKey('user.id'), nullable=True, index=True
+    )
+    user = relationship(User, foreign_keys=user_id)
     #: Full name of the user (as it was at the time of the application)
-    fullname = db.Column(db.Unicode(250), nullable=False)
+    fullname = sa.orm.mapped_column(sa.Unicode(250), nullable=False)
     #: Job post they applied to
-    jobpost_id = db.Column(
-        None, db.ForeignKey('jobpost.id'), nullable=False, index=True
+    jobpost_id = sa.orm.mapped_column(
+        None, sa.ForeignKey('jobpost.id'), nullable=False, index=True
     )
     # jobpost relationship is below, outside the class definition
     #: User's email address
-    email = db.Column(db.Unicode(80), nullable=False)
+    email = sa.orm.mapped_column(sa.Unicode(80), nullable=False)
     #: User's phone number
-    phone = db.Column(db.Unicode(80), nullable=False)
+    phone = sa.orm.mapped_column(sa.Unicode(80), nullable=False)
     #: User's message
-    message = db.Column(db.UnicodeText, nullable=False)
+    message = sa.orm.mapped_column(sa.UnicodeText, nullable=False)
     #: User opted-in to experimental features
-    optin = db.Column(db.Boolean, default=False, nullable=False)
+    optin = sa.orm.mapped_column(sa.Boolean, default=False, nullable=False)
     #: Employer's response code
-    _response = db.Column(
+    _response = sa.orm.mapped_column(
         'response',
-        db.Integer,
+        sa.Integer,
         StateManager.check_constraint('response', EMPLOYER_RESPONSE),
         nullable=False,
         default=EMPLOYER_RESPONSE.NEW,
     )
     response = StateManager('_response', EMPLOYER_RESPONSE, doc="Employer's response")
     #: Employer's response message
-    response_message = db.Column(db.UnicodeText, nullable=True)
+    response_message = sa.orm.mapped_column(sa.UnicodeText, nullable=True)
     #: Bag of words, for spam analysis
-    words = db.Column(db.UnicodeText, nullable=True)
+    words = sa.orm.mapped_column(sa.UnicodeText, nullable=True)
     #: Jobpost admin who replied to this candidate
-    replied_by_id = db.Column(None, db.ForeignKey('user.id'), nullable=True, index=True)
-    replied_by = db.relationship(User, foreign_keys=replied_by_id)
+    replied_by_id = sa.orm.mapped_column(
+        None, sa.ForeignKey('user.id'), nullable=True, index=True
+    )
+    replied_by = relationship(User, foreign_keys=replied_by_id)
     #: When they replied
-    replied_at = db.Column(db.TIMESTAMP(timezone=True), nullable=True)
+    replied_at = sa.orm.mapped_column(sa.TIMESTAMP(timezone=True), nullable=True)
 
-    candidate_feedback = db.Column(db.SmallInteger, nullable=True)
+    candidate_feedback = sa.orm.mapped_column(sa.SmallInteger, nullable=True)
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -1118,7 +1196,7 @@ class JobApplication(BaseMixin, db.Model):
     def reply(self, message, user):
         self.response_message = message
         self.replied_by = user
-        self.replied_at = db.func.utcnow()
+        self.replied_at = sa.func.utcnow()
 
     @response.transition(
         response.CAN_REJECT,
@@ -1130,7 +1208,7 @@ class JobApplication(BaseMixin, db.Model):
     def reject(self, message, user):
         self.response_message = message
         self.replied_by = user
-        self.replied_at = db.func.utcnow()
+        self.replied_at = sa.func.utcnow()
 
     @response.transition(
         response.CAN_IGNORE,
@@ -1182,7 +1260,7 @@ class JobApplication(BaseMixin, db.Model):
                 JobApplication.created_at > date_min,
                 JobApplication.created_at < date_max,
             )
-            .options(db.load_only(JobApplication.id))
+            .options(sa.orm.load_only(JobApplication.id))
         )
         counts = {k.label.name: len(v) for k, v in grouped.items()}
         counts['count'] = sum(counts.values())
@@ -1219,13 +1297,13 @@ class JobApplication(BaseMixin, db.Model):
             )
 
 
-JobApplication.jobpost = db.relationship(
+JobApplication.jobpost = relationship(
     JobPost,
-    backref=db.backref(
+    backref=backref(
         'applications',
         lazy='dynamic',
         order_by=(
-            db.case(
+            sa.case(
                 {
                     EMPLOYER_RESPONSE.NEW: 0,
                     EMPLOYER_RESPONSE.PENDING: 1,
@@ -1237,26 +1315,26 @@ JobApplication.jobpost = db.relationship(
                 },
                 value=JobApplication._response,
             ),
-            db.desc(JobApplication.created_at),
+            sa.desc(JobApplication.created_at),
         ),
         cascade='all, delete-orphan',
     ),
 )
 
 
-JobPost.new_applications = db.column_property(
-    db.select(db.func.count(JobApplication.id))
+JobPost.new_applications = sa.orm.column_property(
+    sa.select(sa.func.count(JobApplication.id))
     .where(
-        db.and_(JobApplication.jobpost_id == JobPost.id, JobApplication.response.NEW)
+        sa.and_(JobApplication.jobpost_id == JobPost.id, JobApplication.response.NEW)
     )
     .scalar_subquery()
 )
 
 
-JobPost.replied_applications = db.column_property(
-    db.select(db.func.count(JobApplication.id))
+JobPost.replied_applications = sa.orm.column_property(
+    sa.select(sa.func.count(JobApplication.id))
     .where(
-        db.and_(
+        sa.and_(
             JobApplication.jobpost_id == JobPost.id, JobApplication.response.REPLIED
         )
     )
@@ -1264,67 +1342,25 @@ JobPost.replied_applications = db.column_property(
 )
 
 
-JobPost.viewcounts_viewed = db.column_property(
-    db.select(db.func.count())
+JobPost.viewcounts_viewed = sa.orm.column_property(
+    sa.select(sa.func.count())
     .where(UserJobView.jobpost_id == JobPost.id)
     .scalar_subquery()
 )
 
 
-JobPost.viewcounts_opened = db.column_property(
-    db.select(db.func.count())
-    .where(db.and_(UserJobView.jobpost_id == JobPost.id, UserJobView.applied.is_(True)))
+JobPost.viewcounts_opened = sa.orm.column_property(
+    sa.select(sa.func.count())
+    .where(sa.and_(UserJobView.jobpost_id == JobPost.id, UserJobView.applied.is_(True)))
     .scalar_subquery()
 )
 
 
-JobPost.viewcounts_applied = db.column_property(
-    db.select(db.func.count(JobApplication.id))
+JobPost.viewcounts_applied = sa.orm.column_property(
+    sa.select(sa.func.count(JobApplication.id))
     .where(JobApplication.jobpost_id == JobPost.id)
     .scalar_subquery()
 )
-
-JobPost._defercols = [  # pylint: disable=protected-access
-    defer(JobPost.user_id),
-    defer(JobPost.closed_datetime),
-    defer(JobPost.parsed_location),
-    defer(JobPost.relocation_assist),
-    defer(JobPost.description),
-    defer(JobPost.perks),
-    defer(JobPost.how_to_apply),
-    defer(JobPost.hr_contact),
-    defer(JobPost.company_logo),
-    defer(JobPost.company_url),
-    defer(JobPost.fullname),
-    defer(JobPost.email),
-    defer(JobPost.words),
-    defer(JobPost.promocode),
-    defer(JobPost.ipaddr),
-    defer(JobPost.useragent),
-    defer(JobPost.edit_key),
-    defer(JobPost.email_verify_key),
-    defer(JobPost.email_sent),
-    defer(JobPost.email_verified),
-    defer(JobPost.payment_value),
-    defer(JobPost.payment_received),
-    defer(JobPost.reviewer_id),
-    defer(JobPost.review_datetime),
-    defer(JobPost.review_comments),
-    defer(JobPost.language),
-    defer(JobPost.language_confidence),
-    # These are defined below JobApplication
-    defer(JobPost.new_applications),
-    defer(JobPost.replied_applications),
-    defer(JobPost.viewcounts_viewed),
-    defer(JobPost.viewcounts_opened),
-    defer(JobPost.viewcounts_applied),
-    # defer(JobPost.pay_type),
-    # defer(JobPost.pay_currency),
-    # defer(JobPost.pay_cash_min),
-    # defer(JobPost.pay_cash_max),
-    # defer(JobPost.pay_equity_min),
-    # defer(JobPost.pay_equity_max),
-]
 
 
 def unique_hash(model=JobPost):
@@ -1351,7 +1387,7 @@ def unique_long_hash(model=JobApplication):
     return hashid
 
 
-create_jobpost_search_trigger = DDL(
+create_jobpost_search_trigger = sa.DDL(
     '''
     CREATE FUNCTION jobpost_search_vector_update() RETURNS TRIGGER AS $$
     BEGIN

@@ -4,11 +4,11 @@ from datetime import timedelta
 from functools import wraps
 from io import StringIO
 
-from baseframe import __
-from baseframe.forms import render_delete_sqla, render_form, render_redirect
 from flask import Markup, abort, flash, g, redirect, render_template, request, url_for
 from pytz import UTC
 
+from baseframe import __
+from baseframe.forms import render_delete_sqla, render_form, render_redirect
 from coaster.utils import classmethodproperty, make_name, uuid_b58
 from coaster.views import (
     InstanceLoader,
@@ -30,6 +30,7 @@ from ..models import (
     CampaignUserAction,
     CampaignView,
     db,
+    sa,
 )
 from .admin import AdminView
 
@@ -43,7 +44,7 @@ class AdminCampaignList(AdminView):
         return Campaign.query.order_by(
             Campaign.start_at.desc(), Campaign.priority.desc()
         ).options(
-            db.load_only(
+            sa.orm.load_only(
                 Campaign.title, Campaign.start_at, Campaign.end_at, Campaign.public
             )
         )
@@ -117,13 +118,13 @@ AdminCampaignList.init_app(app)
 def chart_interval_for(campaign, default='hour'):
     interval = default
     started_at = (
-        db.session.query(db.func.min(CampaignView.datetime))
+        db.session.query(sa.func.min(CampaignView.datetime))
         .filter(CampaignView.campaign == campaign)
         .first()[0]
     )
     if started_at:
         ended_at = (
-            db.session.query(db.func.max(CampaignView.datetime))
+            db.session.query(sa.func.max(CampaignView.datetime))
             .filter(CampaignView.campaign == campaign)
             .first()[0]
         )
@@ -255,9 +256,9 @@ class AdminCampaignView(UrlForView, InstanceLoader, ModelView):
         interval = chart_interval_for(campaign)
 
         hourly_views = (
-            db.session.query(db.text('hour'), db.text('count'))
+            db.session.query(sa.text('hour'), sa.text('count'))
             .from_statement(
-                db.text(
+                sa.text(
                     '''SELECT date_trunc(:interval, campaign_view.datetime AT TIME ZONE :timezone) AS hour, COUNT(*) AS count FROM campaign_view WHERE campaign_id=:campaign_id GROUP BY hour ORDER BY hour;'''
                 )
             )
@@ -268,9 +269,9 @@ class AdminCampaignView(UrlForView, InstanceLoader, ModelView):
             viewdict[hour]['_views'] = count
 
         hourly_views = (
-            db.session.query(db.text('hour'), db.text('count'))
+            db.session.query(sa.text('hour'), sa.text('count'))
             .from_statement(
-                db.text(
+                sa.text(
                     '''SELECT date_trunc(:interval, campaign_anon_view.datetime AT TIME ZONE :timezone) AS hour, COUNT(*) AS count FROM campaign_anon_view WHERE campaign_id=:campaign_id GROUP BY hour ORDER BY hour;'''
                 )
             )
@@ -281,9 +282,9 @@ class AdminCampaignView(UrlForView, InstanceLoader, ModelView):
             viewdict[hour]['_views'] = viewdict[hour].setdefault('_views', 0) + count
 
         hourly_views = (
-            db.session.query(db.text('hour'), db.text('count'))
+            db.session.query(sa.text('hour'), sa.text('count'))
             .from_statement(
-                db.text(
+                sa.text(
                     '''SELECT date_trunc(:interval, campaign_user_action.created_at AT TIME ZONE :timezone) AS hour, COUNT(DISTINCT(user_id)) AS count FROM campaign_user_action WHERE action_id IN (SELECT id FROM campaign_action WHERE campaign_id = :campaign_id AND type != :dismiss_type) GROUP BY hour ORDER BY hour;'''
                 )
             )
@@ -299,9 +300,9 @@ class AdminCampaignView(UrlForView, InstanceLoader, ModelView):
             viewdict[hour]['_combined'] = count
 
         hourly_views = (
-            db.session.query(db.text('hour'), db.text('count'))
+            db.session.query(sa.text('hour'), sa.text('count'))
             .from_statement(
-                db.text(
+                sa.text(
                     '''SELECT date_trunc(:interval, campaign_anon_user_action.created_at AT TIME ZONE :timezone) AS hour, COUNT(DISTINCT(anon_user_id)) AS count FROM campaign_anon_user_action WHERE action_id IN (SELECT id FROM campaign_action WHERE campaign_id = :campaign_id AND type != :dismiss_type) GROUP BY hour ORDER BY hour;'''
                 )
             )
@@ -323,9 +324,9 @@ class AdminCampaignView(UrlForView, InstanceLoader, ModelView):
         for action in campaign.actions:
             action_names.append(action.name)
             hourly_views = (
-                db.session.query(db.text('hour'), db.text('count'))
+                db.session.query(sa.text('hour'), sa.text('count'))
                 .from_statement(
-                    db.text(
+                    sa.text(
                         '''SELECT date_trunc(:interval, campaign_user_action.created_at AT TIME ZONE :timezone) AS hour, COUNT(*) AS count FROM campaign_user_action WHERE action_id=:action_id GROUP BY hour ORDER BY hour;'''
                     )
                 )
@@ -335,9 +336,9 @@ class AdminCampaignView(UrlForView, InstanceLoader, ModelView):
                 viewdict[hour][action.name] = count
 
             hourly_views = (
-                db.session.query(db.text('hour'), db.text('count'))
+                db.session.query(sa.text('hour'), sa.text('count'))
                 .from_statement(
-                    db.text(
+                    sa.text(
                         '''SELECT date_trunc(:interval, campaign_anon_user_action.created_at AT TIME ZONE :timezone) AS hour, COUNT(*) AS count FROM campaign_anon_user_action WHERE action_id=:action_id GROUP BY hour ORDER BY hour;'''
                     )
                 )
@@ -356,9 +357,9 @@ class AdminCampaignView(UrlForView, InstanceLoader, ModelView):
             ).astimezone(UTC)
 
             hourly_views = (
-                db.session.query(db.text('hour'), db.text('count'))
+                db.session.query(sa.text('hour'), sa.text('count'))
                 .from_statement(
-                    db.text(
+                    sa.text(
                         '''SELECT date_trunc(:interval, user_active_at.active_at AT TIME ZONE :timezone) AS hour, COUNT(DISTINCT(user_active_at.user_id)) AS count FROM user_active_at WHERE user_active_at.active_at >= :min AND user_active_at.active_at <= :max GROUP BY hour ORDER BY hour;'''
                     )
                 )
@@ -369,9 +370,9 @@ class AdminCampaignView(UrlForView, InstanceLoader, ModelView):
                 viewdict[hour]['_site'] = count
 
             hourly_views = (
-                db.session.query(db.text('hour'), db.text('count'))
+                db.session.query(sa.text('hour'), sa.text('count'))
                 .from_statement(
-                    db.text(
+                    sa.text(
                         '''SELECT DATE_TRUNC(:interval, event_session.created_at AT TIME ZONE :timezone) AS hour, COUNT(DISTINCT(anon_user_id)) AS count FROM event_session WHERE event_session.anon_user_id IS NOT NULL AND event_session.created_at >= :min AND event_session.created_at <= :max GROUP BY hour ORDER BY hour'''
                     )
                 )

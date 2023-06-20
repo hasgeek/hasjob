@@ -1,6 +1,5 @@
 import baseframe.forms as forms
 from baseframe import __
-
 from coaster.utils import getbool
 
 from ..models import (

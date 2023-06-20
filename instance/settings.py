@@ -125,9 +125,3 @@ LASTUSER_SERVER = 'https://hasgeek.com/'
 LASTUSER_CLIENT_ID = ''
 #: LastUser client secret
 LASTUSER_CLIENT_SECRET = ''  # nosec B105
-# Dogpile cache backend
-DOGPILE_CACHE_BACKEND = 'dogpile.cache.redis'
-# Dogpile cache backend URL
-DOGPILE_CACHE_URLS = '127.0.0.1:6379'
-# Dogpile cache regions (important, do not remove!)
-DOGPILE_CACHE_REGIONS = [('hasjob_index', 3600)]

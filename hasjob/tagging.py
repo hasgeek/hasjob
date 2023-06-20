@@ -20,6 +20,7 @@ from .models import (
     board_auto_jobtype_table,
     board_auto_tag_table,
     db,
+    sa,
 )
 
 
@@ -93,7 +94,7 @@ def tag_locations(jobpost_id):
 def add_to_boards(jobpost_id):
     with app.test_request_context():
         post = JobPost.query.options(
-            db.joinedload(JobPost.locations), db.joinedload(JobPost.taglinks)
+            sa.orm.joinedload(JobPost.locations), sa.orm.joinedload(JobPost.taglinks)
         ).get(jobpost_id)
         # Find all boards that match and that don't have an all-match criteria
         query = Board.query.join(BoardAutoDomain).filter(

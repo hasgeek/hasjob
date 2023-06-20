@@ -1,6 +1,7 @@
 from urllib.parse import urljoin
 
 import requests
+
 from baseframe import cache
 
 from .. import app
