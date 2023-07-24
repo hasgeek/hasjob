@@ -1,0 +1,143 @@
+name: Telegram Notify
+on:
+  issues:
+    types: [opened, edited, closed, reopened, milestoned, demilestoned]
+  issue_comment:
+    types: [created]
+  push:
+  pull_request:
+    types:
+      # Exclude 'synchronize' as that is duplicated in the 'push' event
+      [
+        assigned,
+        closed,
+        converted_to_draft,
+        edited,
+        labeled,
+        locked,
+        opened,
+        ready_for_review,
+        reopened,
+        review_request_removed,
+        review_requested,
+        unassigned,
+        unlabeled,
+        unlocked,
+      ]
+  pull_request_review:
+  project:
+  project_card:
+    types: [created, moved, converted, edited, deleted]
+  release:
+  watch:
+
+jobs:
+  tguser:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: kanga333/variable-mapper@master
+        with:
+          key: '${{ github.actor }}'
+          map: |
+            {
+              "djamg": {"tguser": "@dj_amg"},
+              "jace": {"tguser": "@jackerhack"},
+              "miteshashar": {"tguser": "@miteshashar"},
+              "sankarshanmukhopadhyay": {"tguser": "@sankarshan"},
+              "StephanieBr": {"tguser": "@stephaniebrne"},
+              "vidya-ram": {"tguser": "@vidya_ramki"},
+              "zainabbawa": {"tguser": "@Saaweoh"},
+              "anishTP": {"tguser": "@anishtp"},
+              ".*": {"tguser": "Unknown"}
+            }
+          export_to: env
+    outputs:
+      tguser: ${{ env.tguser }}
+
+  event_notify_all:
+    if: ${{ !contains(fromJson('["issues", "issue_comment", "pull_request", "pull_request_review", "push"]'), github.event_name) }}
+    needs: tguser
+    runs-on: ubuntu-latest
+    steps:
+      - uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          format: html
+          disable_web_page_preview: true
+          message: |
+            <b>${{ github.event_name }}</b> by ${{ needs.tguser.outputs.tguser }} (${{ github.actor }}) in https://github.com/${{ github.repository }}
+
+  event_issues:
+    if: ${{ github.event_name == 'issues' }}
+    needs: tguser
+    runs-on: ubuntu-latest
+    steps:
+      - uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          format: html
+          disable_web_page_preview: true
+          message: |
+            <b>${{ github.event_name }}/${{ github.event.action }}</b> by ${{ needs.tguser.outputs.tguser }} (${{ github.actor }}): ${{ github.event.issue.title }} ${{ github.event.issue.html_url }}
+
+  event_issue_comment:
+    if: ${{ github.event_name == 'issue_comment' }}
+    needs: tguser
+    runs-on: ubuntu-latest
+    steps:
+      - uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          format: html
+          disable_web_page_preview: true
+          message: |
+            <b>${{ github.event_name }}/${{ github.event.action }}</b> by ${{ needs.tguser.outputs.tguser }} (${{ github.actor }}) in ${{ github.event.issue.title }} ${{ github.event.issue.html_url }}:
+
+            ${{ github.event.comment.body }} ${{ github.event.comment.html_url }}
+
+  event_pull_request:
+    if: ${{ github.event_name == 'pull_request' }}
+    needs: tguser
+    runs-on: ubuntu-latest
+    steps:
+      - uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          format: html
+          disable_web_page_preview: true
+          message: |
+            <b>${{ github.event_name }}/${{ github.event.action }}</b> by ${{ needs.tguser.outputs.tguser }} (${{ github.actor }}): ${{ github.event.pull_request.title }} ${{ github.event.pull_request.html_url }}
+
+  event_pull_request_review:
+    if: ${{ github.event_name == 'pull_request_review' }}
+    needs: tguser
+    runs-on: ubuntu-latest
+    steps:
+      - uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          format: html
+          disable_web_page_preview: true
+          message: |
+            <b>${{ github.event_name }}/${{ github.event.action }} (${{ github.event.review.state }})</b> by ${{ needs.tguser.outputs.tguser }} (${{ github.actor }}) in ${{ github.event.pull_request.title }} ${{ github.event.pull_request.html_url }}:
+
+            ${{ github.event.review.body }} ${{ github.event.review.html_url }}
+
+  event_push:
+    if: ${{ github.event_name == 'push' }}
+    needs: tguser
+    runs-on: ubuntu-latest
+    steps:
+      - uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          format: html
+          disable_web_page_preview: true
+          message: |
+            <b>${{ github.event_name }}</b> by ${{ needs.tguser.outputs.tguser }} (${{ github.actor }}) in ${{ github.repository }}/${{ github.ref_name }}: ${{ github.event.head_commit.message }} ${{ github.event.compare }}
