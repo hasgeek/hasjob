@@ -38,7 +38,7 @@ from . import cli, models, views  # noqa: F401  # isort:skip
 from .models import db  # isort:skip
 
 # Configure the app
-coaster.app.init_app(app, ['py', 'env'], env_prefix=['FLASK'])
+coaster.app.init_app(app, ['py', 'env'], env_prefix=['FLASK', 'APP_HASJOB'])
 db.init_app(app)
 db.app = app
 migrate = Migrate(app, db)
