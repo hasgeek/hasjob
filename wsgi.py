@@ -3,6 +3,7 @@ import sys
 
 from flask.cli import load_dotenv
 from flask.helpers import get_load_dotenv
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 __all__ = ['application']
 
@@ -12,3 +13,5 @@ if get_load_dotenv():
 
 # pylint: disable=wrong-import-position
 from hasjob import app as application  # isort:skip
+
+application.wsgi_app = ProxyFix(application.wsgi_app)  # type: ignore[method-assign]
