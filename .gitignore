@@ -5,6 +5,7 @@ test.db
 .project
 .pydevproject
 .vscode
+.python-version
 .settings
 .sass-cache
 .webassets-cache
