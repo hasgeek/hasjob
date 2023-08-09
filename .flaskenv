@@ -6,7 +6,7 @@ FLASK_DEBUG_TB_ENABLED=false
 FLASK_TESTING=false
 
 # To only support HTTPS, set Secure Cookies to True
-FLASK_SESSION_COOKIE_SECURE=True
+FLASK_SESSION_COOKIE_SECURE=true
 
 # --- App configuration
 # Default timezone when user timezone is not known
