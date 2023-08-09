@@ -22,7 +22,7 @@ langid
 Pillow
 premailer
 progressbar2
-psycopg2
+psycopg2-binary
 python-dotenv
 pytz
 SQLAlchemy
