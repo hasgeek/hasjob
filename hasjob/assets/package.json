@@ -27,7 +27,7 @@
     "clean-webpack-plugin": "^0.1.18",
     "compass-mixins": "^0.12.10",
     "copy-webpack-plugin": "^4.5.1",
-    "css-loader": "^0.28.9",
+    "css-loader": "^6.8.1",
     "extract-text-webpack-plugin": "^3.0.2",
     "file-loader": "^1.1.9",
     "filemanager-webpack-plugin": "^1.0.25",
