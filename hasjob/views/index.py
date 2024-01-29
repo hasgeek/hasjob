@@ -1305,12 +1305,16 @@ def oembed(url):
                 'static', filename='img/hasjob-logo-200x200.png', _external=True
             ),
             'author_name': board.title if board else app.config['SITE_TITLE'],
-            'author_url': board.url_for(_external=True)
-            if board
-            else url_for('index', subdomain=None, _external=True),
-            'title': ' | '.join([board.title, board.caption])
-            if board
-            else app.config['SITE_TITLE'],
+            'author_url': (
+                board.url_for(_external=True)
+                if board
+                else url_for('index', subdomain=None, _external=True)
+            ),
+            'title': (
+                ' | '.join([board.title, board.caption])
+                if board
+                else app.config['SITE_TITLE']
+            ),
             'html': (
                 '<iframe id="{iframeid}" src="{url}" '
                 'width="100%" height="724" frameborder="0" scrolling="no">'.format(

@@ -1013,9 +1013,9 @@ def filter_locations(board, filters):
         {
             'name': data.get(geonameid, {}).get('name', ''),
             'title': data.get(geonameid, {}).get('picker_title', ''),
-            'available': False
-            if not filtered_geonameids
-            else geonameid in filtered_geonameids,
+            'available': (
+                False if not filtered_geonameids else geonameid in filtered_geonameids
+            ),
         }
         for geonameid in geonameids
     ]
@@ -1034,9 +1034,9 @@ def filter_types(basequery, board, filters):
         return {
             'name': job_type.name,
             'title': job_type.title,
-            'available': False
-            if not filtered_typeids
-            else job_type.id in filtered_typeids,
+            'available': (
+                False if not filtered_typeids else job_type.id in filtered_typeids
+            ),
         }
 
     if board:
@@ -1067,9 +1067,11 @@ def filter_categories(basequery, board, filters):
         return {
             'name': job_category.name,
             'title': job_category.title,
-            'available': False
-            if not filtered_categoryids
-            else job_category.id in filtered_categoryids,
+            'available': (
+                False
+                if not filtered_categoryids
+                else job_category.id in filtered_categoryids
+            ),
         }
 
     if board:
