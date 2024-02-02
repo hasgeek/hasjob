@@ -29,3 +29,4 @@ hasjob/static/gen
 hasjob/assets/node_modules
 hasjob/static/build
 hasjob/static/service-worker.js
+node_modules/

@@ -3,7 +3,7 @@
 
 [tool.black]
 line-length = 88
-target_version = ['py37']
+target-version = ['py311']
 skip-string-normalization = true
 include = '\.pyi?$'
 exclude = '''
@@ -44,11 +44,11 @@ sections = [
   'THIRDPARTY',
   'FIRSTPARTY',
   'REPO',
-  'LOCALFOLDER'
+  'LOCALFOLDER',
 ]
 
 [tool.pytest.ini_options]
-minversion = "6.1"  # For config.rootpath
+minversion = "6.1" # For config.rootpath
 required_plugins = [
   'pytest-cov',
   'pytest-datadir',
@@ -61,8 +61,8 @@ required_plugins = [
 addopts = [
   '--cov-report=term-missing',
   '--disable-socket',
-  '--allow-unix-socket',  # Required for Selenium driver
-  '--allow-hosts=127.0.0.1,::1',  # Add Docker IPs here
+  '--allow-unix-socket',         # Required for Selenium driver
+  '--allow-hosts=127.0.0.1,::1', # Add Docker IPs here
   '--strict-markers',
 ]
 env = ['FLASK_ENV=testing', 'FLASK_TESTING=true']
@@ -96,31 +96,76 @@ select = ["E", "F"]
 ignore = ["E402", "E501"]
 
 # Allow autofix for all enabled rules (when `--fix`) is provided.
-fixable = ["A", "B", "C", "D", "E", "F", "G", "I", "N", "Q", "S", "T", "W", "ANN", "ARG", "BLE", "COM", "DJ", "DTZ", "EM", "ERA", "EXE", "FBT", "ICN", "INP", "ISC", "NPY", "PD", "PGH", "PIE", "PL", "PT", "PTH", "PYI", "RET", "RSE", "RUF", "SIM", "SLF", "TCH", "TID", "TRY", "UP", "YTT"]
+fixable = [
+  "A",
+  "B",
+  "C",
+  "D",
+  "E",
+  "F",
+  "G",
+  "I",
+  "N",
+  "Q",
+  "S",
+  "T",
+  "W",
+  "ANN",
+  "ARG",
+  "BLE",
+  "COM",
+  "DJ",
+  "DTZ",
+  "EM",
+  "ERA",
+  "EXE",
+  "FBT",
+  "ICN",
+  "INP",
+  "ISC",
+  "NPY",
+  "PD",
+  "PGH",
+  "PIE",
+  "PL",
+  "PT",
+  "PTH",
+  "PYI",
+  "RET",
+  "RSE",
+  "RUF",
+  "SIM",
+  "SLF",
+  "TCH",
+  "TID",
+  "TRY",
+  "UP",
+  "YTT",
+]
 unfixable = []
 
 # Exclude a variety of commonly ignored directories.
 exclude = [
-    ".bzr",
-    ".direnv",
-    ".eggs",
-    ".git",
-    ".hg",
-    ".mypy_cache",
-    ".nox",
-    ".pants.d",
-    ".pytype",
-    ".ruff_cache",
-    ".svn",
-    ".tox",
-    ".venv",
-    "__pypackages__",
-    "_build",
-    "buck-out",
-    "build",
-    "dist",
-    "node_modules",
-    "venv",
+  ".bzr",
+  ".direnv",
+  ".eggs",
+  ".git",
+  ".hg",
+  ".mypy_cache",
+  ".nox",
+  ".pants.d",
+  ".pytype",
+  ".ruff_cache",
+  ".svn",
+  ".tox",
+  ".venv",
+  "__pypackages__",
+  "_build",
+  "buck-out",
+  "build",
+  "dist",
+  "node_modules",
+  "venv",
 ]
 
 # Same as Black.
@@ -129,8 +174,8 @@ line-length = 88
 # Allow unused variables when underscore-prefixed.
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 
-# Target Python 3.7
-target-version = "py37"
+# Target Python 3.11
+target-version = "py311"
 
 [tool.ruff.mccabe]
 # Unlike Flake8, default to a complexity level of 10.
@@ -144,7 +189,12 @@ split-on-trailing-comma = false
 relative-imports-order = 'furthest-to-closest'
 known-first-party = ['coaster']
 section-order = [
-  'future', 'standard-library', 'third-party', 'first-party', 'repo', 'local-folder'
+  'future',
+  'standard-library',
+  'third-party',
+  'first-party',
+  'repo',
+  'local-folder',
 ]
 
 [tool.ruff.isort.sections]
