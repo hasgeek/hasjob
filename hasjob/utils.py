@@ -69,9 +69,12 @@ def string_to_number(value):
     """
     Convert a string containing a formatted number into an integer.
     """
+    if not value:
+        return None
     value = NO_NUM_RE.sub('', value)
     if value:
         return int(value)
+    return None
 
 
 #: This code adapted from http://en.wikipedia.org/wiki/Base_36#Python%5FConversion%5FCode
