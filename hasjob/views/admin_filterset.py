@@ -10,8 +10,9 @@ from ..models import Filterset, db
 
 
 @route('/f')
-class AdminFiltersetView(UrlForView, ModelView):
-    model = Filterset
+class AdminFiltersetView(UrlForView, ModelView[Filterset]):
+
+    route_model_map = {'name': 'name'}
 
     def loader(self, name=None):
         if name:

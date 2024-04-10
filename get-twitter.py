@@ -6,9 +6,8 @@ Get Twitter access key and secret.
 
 import tweepy
 
-from hasjob import app, init_for
+from hasjob import app
 
-init_for('dev')
 auth = tweepy.OAuthHandler(
     app.config['TWITTER_CONSUMER_KEY'], app.config['TWITTER_CONSUMER_SECRET']
 )

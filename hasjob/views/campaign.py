@@ -172,9 +172,8 @@ def campaign_action_current_tab(f):
 
 
 @route('/admin/campaign/<campaign>')
-class AdminCampaignView(UrlForView, InstanceLoader, ModelView):
+class AdminCampaignView(UrlForView, InstanceLoader, ModelView[Campaign]):
     __decorators__ = [lastuser.requires_permission('siteadmin'), campaign_current_tab]
-    model = Campaign
     route_model_map = {'campaign': 'name'}
 
     @classmethodproperty
@@ -410,12 +409,11 @@ AdminCampaignView.init_app(app)
 
 
 @route('/admin/campaign/<campaign>/<action>')
-class AdminCampaignActionView(UrlForView, InstanceLoader, ModelView):
+class AdminCampaignActionView(UrlForView, InstanceLoader, ModelView[CampaignAction]):
     __decorators__ = [
         lastuser.requires_permission('siteadmin'),
         campaign_action_current_tab,
     ]
-    model = CampaignAction
     route_model_map = {'action': 'name', 'campaign': 'parent.name'}
 
     @classmethodproperty
