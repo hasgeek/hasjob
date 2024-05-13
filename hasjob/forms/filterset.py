@@ -74,7 +74,7 @@ class FiltersetForm(forms.Form):
         __("Tags"), autocomplete_endpoint='/api/1/tag/autocomplete', results_key='tags'
     )
 
-    def set_queries(self):
+    def __post_init__(self):
         if not self.edit_parent:
             self.edit_parent = g.board
         self.types.query = (

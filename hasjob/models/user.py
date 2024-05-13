@@ -4,11 +4,11 @@ from datetime import timedelta
 from uuid import uuid4
 
 from flask import request
-from flask_lastuser.sqlalchemy import UserBase2
 
 from baseframe import _, cache
 from coaster.sqlalchemy import JsonDict, UuidMixin
 from coaster.utils import utcnow
+from flask_lastuser.sqlalchemy import UserBase2
 
 from . import BaseMixin, Model, backref, db, relationship, sa
 

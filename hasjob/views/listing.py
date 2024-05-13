@@ -3,7 +3,6 @@ from difflib import SequenceMatcher
 
 import bleach
 from flask import (
-    Markup,
     abort,
     flash,
     g,
@@ -16,6 +15,7 @@ from flask import (
 )
 from flask_mail import Message
 from html2text import html2text
+from markupsafe import Markup
 from premailer import transform as email_transform
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import StaleDataError

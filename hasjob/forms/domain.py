@@ -1,4 +1,4 @@
-# from flask import Markup
+# from markupsafe import Markup
 import baseframe.forms as forms
 from baseframe import __
 

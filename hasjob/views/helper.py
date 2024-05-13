@@ -7,9 +7,9 @@ from urllib.parse import quote, quote_plus
 from uuid import uuid4
 
 import bleach
-from flask import Markup, copy_current_request_context, g, request, session
-from flask_lastuser import signal_user_looked_up
+from flask import copy_current_request_context, g, request, session
 from geoip2.errors import AddressNotFoundError
+from markupsafe import Markup
 from pytz import UTC
 from sqlalchemy.exc import IntegrityError
 
@@ -17,6 +17,7 @@ from baseframe import _, cache
 from baseframe.signals import form_validation_error, form_validation_success
 from coaster.sqlalchemy import failsafe_add
 from coaster.utils import utcnow
+from flask_lastuser import signal_user_looked_up
 
 from .. import app, lastuser, redis_store, rq
 from ..extapi import location_geodata

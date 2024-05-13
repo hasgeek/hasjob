@@ -4,7 +4,8 @@ from datetime import timedelta
 from functools import wraps
 from io import StringIO
 
-from flask import Markup, abort, flash, g, redirect, render_template, request, url_for
+from flask import abort, flash, g, redirect, render_template, request, url_for
+from markupsafe import Markup
 from pytz import UTC
 
 from baseframe import __
