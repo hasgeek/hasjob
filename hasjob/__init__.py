@@ -3,8 +3,6 @@ import os.path
 import geoip2.database
 from flask import Flask
 from flask_assets import Bundle
-from flask_lastuser import Lastuser
-from flask_lastuser.sqlalchemy import UserManager
 from flask_mail import Mail
 from flask_migrate import Migrate
 from flask_redis import FlaskRedis
@@ -13,6 +11,8 @@ from flask_rq2 import RQ
 import coaster.app
 from baseframe import Version, assets, baseframe
 from coaster.assets import WebpackManifest
+from flask_lastuser import Lastuser
+from flask_lastuser.sqlalchemy import UserManager
 
 from ._version import __version__
 from .uploads import configure as uploads_configure

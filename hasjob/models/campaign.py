@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from datetime import timedelta
 
-from flask import Markup, request
+from flask import request
+from markupsafe import Markup
 from sqlalchemy import event
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.orderinglist import ordering_list

@@ -3,7 +3,6 @@ from urllib.parse import SplitResult, urlsplit
 from uuid import uuid4
 
 from flask import (
-    Markup,
     Response,
     abort,
     flash,
@@ -14,6 +13,7 @@ from flask import (
     request,
     url_for,
 )
+from markupsafe import Markup
 
 from baseframe import _, request_is_xhr
 from coaster.utils import ParseError, getbool, parse_isoformat, utcnow

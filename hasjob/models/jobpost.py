@@ -3,8 +3,9 @@ from __future__ import annotations
 from datetime import timedelta
 
 import tldextract
-from flask import Markup, escape, url_for
+from flask import url_for
 from flask_babel import format_datetime
+from markupsafe import Markup, escape
 from sqlalchemy import event
 from sqlalchemy.dialects.postgresql import TSVECTOR
 from sqlalchemy.ext.associationproxy import association_proxy
