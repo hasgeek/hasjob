@@ -86,64 +86,6 @@ exclude_dirs = ['node_modules', 'build/lib']
 skips = ['*/*_test.py', '*/test_*.py']
 
 [tool.ruff]
-# This is a slight customisation of the default rules
-# 1. Hasjob still supports Python 3.7 pending its EOL
-# 2. Rule E402 (module-level import not top-level) is disabled as isort handles it
-# 3. Rule E501 (line too long) is left to Black; some strings are worse for wrapping
-
-# Enable pycodestyle (`E`) and Pyflakes (`F`) codes by default.
-select = ["E", "F"]
-ignore = ["E402", "E501"]
-
-# Allow autofix for all enabled rules (when `--fix`) is provided.
-fixable = [
-  "A",
-  "B",
-  "C",
-  "D",
-  "E",
-  "F",
-  "G",
-  "I",
-  "N",
-  "Q",
-  "S",
-  "T",
-  "W",
-  "ANN",
-  "ARG",
-  "BLE",
-  "COM",
-  "DJ",
-  "DTZ",
-  "EM",
-  "ERA",
-  "EXE",
-  "FBT",
-  "ICN",
-  "INP",
-  "ISC",
-  "NPY",
-  "PD",
-  "PGH",
-  "PIE",
-  "PL",
-  "PT",
-  "PTH",
-  "PYI",
-  "RET",
-  "RSE",
-  "RUF",
-  "SIM",
-  "SLF",
-  "TCH",
-  "TID",
-  "TRY",
-  "UP",
-  "YTT",
-]
-unfixable = []
-
 # Exclude a variety of commonly ignored directories.
 exclude = [
   ".bzr",
@@ -171,23 +113,48 @@ exclude = [
 # Same as Black.
 line-length = 88
 
-# Allow unused variables when underscore-prefixed.
-dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
-
 # Target Python 3.11
 target-version = "py311"
 
-[tool.ruff.mccabe]
+[tool.ruff.format]
+docstring-code-format = true
+quote-style = "preserve"
+
+[tool.ruff.lint]
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+# Enable pycodestyle (`E`) and Pyflakes (`F`) codes by default.
+select = ["E", "F"]
+ignore = ["E402", "E501"]
+
+# Allow autofix for all enabled rules (when `--fix`) is provided.
+fixable = ["ALL"]
+unfixable = []
+
+# Allow these characters in strings
+allowed-confusables = ["‘", "’"]
+
+[tool.ruff.lint.mccabe]
 # Unlike Flake8, default to a complexity level of 10.
 max-complexity = 10
 
-[tool.ruff.isort]
+[tool.ruff.lint.extend-per-file-ignores]
+"__init__.py" = ["E402"] # Allow non-top-level imports
+"tests/**.py" = [
+  "S101",   # Allow assert
+  "ANN001", # Args don't need types (usually fixtures)
+  "N802",   # Fixture returning a class may be named per class name convention
+  "N803",   # Args don't require naming convention (fixture could be a class)
+]
+
+[tool.ruff.lint.isort]
 # These config options should match isort config above under [tool.isort]
 combine-as-imports = true
 extra-standard-library = ['typing_extensions']
 split-on-trailing-comma = false
 relative-imports-order = 'furthest-to-closest'
-known-first-party = ['coaster']
+known-first-party = ['coaster', 'baseframe', 'flask_lastuser']
 section-order = [
   'future',
   'standard-library',
@@ -197,5 +164,12 @@ section-order = [
   'local-folder',
 ]
 
-[tool.ruff.isort.sections]
+[tool.ruff.lint.isort.sections]
 repo = ['hasjob']
+
+[tool.ruff.lint.flake8-pytest-style]
+fixture-parentheses = false
+mark-parentheses = false
+
+[tool.ruff.lint.pyupgrade]
+keep-runtime-typing = true
