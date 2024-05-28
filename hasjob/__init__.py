@@ -25,8 +25,11 @@ mail = Mail()
 lastuser = Lastuser()
 redis_store = FlaskRedis(decode_responses=True)
 rq = RQ()
-manifest = WebpackManifest(
-    app, filepath='static/build/manifest.json', urlpath='/static/build/'
+webpack = WebpackManifest(
+    app,
+    filepath='static/build/manifest.json',
+    urlpath='/static/build/',
+    jinja_global='webpack',
 )
 
 # Second, setup assets
