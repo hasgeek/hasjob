@@ -55,6 +55,7 @@ def extract_named_entities(text_blocks: Iterable[str]) -> set[str]:
     return set(entity_names)
 
 
+@rq.job('hasjob')
 def tag_locations(jobpost_id):
     with app.test_request_context():
         post = JobPost.query.get(jobpost_id)

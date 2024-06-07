@@ -36,7 +36,7 @@ casper.test.begin('Hasjob Post A Job Flow', 13, function suite(test) {
         document.querySelector('#passwordlogin').submit();
       },
       test_username,
-      test_password
+      test_password,
     );
   });
 
@@ -59,8 +59,7 @@ casper.test.begin('Hasjob Post A Job Flow', 13, function suite(test) {
         'What is the answer to Life, the Universe and Everything?';
       document.querySelector('#company_name').value = 'Acme Corp';
       document.querySelector('#company_url').value = 'http://mailinator.com/';
-      document.querySelector('#poster_email').value =
-        'travishasjob@mailinator.com';
+      document.querySelector('#poster_email').value = 'travishasjob@mailinator.com';
       document.querySelector('#newjob').submit();
     });
   });
@@ -70,9 +69,7 @@ casper.test.begin('Hasjob Post A Job Flow', 13, function suite(test) {
     test.assertUrlMatch(/view/, 'Job posted, now to review');
     test.assertSelectorHasText('div.page-header>h2', 'Review this post');
     casper.evaluate(function () {
-      document
-        .querySelector('input[value="This looks good, confirm it"]')
-        .click();
+      document.querySelector('input[value="This looks good, confirm it"]').click();
     });
   });
 

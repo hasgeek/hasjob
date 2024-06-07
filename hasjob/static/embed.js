@@ -40,9 +40,7 @@
     if (hostnames.indexOf(event.origin) !== -1) {
       var message = JSON.parse(event.data);
       if (message.context == 'iframe.resize' && message.id) {
-        document
-          .getElementById(message.id)
-          .setAttribute('height', message.height);
+        document.getElementById(message.id).setAttribute('height', message.height);
       }
     }
   }

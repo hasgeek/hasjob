@@ -150,9 +150,9 @@ def redactemail(data, message='[redacted]'):
     """
     Remove email addresses from the given text, replacing with a redacted message.
 
-    >>> redactemail(u"Send email to test@example.com and you are all set.")
+    >>> redactemail("Send email to test@example.com and you are all set.")
     u'Send email to [redacted] and you are all set.'
-    >>> redactemail(u"Send email to test@example.com and you are all set.", '[hidden]')
+    >>> redactemail("Send email to test@example.com and you are all set.", '[hidden]')
     u'Send email to [hidden] and you are all set.'
     """
     return EMAIL_RE.sub(message, data)
@@ -164,13 +164,21 @@ def scrubemail(data, rot13=False, css_junk=None):
     and optionally obfuscate them with ROT13 and empty CSS classes,
     to hide from spambots.
 
-    >>> scrubemail(u"Send email to test@example.com and you are all set.")
+    >>> scrubemail("Send email to test@example.com and you are all set.")
     u'Send email to <a href="mailto:test@example.com">test@example.com</a> and you are all set.'
-    >>> scrubemail(u"Send email to test@example.com and you are all set.", rot13=True)
+    >>> scrubemail("Send email to test@example.com and you are all set.", rot13=True)
     u'Send email to <a class="rot13" data-href="znvygb:grfg@rknzcyr.pbz">test@example.com</a> and you are all set.'
-    >>> scrubemail(u"Send email to test@example.com and you are all set.", rot13=True, css_junk='z')
+    >>> scrubemail(
+    ...     "Send email to test@example.com and you are all set.",
+    ...     rot13=True,
+    ...     css_junk='z',
+    ... )
     u'Send email to <a class="rot13" data-href="znvygb:grfg@rknzcyr.pbz">test&#64;<span class="z">no</span>examp<span class="z">spam</span>le.com</a> and you are all set.'
-    >>> scrubemail(u"Send email to test@example.com and you are all set.", rot13=False, css_junk=('z', 'y'))
+    >>> scrubemail(
+    ...     "Send email to test@example.com and you are all set.",
+    ...     rot13=False,
+    ...     css_junk=('z', 'y'),
+    ... )
     u'Send email to <a href="mailto:test@example.com"><span class="y">test&#64;</span><span class="z">no</span><span class="y">examp</span><span class="z">spam</span><span class="y">le.com</span></a> and you are all set.'
     """
 
@@ -227,7 +235,7 @@ def striptags(text):
     ' title '
     >>> striptags('plain text')
     'plain text'
-    >>> striptags(u'word<br>break')
+    >>> striptags('word<br>break')
     u'word break'
     """
     return TAGSPLIT_RE.sub(' ', text)
@@ -246,7 +254,7 @@ def getwords(text):
     ['one', 'two']
     >>> getwords("does not is doesn't")
     ['does', 'not', 'is', 'doesn', 't']
-    >>> getwords(u'hola unicode!')
+    >>> getwords('hola unicode!')
     [u'hola', u'unicode']
     """
     result = WORDSPLIT_RE.split(text)

@@ -10,11 +10,11 @@ class AdminView(ClassView):
         views = ((name, getattr(cls, name)) for name in cls.__views__)
         tabviews = sorted(
             (view.data.get('index', 0), name, view)
-            for name, view, in views
+            for name, view in views
             if view.data.get('tab')
         )
         return ((name, view.data['title'], view) for index, name, view in tabviews)
 
     @property
     def current_tab(self):
-        return self.current_handler.name
+        return self.current_method.name
