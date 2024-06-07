@@ -1,5 +1,5 @@
 importScripts(
-  'https://unpkg.com/workbox-sw@2.1.2/build/importScripts/workbox-sw.prod.v2.1.2.js'
+  'https://unpkg.com/workbox-sw@2.1.2/build/importScripts/workbox-sw.prod.v2.1.2.js',
 );
 
 const workboxSW = new self.WorkboxSW({
@@ -15,7 +15,7 @@ workboxSW.router.registerRoute(
   workboxSW.strategies.networkFirst({
     cacheName: 'assets',
   }),
-  'GET'
+  'GET',
 );
 
 //For development setup caching of assets
@@ -24,7 +24,7 @@ workboxSW.router.registerRoute(
   workboxSW.strategies.networkFirst({
     cacheName: 'baseframe-local',
   }),
-  'GET'
+  'GET',
 );
 
 workboxSW.router.registerRoute(
@@ -32,7 +32,7 @@ workboxSW.router.registerRoute(
   workboxSW.strategies.networkFirst({
     cacheName: 'cdn-libraries',
   }),
-  'GET'
+  'GET',
 );
 
 workboxSW.router.registerRoute(
@@ -40,7 +40,7 @@ workboxSW.router.registerRoute(
   workboxSW.strategies.networkFirst({
     cacheName: 'cdn-libraries',
   }),
-  'GET'
+  'GET',
 );
 
 workboxSW.router.registerRoute(
@@ -48,7 +48,7 @@ workboxSW.router.registerRoute(
   workboxSW.strategies.networkFirst({
     cacheName: 'images',
   }),
-  'GET'
+  'GET',
 );
 
 workboxSW.router.registerRoute(
@@ -56,7 +56,7 @@ workboxSW.router.registerRoute(
   workboxSW.strategies.networkFirst({
     cacheName: 'images',
   }),
-  'GET'
+  'GET',
 );
 
 workboxSW.router.registerRoute(
@@ -64,7 +64,7 @@ workboxSW.router.registerRoute(
   workboxSW.strategies.networkFirst({
     cacheName: 'images',
   }),
-  'GET'
+  'GET',
 );
 
 workboxSW.router.registerRoute(
@@ -72,7 +72,7 @@ workboxSW.router.registerRoute(
   workboxSW.strategies.networkFirst({
     cacheName: 'fonts',
   }),
-  'GET'
+  'GET',
 );
 
 workboxSW.router.registerRoute(
@@ -80,7 +80,7 @@ workboxSW.router.registerRoute(
   workboxSW.strategies.networkFirst({
     cacheName: 'fonts',
   }),
-  'GET'
+  'GET',
 );
 
 /* The service worker handles all fetch requests. If fetching of job post page or
@@ -122,7 +122,7 @@ self.addEventListener('install', (event) => {
         return caches.open('hasjob-offline').then(function (cache) {
           return cache.put('offline', response);
         });
-      }
-    )
+      },
+    ),
   );
 });

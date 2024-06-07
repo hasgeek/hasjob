@@ -32,7 +32,7 @@ ManifestPlugin.prototype.apply = function (compiler) {
     });
     require('fs').writeFileSync(
       path.join(__dirname, this.manifestPath),
-      JSON.stringify(parsed_stats)
+      JSON.stringify(parsed_stats),
     );
   });
 };
@@ -98,8 +98,7 @@ module.exports = {
             return (
               module.resource &&
               /\.js$/.test(module.resource) &&
-              module.resource.indexOf(path.join(__dirname, '/node_modules')) ===
-                0
+              module.resource.indexOf(path.join(__dirname, '/node_modules')) === 0
             );
           },
         }),

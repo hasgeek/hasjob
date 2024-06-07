@@ -67,10 +67,7 @@ window.Hasjob.JobPost = {
     var outerTemplate = document.createElement('li');
     var innerTemplate = document.createElement('a');
     var node, outer, inner;
-    outerTemplate.setAttribute(
-      'class',
-      'col-xs-12 col-md-3 col-sm-4 animated shake'
-    );
+    outerTemplate.setAttribute('class', 'col-xs-12 col-md-3 col-sm-4 animated shake');
     innerTemplate.setAttribute('class', 'stickie');
     innerTemplate.setAttribute('rel', 'bookmark');
     // replaces the group with individual stickies when clicked
@@ -119,9 +116,7 @@ window.Hasjob.StickieList = {
             $('ul#stickie-area').append(data.trim());
             stickielist.loadmoreRactive.set('loading', false);
             stickielist.loadmoreRactive.set('error', false);
-            window.dispatchEvent(
-              Hasjob.Util.createCustomEvent('onStickiesPagination')
-            );
+            window.dispatchEvent(Hasjob.Util.createCustomEvent('onStickiesPagination'));
           },
           error: function () {
             stickielist.loadmoreRactive.set('error', true);
@@ -170,8 +165,7 @@ window.Hasjob.StickieList = {
     var filterParams = window.Hasjob.Filters.toParam();
     var searchUrl = window.Hasjob.Config.baseURL;
     if (filterParams.length) {
-      searchUrl =
-        window.Hasjob.Config.baseURL + '?' + window.Hasjob.Filters.toParam();
+      searchUrl = window.Hasjob.Config.baseURL + '?' + window.Hasjob.Filters.toParam();
     }
     $.ajax(searchUrl, {
       method: 'POST',
@@ -182,9 +176,7 @@ window.Hasjob.StickieList = {
         $('#main-content').html(data);
         window.Hasjob.Filters.refresh();
         NProgress.done();
-        window.dispatchEvent(
-          Hasjob.Util.createCustomEvent('onStickiesRefresh')
-        );
+        window.dispatchEvent(Hasjob.Util.createCustomEvent('onStickiesRefresh'));
       },
     });
     history.replaceState({ reloadOnPop: true }, '', window.location.href);
@@ -237,7 +229,7 @@ window.Hasjob.StickieList = {
       value,
       1,
       1,
-      1
+      1,
     ).data;
     var colourHex;
     if (rgba[0] > 255 || rgba[1] > 255 || rgba[2] > 255) {
@@ -265,7 +257,7 @@ window.Hasjob.StickieList = {
         Hasjob.StickieList.setGradientColour(
           $(this).data('funnel-name'),
           $(this).data('funnel-value'),
-          $(this).attr('id')
+          $(this).attr('id'),
         );
       }
     });
@@ -273,19 +265,19 @@ window.Hasjob.StickieList = {
   createGradientColour: function () {
     Hasjob.StickieList.createGradientColourScale(
       'impressions',
-      Hasjob.Config.MaxCounts.max_impressions
+      Hasjob.Config.MaxCounts.max_impressions,
     );
     Hasjob.StickieList.createGradientColourScale(
       'views',
-      Hasjob.Config.MaxCounts.max_views
+      Hasjob.Config.MaxCounts.max_views,
     );
     Hasjob.StickieList.createGradientColourScale(
       'opens',
-      Hasjob.Config.MaxCounts.max_opens
+      Hasjob.Config.MaxCounts.max_opens,
     );
     Hasjob.StickieList.createGradientColourScale(
       'applied',
-      Hasjob.Config.MaxCounts.max_applied
+      Hasjob.Config.MaxCounts.max_applied,
     );
   },
   initFunnelViz: function () {
@@ -299,7 +291,7 @@ window.Hasjob.StickieList = {
           Hasjob.StickieList.renderGradientColour();
         }
       },
-      false
+      false,
     );
 
     window.addEventListener(
@@ -309,7 +301,7 @@ window.Hasjob.StickieList = {
           Hasjob.StickieList.renderGradientColour();
         }
       },
-      false
+      false,
     );
 
     window.addEventListener(
@@ -319,7 +311,7 @@ window.Hasjob.StickieList = {
           Hasjob.StickieList.renderGradientColour();
         }
       },
-      false
+      false,
     );
   },
 };
@@ -327,7 +319,7 @@ window.Hasjob.StickieList = {
 window.Hasjob.Filters = {
   toParam: function () {
     var sortedFilterParams = this.formatFilterParams(
-      $('#js-job-filters').serializeArray()
+      $('#js-job-filters').serializeArray(),
     );
     if (sortedFilterParams.length) {
       return $.param(sortedFilterParams);
@@ -452,10 +444,7 @@ window.Hasjob.Filters = {
       if ($(this).val() !== lastKeyword) {
         window.clearTimeout(keywordTimeout);
         lastKeyword = $(this).val();
-        keywordTimeout = window.setTimeout(
-          window.Hasjob.StickieList.refresh,
-          1000
-        );
+        keywordTimeout = window.setTimeout(window.Hasjob.StickieList.refresh, 1000);
       }
     });
 
@@ -560,7 +549,7 @@ window.Hasjob.Filters = {
           formParams[fpIndex].value = '';
         } else {
           formParams[fpIndex].value = Hasjob.PaySlider.toNumeric(
-            formParams[fpIndex].value
+            formParams[fpIndex].value,
           );
           if (formParams[fpIndex].value === '0') {
             formParams[fpIndex].value = '';
@@ -616,10 +605,7 @@ window.Hasjob.Currency.indian_rupee_encoder = function (value) {
   var otherNumbers = value.substring(0, value.length - 3);
   if (otherNumbers !== '') lastThree = ',' + lastThree;
   var res =
-    '₹' +
-    otherNumbers.replace(/\B(?=(\d{2})+(?!\d))/g, ',') +
-    lastThree +
-    afterPoint;
+    '₹' + otherNumbers.replace(/\B(?=(\d{2})+(?!\d))/g, ',') + lastThree + afterPoint;
   return res;
 };
 
@@ -747,7 +733,7 @@ window.Hasjob.PaySlider.prototype.resetSlider = function (currency) {
       range: Hasjob.PaySlider.range(currency),
       format: Hasjob.Currency.wNumbFormat(currency),
     },
-    true
+    true,
   );
 
   this.slider.Link('lower').to($(this.minField));
@@ -808,16 +794,12 @@ $(function () {
 
   // set initial value for the currency radio button
   var presetCurrency =
-    (window.Hasjob.Config && window.Hasjob.Config.selectedFilters.currency) ||
-    'NA';
-  $.each(
-    $("input[type='radio'][name='currency']"),
-    function (index, currencyRadio) {
-      if ($(currencyRadio).val() === presetCurrency) {
-        $(currencyRadio).attr('checked', 'checked');
-      }
+    (window.Hasjob.Config && window.Hasjob.Config.selectedFilters.currency) || 'NA';
+  $.each($("input[type='radio'][name='currency']"), function (index, currencyRadio) {
+    if ($(currencyRadio).val() === presetCurrency) {
+      $(currencyRadio).attr('checked', 'checked');
     }
-  );
+  });
 
   // preset equity
   if (window.Hasjob.Config && window.Hasjob.Config.selectedFilters.equity) {
@@ -844,8 +826,7 @@ $(function () {
   };
 
   var paySlider = new Hasjob.PaySlider({
-    start:
-      (window.Hasjob.Config && window.Hasjob.Config.selectedFilters.pay) || 0,
+    start: (window.Hasjob.Config && window.Hasjob.Config.selectedFilters.pay) || 0,
     selector: '#pay-slider',
     minField: '#job-filters-payval',
   });
