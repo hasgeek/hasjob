@@ -30,7 +30,7 @@
     "css-loader": "^6.8.1",
     "extract-text-webpack-plugin": "^3.0.2",
     "file-loader": "^1.1.9",
-    "filemanager-webpack-plugin": "^1.0.25",
+    "filemanager-webpack-plugin": "^8.0.0",
     "js-yaml": "^3.13.1",
     "node-sass": "^9.0.0",
     "sass-loader": "^6.0.6",
