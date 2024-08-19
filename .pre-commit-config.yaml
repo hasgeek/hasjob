@@ -4,12 +4,12 @@ ci:
   skip: ['yesqa', 'no-commit-to-branch']
 repos:
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.16.0
+    rev: v3.17.0
     hooks:
       - id: pyupgrade
         args: ['--keep-runtime-typing', '--py311-plus']
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.4.10
+    rev: v0.6.1
     hooks:
       - id: ruff
         args: ['--fix', '--exit-non-zero-on-fix']
@@ -38,7 +38,7 @@ repos:
         additional_dependencies:
           - toml
   - repo: https://github.com/PyCQA/flake8
-    rev: 7.1.0
+    rev: 7.1.1
     hooks:
       - id: flake8
         additional_dependencies: *flake8deps
@@ -57,7 +57,7 @@ repos:
         additional_dependencies:
           - bandit[toml]
   - repo: https://github.com/pycontribs/mirrors-prettier
-    rev: v3.3.2
+    rev: v3.3.3
     hooks:
       - id: prettier
   - repo: https://github.com/pre-commit/pre-commit-hooks
