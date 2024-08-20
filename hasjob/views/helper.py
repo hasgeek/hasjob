@@ -657,7 +657,7 @@ def make_pay_graph(currency, posts, rmin=None, rmax=None, minposts=5):
         for bucket in pay_graph_buckets[currency]
         if (bucket >= rmin and bucket <= rmax)
     ]
-    buckets = {bucket: 0 for bucket in rbuckets}
+    buckets = dict.fromkeys(rbuckets, 0)
     for pmin, pmax in pay_data:
         for bucket in rbuckets:
             if bucket >= pmin and bucket <= pmax:
