@@ -4,7 +4,7 @@ ci:
   skip: ['yesqa', 'no-commit-to-branch']
 repos:
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.17.0
+    rev: v3.18.0
     hooks:
       - id: pyupgrade
         args: ['--keep-runtime-typing', '--py311-plus']
