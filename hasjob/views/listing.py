@@ -1065,10 +1065,12 @@ def confirm_email(domain, hashid, key):
                     )
             if app.config['BLUESKY_ENABLED']:
                 bluesky_post.queue(
-                    f'{post.headline} —{post.company_name}',
+                    post.headline,
                     post.url_for(_external=True),
                     post.location,
                     dict(post.parsed_location or {}),
+                    employer=post.company_name,
+                    employer_url=post.url_for('browse', _external=True),
                 )
             add_to_boards.queue(post.id)
             flash(

@@ -102,6 +102,8 @@ def bluesky_post(
     url: str,
     location: str | None = None,
     parsed_location=None,
+    employer: str | None = None,
+    employer_url: str | None = None,
 ):
     locationtags = []
     if parsed_location:
@@ -117,12 +119,20 @@ def bluesky_post(
         locationtags.append(locationtag)
 
     maxlength = 300  # Bluesky allows 300 characters
+    if employer:
+        maxlength -= len(employer) + 2  # Minus employer name and prefix
     if locationtags:
         # Subtract length of all tags, plus length of visible `#`s  and one space
         maxlength -= len(' '.join(locationtags)) + len(locationtags) + 1
 
     content = atproto_client_utils.TextBuilder()
     content.link(title[: maxlength - 1] + '…' if len(title) > maxlength else title, url)
+    if employer:
+        content.text(' –')
+        if employer_url:
+            content.link(employer, employer_url)
+        else:
+            content.text(employer)
     if locationtags:
         for loc in locationtags:
             content.text(' ')
