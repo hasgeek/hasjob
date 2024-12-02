@@ -187,7 +187,7 @@ class JobPost(BaseMixin, Model):
     company_name = sa.orm.mapped_column(sa.Unicode(80), nullable=False)
     company_logo = sa.orm.mapped_column(sa.Unicode(255), nullable=True)
     company_url = sa.orm.mapped_column(sa.Unicode(255), nullable=False, default='')
-    twitter = sa.orm.mapped_column(sa.Unicode(15), nullable=True)
+    twitter = sa.orm.mapped_column(sa.Unicode(15), nullable=True)  # Deprecated
     #: XXX: Deprecated field, used before user_id was introduced
     fullname = sa.orm.mapped_column(sa.Unicode(80), nullable=True)
     email = sa.orm.mapped_column(sa.Unicode(80), nullable=False)
