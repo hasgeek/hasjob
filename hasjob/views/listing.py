@@ -1064,26 +1064,12 @@ def confirm_email(domain, hashid, key):
                         username=post.twitter,
                     )
             if app.config['BLUESKY_ENABLED']:
-                if post.headlineb:
-                    bluesky_post.queue(
-                        post.headline,
-                        post.url_for(b=0, _external=True),
-                        post.location,
-                        dict(post.parsed_location or {}),
-                    )
-                    bluesky_post.queue(
-                        post.headlineb,
-                        post.url_for(b=1, _external=True),
-                        post.location,
-                        dict(post.parsed_location or {}),
-                    )
-                else:
-                    bluesky_post.queue(
-                        post.headline,
-                        post.url_for(_external=True),
-                        post.location,
-                        dict(post.parsed_location or {}),
-                    )
+                bluesky_post.queue(
+                    f'{post.headline} —{post.company_name}',
+                    post.url_for(_external=True),
+                    post.location,
+                    dict(post.parsed_location or {}),
+                )
             add_to_boards.queue(post.id)
             flash(
                 "Congratulations! Your job post has been published. As a bonus for being an employer on Hasjob, "
