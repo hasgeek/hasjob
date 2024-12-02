@@ -48,8 +48,8 @@ from ..models import (
     viewstats_by_id_hour,
 )
 from ..nlp import identify_language
+from ..socialmedia import bluesky_post, tweet
 from ..tagging import add_to_boards, tag_jobpost, tag_locations
-from ..twitter import tweet
 from ..uploads import UploadNotAllowed, uploaded_logos
 from ..utils import common_legal_names, get_word_bag, random_long_key, redactemail
 from .helper import (
@@ -1063,6 +1063,15 @@ def confirm_email(domain, hashid, key):
                         dict(post.parsed_location or {}),
                         username=post.twitter,
                     )
+            if app.config['BLUESKY_ENABLED']:
+                bluesky_post.queue(
+                    post.headline,
+                    post.url_for(_external=True),
+                    post.location,
+                    dict(post.parsed_location or {}),
+                    employer=post.company_name,
+                    employer_url=post.url_for('browse', _external=True),
+                )
             add_to_boards.queue(post.id)
             flash(
                 "Congratulations! Your job post has been published. As a bonus for being an employer on Hasjob, "

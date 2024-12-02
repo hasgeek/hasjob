@@ -9,6 +9,9 @@ test.db
 .settings
 .sass-cache
 .webassets-cache
+.venv
+.env
+.envrc
 error.log
 error.log.*
 .coverage

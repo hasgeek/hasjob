@@ -55,6 +55,10 @@ TWITTER_CONSUMER_KEY = ''
 TWITTER_CONSUMER_SECRET = ''  # nosec B105
 TWITTER_ACCESS_KEY = ''
 TWITTER_ACCESS_SECRET = ''  # nosec B105
+#: Bluesky integration
+BLUESKY_ENABLED = False
+BLUESKY_USERNAME = ''  # Login username
+BLUESKY_PASSWORD = ''  # App password  # nosec B105
 #: Bit.ly integration for short URLs
 BITLY_USER = ''
 BITLY_KEY = ''
