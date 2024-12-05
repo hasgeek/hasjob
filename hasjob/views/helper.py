@@ -920,7 +920,7 @@ def usessl(url):
     return url
 
 
-def filter_basequery(basequery, filters, exclude_list=()):
+def filter_basequery(basequery, filters, exclude_list=None):
     """
     - Accepts a query of type sqlalchemy.Query, and returns a modified query
     based on the keys in the `filters` object.
@@ -928,6 +928,8 @@ def filter_basequery(basequery, filters, exclude_list=()):
     `pay_min`, `pay_max`, `currency`, `equity` and `query`.
     - exclude_list is an array of keys that need to be ignored in the `filters` object
     """
+    if exclude_list is None:
+        exclude_list = []
     filter_by_location = filters.get('locations') and 'locations' not in exclude_list
     filter_by_anywhere = filters.get('anywhere') and 'anywhere' not in exclude_list
     if filter_by_location:
