@@ -253,11 +253,13 @@ class Campaign(BaseNameMixin, Model):
     state.add_conditional_state(
         'CURRENT',
         state.ENABLED,
-        lambda obj: obj.start_at
-        <= obj.start_at
-        <= utcnow()
-        < obj.end_at
-        <= utcnow() + timedelta(days=30),
+        lambda obj: (
+            obj.start_at
+            <= obj.start_at
+            <= utcnow()
+            < obj.end_at
+            <= utcnow() + timedelta(days=30)
+        ),
         lambda cls: sa.and_(
             cls.start_at <= sa.func.utcnow(),
             cls.end_at > sa.func.utcnow(),
@@ -268,11 +270,13 @@ class Campaign(BaseNameMixin, Model):
     state.add_conditional_state(
         'LONGTERM',
         state.ENABLED,
-        lambda obj: obj.start_at
-        <= obj.start_at
-        <= utcnow()
-        < utcnow() + timedelta(days=30)
-        < obj.end_at,
+        lambda obj: (
+            obj.start_at
+            <= obj.start_at
+            <= utcnow()
+            < utcnow() + timedelta(days=30)
+            < obj.end_at
+        ),
         lambda cls: sa.and_(
             cls.start_at <= utcnow(), cls.end_at > utcnow() + timedelta(days=30)
         ),
