@@ -301,13 +301,15 @@ class UserFlags:
     is_new_lurker_within_day = UserFlag(
         'lurker',
         __("Is a lurker (joined <= a day ago)"),
-        lambda user: user.created_at >= utcnow() - newlimit
-        and (not JobPost.query.filter(JobPost.user == user).notempty())
-        or (not JobApplication.query.filter(JobApplication.user == user).notempty())
-        or (
-            not JobApplication.query.filter(
-                JobApplication.replied_by == user
-            ).notempty()
+        lambda user: (
+            user.created_at >= utcnow() - newlimit
+            and (not JobPost.query.filter(JobPost.user == user).notempty())
+            or (not JobApplication.query.filter(JobApplication.user == user).notempty())
+            or (
+                not JobApplication.query.filter(
+                    JobApplication.replied_by == user
+                ).notempty()
+            )
         ),
         lambda: db.session.query(User.id).filter(
             User.created_at >= utcnow() - newlimit,
@@ -331,13 +333,15 @@ class UserFlags:
     is_new_lurker_within_month = UserFlag(
         'lurker',
         __("Is a lurker (joined <= a month ago)"),
-        lambda user: user.created_at >= utcnow() - agelimit
-        and (not JobPost.query.filter(JobPost.user == user).notempty())
-        or (not JobApplication.query.filter(JobApplication.user == user).notempty())
-        or (
-            not JobApplication.query.filter(
-                JobApplication.replied_by == user
-            ).notempty()
+        lambda user: (
+            user.created_at >= utcnow() - agelimit
+            and (not JobPost.query.filter(JobPost.user == user).notempty())
+            or (not JobApplication.query.filter(JobApplication.user == user).notempty())
+            or (
+                not JobApplication.query.filter(
+                    JobApplication.replied_by == user
+                ).notempty()
+            )
         ),
         lambda: db.session.query(User.id).filter(
             User.created_at >= utcnow() - agelimit,
@@ -361,13 +365,15 @@ class UserFlags:
     is_lurker_since_past = UserFlag(
         'lurker',
         __("Is a lurker (joined > a month ago)"),
-        lambda user: user.created_at < utcnow() - agelimit
-        and (not JobPost.query.filter(JobPost.user == user).notempty())
-        or (not JobApplication.query.filter(JobApplication.user == user).notempty())
-        or (
-            not JobApplication.query.filter(
-                JobApplication.replied_by == user
-            ).notempty()
+        lambda user: (
+            user.created_at < utcnow() - agelimit
+            and (not JobPost.query.filter(JobPost.user == user).notempty())
+            or (not JobApplication.query.filter(JobApplication.user == user).notempty())
+            or (
+                not JobApplication.query.filter(
+                    JobApplication.replied_by == user
+                ).notempty()
+            )
         ),
         lambda: db.session.query(User.id).filter(
             User.created_at < utcnow() - agelimit,
@@ -391,12 +397,14 @@ class UserFlags:
     is_lurker_since_alltime = UserFlag(
         'lurker',
         __("Is a lurker"),
-        lambda user: (not JobPost.query.filter(JobPost.user == user).notempty())
-        or (not JobApplication.query.filter(JobApplication.user == user).notempty())
-        or (
-            not JobApplication.query.filter(
-                JobApplication.replied_by == user
-            ).notempty()
+        lambda user: (
+            (not JobPost.query.filter(JobPost.user == user).notempty())
+            or (not JobApplication.query.filter(JobApplication.user == user).notempty())
+            or (
+                not JobApplication.query.filter(
+                    JobApplication.replied_by == user
+                ).notempty()
+            )
         ),
         lambda: db.session.query(User.id).filter(
             ~User.id.in_(
@@ -420,21 +428,23 @@ class UserFlags:
         'lurker',
         __("Is inactive (for a day+)"),
         lambda user: (
-            not JobPost.query.filter(
-                JobPost.user == user, JobPost.created_at >= utcnow() - newlimit
-            ).notempty()
-        )
-        or (
-            not JobApplication.query.filter(
-                JobApplication.user == user,
-                JobApplication.created_at >= utcnow() - newlimit,
-            ).notempty()
-        )
-        or (
-            not JobApplication.query.filter(
-                JobApplication.replied_by == user,
-                JobApplication.replied_at >= utcnow() - newlimit,
-            ).notempty()
+            (
+                not JobPost.query.filter(
+                    JobPost.user == user, JobPost.created_at >= utcnow() - newlimit
+                ).notempty()
+            )
+            or (
+                not JobApplication.query.filter(
+                    JobApplication.user == user,
+                    JobApplication.created_at >= utcnow() - newlimit,
+                ).notempty()
+            )
+            or (
+                not JobApplication.query.filter(
+                    JobApplication.replied_by == user,
+                    JobApplication.replied_at >= utcnow() - newlimit,
+                ).notempty()
+            )
         ),
         lambda: db.session.query(User.id).filter(
             ~User.id.in_(
@@ -463,21 +473,23 @@ class UserFlags:
         'lurker',
         __("Is inactive (for a month+)"),
         lambda user: (
-            not JobPost.query.filter(
-                JobPost.user == user, JobPost.created_at >= utcnow() - agelimit
-            ).notempty()
-        )
-        or (
-            not JobApplication.query.filter(
-                JobApplication.user == user,
-                JobApplication.created_at >= utcnow() - agelimit,
-            ).notempty()
-        )
-        or (
-            not JobApplication.query.filter(
-                JobApplication.replied_by == user,
-                JobApplication.replied_at >= utcnow() - agelimit,
-            ).notempty()
+            (
+                not JobPost.query.filter(
+                    JobPost.user == user, JobPost.created_at >= utcnow() - agelimit
+                ).notempty()
+            )
+            or (
+                not JobApplication.query.filter(
+                    JobApplication.user == user,
+                    JobApplication.created_at >= utcnow() - agelimit,
+                ).notempty()
+            )
+            or (
+                not JobApplication.query.filter(
+                    JobApplication.replied_by == user,
+                    JobApplication.replied_at >= utcnow() - agelimit,
+                ).notempty()
+            )
         ),
         lambda: db.session.query(User.id).filter(
             ~User.id.in_(
