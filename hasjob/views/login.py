@@ -48,9 +48,7 @@ def lastuser_error(error, error_description=None, error_uri=None):
         flash("You denied the request to login", category='error')
         return redirect(get_next_url())
     return Response(
-        "Error: %s\n"
-        "Description: %s\n"
-        "URI: %s" % (error, error_description, error_uri),
+        "Error: %s\nDescription: %s\nURI: %s" % (error, error_description, error_uri),
         mimetype="text/plain",
     )
 
